@@ -1,8 +1,10 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Platform.Storage;
@@ -21,15 +23,19 @@ public partial class MainWindow : Window
         Opened += MainWindow_Opened;
         Closing += MainWindow_Closing;
         Closed += (_, _) => _shutdown.Cancel();
+        DragDrop.SetAllowDrop(this, true);
+        DragDrop.AddDragOverHandler(this, DragOver);
+        DragDrop.AddDropHandler(this, Drop);
     }
 
     private async void MainWindow_Closing(object? sender, WindowClosingEventArgs e)
     {
-        if (DataContext is not MainViewModel { IsBusy: true } viewModel) return;
+        if (DataContext is not MainViewModel viewModel || (!viewModel.IsBusy && !viewModel.HasActiveAnalyses)) return;
         e.Cancel = true;
         _shutdown.Cancel();
         viewModel.CancelOperation();
-        await viewModel.WaitForIdleAsync();
+        viewModel.CancelAnalysis();
+        await Task.WhenAll(viewModel.WaitForIdleAsync(), viewModel.WaitForAnalysesAsync());
         Close();
     }
 
@@ -62,9 +68,51 @@ public partial class MainWindow : Window
         dialog.Show(this);
     }
 
-    private void SelectFile_Click(object? sender, RoutedEventArgs e)
+    private async void SelectFile_Click(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is MainViewModel viewModel) viewModel.SelectFile();
+        if (DataContext is not MainViewModel viewModel || !viewModel.SelectFile()) return;
+        try
+        {
+            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Выберите медиафайл", AllowMultiple = false
+            });
+            if (files.Count == 1) await AddFileAsync(files[0].Path);
+        }
+        catch (Exception)
+        {
+            if (!_shutdown.IsCancellationRequested)
+                viewModel.ReportFileError("Не удалось выбрать файл. Проверьте доступ и повторите попытку.");
+        }
+    }
+
+    private void DragOver(object? sender, DragEventArgs e) => e.DragEffects = DragDropEffects.Copy;
+
+    private async void Drop(object? sender, DragEventArgs e)
+    {
+        if (DataContext is not MainViewModel viewModel || !viewModel.SelectFile()) return;
+        try
+        {
+            var files = e.DataTransfer.TryGetFiles()?.Take(2).ToArray();
+            if (files is null || files.Length != 1)
+            {
+                viewModel.ReportFileError("Перетащите один локальный файл.");
+                return;
+            }
+            await AddFileAsync(files[0].Path);
+        }
+        catch (Exception)
+        {
+            if (!_shutdown.IsCancellationRequested)
+                viewModel.ReportFileError("Не удалось открыть перетащенный файл.");
+        }
+    }
+
+    private async Task AddFileAsync(Uri uri)
+    {
+        if (DataContext is not MainViewModel viewModel) return;
+        if (!uri.IsFile) { viewModel.ReportFileError("Выберите локальный файл."); return; }
+        await viewModel.AnalyzeFileAsync(uri.LocalPath, _shutdown.Token);
     }
 
     private async void SaveLog_Click(object? sender, RoutedEventArgs e)

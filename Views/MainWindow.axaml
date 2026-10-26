@@ -21,14 +21,27 @@
                 <MenuItem Header="FFmpeg и FFprobe" Click="Dependencies_Click" />
             </MenuItem>
         </Menu>
-        <StackPanel Margin="24" Spacing="12" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="{Binding Greeting}" TextWrapping="Wrap" HorizontalAlignment="Center" />
-            <Button Content="Выбрать файл" Click="SelectFile_Click" HorizontalAlignment="Center" />
-            <TextBlock Text="{Binding FileSelectionMessage}" TextWrapping="Wrap" HorizontalAlignment="Center" />
-            <Button Content="Открыть FFmpeg и FFprobe" Click="Dependencies_Click"
-                    IsVisible="{Binding ShowDependencyOffer}" HorizontalAlignment="Center" />
-            <Button Content="Сохранить лог" Click="SaveLog_Click" HorizontalAlignment="Center" />
-        </StackPanel>
+        <ScrollViewer>
+            <StackPanel Margin="24" Spacing="12">
+                <TextBlock Text="{Binding Greeting}" TextWrapping="Wrap" />
+                <TextBlock Text="Перетащите сюда один локальный медиафайл или выберите его кнопкой." TextWrapping="Wrap" />
+                <Button Content="Выбрать файл" Click="SelectFile_Click" HorizontalAlignment="Left" />
+                <TextBlock Text="{Binding FileSelectionMessage}" TextWrapping="Wrap" />
+                <Button Content="Открыть FFmpeg и FFprobe" Click="Dependencies_Click"
+                        IsVisible="{Binding ShowDependencyOffer}" HorizontalAlignment="Left" />
+                <TextBlock Text="{Binding AnalysisStatus}" FontWeight="SemiBold" />
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsAnalyzing}" />
+                <TextBlock Text="{Binding MediaSummary}" TextWrapping="Wrap" />
+                <ItemsControl ItemsSource="{Binding StreamSummaries}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button Content="Сохранить лог" Click="SaveLog_Click" HorizontalAlignment="Left" />
+            </StackPanel>
+        </ScrollViewer>
     </DockPanel>
 
 </Window>
