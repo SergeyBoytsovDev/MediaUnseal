@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
@@ -30,7 +31,18 @@ public sealed partial class FfmpegTools
     private readonly string _dataDirectory;
     private readonly HttpMessageHandler? _httpHandler;
     internal Func<string, string[], TimeSpan, CancellationToken, Task<ProcessResult>>? ProcessRunner { get; init; }
+    internal Func<Uri, CancellationToken, Task<bool>>? ProbeRunner { get; init; }
+    internal Func<bool>? NetworkAvailable { get; init; }
     public bool OfferDirectDownload { get; private set; }
+    public bool NetworkCheckFailed { get; private set; }
+    public event Action<string>? EventLogged;
+    public DiagnosticLog Diagnostics { get; }
+    private bool _started;
+    private void Log(string message, DiagnosticLevel level = DiagnosticLevel.Info, string operation = "Зависимости")
+    {
+        Diagnostics.Record(level, operation, message);
+        EventLogged?.Invoke(message);
+    }
     public bool CanDirectDownload => OperatingSystem.IsWindowsVersionAtLeast(10) && RuntimeInformation.OSArchitecture == Architecture.X64;
     private ToolPaths _savedPaths = new();
 
@@ -43,6 +55,7 @@ public sealed partial class FfmpegTools
         _searchPathOverride = searchPathOverride;
         _dataDirectory = Path.GetFullPath(dataDirectory ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrackExtractor"));
+        Diagnostics = new DiagnosticLog(Path.Combine(_dataDirectory, "logs"));
         _httpHandler = httpHandler;
         var settingsDirectory = OperatingSystem.IsWindows()
             ? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
@@ -59,19 +72,109 @@ public sealed partial class FfmpegTools
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
         {
-            SettingsError = $"Не удалось прочитать сохранённые пути: {ex.Message}";
+            SettingsError = "Не удалось прочитать сохранённые пути. Проверьте файл пользовательских настроек.";
         }
     }
 
     public string? SettingsError { get; private set; }
 
     public async Task<ToolsStatus> CheckAsync(CancellationToken cancellationToken)
+        => await CheckCoreAsync(cancellationToken, saveRecoveredPaths: true);
+
+    private async Task<ToolsStatus> CheckCoreAsync(CancellationToken cancellationToken, bool saveRecoveredPaths)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var ffmpeg = CheckToolAsync("ffmpeg", _savedPaths.FFmpeg, cancellationToken);
-        var ffprobe = CheckToolAsync("ffprobe", _savedPaths.FFprobe, cancellationToken);
+        if (!_started)
+        {
+            _started = true;
+            Log("Запуск проверки зависимостей приложения.", operation: "Запуск");
+        }
+        Log("Начата проверка FFmpeg и FFprobe.", operation: "Проверка");
+        var executableSuffix = OperatingSystem.IsWindows() ? ".exe" : "";
+        var ownPairs = OwnInstallationPairs(executableSuffix).ToArray();
+        var pathDirectories = PathDirectories().ToArray();
+        var knownFFmpeg = OperatingSystem.IsWindows() && _searchPathOverride is null
+            ? KnownWindowsPaths("ffmpeg.exe").Where(File.Exists).ToArray() : [];
+        var knownFFprobe = OperatingSystem.IsWindows() && _searchPathOverride is null
+            ? KnownWindowsPaths("ffprobe.exe").Where(File.Exists).ToArray() : [];
+        var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var checkedPaths = new Dictionary<string, ToolStatus>(comparer);
+
+        async Task<ToolStatus> Check(string name, string path)
+        {
+            var key = name + "\0" + path;
+            if (checkedPaths.TryGetValue(key, out var cached)) return cached;
+            Log($"Проверяется {name}: {path}", operation: "Проверка");
+            var result = await CheckCandidateAsync(name, path, cancellationToken);
+            checkedPaths[key] = result;
+            Log(result.IsReady ? $"{name} {result.Details}: {path}" : $"{name} не прошёл проверку: {path}",
+                result.IsReady ? DiagnosticLevel.Info : DiagnosticLevel.Warn, "Проверка");
+            return result;
+        }
+
+        var pairs = new List<ToolPair>();
+        if (!string.IsNullOrWhiteSpace(_savedPaths.FFmpeg) && !string.IsNullOrWhiteSpace(_savedPaths.FFprobe))
+            pairs.Add(new(_savedPaths.FFmpeg, _savedPaths.FFprobe));
+        pairs.AddRange(ownPairs);
+        pairs.Add(new(Path.Combine(_appDirectory, "ffmpeg" + executableSuffix),
+            Path.Combine(_appDirectory, "ffprobe" + executableSuffix)));
+        pairs.AddRange(pathDirectories.Select(directory => new ToolPair(
+            Path.Combine(directory, "ffmpeg" + executableSuffix),
+            Path.Combine(directory, "ffprobe" + executableSuffix))));
+        pairs.AddRange(knownFFmpeg.Select(path => new ToolPair(path,
+            Path.Combine(Path.GetDirectoryName(path)!, "ffprobe.exe"))));
+
+        foreach (var pair in pairs)
+        {
+            if (!File.Exists(pair.FFmpeg) || !File.Exists(pair.FFprobe)) continue;
+            var ffmpegTask = Check("ffmpeg", pair.FFmpeg);
+            var ffprobeTask = Check("ffprobe", pair.FFprobe);
+            await Task.WhenAll(ffmpegTask, ffprobeTask);
+            if (ffmpegTask.Result.IsReady && ffprobeTask.Result.IsReady)
+                return await FinishAsync(new(ffmpegTask.Result, ffprobeTask.Result));
+        }
+
+        async Task<ToolStatus> FirstWorking(string name, string? saved, IEnumerable<string> known)
+        {
+            var candidates = new List<string>();
+            if (!string.IsNullOrWhiteSpace(saved)) candidates.Add(saved);
+            candidates.Add(Path.Combine(_appDirectory, name + executableSuffix));
+            candidates.AddRange(pathDirectories.Select(directory => Path.Combine(directory, name + executableSuffix)));
+            candidates.AddRange(known);
+            var failure = string.IsNullOrWhiteSpace(saved) ? "Файл не найден." : $"Файл не найден: {saved}";
+            foreach (var candidate in candidates.Distinct(comparer))
+            {
+                var result = await Check(name, candidate);
+                if (result.IsReady) return result;
+                if (File.Exists(candidate)) failure = result.Details;
+            }
+            return new(name, false, failure);
+        }
+
+        var ffmpeg = FirstWorking("ffmpeg", _savedPaths.FFmpeg, knownFFmpeg);
+        var ffprobe = FirstWorking("ffprobe", _savedPaths.FFprobe, knownFFprobe);
         await Task.WhenAll(ffmpeg, ffprobe);
-        return new(await ffmpeg, await ffprobe);
+        return await FinishAsync(new(await ffmpeg, await ffprobe));
+
+        async Task<ToolsStatus> FinishAsync(ToolsStatus status)
+        {
+            var updated = new ToolPaths(status.FFmpeg.IsReady ? status.FFmpeg.Path : null,
+                status.FFprobe.IsReady ? status.FFprobe.Path : null);
+            if (saveRecoveredPaths && updated != _savedPaths)
+            {
+                try
+                {
+                    await SavePathsAsync(updated, cancellationToken);
+                    Log("Рабочие пути FFmpeg/FFprobe сохранены.");
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    SettingsError = "Рабочие утилиты найдены, но пути не удалось сохранить. Проверьте доступ к пользовательским настройкам.";
+                    Log("Не удалось сохранить найденные пути.");
+                }
+            }
+            return status;
+        }
     }
 
     public async Task<string?> SetManualPathAsync(string name, string path, CancellationToken cancellationToken)
@@ -89,11 +192,13 @@ public sealed partial class FfmpegTools
         try
         {
             await SavePathsAsync(updated, cancellationToken);
+            Log($"Путь {name} сохранён: {path}");
             return null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            SettingsError = $"Путь проверен, но не сохранён: {ex.Message}";
+            SettingsError = "Утилита работает, но путь не удалось сохранить. Проверьте доступ к пользовательским настройкам.";
+            Log($"Не удалось сохранить путь {name}.");
             return SettingsError;
         }
     }
@@ -103,10 +208,23 @@ public sealed partial class FfmpegTools
         if (OperatingSystem.IsWindows())
         {
             var winget = await CheckCommandAsync("winget", cancellationToken);
+            NetworkCheckFailed = false;
+            if (winget && await ProbeAsync(new Uri("https://cdn.winget.microsoft.com/cache"), cancellationToken))
+            {
+                OfferDirectDownload = false;
+                return "Доступен WinGet. Нажмите «Установить», чтобы установить Gyan.FFmpeg.";
+            }
+            if (CanDirectDownload && await ProbeAsync(new Uri("https://www.gyan.dev/ffmpeg/builds/"), cancellationToken))
+            {
+                OfferDirectDownload = true;
+                return winget
+                    ? "Источник WinGet не ответил. Нажмите «Установить» для резервной загрузки с gyan.dev."
+                    : "WinGet недоступен. Нажмите «Установить» для резервной загрузки с gyan.dev.";
+            }
             OfferDirectDownload = !winget && CanDirectDownload;
-            return winget
-                ? "Будет запущена установка пакета Gyan.FFmpeg через WinGet. Подтвердите действие кнопкой «Установить»."
-                : DirectDownloadAdvice("WinGet недоступен.");
+            NetworkCheckFailed = true;
+            Log("Оба источника установки не ответили на предварительную проверку.", DiagnosticLevel.Warn, "HTTPS");
+            return "Не удалось связаться с источниками установки. Проверьте подключение к интернету и повторите попытку";
         }
 
         if (OperatingSystem.IsMacOS())
@@ -135,25 +253,37 @@ public sealed partial class FfmpegTools
     {
         if (!OperatingSystem.IsWindows())
             return new(false, await GetInstallOptionAsync(cancellationToken));
+        if ((await CheckAsync(cancellationToken)).IsReady)
+            return new(true, "FFmpeg и FFprobe уже найдены и готовы. Повторная установка не требуется.");
+        var priorPaths = _savedPaths;
         var wingetPath = await FindWorkingCommandAsync("winget", cancellationToken);
         if (wingetPath is null)
             return WindowsFailure("WinGet недоступен.");
 
         try
         {
+            Log("Запущена установка Gyan.FFmpeg через WinGet.", operation: "WinGet");
             var result = await RunAsync(wingetPath, ["install", "--id", "Gyan.FFmpeg", "--exact",
                 "--source", "winget", "--scope", "user", "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity"],
                 TimeSpan.FromMinutes(10), cancellationToken);
-            var status = await CheckAsync(cancellationToken);
+            var status = await CheckCoreAsync(cancellationToken, saveRecoveredPaths: false);
             if (status.IsReady)
             {
-                await SavePathsAsync(new(status.FFmpeg.Path, status.FFprobe.Path), cancellationToken);
+                await SavePathsAsync(new(
+                    await WorkingSavedPathAsync("ffmpeg", priorPaths.FFmpeg, status.FFmpeg.Path!, cancellationToken),
+                    await WorkingSavedPathAsync("ffprobe", priorPaths.FFprobe, status.FFprobe.Path!, cancellationToken)), cancellationToken);
                 OfferDirectDownload = false;
+                Log("После WinGet FFmpeg и FFprobe проверены и готовы.", operation: "WinGet");
                 return new(true, "FFmpeg и FFprobe проверены и готовы.");
             }
             return WindowsFailure(result.ExitCode != 0
-                ? $"WinGet завершился с кодом {result.ExitCode}: {GetOutput(result)}"
+                ? $"WinGet не установил FFmpeg (код завершения {result.ExitCode})."
                 : "WinGet завершился, но обе работоспособные утилиты не найдены. Можно повторить проверку после перезапуска приложения.");
+        }
+        catch (OperationCanceledException)
+        {
+            Log("Установка WinGet отменена.", DiagnosticLevel.Warn, "WinGet");
+            throw;
         }
         catch (TimeoutException)
         {
@@ -161,18 +291,60 @@ public sealed partial class FfmpegTools
         }
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or IOException or UnauthorizedAccessException)
         {
-            return WindowsFailure($"Не удалось завершить установку через WinGet: {ex.Message}");
+            return WindowsFailure("Не удалось завершить установку через WinGet. Проверьте права доступа или попробуйте резервный способ.");
         }
     }
 
     private InstallResult WindowsFailure(string message)
     {
         OfferDirectDownload = CanDirectDownload;
+        Log("Установка WinGet не подтвердила готовность FFmpeg и FFprobe.", DiagnosticLevel.Error, "WinGet");
         return new(false, DirectDownloadAdvice(message));
     }
 
+    private async Task<bool> ProbeAsync(Uri uri, CancellationToken cancellationToken)
+    {
+        if (!(NetworkAvailable?.Invoke() ?? NetworkInterface.GetIsNetworkAvailable()))
+        {
+            Log($"Сеть не обнаружена; пропущена проверка {uri.Host}.");
+            return false;
+        }
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(3));
+        try
+        {
+            if (ProbeRunner is not null)
+            {
+                var result = await ProbeRunner(uri, timeout.Token);
+                Log(result ? $"Источник {uri.Host} отвечает." : $"Источник {uri.Host} сейчас не отвечает.",
+                    result ? DiagnosticLevel.Info : DiagnosticLevel.Warn, "HTTPS");
+                return result;
+            }
+            using var http = _httpHandler is null
+                ? new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
+                : new HttpClient(_httpHandler, disposeHandler: false);
+            http.Timeout = Timeout.InfiniteTimeSpan;
+            using var request = new HttpRequestMessage(HttpMethod.Head, uri);
+            using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, timeout.Token);
+            var available = (int)response.StatusCode < 500;
+            Log(available ? $"Источник {uri.Host} отвечает." : $"Источник {uri.Host} сейчас не отвечает.",
+                available ? DiagnosticLevel.Info : DiagnosticLevel.Warn, "HTTPS");
+            return available;
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            Log($"Источник {uri.Host} не ответил за 3 секунды.", DiagnosticLevel.Warn, "HTTPS");
+            return false;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or IOException)
+        {
+            Log($"Не удалось связаться с {uri.Host}.", DiagnosticLevel.Warn, "HTTPS");
+            return false;
+        }
+    }
+
     private string DirectDownloadAdvice(string message) => message + (CanDirectDownload
-        ? " Нажмите «Установить», чтобы скачать Windows x64 ZIP с https://www.gyan.dev/ffmpeg/builds/ и проверить SHA-256. Установка будет выполнена в пользовательский каталог Track Extractor без изменения PATH."
+        ? " Нажмите «Установить» для резервной загрузки с gyan.dev в пользовательский каталог. PATH не изменится."
         : " Прямая загрузка поддерживается только для Windows 10/11 x64. Для этой архитектуры укажите совместимые утилиты вручную: https://ffmpeg.org/download.html.");
 
     private async Task SavePathsAsync(ToolPaths paths, CancellationToken cancellationToken)
@@ -191,21 +363,42 @@ public sealed partial class FfmpegTools
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
 
-    private async Task<ToolStatus> CheckToolAsync(string name, string? savedPath, CancellationToken cancellationToken)
+    private async Task<string> WorkingSavedPathAsync(string name, string? saved, string fallback, CancellationToken cancellationToken) =>
+        !string.IsNullOrWhiteSpace(saved) && (await CheckCandidateAsync(name, saved, cancellationToken)).IsReady
+            ? saved : fallback;
+
+    private IEnumerable<ToolPair> OwnInstallationPairs(string suffix)
     {
-        var executable = OperatingSystem.IsWindows() ? name + ".exe" : name;
-        var candidates = new List<string>();
-        if (!string.IsNullOrWhiteSpace(savedPath)) candidates.Add(savedPath);
-        candidates.Add(Path.Combine(_appDirectory, executable));
-        candidates.AddRange(FindAllOnPath(executable));
-        var failure = string.IsNullOrWhiteSpace(savedPath) ? "Файл не найден." : $"Файл не найден: {savedPath}";
-        foreach (var candidate in candidates.Distinct(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal))
+        var root = Path.Combine(_dataDirectory, "tools");
+        if (!Directory.Exists(root)) yield break;
+        string[] installations;
+        try { installations = Directory.GetDirectories(root, "ffmpeg-*", SearchOption.TopDirectoryOnly); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { yield break; }
+        foreach (var installation in installations.OrderBy(path => path, StringComparer.Ordinal))
         {
-            var result = await CheckCandidateAsync(name, candidate, cancellationToken);
-            if (result.IsReady) return result;
-            if (File.Exists(candidate)) failure = result.Details;
+            if (IsReparsePoint(installation)) continue;
+            string[] children;
+            try { children = Directory.GetDirectories(installation, "*", SearchOption.TopDirectoryOnly); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { continue; }
+            var bins = new[] { Path.Combine(installation, "bin") }.Concat(children
+                .Where(path => !IsReparsePoint(path))
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .Select(path => Path.Combine(path, "bin")));
+            foreach (var bin in bins)
+            {
+                var ffmpeg = Path.Combine(bin, "ffmpeg" + suffix);
+                var ffprobe = Path.Combine(bin, "ffprobe" + suffix);
+                if (File.Exists(ffmpeg) && File.Exists(ffprobe)) yield return new(ffmpeg, ffprobe);
+            }
         }
-        return new(name, false, failure);
+    }
+
+    private sealed record ToolPair(string FFmpeg, string FFprobe);
+
+    private static bool IsReparsePoint(string path)
+    {
+        try { return (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0; }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return true; }
     }
 
     private async Task<ToolStatus> CheckCandidateAsync(string name, string path, CancellationToken cancellationToken)
@@ -217,12 +410,12 @@ public sealed partial class FfmpegTools
         {
             var result = await RunAsync(path, ["-version"], TimeSpan.FromSeconds(5), cancellationToken);
             if (result.ExitCode != 0)
-                return new(name, false, $"{name}: код завершения {result.ExitCode}. {GetOutput(result)}");
+                return new(name, false, $"{name}: ошибка выполнения (код завершения {result.ExitCode}).");
             var firstLine = result.Stdout.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
             var prefix = name + " version ";
             if (!firstLine.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ||
                 string.IsNullOrWhiteSpace(firstLine[prefix.Length..]))
-                return new(name, false, $"{name}: неожиданный ответ на -version.");
+                return new(name, false, $"{name}: неверный исполняемый файл — ответ на -version не соответствует утилите.");
             return new(name, true, firstLine, path);
         }
         catch (TimeoutException)
@@ -231,7 +424,7 @@ public sealed partial class FfmpegTools
         }
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or IOException or UnauthorizedAccessException)
         {
-            return new(name, false, $"{name}: ошибка запуска: {ex.Message}");
+            return new(name, false, $"{name}: ошибка запуска. Проверьте права доступа и совместимость файла.");
         }
     }
 
@@ -258,6 +451,18 @@ public sealed partial class FfmpegTools
 
     private IEnumerable<string> FindAllOnPath(string executable)
     {
+        foreach (var directory in PathDirectories())
+        {
+            var candidate = Path.Combine(directory, executable);
+            if (File.Exists(candidate)) yield return candidate;
+        }
+        if (OperatingSystem.IsWindows() && _searchPathOverride is null)
+            foreach (var candidate in KnownWindowsPaths(executable))
+                if (File.Exists(candidate)) yield return candidate;
+    }
+
+    private IEnumerable<string> PathDirectories()
+    {
         var paths = _searchPathOverride is null
             ? new[] { Environment.GetEnvironmentVariable("PATH"),
                 OperatingSystem.IsWindows() ? Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User) : null,
@@ -267,13 +472,11 @@ public sealed partial class FfmpegTools
             foreach (var directory in (path ?? "").Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
                 string candidate;
-                try { candidate = Path.Combine(OperatingSystem.IsWindows() ? Environment.ExpandEnvironmentVariables(directory.Trim('"')) : directory, executable); }
+                try { candidate = OperatingSystem.IsWindows()
+                    ? Environment.ExpandEnvironmentVariables(directory.Trim('"')) : directory; }
                 catch (ArgumentException) { continue; }
-                if (File.Exists(candidate)) yield return candidate;
+                if (Directory.Exists(candidate)) yield return candidate;
             }
-        if (OperatingSystem.IsWindows() && _searchPathOverride is null)
-            foreach (var candidate in KnownWindowsPaths(executable))
-                if (File.Exists(candidate)) yield return candidate;
     }
 
     private static IEnumerable<string> KnownWindowsPaths(string executable)
@@ -301,14 +504,6 @@ public sealed partial class FfmpegTools
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         }
         return candidates;
-    }
-
-    private static string GetOutput(ProcessResult result)
-    {
-        var output = string.IsNullOrWhiteSpace(result.Stderr) ? result.Stdout : result.Stderr;
-        if (string.IsNullOrWhiteSpace(output)) return "Подробности не предоставлены.";
-        output = output.Trim();
-        return output.Length <= 1000 ? output : output[..1000] + "…";
     }
 
     private async Task<ProcessResult> RunAsync(string executable, string[] arguments, TimeSpan timeout, CancellationToken cancellationToken)

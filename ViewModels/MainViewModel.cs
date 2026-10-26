@@ -1,13 +1,28 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using TrackExtractor.Services;
 
 namespace TrackExtractor.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
-    private readonly FfmpegTools _tools = new();
+    private readonly FfmpegTools _tools;
+    public ObservableCollection<string> Events { get; } = new();
+
+    public MainViewModel() : this(new FfmpegTools()) { }
+
+    internal MainViewModel(FfmpegTools tools)
+    {
+        _tools = tools;
+        _tools.Diagnostics.EventRecorded += entry => Dispatcher.UIThread.Post(() =>
+        {
+            Events.Add($"{entry.Time:HH:mm:ss} [{entry.Level.ToString().ToUpperInvariant()}] {entry.Message}");
+            if (Events.Count > 200) Events.RemoveAt(0);
+        });
+    }
     private bool _isBusy;
     private bool _isReady;
     private string _greeting = "Проверка FFmpeg и FFprobe…";
@@ -15,6 +30,8 @@ public class MainViewModel : ViewModelBase
     private string _ffprobeStatus = "Проверка…";
     private string _message = "";
     private string _installOption = "";
+    private string _fileSelectionMessage = "";
+    private bool _showDependencyOffer;
     private CancellationTokenSource? _operation;
     private TaskCompletionSource? _idle;
     private double _progress;
@@ -30,18 +47,24 @@ public class MainViewModel : ViewModelBase
                 if (value) _idle = new(TaskCreationOptions.RunContinuationsAsynchronously);
                 else _idle?.TrySetResult();
                 OnPropertyChanged(nameof(CanAct));
+                OnPropertyChanged(nameof(CanAutoInstall));
             }
         }
     }
 
     public bool CanAct => !IsBusy;
+    public bool CanAutoInstall => CanAct;
     public bool NeedsTools => !IsReady;
     public bool IsReady
     {
         get => _isReady;
         private set
         {
-            if (SetProperty(ref _isReady, value)) OnPropertyChanged(nameof(NeedsTools));
+            if (SetProperty(ref _isReady, value))
+            {
+                OnPropertyChanged(nameof(NeedsTools));
+                if (value) ShowDependencyOffer = false;
+            }
         }
     }
     public string Greeting { get => _greeting; private set => SetProperty(ref _greeting, value); }
@@ -49,12 +72,26 @@ public class MainViewModel : ViewModelBase
     public string FFprobeStatus { get => _ffprobeStatus; private set => SetProperty(ref _ffprobeStatus, value); }
     public string Message { get => _message; private set => SetProperty(ref _message, value); }
     public string InstallOption { get => _installOption; private set => SetProperty(ref _installOption, value); }
+    public string FileSelectionMessage { get => _fileSelectionMessage; private set => SetProperty(ref _fileSelectionMessage, value); }
+    public bool ShowDependencyOffer { get => _showDependencyOffer; private set => SetProperty(ref _showDependencyOffer, value); }
     public double Progress { get => _progress; private set => SetProperty(ref _progress, value); }
     public bool ProgressIndeterminate { get => _progressIndeterminate; private set => SetProperty(ref _progressIndeterminate, value); }
     public void CancelOperation() => _operation?.Cancel();
     public Task WaitForIdleAsync() => _idle?.Task ?? Task.CompletedTask;
 
     public void ReportError(string message) => Message = message;
+    public string DiagnosticReport() => _tools.Diagnostics.ExportReport();
+    public void SelectFile()
+    {
+        if (!IsReady)
+        {
+            FileSelectionMessage = "Для выбора файла сначала установите FFmpeg и FFprobe.";
+            ShowDependencyOffer = true;
+            return;
+        }
+        FileSelectionMessage = "Выбор и анализ медиафайлов будут добавлены на следующем этапе.";
+        ShowDependencyOffer = false;
+    }
 
     public async Task CheckAsync(CancellationToken cancellationToken)
     {
@@ -73,12 +110,18 @@ public class MainViewModel : ViewModelBase
         finally { _operation = null; IsBusy = false; }
     }
 
-    public async Task InstallAsync(CancellationToken cancellationToken)
+    public async Task InstallAsync(CancellationToken cancellationToken, bool? directDownload = null)
     {
         if (IsBusy || IsReady) return;
         if (!OperatingSystem.IsWindows())
         {
             Message = InstallOption;
+            return;
+        }
+        var useDirectDownload = directDownload ?? _tools.OfferDirectDownload;
+        if (useDirectDownload && !_tools.CanDirectDownload)
+        {
+            Message = "Прямая загрузка поддерживается только в Windows 10/11 x64.";
             return;
         }
 
@@ -97,8 +140,8 @@ public class MainViewModel : ViewModelBase
                 ProgressIndeterminate = !value.Percent.HasValue;
                 Progress = value.Percent ?? 0;
             });
-            Message = _tools.OfferDirectDownload ? "Подготовка загрузки с gyan.dev…" : "Выполняется установка через WinGet…";
-            var result = await Task.Run(() => _tools.OfferDirectDownload
+            Message = useDirectDownload ? "Подготовка загрузки с gyan.dev…" : "Выполняется установка через WinGet…";
+            var result = await Task.Run(() => useDirectDownload
                 ? _tools.DownloadWindowsAsync(progress, cancellationToken)
                 : _tools.InstallOnWindowsAsync(cancellationToken), cancellationToken);
             await RefreshAsync(cancellationToken);

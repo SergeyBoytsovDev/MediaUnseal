@@ -18,12 +18,12 @@
                      IsIndeterminate="{Binding ProgressIndeterminate}" IsVisible="{Binding IsBusy}" />
         <Button Content="Отменить" Click="Cancel_Click" IsVisible="{Binding IsBusy}" />
         <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding NeedsTools}">
-            <Button Content="Установить" Click="Install_Click" IsEnabled="{Binding CanAct}" />
+            <Button Content="Установить" Click="Install_Click" IsEnabled="{Binding CanAutoInstall}" />
             <Button Content="Указать путь FFmpeg" Click="SelectFFmpeg_Click" IsEnabled="{Binding CanAct}" />
             <Button Content="Указать путь FFprobe" Click="SelectFFprobe_Click" IsEnabled="{Binding CanAct}" />
         </StackPanel>
         <Button Content="Повторить проверку" Click="Retry_Click"
-                HorizontalAlignment="Left" IsEnabled="{Binding CanAct}" IsVisible="{Binding NeedsTools}" />
+                HorizontalAlignment="Left" IsEnabled="{Binding CanAct}" />
         <Button Content="Продолжить" Click="Continue_Click"
                 HorizontalAlignment="Left" IsEnabled="{Binding CanAct}" IsVisible="{Binding IsReady}" />
     </StackPanel>

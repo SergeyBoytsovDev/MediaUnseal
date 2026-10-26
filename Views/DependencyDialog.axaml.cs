@@ -70,7 +70,7 @@ public partial class DependencyDialog : Window
             await RunAsync(() => _viewModel.SetManualPathAsync(name, files[0].Path.LocalPath, _cancellationToken));
         }
         catch (OperationCanceledException) when (_cancellationToken.IsCancellationRequested) { }
-        catch (Exception ex) { _viewModel.ReportError($"Не удалось выбрать файл: {ex.Message}"); }
+        catch (Exception) { _viewModel.ReportError("Не удалось выбрать файл. Проверьте доступ к нему и повторите попытку."); }
     }
 
     private async Task RunAsync(Func<Task> action)
@@ -78,6 +78,6 @@ public partial class DependencyDialog : Window
         try { await action(); }
         catch (OperationCanceledException) when (_cancellationToken.IsCancellationRequested) { }
         catch (OperationCanceledException) { _viewModel.ReportError("Операция отменена. Можно повторить проверку или установку."); }
-        catch (Exception ex) { _viewModel.ReportError($"Не удалось завершить операцию: {ex.Message}"); }
+        catch (Exception) { _viewModel.ReportError("Не удалось завершить операцию. Повторите попытку или укажите пути вручную."); }
     }
 }

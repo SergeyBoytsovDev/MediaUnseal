@@ -15,8 +15,20 @@
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center" />
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="Настройки">
+                <MenuItem Header="FFmpeg и FFprobe" Click="Dependencies_Click" />
+            </MenuItem>
+        </Menu>
+        <StackPanel Margin="24" Spacing="12" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock Text="{Binding Greeting}" TextWrapping="Wrap" HorizontalAlignment="Center" />
+            <Button Content="Выбрать файл" Click="SelectFile_Click" HorizontalAlignment="Center" />
+            <TextBlock Text="{Binding FileSelectionMessage}" TextWrapping="Wrap" HorizontalAlignment="Center" />
+            <Button Content="Открыть FFmpeg и FFprobe" Click="Dependencies_Click"
+                    IsVisible="{Binding ShowDependencyOffer}" HorizontalAlignment="Center" />
+            <Button Content="Сохранить лог" Click="SaveLog_Click" HorizontalAlignment="Center" />
+        </StackPanel>
+    </DockPanel>
 
 </Window>
