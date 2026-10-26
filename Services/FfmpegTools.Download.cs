@@ -64,21 +64,18 @@ public sealed partial class FfmpegTools
                     throw new InvalidDataException("Контрольная сумма SHA-256 не совпала. Архив удалён; повторите загрузку. Файлы не были запущены.");
             }
 
-            var extracted = Path.Combine(work, "extracted");
+            // The saved paths are the activation point. Extract into a new, unreferenced directory
+            // to avoid renaming an EXE directory while Windows/antivirus is inspecting its files.
+            installed = Path.Combine(toolsRoot, "ffmpeg-" + Guid.NewGuid().ToString("N"));
             progress?.Report(new("Безопасная распаковка архива…"));
-            await ExtractAsync(archivePath, extracted, token);
-            var ffmpeg = FindDownloadedTool(extracted, "ffmpeg.exe");
-            var ffprobe = FindDownloadedTool(extracted, "ffprobe.exe");
+            await ExtractAsync(archivePath, installed, token);
+            var ffmpeg = FindDownloadedTool(installed, "ffmpeg.exe");
+            var ffprobe = FindDownloadedTool(installed, "ffprobe.exe");
             if (!string.Equals(Path.GetDirectoryName(ffmpeg), Path.GetDirectoryName(ffprobe), StringComparison.OrdinalIgnoreCase))
                 throw new InvalidDataException("Архив не содержит согласованную пару FFmpeg и FFprobe.");
             VerifyWindowsX64(ffmpeg);
             VerifyWindowsX64(ffprobe);
 
-            // Each attempt has its own directory: existing working tools are never overwritten.
-            installed = Path.Combine(toolsRoot, "ffmpeg-" + Guid.NewGuid().ToString("N"));
-            Directory.Move(extracted, installed);
-            ffmpeg = Path.Combine(installed, Path.GetRelativePath(extracted, ffmpeg));
-            ffprobe = Path.Combine(installed, Path.GetRelativePath(extracted, ffprobe));
             progress?.Report(new("Проверка установленных FFmpeg и FFprobe…"));
             var ffmpegStatus = await CheckCandidateAsync("ffmpeg", ffmpeg, token);
             var ffprobeStatus = await CheckCandidateAsync("ffprobe", ffprobe, token);
@@ -103,8 +100,8 @@ public sealed partial class FfmpegTools
         }
         finally
         {
-            DeleteInstallationDirectory(work, toolsRoot);
-            if (!committed && installed is not null) DeleteInstallationDirectory(installed, toolsRoot);
+            try { await DeleteInstallationDirectoryAsync(work, toolsRoot); }
+            finally { if (!committed && installed is not null) await DeleteInstallationDirectoryAsync(installed, toolsRoot); }
         }
     }
 
@@ -179,7 +176,8 @@ public sealed partial class FfmpegTools
             var name = entry.FullName.Replace('\\', '/');
             var segments = name.TrimEnd('/').Split('/');
             if (Path.IsPathRooted(name) || segments.Any(s => s is "" or "." or ".." || s.Contains(':') ||
-                    s.EndsWith('.') || s.EndsWith(' ') || s.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) ||
+                    s.EndsWith('.') || s.EndsWith(' ') || s.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 ||
+                    Regex.IsMatch(s, @"\A(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|\z)", RegexOptions.IgnoreCase)) ||
                 ((entry.ExternalAttributes >> 16) & 0xF000) == 0xA000 ||
                 (entry.ExternalAttributes & (int)FileAttributes.ReparsePoint) != 0)
                 throw new InvalidDataException("Небезопасный путь или ссылка внутри ZIP.");
@@ -230,12 +228,22 @@ public sealed partial class FfmpegTools
                 throw new IOException("Каталог установки содержит ссылку. Выберите пути к утилитам вручную.");
     }
 
-    private static void DeleteInstallationDirectory(string path, string root)
+    private static async Task DeleteInstallationDirectoryAsync(string path, string root)
     {
         if (!Directory.Exists(path)) return;
         if (!Path.GetFullPath(path).StartsWith(Path.GetFullPath(root) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
             throw new IOException("Небезопасный путь очистки временных файлов.");
         EnsureNoLinks(path);
-        Directory.Delete(path, recursive: true);
+        for (var attempt = 0; ; attempt++)
+        {
+            try { Directory.Delete(path, recursive: true); return; }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                if (!Directory.Exists(path)) return;
+                if (attempt == 3) throw new IOException($"Не удалось очистить каталог {path}. Закройте использующие его процессы и удалите этот каталог вручную.", ex);
+                // Cleanup must finish even when the original operation has been cancelled.
+                await Task.Delay(100 * (attempt + 1));
+            }
+        }
     }
 }

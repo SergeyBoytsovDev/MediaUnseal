@@ -111,7 +111,7 @@ public sealed partial class FfmpegTools
 
         if (OperatingSystem.IsMacOS())
             return await CheckCommandAsync("brew", cancellationToken)
-                ? "Установите FFmpeg в терминале командой: brew install ffmpeg. Затем нажмите «Повторить проверку»."
+                ? "Выполните в терминале: brew install ffmpeg. Затем нажмите «Повторить проверку». Homebrew из приложения не запускается; прямая загрузка сборок macOS не поддерживается. Альтернатива: https://ffmpeg.org/download.html и ручное указание путей."
                 : "Homebrew не найден. Установите Homebrew с https://brew.sh и выполните brew install ffmpeg либо укажите пути вручную. Автоматическая загрузка сборок macOS не поддерживается.";
 
         if (OperatingSystem.IsLinux())
@@ -135,14 +135,14 @@ public sealed partial class FfmpegTools
     {
         if (!OperatingSystem.IsWindows())
             return new(false, await GetInstallOptionAsync(cancellationToken));
-        var wingetPath = FindOnPath("winget");
-        if (wingetPath is null || !await CheckCommandAsync("winget", cancellationToken))
+        var wingetPath = await FindWorkingCommandAsync("winget", cancellationToken);
+        if (wingetPath is null)
             return WindowsFailure("WinGet недоступен.");
 
         try
         {
             var result = await RunAsync(wingetPath, ["install", "--id", "Gyan.FFmpeg", "--exact",
-                "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity"],
+                "--source", "winget", "--scope", "user", "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity"],
                 TimeSpan.FromMinutes(10), cancellationToken);
             var status = await CheckAsync(cancellationToken);
             if (status.IsReady)
@@ -235,28 +235,24 @@ public sealed partial class FfmpegTools
         }
     }
 
-    private async Task<bool> CheckCommandAsync(string name, CancellationToken cancellationToken)
-    {
-        var path = FindOnPath(name);
-        if (path is null) return false;
-        try
-        {
-            var result = await RunAsync(path, ["--version"], TimeSpan.FromSeconds(5), cancellationToken);
-            return result.ExitCode == 0;
-        }
-        catch (Exception ex) when (ex is TimeoutException or System.ComponentModel.Win32Exception or IOException or UnauthorizedAccessException)
-        {
-            return false;
-        }
-    }
+    private async Task<bool> CheckCommandAsync(string name, CancellationToken cancellationToken) =>
+        await FindWorkingCommandAsync(name, cancellationToken) is not null;
 
-    private string? FindOnPath(string name)
+    private async Task<string?> FindWorkingCommandAsync(string name, CancellationToken cancellationToken)
     {
         var executable = OperatingSystem.IsWindows() ? name + ".exe" : name;
-        var path = FindAllOnPath(executable).FirstOrDefault();
-        if (path is not null) return path;
+        var candidates = FindAllOnPath(executable).ToList();
         if (OperatingSystem.IsMacOS() && name == "brew")
-            return new[] { "/opt/homebrew/bin/brew", "/usr/local/bin/brew" }.FirstOrDefault(File.Exists);
+            candidates.AddRange(new[] { "/opt/homebrew/bin/brew", "/usr/local/bin/brew" }.Where(File.Exists));
+        foreach (var path in candidates.Distinct(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal))
+        {
+            try
+            {
+                var result = await RunAsync(path, ["--version"], TimeSpan.FromSeconds(5), cancellationToken);
+                if (result.ExitCode == 0) return path;
+            }
+            catch (Exception ex) when (ex is TimeoutException or System.ComponentModel.Win32Exception or IOException or UnauthorizedAccessException) { }
+        }
         return null;
     }
 
@@ -271,16 +267,40 @@ public sealed partial class FfmpegTools
             foreach (var directory in (path ?? "").Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
                 string candidate;
-                try { candidate = Path.Combine(directory.Trim('"'), executable); }
+                try { candidate = Path.Combine(OperatingSystem.IsWindows() ? Environment.ExpandEnvironmentVariables(directory.Trim('"')) : directory, executable); }
                 catch (ArgumentException) { continue; }
                 if (File.Exists(candidate)) yield return candidate;
             }
         if (OperatingSystem.IsWindows() && _searchPathOverride is null)
+            foreach (var candidate in KnownWindowsPaths(executable))
+                if (File.Exists(candidate)) yield return candidate;
+    }
+
+    private static IEnumerable<string> KnownWindowsPaths(string executable)
+    {
+        var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var roots = new[] { Path.Combine(local, "Microsoft", "WinGet"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WinGet") };
+        var candidates = new List<string>();
+        if (executable == "winget.exe") candidates.Add(Path.Combine(local, "Microsoft", "WindowsApps", executable));
+        foreach (var root in roots)
         {
-            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var link = Path.Combine(localAppData, "Microsoft", "WinGet", "Links", executable);
-            if (File.Exists(link)) yield return link;
+            candidates.Add(Path.Combine(root, "Links", executable));
+            if (executable is not ("ffmpeg.exe" or "ffprobe.exe")) continue;
+            try
+            {
+                var packages = Path.Combine(root, "Packages");
+                if (!Directory.Exists(packages)) continue;
+                foreach (var package in Directory.EnumerateDirectories(packages, "Gyan.FFmpeg_*"))
+                {
+                    candidates.Add(Path.Combine(package, "bin", executable));
+                    foreach (var build in Directory.EnumerateDirectories(package, "ffmpeg*"))
+                        candidates.Add(Path.Combine(build, "bin", executable));
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         }
+        return candidates;
     }
 
     private static string GetOutput(ProcessResult result)

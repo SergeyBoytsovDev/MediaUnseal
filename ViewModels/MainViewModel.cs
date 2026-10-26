@@ -102,7 +102,9 @@ public class MainViewModel : ViewModelBase
                 ? _tools.DownloadWindowsAsync(progress, cancellationToken)
                 : _tools.InstallOnWindowsAsync(cancellationToken), cancellationToken);
             await RefreshAsync(cancellationToken);
-            Message = result.Message;
+            Message = result.Success && !IsReady
+                ? "Повторная проверка не подтвердила готовность обеих утилит. Повторите проверку или укажите пути вручную."
+                : result.Message;
             if (!IsReady && _tools.OfferDirectDownload) InstallOption = result.Message;
         }
         finally { _operation = null; IsBusy = false; }

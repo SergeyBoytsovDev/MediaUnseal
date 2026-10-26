@@ -78,6 +78,6 @@ public partial class DependencyDialog : Window
         try { await action(); }
         catch (OperationCanceledException) when (_cancellationToken.IsCancellationRequested) { }
         catch (OperationCanceledException) { _viewModel.ReportError("Операция отменена. Можно повторить проверку или установку."); }
-        catch (Exception ex) { _viewModel.ReportError($"Ошибка проверки: {ex.Message}"); }
+        catch (Exception ex) { _viewModel.ReportError($"Не удалось завершить операцию: {ex.Message}"); }
     }
 }
