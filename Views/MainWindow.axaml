@@ -32,13 +32,26 @@
                 <TextBlock Text="{Binding AnalysisStatus}" FontWeight="SemiBold" />
                 <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsAnalyzing}" />
                 <TextBlock Text="{Binding MediaSummary}" TextWrapping="Wrap" />
-                <ItemsControl ItemsSource="{Binding StreamSummaries}">
+                <ItemsControl ItemsSource="{Binding ExportTracks}">
                     <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="x:String">
-                            <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2" />
+                        <DataTemplate x:DataType="vm:ExportTrackViewModel">
+                            <StackPanel Margin="0,3" Spacing="2">
+                                <CheckBox Content="{Binding Caption}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                          IsEnabled="{Binding CanSelect}" />
+                                <TextBlock Text="{Binding Status}" TextWrapping="Wrap" Margin="24,0,0,0" />
+                            </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Выбрать папку" Click="ChooseFolder_Click" />
+                    <Button Content="Извлечь" Click="Extract_Click" IsEnabled="{Binding CanExtract}" />
+                    <Button Content="Остановить" Click="Stop_Click" IsVisible="{Binding IsExporting}" />
+                </StackPanel>
+                <TextBlock Text="{Binding OutputDirectory}" TextWrapping="Wrap" />
+                <ProgressBar Minimum="0" Maximum="100" Value="{Binding ExportProgress}"
+                             IsIndeterminate="{Binding ExportProgressIndeterminate}" />
+                <TextBlock Text="{Binding ExportStatus}" TextWrapping="Wrap" />
                 <Button Content="Сохранить лог" Click="SaveLog_Click" HorizontalAlignment="Left" />
             </StackPanel>
         </ScrollViewer>

@@ -30,12 +30,14 @@ public partial class MainWindow : Window
 
     private async void MainWindow_Closing(object? sender, WindowClosingEventArgs e)
     {
-        if (DataContext is not MainViewModel viewModel || (!viewModel.IsBusy && !viewModel.HasActiveAnalyses)) return;
+        if (DataContext is not MainViewModel viewModel ||
+            (!viewModel.IsBusy && !viewModel.HasActiveAnalyses && !viewModel.IsExporting)) return;
         e.Cancel = true;
         _shutdown.Cancel();
         viewModel.CancelOperation();
         viewModel.CancelAnalysis();
-        await Task.WhenAll(viewModel.WaitForIdleAsync(), viewModel.WaitForAnalysesAsync());
+        viewModel.CancelExport();
+        await Task.WhenAll(viewModel.WaitForIdleAsync(), viewModel.WaitForAnalysesAsync(), viewModel.WaitForExportAsync());
         Close();
     }
 
@@ -113,6 +115,41 @@ public partial class MainWindow : Window
         if (DataContext is not MainViewModel viewModel) return;
         if (!uri.IsFile) { viewModel.ReportFileError("Выберите локальный файл."); return; }
         await viewModel.AnalyzeFileAsync(uri.LocalPath, _shutdown.Token);
+    }
+
+    private async void ChooseFolder_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel viewModel || viewModel.IsExporting) return;
+        try
+        {
+            var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                Title = "Выберите папку сохранения", AllowMultiple = false
+            });
+            if (folders.Count == 1)
+            {
+                var path = folders[0].TryGetLocalPath();
+                if (string.IsNullOrWhiteSpace(path) && folders[0].Path.IsFile)
+                    path = folders[0].Path.LocalPath;
+                if (!string.IsNullOrWhiteSpace(path)) viewModel.SetOutputDirectory(path);
+                else viewModel.ReportExportError("Выберите локальную папку сохранения.");
+            }
+        }
+        catch (Exception)
+        {
+            if (!_shutdown.IsCancellationRequested)
+                viewModel.ReportExportError("Не удалось выбрать папку. Проверьте доступ к ней.");
+        }
+    }
+
+    private async void Extract_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel viewModel) await viewModel.StartExportAsync(_shutdown.Token);
+    }
+
+    private void Stop_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel viewModel) viewModel.CancelExport();
     }
 
     private async void SaveLog_Click(object? sender, RoutedEventArgs e)

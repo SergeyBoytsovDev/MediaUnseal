@@ -70,6 +70,7 @@ public sealed class DiagnosticLog
 
     internal static string RedactPersonalPaths(string text)
     {
+        text = Regex.Replace(text, @"(?im)(Путь результата:\s*)[^\r\n]+", "$1[скрыт]");
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (!string.IsNullOrWhiteSpace(home))
             text = text.Replace(home, "[домашний каталог]", StringComparison.OrdinalIgnoreCase)
