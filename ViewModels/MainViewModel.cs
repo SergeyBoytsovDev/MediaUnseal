@@ -18,6 +18,8 @@ namespace TrackExtractor.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
+    private enum DependencyState { Checking, Ready, Missing, Error }
+
     private readonly FfmpegTools _tools;
     private readonly MediaAnalyzer _analyzer;
     private readonly TrackExporter _exporter;
@@ -50,6 +52,13 @@ public class MainViewModel : ViewModelBase
     private string _greeting = "Проверка FFmpeg и FFprobe…";
     private string _ffmpegStatus = "Проверка…";
     private string _ffprobeStatus = "Проверка…";
+    private string _ffmpegBriefStatus = "Проверяется…";
+    private string _ffprobeBriefStatus = "Проверяется…";
+    private string _knownBuildSource = "";
+    private DependencyState _ffmpegState;
+    private DependencyState _ffprobeState;
+    private bool _installFailed;
+    private string _fallbackNotice = "";
     private string _message = "";
     private string _installOption = "";
     private string _fileSelectionMessage = "";
@@ -95,6 +104,11 @@ public class MainViewModel : ViewModelBase
                 OnPropertyChanged(nameof(CanExtract));
                 OnPropertyChanged(nameof(CanChooseFile));
                 OnPropertyChanged(nameof(FooterStatus));
+                OnPropertyChanged(nameof(ProgressPercentDisplay));
+                OnPropertyChanged(nameof(ProgressKnown));
+                OnPropertyChanged(nameof(ProgressBarIndeterminate));
+                OnPropertyChanged(nameof(InstallerNotice));
+                OnPropertyChanged(nameof(HasInstallerNotice));
             }
         }
     }
@@ -113,6 +127,8 @@ public class MainViewModel : ViewModelBase
                 OnPropertyChanged(nameof(CanExtract));
                 OnPropertyChanged(nameof(CanChooseFile));
                 OnPropertyChanged(nameof(FooterStatus));
+                OnPropertyChanged(nameof(InstallerNotice));
+                OnPropertyChanged(nameof(HasInstallerNotice));
                 if (value) ShowDependencyOffer = false;
             }
         }
@@ -120,8 +136,48 @@ public class MainViewModel : ViewModelBase
     public string Greeting { get => _greeting; private set => SetProperty(ref _greeting, value); }
     public string FFmpegStatus { get => _ffmpegStatus; private set => SetProperty(ref _ffmpegStatus, value); }
     public string FFprobeStatus { get => _ffprobeStatus; private set => SetProperty(ref _ffprobeStatus, value); }
-    public string Message { get => _message; private set => SetProperty(ref _message, value); }
-    public string InstallOption { get => _installOption; private set => SetProperty(ref _installOption, value); }
+    public string FFmpegBriefStatus { get => _ffmpegBriefStatus; private set => SetProperty(ref _ffmpegBriefStatus, value); }
+    public string FFprobeBriefStatus { get => _ffprobeBriefStatus; private set => SetProperty(ref _ffprobeBriefStatus, value); }
+    public string KnownBuildSource { get => _knownBuildSource; private set { if (SetProperty(ref _knownBuildSource, value)) OnPropertyChanged(nameof(HasKnownBuildSource)); } }
+    public bool HasKnownBuildSource => !string.IsNullOrEmpty(KnownBuildSource);
+    public bool FFmpegReady => _ffmpegState == DependencyState.Ready;
+    public bool FFmpegMissing => _ffmpegState == DependencyState.Missing;
+    public bool FFmpegError => _ffmpegState == DependencyState.Error;
+    public bool FFprobeReady => _ffprobeState == DependencyState.Ready;
+    public bool FFprobeMissing => _ffprobeState == DependencyState.Missing;
+    public bool FFprobeError => _ffprobeState == DependencyState.Error;
+    public bool InstallFailed { get => _installFailed; private set { if (SetProperty(ref _installFailed, value)) OnPropertyChanged(nameof(InstallButtonText)); } }
+    public string InstallButtonText => InstallFailed ? "Повторить установку" : OperatingSystem.IsWindows() ? "Установить компоненты" : "Способ установки";
+    public string FallbackNotice { get => _fallbackNotice; private set { if (SetProperty(ref _fallbackNotice, value)) { OnPropertyChanged(nameof(HasFallbackNotice)); OnPropertyChanged(nameof(InstallerNotice)); } } }
+    public bool HasFallbackNotice => !string.IsNullOrEmpty(FallbackNotice);
+    public string Message { get => _message; private set { if (SetProperty(ref _message, value)) { OnPropertyChanged(nameof(InstallerNotice)); OnPropertyChanged(nameof(HasInstallerNotice)); } } }
+    private string InstallerMessage => IsReady && Message == "Обе утилиты готовы." ? ""
+        : Message.StartsWith("Файл не найден:", StringComparison.OrdinalIgnoreCase)
+            ? "Файл не найден. Укажите существующий исполняемый файл."
+        : (FFmpegError || FFprobeError) && Message == "Установите недостающие утилиты или укажите их пути."
+            ? "Проверка утилиты завершилась ошибкой. Повторите проверку или укажите другой путь."
+        : Message;
+    public string InstallerNotice
+    {
+        get
+        {
+            if (IsReady || HasFallbackNotice) return InstallerMessage;
+            var method = OperatingSystem.IsWindows() ? _tools.WinGetAvailable switch
+            {
+                true when _tools.NetworkCheckFailed => "WinGet доступен, но источники установки не ответили.",
+                true when _tools.OfferDirectDownload => "WinGet доступен, но источник не ответил. Резерв — gyan.dev.",
+                true => "WinGet доступен.",
+                false when !_tools.CanDirectDownload => "WinGet недоступен. Укажите пути вручную.",
+                false when _tools.NetworkCheckFailed => "WinGet недоступен. Источник gyan.dev не ответил.",
+                false => "WinGet недоступен. Резервная установка через gyan.dev.",
+                null => ""
+            } : InstallOption;
+            return string.IsNullOrWhiteSpace(method) ? InstallerMessage
+                : string.IsNullOrWhiteSpace(InstallerMessage) ? method : $"{InstallerMessage} {method}";
+        }
+    }
+    public bool HasInstallerNotice => !string.IsNullOrWhiteSpace(InstallerNotice);
+    public string InstallOption { get => _installOption; private set { if (SetProperty(ref _installOption, value)) { OnPropertyChanged(nameof(InstallerNotice)); OnPropertyChanged(nameof(HasInstallerNotice)); } } }
     public string FileSelectionMessage
     {
         get => _fileSelectionMessage;
@@ -187,7 +243,7 @@ public class MainViewModel : ViewModelBase
     }
     public bool CanExtract => IsReady && !IsBusy && !IsAnalyzing && !IsExporting
         && SelectedMedia is not null && OutputDirectory is not null && ExportTracks.Any(t => t.IsSelected && t.IsSupported);
-    public bool CanChooseFile => IsReady && !IsBusy && !IsExporting;
+    public bool CanChooseFile => !IsBusy && !IsExporting;
     public bool CanClearFile => (HasMedia || IsAnalyzing) && !IsExporting;
     public bool HasSourceOrAnalysis => HasMedia || IsAnalyzing;
     public bool CanChooseFolder => !IsExporting;
@@ -260,8 +316,11 @@ public class MainViewModel : ViewModelBase
     public string ExportStatus { get => _exportStatus; private set => SetProperty(ref _exportStatus, value); }
     public double ExportProgress { get => _exportProgress; private set => SetProperty(ref _exportProgress, value); }
     public bool ExportProgressIndeterminate { get => _exportProgressIndeterminate; private set => SetProperty(ref _exportProgressIndeterminate, value); }
-    public double Progress { get => _progress; private set => SetProperty(ref _progress, value); }
-    public bool ProgressIndeterminate { get => _progressIndeterminate; private set => SetProperty(ref _progressIndeterminate, value); }
+    public double Progress { get => _progress; private set { if (SetProperty(ref _progress, value)) OnPropertyChanged(nameof(ProgressPercentDisplay)); } }
+    public bool ProgressIndeterminate { get => _progressIndeterminate; private set { if (SetProperty(ref _progressIndeterminate, value)) { OnPropertyChanged(nameof(ProgressPercentDisplay)); OnPropertyChanged(nameof(ProgressKnown)); OnPropertyChanged(nameof(ProgressBarIndeterminate)); } } }
+    public string ProgressPercentDisplay => IsBusy && !ProgressIndeterminate ? $"{Progress:0}%" : "";
+    public bool ProgressKnown => IsBusy && !ProgressIndeterminate;
+    public bool ProgressBarIndeterminate => IsBusy && ProgressIndeterminate;
     public void CancelOperation() => _operation?.Cancel();
     public void CancelAnalysis() { _analysisOperation?.Cancel(); _previewOperation?.Cancel(); }
     public void CancelExport() => _exportOperation?.Cancel();
@@ -654,12 +713,23 @@ public class MainViewModel : ViewModelBase
         _operation = operation;
         cancellationToken = operation.Token;
         ProgressIndeterminate = true;
+        Progress = 0;
         IsBusy = true;
         try
         {
-            await RefreshAsync(cancellationToken);
+            try { await RefreshAsync(cancellationToken); }
+            catch (OperationCanceledException) { throw; }
+            catch
+            {
+                IsReady = false;
+                KnownBuildSource = "";
+                SetDependencyStatus(new ToolStatus("ffmpeg", false, "Ошибка проверки."), ffmpeg: true);
+                SetDependencyStatus(new ToolStatus("ffprobe", false, "Ошибка проверки."), ffmpeg: false);
+                throw;
+            }
             if (!IsReady)
                 InstallOption = await Task.Run(() => _tools.GetInstallOptionAsync(cancellationToken), cancellationToken);
+            FallbackNotice = "";
         }
         finally { _operation = null; IsBusy = false; }
     }
@@ -669,7 +739,7 @@ public class MainViewModel : ViewModelBase
         if (IsBusy || IsReady) return;
         if (!OperatingSystem.IsWindows())
         {
-            Message = InstallOption;
+            Message = "Автоматическая установка здесь недоступна. Используйте указанную команду или задайте пути вручную.";
             return;
         }
         var useDirectDownload = directDownload ?? _tools.OfferDirectDownload;
@@ -682,29 +752,54 @@ public class MainViewModel : ViewModelBase
         using var operation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _operation = operation;
         cancellationToken = operation.Token;
+        InstallFailed = false;
+        FallbackNotice = "";
         ProgressIndeterminate = true;
         Progress = 0;
         IsBusy = true;
+        var acceptProgress = true;
         try
         {
             var progress = new Progress<InstallProgress>(value =>
             {
-                if (_operation != operation || operation.IsCancellationRequested) return;
+                if (!acceptProgress || _operation != operation || operation.IsCancellationRequested) return;
                 Message = value.Message;
                 ProgressIndeterminate = !value.Percent.HasValue;
                 Progress = value.Percent ?? 0;
             });
             Message = useDirectDownload ? "Подготовка загрузки с gyan.dev…" : "Выполняется установка через WinGet…";
-            var result = await Task.Run(() => useDirectDownload
-                ? _tools.DownloadWindowsAsync(progress, cancellationToken)
-                : _tools.InstallOnWindowsAsync(cancellationToken), cancellationToken);
-            await RefreshAsync(cancellationToken);
+            var result = useDirectDownload
+                ? await Task.Run(() => _tools.DownloadWindowsAsync(progress, cancellationToken), cancellationToken)
+                : await Task.Run(() => _tools.InstallOnWindowsAsync(cancellationToken), cancellationToken);
+            if (!result.Success && !useDirectDownload && _tools.OfferDirectDownload && _tools.CanDirectDownload)
+            {
+                FallbackNotice = result.Message.StartsWith("WinGet недоступен", StringComparison.OrdinalIgnoreCase)
+                    ? "WinGet недоступен. Используется прямая загрузка FFmpeg."
+                    : "Установка через WinGet не завершилась. Используется прямая загрузка FFmpeg.";
+                InstallOption = "Прямая загрузка с gyan.dev выполняется в пользовательский каталог. PATH не изменяется.";
+                Message = "Подготовка загрузки с gyan.dev…";
+                result = await Task.Run(() => _tools.DownloadWindowsAsync(progress, cancellationToken), cancellationToken);
+            }
+            acceptProgress = false;
+            await RefreshAsync(cancellationToken, "Проверка компонентов после установки…");
+            if (!IsReady)
+                InstallOption = await Task.Run(() => _tools.GetInstallOptionAsync(cancellationToken), cancellationToken);
             Message = result.Success && !IsReady
                 ? "Повторная проверка не подтвердила готовность обеих утилит. Повторите проверку или укажите пути вручную."
                 : result.Message;
-            if (!IsReady && _tools.OfferDirectDownload) InstallOption = result.Message;
+            InstallFailed = !IsReady;
         }
-        finally { _operation = null; IsBusy = false; }
+        catch (OperationCanceledException)
+        {
+            Message = "Установка отменена. Можно повторить попытку.";
+            throw;
+        }
+        catch
+        {
+            InstallFailed = true;
+            throw;
+        }
+        finally { acceptProgress = false; _operation = null; IsBusy = false; }
     }
 
     public async Task SetManualPathAsync(string name, string path, CancellationToken cancellationToken)
@@ -720,6 +815,10 @@ public class MainViewModel : ViewModelBase
             var error = await Task.Run(() => _tools.SetManualPathAsync(name, path, cancellationToken), cancellationToken);
             if (error is not null)
             {
+                if (name == "ffmpeg" && !FFmpegReady)
+                    SetDependencyStatus(new ToolStatus(name, false, error), ffmpeg: true);
+                if (name == "ffprobe" && !FFprobeReady)
+                    SetDependencyStatus(new ToolStatus(name, false, error), ffmpeg: false);
                 Message = error;
                 return;
             }
@@ -728,22 +827,65 @@ public class MainViewModel : ViewModelBase
         finally { _operation = null; IsBusy = false; }
     }
 
-    private async Task RefreshAsync(CancellationToken cancellationToken)
+    private async Task RefreshAsync(CancellationToken cancellationToken, string? stage = null)
     {
-        Message = "Проверка утилит…";
-        IsReady = false;
+        if (stage is not null || string.IsNullOrWhiteSpace(Message))
+            Message = stage ?? "Проверка утилит…";
         var status = await Task.Run(() => _tools.CheckAsync(cancellationToken), cancellationToken);
         FFmpegStatus = Format(status.FFmpeg);
         FFprobeStatus = Format(status.FFprobe);
+        SetDependencyStatus(status.FFmpeg, ffmpeg: true);
+        SetDependencyStatus(status.FFprobe, ffmpeg: false);
+        var ffmpegFromGyan = status.FFmpeg.IsReady && status.FFmpeg.Details.Contains("gyan.dev", StringComparison.OrdinalIgnoreCase);
+        var ffprobeFromGyan = status.FFprobe.IsReady && status.FFprobe.Details.Contains("gyan.dev", StringComparison.OrdinalIgnoreCase);
+        KnownBuildSource = (ffmpegFromGyan, ffprobeFromGyan) switch
+        {
+            (true, true) => "Источник сборок FFmpeg и FFprobe: gyan.dev",
+            (true, false) => "Источник сборки FFmpeg: gyan.dev",
+            (false, true) => "Источник сборки FFprobe: gyan.dev",
+            _ => ""
+        };
         IsReady = status.IsReady;
         _ffmpegPath = status.IsReady ? status.FFmpeg.Path : null;
         _ffprobePath = status.IsReady ? status.FFprobe.Path : null;
         if (!status.IsReady) { CancelAnalysis(); CancelExport(); }
-        if (IsReady) InstallOption = "";
+        if (IsReady) { InstallOption = ""; InstallFailed = false; }
         Greeting = IsReady
             ? $"Готово. FFmpeg {Version(status.FFmpeg)}, FFprobe {Version(status.FFprobe)}."
             : "FFmpeg и FFprobe требуются для работы с медиафайлами.";
         Message = _tools.SettingsError ?? (IsReady ? "Обе утилиты готовы." : "Установите недостающие утилиты или укажите их пути.");
+    }
+
+    private void SetDependencyStatus(ToolStatus? status, bool ffmpeg)
+    {
+        var state = status is null ? DependencyState.Checking : status.IsReady ? DependencyState.Ready
+            : status.Details.StartsWith("Файл не найден", StringComparison.OrdinalIgnoreCase)
+                ? DependencyState.Missing : DependencyState.Error;
+        var summary = state switch
+        {
+            DependencyState.Ready => $"Найден · {Version(status!)}",
+            DependencyState.Missing => "Не найден",
+            DependencyState.Error => "Ошибка",
+            _ => "Проверяется…"
+        };
+        if (ffmpeg)
+        {
+            _ffmpegState = state;
+            FFmpegBriefStatus = summary;
+            OnPropertyChanged(nameof(FFmpegReady));
+            OnPropertyChanged(nameof(FFmpegMissing));
+            OnPropertyChanged(nameof(FFmpegError));
+        }
+        else
+        {
+            _ffprobeState = state;
+            FFprobeBriefStatus = summary;
+            OnPropertyChanged(nameof(FFprobeReady));
+            OnPropertyChanged(nameof(FFprobeMissing));
+            OnPropertyChanged(nameof(FFprobeError));
+        }
+        OnPropertyChanged(nameof(InstallerNotice));
+        OnPropertyChanged(nameof(HasInstallerNotice));
     }
 
     private static string Format(ToolStatus status) =>

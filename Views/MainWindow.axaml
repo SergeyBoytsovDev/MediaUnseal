@@ -59,16 +59,6 @@
     <StackPanel Grid.Column="2" Orientation="Horizontal">
      <Button x:Name="SettingsButton" Classes="chrome" Width="46" Height="43" ToolTip.Tip="Настройки" Click="Settings_Click">
       <TextBlock Text="⚙" FontSize="19" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransform="translate(0px, -2px)"/>
-      <Button.ContextMenu>
-       <ContextMenu Placement="BottomEdgeAlignedRight">
-        <MenuItem Header="Проверка и установка FFmpeg/FFprobe" Click="Dependencies_Click"/>
-        <MenuItem Header="Тема оформления" Click="ThemeSettings_Click"/>
-        <MenuItem Header="Язык интерфейса (позже)" IsEnabled="False"/>
-        <MenuItem Header="Справочник форматов (позже)" IsEnabled="False"/>
-        <Separator/>
-        <MenuItem Header="О программе" Click="About_Click"/>
-       </ContextMenu>
-      </Button.ContextMenu>
      </Button>
      <Border Width="1" Height="22" Margin="12,0" Background="{DynamicResource LineBrush}" VerticalAlignment="Center"/>
      <Button Classes="chrome" Width="46" Height="43" Click="Minimize_Click" ToolTip.Tip="Свернуть">

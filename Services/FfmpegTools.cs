@@ -34,6 +34,7 @@ public sealed partial class FfmpegTools
     internal Func<Uri, CancellationToken, Task<bool>>? ProbeRunner { get; init; }
     internal Func<bool>? NetworkAvailable { get; init; }
     public bool OfferDirectDownload { get; private set; }
+    public bool? WinGetAvailable { get; private set; }
     public bool NetworkCheckFailed { get; private set; }
     public event Action<string>? EventLogged;
     public DiagnosticLog Diagnostics { get; }
@@ -208,18 +209,19 @@ public sealed partial class FfmpegTools
         if (OperatingSystem.IsWindows())
         {
             var winget = await CheckCommandAsync("winget", cancellationToken);
+            WinGetAvailable = winget;
             NetworkCheckFailed = false;
             if (winget && await ProbeAsync(new Uri("https://cdn.winget.microsoft.com/cache"), cancellationToken))
             {
                 OfferDirectDownload = false;
-                return "Доступен WinGet. Нажмите «Установить», чтобы установить Gyan.FFmpeg.";
+                return "Доступен WinGet для установки пакета Gyan.FFmpeg.";
             }
             if (CanDirectDownload && await ProbeAsync(new Uri("https://www.gyan.dev/ffmpeg/builds/"), cancellationToken))
             {
                 OfferDirectDownload = true;
                 return winget
-                    ? "Источник WinGet не ответил. Нажмите «Установить» для резервной загрузки с gyan.dev."
-                    : "WinGet недоступен. Нажмите «Установить» для резервной загрузки с gyan.dev.";
+                    ? "Источник WinGet не ответил. Доступна резервная загрузка с gyan.dev."
+                    : "WinGet недоступен. Доступна резервная загрузка с gyan.dev.";
             }
             OfferDirectDownload = !winget && CanDirectDownload;
             NetworkCheckFailed = true;
@@ -229,7 +231,7 @@ public sealed partial class FfmpegTools
 
         if (OperatingSystem.IsMacOS())
             return await CheckCommandAsync("brew", cancellationToken)
-                ? "Выполните в терминале: brew install ffmpeg. Затем нажмите «Повторить проверку». Homebrew из приложения не запускается; прямая загрузка сборок macOS не поддерживается. Альтернатива: https://ffmpeg.org/download.html и ручное указание путей."
+                ? "Выполните в терминале: brew install ffmpeg. Затем нажмите «Проверить повторно». Homebrew из приложения не запускается; прямая загрузка сборок macOS не поддерживается. Альтернатива: https://ffmpeg.org/download.html и ручное указание путей."
                 : "Homebrew не найден. Установите Homebrew с https://brew.sh и выполните brew install ffmpeg либо укажите пути вручную. Автоматическая загрузка сборок macOS не поддерживается.";
 
         if (OperatingSystem.IsLinux())
@@ -242,11 +244,11 @@ public sealed partial class FfmpegTools
                 ("zypper", "sudo zypper install ffmpeg")
             })
                 if (await CheckCommandAsync(manager, cancellationToken))
-                    return $"Выполните в терминале: {command}. Наличие пакета зависит от репозиториев дистрибутива. Затем нажмите «Повторить проверку». Если пакет недоступен, см. https://ffmpeg.org/download.html или укажите пути вручную. Универсальная прямая загрузка для Linux не поддерживается.";
+                    return $"Выполните в терминале: {command}. Наличие пакета зависит от репозиториев дистрибутива. Затем нажмите «Проверить повторно». Если пакет недоступен, см. https://ffmpeg.org/download.html или укажите пути вручную. Универсальная прямая загрузка для Linux не поддерживается.";
             return "Поддерживаемый пакетный менеджер не найден. Выберите пакет для своего дистрибутива и архитектуры на https://ffmpeg.org/download.html и укажите пути вручную. Универсальная прямая загрузка для Linux не поддерживается.";
         }
 
-        return "Установите FFmpeg вручную и нажмите «Повторить проверку».";
+        return "Установите FFmpeg вручную и нажмите «Проверить повторно».";
     }
 
     public async Task<InstallResult> InstallOnWindowsAsync(CancellationToken cancellationToken)
@@ -257,6 +259,7 @@ public sealed partial class FfmpegTools
             return new(true, "FFmpeg и FFprobe уже найдены и готовы. Повторная установка не требуется.");
         var priorPaths = _savedPaths;
         var wingetPath = await FindWorkingCommandAsync("winget", cancellationToken);
+        WinGetAvailable = wingetPath is not null;
         if (wingetPath is null)
             return WindowsFailure("WinGet недоступен.");
 
@@ -344,7 +347,7 @@ public sealed partial class FfmpegTools
     }
 
     private string DirectDownloadAdvice(string message) => message + (CanDirectDownload
-        ? " Нажмите «Установить» для резервной загрузки с gyan.dev в пользовательский каталог. PATH не изменится."
+        ? " Доступна резервная загрузка с gyan.dev в пользовательский каталог. PATH не изменится."
         : " Прямая загрузка поддерживается только для Windows 10/11 x64. Для этой архитектуры укажите совместимые утилиты вручную: https://ffmpeg.org/download.html.");
 
     private async Task SavePathsAsync(ToolPaths paths, CancellationToken cancellationToken)

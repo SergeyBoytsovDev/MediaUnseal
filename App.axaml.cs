@@ -20,9 +20,11 @@ public partial class App : Application
         Appearance.Apply();
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var viewModel = new MainViewModel();
+            viewModel.SetOutputDirectory(Appearance.Preferences.OutputDirectory!);
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainViewModel(),
+                DataContext = viewModel,
             };
         }
 

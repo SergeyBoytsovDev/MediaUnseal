@@ -1,0 +1,83 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TrackExtractor.ViewModels"
+             x:Class="TrackExtractor.Views.DependencyPanel"
+             x:DataType="vm:MainViewModel">
+ <UserControl.Styles>
+  <Style Selector="TextBlock.muted"><Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/></Style>
+  <Style Selector="TextBlock.tool-status"><Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/></Style>
+  <Style Selector="TextBlock.tool-status.ready"><Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/></Style>
+  <Style Selector="TextBlock.tool-status.missing"><Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/></Style>
+  <Style Selector="TextBlock.tool-status.error"><Setter Property="Foreground" Value="{DynamicResource ErrorBrush}"/></Style>
+  <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{DynamicResource ErrorBrush}"/></Style>
+  <Style Selector="Button.primary"><Setter Property="Background" Value="{DynamicResource AccentBrush}"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
+ </UserControl.Styles>
+ <StackPanel Spacing="15">
+  <TextBlock Text="Для работы с медиафайлами необходимы FFmpeg и FFprobe" Classes="muted" TextWrapping="Wrap"/>
+  <StackPanel Spacing="8">
+   <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="{DynamicResource ControlCorner}" Padding="12,10">
+    <Grid ColumnDefinitions="22,*,Auto" ColumnSpacing="9">
+     <TextBlock Text="●" Grid.Column="0" FontSize="16" VerticalAlignment="Center" Classes="tool-status" Classes.ready="{Binding FFmpegReady}" Classes.missing="{Binding FFmpegMissing}" Classes.error="{Binding FFmpegError}"/>
+     <StackPanel Grid.Column="1" Spacing="2">
+      <TextBlock Text="FFmpeg" FontWeight="SemiBold"/>
+      <TextBlock Text="Обработка медиапотоков" Classes="muted" FontSize="12"/>
+     </StackPanel>
+     <TextBlock Grid.Column="2" Text="{Binding FFmpegBriefStatus}" VerticalAlignment="Center" TextAlignment="Right" MaxWidth="170" TextTrimming="CharacterEllipsis" Classes="tool-status" Classes.ready="{Binding FFmpegReady}" Classes.missing="{Binding FFmpegMissing}" Classes.error="{Binding FFmpegError}"/>
+    </Grid>
+   </Border>
+   <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="{DynamicResource ControlCorner}" Padding="12,10">
+    <Grid ColumnDefinitions="22,*,Auto" ColumnSpacing="9">
+     <TextBlock Text="●" Grid.Column="0" FontSize="16" VerticalAlignment="Center" Classes="tool-status" Classes.ready="{Binding FFprobeReady}" Classes.missing="{Binding FFprobeMissing}" Classes.error="{Binding FFprobeError}"/>
+     <StackPanel Grid.Column="1" Spacing="2">
+      <TextBlock Text="FFprobe" FontWeight="SemiBold"/>
+      <TextBlock Text="Анализ медиафайлов" Classes="muted" FontSize="12"/>
+     </StackPanel>
+     <TextBlock Grid.Column="2" Text="{Binding FFprobeBriefStatus}" VerticalAlignment="Center" TextAlignment="Right" MaxWidth="170" TextTrimming="CharacterEllipsis" Classes="tool-status" Classes.ready="{Binding FFprobeReady}" Classes.missing="{Binding FFprobeMissing}" Classes.error="{Binding FFprobeError}"/>
+    </Grid>
+   </Border>
+  </StackPanel>
+  <StackPanel Spacing="5">
+   <TextBlock Text="Все компоненты готовы" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" IsVisible="{Binding IsReady}"/>
+   <TextBlock Text="{Binding FallbackNotice}" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap" IsVisible="{Binding HasFallbackNotice}"/>
+   <TextBlock Text="{Binding InstallerNotice}" TextWrapping="Wrap" IsVisible="{Binding HasInstallerNotice}" Classes.error="{Binding InstallFailed}"/>
+   <Grid Height="30" ColumnDefinitions="*,Auto,88" ColumnSpacing="8">
+    <ProgressBar Grid.Column="0" Minimum="0" Maximum="100" Value="{Binding Progress}" IsIndeterminate="{Binding ProgressBarIndeterminate}" Height="7" VerticalAlignment="Center"/>
+    <TextBlock Grid.Column="1" Text="{Binding ProgressPercentDisplay}" IsVisible="{Binding ProgressKnown}" VerticalAlignment="Center"/>
+    <Button Grid.Column="2" Content="Отменить" Click="Cancel_Click" IsVisible="{Binding IsBusy}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+   </Grid>
+  </StackPanel>
+  <StackPanel Spacing="8">
+   <Grid ColumnDefinitions="222,222" ColumnSpacing="8">
+    <Button Grid.Column="0" Classes="primary" Click="Install_Click" IsEnabled="{Binding CanAutoInstall}" IsVisible="{Binding NeedsTools}" Width="222" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+     <StackPanel Orientation="Horizontal" Spacing="6">
+      <Path Data="M 12,2 L 12,16 M 7,11 L 12,16 L 17,11 M 3,18 L 3,22 L 21,22 L 21,18" Stroke="White" StrokeThickness="2" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center"/>
+      <TextBlock Text="{Binding InstallButtonText}" VerticalAlignment="Center" FontWeight="SemiBold" TextWrapping="NoWrap"/>
+     </StackPanel>
+    </Button>
+    <StackPanel x:Name="ContinueArea" Grid.Column="0" IsVisible="False" IsHitTestVisible="{Binding IsReady}">
+     <Button Classes="primary" Content="Продолжить" Click="Continue_Click" IsEnabled="{Binding CanAct}" IsVisible="{Binding IsReady}" Width="222" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+    </StackPanel>
+    <Button Grid.Column="1" Click="Retry_Click" IsEnabled="{Binding CanAct}" Width="222" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+     <StackPanel Orientation="Horizontal" Spacing="7">
+      <Path Data="M 20,7 L 20,2 L 15,2 M 20,2 C 17,0 13,0 10,1 C 5,3 3,7 3,11 M 4,17 L 4,22 L 9,22 M 4,22 C 7,24 11,24 14,23 C 19,21 21,17 21,13" Stroke="{DynamicResource MainTextBrush}" StrokeThickness="1.7" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center"/>
+      <TextBlock Text="Проверить повторно" VerticalAlignment="Center" FontWeight="SemiBold"/>
+     </StackPanel>
+    </Button>
+   </Grid>
+   <Grid ColumnDefinitions="222,222" ColumnSpacing="8" IsVisible="{Binding NeedsTools}">
+    <Button Grid.Column="0" Click="SelectFFmpeg_Click" IsEnabled="{Binding CanAct}" Width="222" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+     <StackPanel Orientation="Horizontal" Spacing="7">
+      <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z" Stroke="{DynamicResource MainTextBrush}" StrokeThickness="2" Width="16" Height="15" Stretch="Uniform" VerticalAlignment="Center"/>
+      <TextBlock Text="Указать путь FFmpeg" FontWeight="SemiBold" VerticalAlignment="Center"/>
+     </StackPanel>
+    </Button>
+    <Button Grid.Column="1" Click="SelectFFprobe_Click" IsEnabled="{Binding CanAct}" Width="222" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+     <StackPanel Orientation="Horizontal" Spacing="7">
+      <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z" Stroke="{DynamicResource MainTextBrush}" StrokeThickness="2" Width="16" Height="15" Stretch="Uniform" VerticalAlignment="Center"/>
+      <TextBlock Text="Указать путь FFprobe" FontWeight="SemiBold" VerticalAlignment="Center"/>
+     </StackPanel>
+    </Button>
+   </Grid>
+  </StackPanel>
+ </StackPanel>
+</UserControl>

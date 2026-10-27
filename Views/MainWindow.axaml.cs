@@ -22,7 +22,7 @@ namespace TrackExtractor.Views;
 public partial class MainWindow : Window
 {
     private readonly CancellationTokenSource _shutdown = new();
-    private DependencyDialog? _dependencyDialog;
+    private SettingsWindow? _settingsWindow;
     private MainViewModel? _logViewModel;
     private static readonly double[] MinimumColumnWidths = [36, 65, 54, 65, 65, 72, 95, 75];
     private UiAppearance? Appearance => (Avalonia.Application.Current as App)?.Appearance;
@@ -134,73 +134,17 @@ public partial class MainWindow : Window
         try
         {
             await viewModel.CheckAsync(_shutdown.Token);
-            if (!viewModel.IsReady && !_shutdown.IsCancellationRequested) ShowDependencyDialog();
+            if (!viewModel.IsReady && !_shutdown.IsCancellationRequested) ShowSettings(0, showContinue: true);
         }
         catch (OperationCanceledException) when (_shutdown.IsCancellationRequested) { }
         catch (Exception ex)
         {
             viewModel.ReportError($"Не удалось проверить утилиты: {ex.Message}");
-            if (!_shutdown.IsCancellationRequested) ShowDependencyDialog();
+            if (!_shutdown.IsCancellationRequested) ShowSettings(0, showContinue: true);
         }
     }
 
-    private void Dependencies_Click(object? sender, RoutedEventArgs e) => ShowDependencyDialog();
-
-    private void Settings_Click(object? sender, RoutedEventArgs e) =>
-        SettingsButton.ContextMenu?.Open(SettingsButton);
-
-    private void ThemeSettings_Click(object? sender, RoutedEventArgs e)
-    {
-        if (Appearance is not { } appearance) return;
-        var dialog = new Window
-        {
-            Title = "Тема оформления", Width = 440, Height = 200,
-            MinWidth = 390, MinHeight = 190,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Background = (Avalonia.Media.IBrush?)Avalonia.Application.Current?.Resources["PanelBackground"]
-        };
-        var panel = new StackPanel { Margin = new Avalonia.Thickness(20), Spacing = 12 };
-        panel.Children.Add(new TextBlock { Text = "Тема интерфейса", FontWeight = Avalonia.Media.FontWeight.SemiBold });
-        var themes = new ComboBox
-        {
-            ItemsSource = UiAppearance.ThemeNames,
-            SelectedItem = appearance.Preferences.Theme,
-            HorizontalAlignment = HorizontalAlignment.Stretch
-        };
-        themes.SelectionChanged += (_, _) =>
-        {
-            if (themes.SelectedItem is string theme)
-            {
-                appearance.SetTheme(theme);
-                dialog.Background = (Avalonia.Media.IBrush?)Avalonia.Application.Current?.Resources["PanelBackground"];
-            }
-        };
-        panel.Children.Add(themes);
-        var close = new Button { Content = "Закрыть", Width = 100, HorizontalAlignment = HorizontalAlignment.Right };
-        close.Click += (_, _) => dialog.Close();
-        panel.Children.Add(close);
-        dialog.Content = panel;
-        dialog.ShowDialog(this);
-    }
-
-    private void About_Click(object? sender, RoutedEventArgs e)
-    {
-        var version = typeof(App).Assembly.GetName().Version?.ToString() ?? "не указана";
-        var about = new Window
-        {
-            Title = "О программе Track Extractor", Width = 390, Height = 220,
-            MinWidth = 340, MinHeight = 190, WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Background = (Avalonia.Media.IBrush?)Avalonia.Application.Current?.Resources["PanelBackground"]
-        };
-        var content = new StackPanel { Margin = new Avalonia.Thickness(20), Spacing = 12 };
-        content.Children.Add(new TextBlock { Text = "Track Extractor", FontSize = 20, FontWeight = Avalonia.Media.FontWeight.SemiBold });
-        content.Children.Add(new TextBlock { Text = $"Версия сборки: {version}\nИзвлечение медиапотоков без перекодирования через FFmpeg/FFprobe." });
-        var close = new Button { Content = "Закрыть", HorizontalAlignment = HorizontalAlignment.Right };
-        close.Click += (_, _) => about.Close();
-        content.Children.Add(close);
-        about.Content = content;
-        about.ShowDialog(this);
-    }
+    private void Settings_Click(object? sender, RoutedEventArgs e) => ShowSettings(0);
 
     private void SaveWindowPreferences()
     {
@@ -257,19 +201,32 @@ public partial class MainWindow : Window
             StreamPropertiesWindow.Show(this, track.Stream);
     }
 
-    private void ShowDependencyDialog()
+    private void ShowSettings(int section, bool showContinue = false)
     {
-        if (_shutdown.IsCancellationRequested || DataContext is not MainViewModel viewModel) return;
-        if (_dependencyDialog is not null) { _dependencyDialog.Activate(); return; }
-        var dialog = new DependencyDialog(viewModel, _shutdown.Token);
-        _dependencyDialog = dialog;
-        dialog.Closed += (_, _) => _dependencyDialog = null;
-        dialog.Show(this);
+        if (_shutdown.IsCancellationRequested || DataContext is not MainViewModel viewModel || Appearance is not { } appearance) return;
+        if (_settingsWindow is not null)
+        {
+            _settingsWindow.SelectSection(section);
+            if (showContinue) _settingsWindow.SetShowContinue(true);
+            _settingsWindow.Activate();
+            return;
+        }
+        var window = new SettingsWindow(viewModel, appearance, _shutdown.Token);
+        window.SelectSection(section);
+        window.SetShowContinue(showContinue);
+        _settingsWindow = window;
+        window.Closed += (_, _) => _settingsWindow = null;
+        window.Show(this);
     }
 
     private async void SelectFile_Click(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is not MainViewModel viewModel || !viewModel.SelectFile()) return;
+        if (DataContext is not MainViewModel viewModel) return;
+        if (!viewModel.SelectFile())
+        {
+            if (!viewModel.IsReady && !viewModel.IsBusy && !viewModel.IsExporting) ShowSettings(0);
+            return;
+        }
         try
         {
             var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
@@ -295,7 +252,12 @@ public partial class MainWindow : Window
     private async void Drop(object? sender, DragEventArgs e)
     {
         DropZone.Classes.Remove("dragging");
-        if (DataContext is not MainViewModel viewModel || !viewModel.SelectFile()) return;
+        if (DataContext is not MainViewModel viewModel) return;
+        if (!viewModel.SelectFile())
+        {
+            if (!viewModel.IsReady && !viewModel.IsBusy && !viewModel.IsExporting) ShowSettings(0);
+            return;
+        }
         try
         {
             var files = e.DataTransfer.TryGetFiles()?.Take(2).ToArray();
@@ -334,7 +296,18 @@ public partial class MainWindow : Window
                 var path = folders[0].TryGetLocalPath();
                 if (string.IsNullOrWhiteSpace(path) && folders[0].Path.IsFile)
                     path = folders[0].Path.LocalPath;
-                if (!string.IsNullOrWhiteSpace(path)) viewModel.SetOutputDirectory(path);
+                if (!string.IsNullOrWhiteSpace(path))
+                {
+                    var previous = viewModel.OutputDirectory;
+                    viewModel.SetOutputDirectory(path);
+                    if (Appearance is { } appearance && viewModel.OutputDirectory is { } selected
+                        && !string.Equals(selected, previous, OperatingSystem.IsWindows()
+                            ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+                    {
+                        appearance.Preferences.OutputDirectory = selected;
+                        appearance.Save();
+                    }
+                }
                 else viewModel.ReportExportError("Выберите локальную папку сохранения.");
             }
         }

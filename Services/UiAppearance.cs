@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using Avalonia;
 using Avalonia.Media;
@@ -15,6 +16,7 @@ internal sealed class UiPreferences
     public int? X { get; set; }
     public int? Y { get; set; }
     public double[] ColumnWidths { get; set; } = [44, 126, 68, 135, 135, 112, 180, 118];
+    public string? OutputDirectory { get; set; }
 }
 
 internal sealed class UiAppearance
@@ -48,6 +50,8 @@ internal sealed class UiAppearance
         if (Preferences.ColumnWidths is not { Length: 8 }
             || Array.Exists(Preferences.ColumnWidths, width => !double.IsFinite(width) || width is < 34 or > 1000))
             Preferences.ColumnWidths = new UiPreferences().ColumnWidths;
+        if (!IsExistingAbsoluteDirectory(Preferences.OutputDirectory))
+            Preferences.OutputDirectory = DefaultOutputDirectory();
     }
 
     internal void SetTheme(string theme)
@@ -84,6 +88,58 @@ internal sealed class UiAppearance
             ? xdg : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config"),
             "TrackExtractor");
     }
+
+    internal static string DefaultOutputDirectory()
+    {
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        string? downloads = null;
+        if (OperatingSystem.IsWindows())
+        {
+            var id = new Guid("374DE290-123F-4565-9164-39C4925E467B");
+            if (SHGetKnownFolderPath(in id, 0, IntPtr.Zero, out var pointer) == 0)
+            {
+                try { downloads = Marshal.PtrToStringUni(pointer); }
+                finally { Marshal.FreeCoTaskMem(pointer); }
+            }
+        }
+        else if (OperatingSystem.IsLinux())
+        {
+            var configHome = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
+            var config = Path.Combine(!string.IsNullOrWhiteSpace(configHome) && Path.IsPathRooted(configHome)
+                ? configHome : Path.Combine(home, ".config"), "user-dirs.dirs");
+            try
+            {
+                if (File.Exists(config))
+                    foreach (var line in File.ReadLines(config))
+                    {
+                        if (!line.TrimStart().StartsWith("XDG_DOWNLOAD_DIR=", StringComparison.Ordinal)) continue;
+                        var value = line[(line.IndexOf('=') + 1)..].Trim().Trim('"');
+                        downloads = value.StartsWith("$HOME/", StringComparison.Ordinal)
+                            ? Path.Combine(home, value[6..]) : value == "$HOME" ? home : value;
+                        break;
+                    }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        }
+        if (IsExistingAbsoluteDirectory(downloads))
+            return Path.GetFullPath(downloads!);
+        if (!string.IsNullOrWhiteSpace(home))
+        {
+            var conventional = Path.Combine(home, "Downloads");
+            if (IsExistingAbsoluteDirectory(conventional)) return Path.GetFullPath(conventional);
+        }
+        return !string.IsNullOrWhiteSpace(home) && Directory.Exists(home) ? home : Environment.CurrentDirectory;
+    }
+
+    private static bool IsExistingAbsoluteDirectory(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return false;
+        try { return Path.IsPathRooted(path) && Directory.Exists(path); }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException) { return false; }
+    }
+
+    [DllImport("shell32.dll")]
+    private static extern int SHGetKnownFolderPath(in Guid folderId, uint flags, IntPtr token, out IntPtr path);
 
     private static void Apply(string name)
     {

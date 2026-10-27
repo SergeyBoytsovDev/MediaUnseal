@@ -8,36 +8,29 @@ using TrackExtractor.ViewModels;
 
 namespace TrackExtractor.Views;
 
-public partial class DependencyDialog : Window
+public partial class DependencyPanel : UserControl
 {
     private readonly MainViewModel _viewModel;
     private readonly CancellationToken _cancellationToken;
+    public event EventHandler? ContinueRequested;
 
-    public DependencyDialog() : this(new MainViewModel(), CancellationToken.None) { }
+    public DependencyPanel() : this(new MainViewModel(), CancellationToken.None) { }
 
-    public DependencyDialog(MainViewModel viewModel, CancellationToken cancellationToken)
+    public DependencyPanel(MainViewModel viewModel, CancellationToken cancellationToken)
     {
         InitializeComponent();
         _viewModel = viewModel;
         _cancellationToken = cancellationToken;
         DataContext = viewModel;
-        Closing += Dialog_Closing;
     }
 
-    private async void Dialog_Closing(object? sender, WindowClosingEventArgs e)
-    {
-        if (!_viewModel.IsBusy) return;
-        e.Cancel = true;
-        _viewModel.CancelOperation();
-        await _viewModel.WaitForIdleAsync();
-        Close();
-    }
+    internal void SetShowContinue(bool value) => ContinueArea.IsVisible = value;
 
     private void Cancel_Click(object? sender, RoutedEventArgs e) => _viewModel.CancelOperation();
 
     private void Continue_Click(object? sender, RoutedEventArgs e)
     {
-        if (_viewModel.IsReady) Close();
+        if (_viewModel.IsReady) ContinueRequested?.Invoke(this, EventArgs.Empty);
     }
 
     private async void Retry_Click(object? sender, RoutedEventArgs e) =>
@@ -56,7 +49,13 @@ public partial class DependencyDialog : Window
     {
         try
         {
-            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            var storage = TopLevel.GetTopLevel(this)?.StorageProvider;
+            if (storage is null)
+            {
+                _viewModel.ReportError("Не удалось открыть выбор файла. Повторите попытку.");
+                return;
+            }
+            var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
             {
                 Title = $"Выберите исполняемый файл {name}",
                 AllowMultiple = false

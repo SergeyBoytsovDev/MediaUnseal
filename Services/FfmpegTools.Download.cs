@@ -60,7 +60,7 @@ public sealed partial class FfmpegTools
             var archivePath = Path.Combine(work, "ffmpeg.zip");
             await using (var archive = new FileStream(archivePath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 81920, useAsync: true))
             {
-                progress?.Report(new("Загрузка FFmpeg и FFprobe с gyan.dev…", 0));
+                progress?.Report(new("Загрузка FFmpeg и FFprobe с gyan.dev…"));
                 await DownloadAsync(http, ArchiveUri, archive, ArchiveLimit, progress, token);
                 archive.Position = 0;
                 progress?.Report(new("Проверка SHA-256…"));
