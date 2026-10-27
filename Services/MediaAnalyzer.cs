@@ -107,7 +107,8 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
                         tags.GetValueOrDefault("language"), tags.GetValueOrDefault("title"),
                         disposition.GetValueOrDefault("default"), disposition.GetValueOrDefault("forced"),
                         SubtitleType(type, codec), tags, disposition,
-                        frameCount, visual.Kind, visual.ImageFormat, visual.IsCoverArt));
+                        frameCount, visual.Kind, visual.ImageFormat, visual.IsCoverArt,
+                        ReadExtraProperties(item)));
                 }
             }
             return new MediaInfo(Path.GetFileName(path), path, size,
@@ -119,6 +120,32 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
 
     private static JsonElement Property(JsonElement item, string name) =>
         item.ValueKind == JsonValueKind.Object && item.TryGetProperty(name, out var value) ? value : default;
+
+    private static Dictionary<string, string> ReadExtraProperties(JsonElement item)
+    {
+        var extra = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var key in new[] { "codec_long_name", "codec_tag_string", "codec_tag", "level",
+            "sample_fmt", "bits_per_sample", "bits_per_raw_sample", "display_aspect_ratio",
+            "sample_aspect_ratio", "field_order", "color_range", "color_space", "color_transfer",
+            "color_primaries", "chroma_location", "start_time" })
+            if (ReadString(Property(item, key)) is { } text) extra[key] = text;
+        var sideData = Property(item, "side_data_list");
+        if (sideData.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var side in sideData.EnumerateArray().Take(16))
+            {
+                if (side.ValueKind != JsonValueKind.Object) continue;
+                var type = ReadString(Property(side, "side_data_type")) ?? "side_data";
+                foreach (var field in side.EnumerateObject().Take(24))
+                {
+                    if (field.Name == "side_data_type") continue;
+                    if (ReadString(field.Value) is { } value)
+                        extra[$"{type}: {field.Name}"] = value;
+                }
+            }
+        }
+        return extra;
+    }
 
     private static string? ReadString(JsonElement value)
     {

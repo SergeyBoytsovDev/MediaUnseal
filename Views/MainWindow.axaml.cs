@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -7,7 +10,11 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Media;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using TrackExtractor.Services;
 using TrackExtractor.ViewModels;
 
 namespace TrackExtractor.Views;
@@ -16,22 +23,100 @@ public partial class MainWindow : Window
 {
     private readonly CancellationTokenSource _shutdown = new();
     private DependencyDialog? _dependencyDialog;
+    private MainViewModel? _logViewModel;
+    private static readonly double[] MinimumColumnWidths = [36, 65, 54, 65, 65, 72, 95, 75];
+    private UiAppearance? Appearance => (Avalonia.Application.Current as App)?.Appearance;
 
     public MainWindow()
     {
         InitializeComponent();
+        UpdateWindowStateIcon();
+        PropertyChanged += (_, args) =>
+        {
+            if (args.Property == WindowStateProperty) UpdateWindowStateIcon();
+        };
+        if (Appearance is { } appearance)
+        {
+            Width = appearance.Preferences.Width;
+            Height = appearance.Preferences.Height;
+            for (var i = 0; i < StreamsTable.Columns.Count; i++)
+                StreamsTable.Columns[i].Width = new GridLength(appearance.Preferences.ColumnWidths[i]);
+        }
+        for (var i = 0; i < StreamsTable.Columns.Count; i++)
+        {
+            var index = i;
+            StreamsTable.Columns[i].PropertyChanged += (_, args) =>
+            {
+                if (args.Property == TableViewColumn.WidthProperty &&
+                    StreamsTable.Columns[index].Width.IsAbsolute &&
+                    StreamsTable.Columns[index].Width.Value < MinimumColumnWidths[index])
+                    StreamsTable.Columns[index].Width = new GridLength(MinimumColumnWidths[index]);
+            };
+        }
         Opened += MainWindow_Opened;
         Closing += MainWindow_Closing;
-        Closed += (_, _) => _shutdown.Cancel();
-        DragDrop.SetAllowDrop(this, true);
-        DragDrop.AddDragOverHandler(this, DragOver);
-        DragDrop.AddDropHandler(this, Drop);
+        Closed += (_, _) =>
+        {
+            _shutdown.Cancel();
+            if (_logViewModel is not null) _logViewModel.UserEvents.CollectionChanged -= Events_CollectionChanged;
+        };
+        DataContextChanged += (_, _) =>
+        {
+            if (_logViewModel is not null) _logViewModel.UserEvents.CollectionChanged -= Events_CollectionChanged;
+            _logViewModel = DataContext as MainViewModel;
+            if (_logViewModel is not null) _logViewModel.UserEvents.CollectionChanged += Events_CollectionChanged;
+        };
+        DragDrop.SetAllowDrop(DropZone, true);
+        DragDrop.AddDragOverHandler(DropZone, DragOver);
+        DragDrop.AddDropHandler(DropZone, Drop);
+        DragDrop.AddDragLeaveHandler(DropZone, (_, _) => DropZone.Classes.Remove("dragging"));
     }
+
+    private void Events_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == NotifyCollectionChangedAction.Add &&
+            LogScroll.Offset.Y >= LogScroll.Extent.Height - LogScroll.Viewport.Height - 35)
+            Dispatcher.UIThread.Post(() => LogScroll.ScrollToEnd());
+    }
+
+    private void TitleBar_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
+        if (e.ClickCount == 2) ToggleMaximize();
+        else BeginMoveDrag(e);
+    }
+
+    private void ResizeGrip_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && WindowState != WindowState.Maximized)
+            BeginResizeDrag(WindowEdge.SouthEast, e);
+    }
+
+    private void ResizeEdge_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && WindowState != WindowState.Maximized
+            && sender is Control { Tag: string edge } && Enum.TryParse<WindowEdge>(edge, out var direction))
+            BeginResizeDrag(direction, e);
+    }
+
+    private void Minimize_Click(object? sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+    private void Maximize_Click(object? sender, RoutedEventArgs e) => ToggleMaximize();
+    private void Close_Click(object? sender, RoutedEventArgs e) => Close();
+    private void UpdateWindowStateIcon() => WindowStateIcon.Data = Geometry.Parse(
+        WindowState == WindowState.Maximized
+            ? "M 7,3 L 20,3 L 20,17 L 7,17 Z M 3,7 L 3,21 L 17,21 L 17,19"
+            : "M 4,4 L 20,4 L 20,20 L 4,20 Z");
+    private void ToggleMaximize() => WindowState = WindowState == WindowState.Maximized
+        ? WindowState.Normal : WindowState.Maximized;
 
     private async void MainWindow_Closing(object? sender, WindowClosingEventArgs e)
     {
         if (DataContext is not MainViewModel viewModel ||
-            (!viewModel.IsBusy && !viewModel.HasActiveAnalyses && !viewModel.IsExporting)) return;
+            (!viewModel.IsBusy && !viewModel.HasActiveAnalyses && !viewModel.IsExporting))
+        {
+            SaveWindowPreferences();
+            return;
+        }
         e.Cancel = true;
         _shutdown.Cancel();
         viewModel.CancelOperation();
@@ -44,6 +129,7 @@ public partial class MainWindow : Window
     private async void MainWindow_Opened(object? sender, EventArgs e)
     {
         Opened -= MainWindow_Opened;
+        RestoreWindowPosition();
         if (DataContext is not MainViewModel viewModel) return;
         try
         {
@@ -59,6 +145,117 @@ public partial class MainWindow : Window
     }
 
     private void Dependencies_Click(object? sender, RoutedEventArgs e) => ShowDependencyDialog();
+
+    private void Settings_Click(object? sender, RoutedEventArgs e) =>
+        SettingsButton.ContextMenu?.Open(SettingsButton);
+
+    private void ThemeSettings_Click(object? sender, RoutedEventArgs e)
+    {
+        if (Appearance is not { } appearance) return;
+        var dialog = new Window
+        {
+            Title = "Тема оформления", Width = 440, Height = 200,
+            MinWidth = 390, MinHeight = 190,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Background = (Avalonia.Media.IBrush?)Avalonia.Application.Current?.Resources["PanelBackground"]
+        };
+        var panel = new StackPanel { Margin = new Avalonia.Thickness(20), Spacing = 12 };
+        panel.Children.Add(new TextBlock { Text = "Тема интерфейса", FontWeight = Avalonia.Media.FontWeight.SemiBold });
+        var themes = new ComboBox
+        {
+            ItemsSource = UiAppearance.ThemeNames,
+            SelectedItem = appearance.Preferences.Theme,
+            HorizontalAlignment = HorizontalAlignment.Stretch
+        };
+        themes.SelectionChanged += (_, _) =>
+        {
+            if (themes.SelectedItem is string theme)
+            {
+                appearance.SetTheme(theme);
+                dialog.Background = (Avalonia.Media.IBrush?)Avalonia.Application.Current?.Resources["PanelBackground"];
+            }
+        };
+        panel.Children.Add(themes);
+        var close = new Button { Content = "Закрыть", Width = 100, HorizontalAlignment = HorizontalAlignment.Right };
+        close.Click += (_, _) => dialog.Close();
+        panel.Children.Add(close);
+        dialog.Content = panel;
+        dialog.ShowDialog(this);
+    }
+
+    private void About_Click(object? sender, RoutedEventArgs e)
+    {
+        var version = typeof(App).Assembly.GetName().Version?.ToString() ?? "не указана";
+        var about = new Window
+        {
+            Title = "О программе Track Extractor", Width = 390, Height = 220,
+            MinWidth = 340, MinHeight = 190, WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Background = (Avalonia.Media.IBrush?)Avalonia.Application.Current?.Resources["PanelBackground"]
+        };
+        var content = new StackPanel { Margin = new Avalonia.Thickness(20), Spacing = 12 };
+        content.Children.Add(new TextBlock { Text = "Track Extractor", FontSize = 20, FontWeight = Avalonia.Media.FontWeight.SemiBold });
+        content.Children.Add(new TextBlock { Text = $"Версия сборки: {version}\nИзвлечение медиапотоков без перекодирования через FFmpeg/FFprobe." });
+        var close = new Button { Content = "Закрыть", HorizontalAlignment = HorizontalAlignment.Right };
+        close.Click += (_, _) => about.Close();
+        content.Children.Add(close);
+        about.Content = content;
+        about.ShowDialog(this);
+    }
+
+    private void SaveWindowPreferences()
+    {
+        if (Appearance is not { } appearance) return;
+        if (WindowState == WindowState.Normal)
+        {
+            appearance.Preferences.Width = Width;
+            appearance.Preferences.Height = Height;
+            appearance.Preferences.X = Position.X;
+            appearance.Preferences.Y = Position.Y;
+        }
+        appearance.Preferences.ColumnWidths = StreamsTable.Columns
+            .Select((column, index) => double.IsFinite(column.ActualWidth)
+                ? Math.Clamp(column.ActualWidth, MinimumColumnWidths[index], 1000)
+                : appearance.Preferences.ColumnWidths[index]).ToArray();
+        appearance.Save();
+    }
+
+    private void RestoreWindowPosition()
+    {
+        if (Appearance?.Preferences is not { X: { } x, Y: { } y } preferences) return;
+        var screen = Screens.All.FirstOrDefault(item =>
+            x >= item.WorkingArea.X && x < item.WorkingArea.Right &&
+            y >= item.WorkingArea.Y && y < item.WorkingArea.Bottom) ?? Screens.Primary;
+        if (screen is null) return;
+        var area = screen.WorkingArea;
+        var scale = screen.Scaling;
+        Width = Math.Min(preferences.Width, area.Width / scale);
+        Height = Math.Min(preferences.Height, area.Height / scale);
+        MinWidth = Math.Min(MinWidth, Width);
+        MinHeight = Math.Min(MinHeight, Height);
+        var width = (int)Math.Ceiling(Width * scale);
+        var height = (int)Math.Ceiling(Height * scale);
+        Position = new Avalonia.PixelPoint(
+            Math.Clamp(x, area.X, Math.Max(area.X, area.Right - width)),
+            Math.Clamp(y, area.Y, Math.Max(area.Y, area.Bottom - height)));
+    }
+
+    private void ClearFile_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel viewModel) viewModel.ClearCurrentFile();
+    }
+
+    private void StreamsTable_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!e.GetCurrentPoint(StreamsTable).Properties.IsRightButtonPressed) return;
+        if (e.Source is Avalonia.Visual visual && visual.FindAncestorOfType<TableViewRow>() is { } row)
+            StreamsTable.SelectedItem = row.DataContext;
+    }
+
+    private void Properties_Click(object? sender, RoutedEventArgs e)
+    {
+        if (StreamsTable.SelectedItem is ExportTrackViewModel track)
+            StreamPropertiesWindow.Show(this, track.Stream);
+    }
 
     private void ShowDependencyDialog()
     {
@@ -88,10 +285,16 @@ public partial class MainWindow : Window
         }
     }
 
-    private void DragOver(object? sender, DragEventArgs e) => e.DragEffects = DragDropEffects.Copy;
+    private void DragOver(object? sender, DragEventArgs e)
+    {
+        e.DragEffects = DataContext is MainViewModel { CanChooseFile: true }
+            ? DragDropEffects.Copy : DragDropEffects.None;
+        DropZone.Classes.Set("dragging", e.DragEffects == DragDropEffects.Copy);
+    }
 
     private async void Drop(object? sender, DragEventArgs e)
     {
+        DropZone.Classes.Remove("dragging");
         if (DataContext is not MainViewModel viewModel || !viewModel.SelectFile()) return;
         try
         {
@@ -150,6 +353,39 @@ public partial class MainWindow : Window
     private void Stop_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is MainViewModel viewModel) viewModel.CancelExport();
+    }
+
+    private void ClearLog_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel viewModel) viewModel.ClearVisibleLog();
+    }
+
+    private void OpenOutputFolder_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel viewModel) return;
+        var folder = viewModel.OutputDirectory;
+        if (folder is null || !Directory.Exists(folder))
+        {
+            viewModel.ReportExportError("Папка результатов не найдена. Выберите существующую папку.");
+            return;
+        }
+        try
+        {
+            ProcessStartInfo start;
+            if (OperatingSystem.IsWindows())
+                start = new ProcessStartInfo(folder) { UseShellExecute = true };
+            else
+            {
+                start = new ProcessStartInfo(OperatingSystem.IsMacOS() ? "open" : "xdg-open")
+                { UseShellExecute = false, CreateNoWindow = true };
+                start.ArgumentList.Add(folder);
+            }
+            Process.Start(start);
+        }
+        catch (Exception ex) when (ex is Win32Exception or IOException or UnauthorizedAccessException)
+        {
+            viewModel.ReportExportError("Не удалось открыть папку результатов. Проверьте доступ к ней.");
+        }
     }
 
     private async void SaveLog_Click(object? sender, RoutedEventArgs e)

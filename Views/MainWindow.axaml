@@ -1,60 +1,369 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:TrackExtractor.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="TrackExtractor.Views.MainWindow"
-        x:DataType="vm:MainViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="TrackExtractor">
-
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainViewModel />
-    </Design.DataContext>
-
-    <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="Настройки">
-                <MenuItem Header="FFmpeg и FFprobe" Click="Dependencies_Click" />
-            </MenuItem>
-        </Menu>
-        <ScrollViewer>
-            <StackPanel Margin="24" Spacing="12">
-                <TextBlock Text="{Binding Greeting}" TextWrapping="Wrap" />
-                <TextBlock Text="Перетащите сюда один локальный медиафайл или выберите его кнопкой." TextWrapping="Wrap" />
-                <Button Content="Выбрать файл" Click="SelectFile_Click" HorizontalAlignment="Left" />
-                <TextBlock Text="{Binding FileSelectionMessage}" TextWrapping="Wrap" />
-                <Button Content="Открыть FFmpeg и FFprobe" Click="Dependencies_Click"
-                        IsVisible="{Binding ShowDependencyOffer}" HorizontalAlignment="Left" />
-                <TextBlock Text="{Binding AnalysisStatus}" FontWeight="SemiBold" />
-                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsAnalyzing}" />
-                <TextBlock Text="{Binding MediaSummary}" TextWrapping="Wrap" />
-                <ItemsControl ItemsSource="{Binding ExportTracks}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:ExportTrackViewModel">
-                            <StackPanel Margin="0,3" Spacing="2">
-                                <CheckBox Content="{Binding Caption}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                          IsEnabled="{Binding CanSelect}" />
-                                <TextBlock Text="{Binding Status}" TextWrapping="Wrap" Margin="24,0,0,0" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Выбрать папку" Click="ChooseFolder_Click" />
-                    <Button Content="Извлечь" Click="Extract_Click" IsEnabled="{Binding CanExtract}" />
-                    <Button Content="Остановить" Click="Stop_Click" IsVisible="{Binding IsExporting}" />
-                </StackPanel>
-                <TextBlock Text="{Binding OutputDirectory}" TextWrapping="Wrap" />
-                <ProgressBar Minimum="0" Maximum="100" Value="{Binding ExportProgress}"
-                             IsIndeterminate="{Binding ExportProgressIndeterminate}" />
-                <TextBlock Text="{Binding ExportStatus}" TextWrapping="Wrap" />
-                <Button Content="Сохранить лог" Click="SaveLog_Click" HorizontalAlignment="Left" />
-            </StackPanel>
-        </ScrollViewer>
-    </DockPanel>
-
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:vm="using:TrackExtractor.ViewModels"
+ x:Class="TrackExtractor.Views.MainWindow" x:DataType="vm:MainViewModel"
+ Title="Track Extractor" Icon="/Assets/Icons/TrackExtractor-256.png" Width="1280" Height="900" MinWidth="1000" MinHeight="700"
+ WindowStartupLocation="CenterScreen" WindowDecorations="None" CanResize="True"
+ Background="{DynamicResource AppBackground}" Foreground="{DynamicResource MainTextBrush}" FontFamily="Inter" FontSize="14">
+ <Window.Styles>
+  <Style Selector="Button">
+   <Setter Property="Background" Value="{DynamicResource PanelAltBackground}"/>
+   <Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/>
+   <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}"/>
+   <Setter Property="BorderThickness" Value="1"/>
+   <Setter Property="CornerRadius" Value="{DynamicResource ControlCorner}"/>
+   <Setter Property="Padding" Value="10,5"/>
+  </Style>
+  <Style Selector="Button:pointerover"><Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/></Style>
+  <Style Selector="Button:disabled"><Setter Property="Opacity" Value="0.48"/></Style>
+  <Style Selector="Button.primary"><Setter Property="Background" Value="{DynamicResource AccentBrush}"/><Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/><Setter Property="Foreground" Value="White"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
+  <Style Selector="Button.chrome"><Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="0"/><Setter Property="CornerRadius" Value="0"/><Setter Property="HorizontalContentAlignment" Value="Center"/><Setter Property="VerticalContentAlignment" Value="Center"/></Style>
+  <Style Selector="Button.chrome:pointerover"><Setter Property="Background" Value="{DynamicResource PanelBackground}"/></Style>
+  <Style Selector="Button.chrome-clear"><Setter Property="Foreground" Value="{DynamicResource ErrorBrush}"/></Style>
+  <Style Selector="Button.chrome-surface">
+   <Setter Property="Template">
+    <ControlTemplate>
+     <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+             BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+      <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                        Padding="{TemplateBinding Padding}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"/>
+     </Border>
+    </ControlTemplate>
+   </Setter>
+  </Style>
+  <Style Selector="Button.chrome-close:pointerover"><Setter Property="Background" Value="#C42B1C"/><Setter Property="Foreground" Value="White"/></Style>
+  <Style Selector="Button.chrome-clear:pointerover"><Setter Property="Background" Value="#40C42B1C"/><Setter Property="Foreground" Value="White"/></Style>
+  <Style Selector="Border.panel-header"><Setter Property="Background" Value="{DynamicResource HeaderBackground}"/><Setter Property="BorderBrush" Value="{DynamicResource LineBrush}"/><Setter Property="BorderThickness" Value="0,0,0,1"/></Style>
+  <Style Selector="TextBlock.muted"><Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/></Style>
+  <Style Selector="TextBlock.success"><Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/></Style>
+  <Style Selector="TextBlock.warning"><Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/></Style>
+  <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{DynamicResource ErrorBrush}"/></Style>
+  <Style Selector="TextBox"><Setter Property="Background" Value="{DynamicResource PanelAltBackground}"/><Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/><Setter Property="BorderBrush" Value="{DynamicResource LineBrush}"/><Setter Property="CornerRadius" Value="{DynamicResource ControlCorner}"/></Style>
+  <Style Selector="ComboBox"><Setter Property="Background" Value="{DynamicResource PanelAltBackground}"/><Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/><Setter Property="BorderBrush" Value="{DynamicResource LineBrush}"/><Setter Property="CornerRadius" Value="{DynamicResource ControlCorner}"/></Style>
+  <Style Selector="Border.dropzone.dragging"><Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/></Style>
+  <Style Selector="TableView"><Setter Property="Background" Value="{DynamicResource RowBackground}"/><Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/><Setter Property="BorderBrush" Value="{DynamicResource LineBrush}"/><Setter Property="BorderThickness" Value="1"/></Style>
+  <Style Selector="TableViewRow:selected"><Setter Property="Background" Value="{DynamicResource RowSelectedBackground}"/></Style>
+  <Style Selector="TableViewRow"><Setter Property="Height" Value="34"/><Setter Property="Padding" Value="0"/></Style>
+  <Style Selector="TableViewCell"><Setter Property="Padding" Value="6,2"/><Setter Property="VerticalContentAlignment" Value="Center"/></Style>
+ </Window.Styles>
+ <Grid RowDefinitions="44,*,64">
+  <Border Grid.Row="0" Background="{DynamicResource HeaderBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1">
+   <Grid ColumnDefinitions="Auto,*,Auto" Margin="14,0,4,0">
+    <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center" PointerPressed="TitleBar_PointerPressed">
+     <Image Source="avares://TrackExtractor/Assets/Icons/TrackExtractor-24.png" Width="23" Height="23" Stretch="Uniform"/>
+     <TextBlock Text="Track Extractor" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/>
+    </StackPanel>
+    <Border Grid.Column="1" Background="Transparent" PointerPressed="TitleBar_PointerPressed"/>
+    <StackPanel Grid.Column="2" Orientation="Horizontal">
+     <Button x:Name="SettingsButton" Classes="chrome" Width="46" Height="43" ToolTip.Tip="Настройки" Click="Settings_Click">
+      <TextBlock Text="⚙" FontSize="19" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransform="translate(0px, -2px)"/>
+      <Button.ContextMenu>
+       <ContextMenu Placement="BottomEdgeAlignedRight">
+        <MenuItem Header="Проверка и установка FFmpeg/FFprobe" Click="Dependencies_Click"/>
+        <MenuItem Header="Тема оформления" Click="ThemeSettings_Click"/>
+        <MenuItem Header="Язык интерфейса (позже)" IsEnabled="False"/>
+        <MenuItem Header="Справочник форматов (позже)" IsEnabled="False"/>
+        <Separator/>
+        <MenuItem Header="О программе" Click="About_Click"/>
+       </ContextMenu>
+      </Button.ContextMenu>
+     </Button>
+     <Border Width="1" Height="22" Margin="12,0" Background="{DynamicResource LineBrush}" VerticalAlignment="Center"/>
+     <Button Classes="chrome" Width="46" Height="43" Click="Minimize_Click" ToolTip.Tip="Свернуть">
+      <Rectangle Fill="{DynamicResource MainTextBrush}" Width="12" Height="1.5" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+     </Button>
+     <Button x:Name="MaximizeButton" Classes="chrome" Width="46" Height="43" Click="Maximize_Click" ToolTip.Tip="Развернуть или восстановить">
+      <Path x:Name="WindowStateIcon" Data="M 4,4 L 20,4 L 20,20 L 4,20 Z" Stroke="{DynamicResource MainTextBrush}" StrokeThickness="1.3" Width="12" Height="12" Stretch="Uniform" RenderTransform="translate(0px, -1px)"/>
+     </Button>
+     <Button Classes="chrome chrome-surface chrome-close" Width="46" Height="43" Click="Close_Click" ToolTip.Tip="Закрыть">
+      <Path Data="M 5,5 L 19,19 M 19,5 L 5,19" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.5" Width="12" Height="12" Stretch="Uniform" RenderTransform="translate(0px, -1px)"/>
+     </Button>
+    </StackPanel>
+   </Grid>
+  </Border>
+  <Grid Grid.Row="1" RowDefinitions="252,*" Margin="8" RowSpacing="8">
+   <Grid Grid.Row="0" ColumnDefinitions="1.4*,1*" ColumnSpacing="8">
+    <Border Grid.Column="0" Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelCorner}">
+     <Grid RowDefinitions="38,*">
+      <Border Classes="panel-header" Grid.Row="0"><Grid ColumnDefinitions="*,Auto">
+       <StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
+        <TextBlock Text="▤" FontSize="20" VerticalAlignment="Center"/>
+        <TextBlock Text="Исходный файл" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+       </StackPanel>
+       <Button Grid.Column="1" Classes="chrome chrome-surface chrome-clear" Margin="5" Width="28" Height="28" Padding="0" Content="×" FontSize="18"
+               ToolTip.Tip="Очистить выбранный файл"
+               HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+               IsVisible="{Binding HasSourceOrAnalysis}" IsEnabled="{Binding CanClearFile}" Click="ClearFile_Click"/>
+      </Grid></Border>
+      <Border x:Name="DropZone" Grid.Row="1" Classes="dropzone" Background="Transparent" Margin="9"
+              BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" CornerRadius="{DynamicResource ControlCorner}">
+       <Grid>
+        <StackPanel IsVisible="{Binding HasNoMedia}" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="3">
+         <Path Data="M 4,2 L 19,2 L 26,9 L 26,30 L 4,30 Z M 19,2 L 19,9 L 26,9 M 8,23 L 22,23 M 10,13 L 20,13"
+               Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.8" Width="44" Height="47" Stretch="Uniform"
+               HorizontalAlignment="Center" Margin="0,0,0,1"/>
+         <TextBlock Text="Перетащите сюда видеофайл" FontSize="18" FontWeight="SemiBold"
+                    HorizontalAlignment="Center" Margin="8,0,8,1"/>
+         <Button Classes="primary" Click="SelectFile_Click" IsEnabled="{Binding CanChooseFile}"
+                 Width="176" Height="35" HorizontalAlignment="Center" Margin="0,3">
+          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+           <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z"
+                 Stroke="White" StrokeThickness="2" Width="20" Height="17" Stretch="Uniform" VerticalAlignment="Center"/>
+           <TextBlock Text="Выбрать файл" VerticalAlignment="Center"/>
+          </StackPanel>
+         </Button>
+         <TextBlock Text="Поддерживаемые форматы зависят от FFprobe и доступных кодеков"
+                    Classes="muted" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="8,1,8,0"/>
+         <TextBlock Text="{Binding FileSelectionMessage}" IsVisible="{Binding HasFileSelectionMessage}"
+                    Classes="error" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="8,0"/>
+        </StackPanel>
+        <StackPanel IsVisible="{Binding HasMedia}" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
+         <Path Data="M 4,2 L 19,2 L 26,9 L 26,30 L 4,30 Z M 19,2 L 19,9 L 26,9 M 8,23 L 22,23 M 10,13 L 20,13"
+               Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.8" Width="44" Height="44" Stretch="Uniform"
+               HorizontalAlignment="Center"/>
+         <TextBlock Text="Файл успешно загружен" Classes="success" FontWeight="SemiBold"
+                    HorizontalAlignment="Center" Margin="4,0"/>
+         <TextBlock Text="{Binding MediaFileName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                    HorizontalAlignment="Center" MaxWidth="580" ToolTip.Tip="{Binding MediaFilePath}" Margin="10,0"/>
+         <Button Classes="primary" Click="SelectFile_Click" IsEnabled="{Binding CanChooseFile}"
+                 Width="176" Height="35" HorizontalAlignment="Center" Margin="0,3">
+          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+           <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z"
+                 Stroke="White" StrokeThickness="2" Width="20" Height="17" Stretch="Uniform" VerticalAlignment="Center"/>
+           <TextBlock Text="Выбрать файл" VerticalAlignment="Center"/>
+          </StackPanel>
+         </Button>
+         <Border Height="1" Width="210" Background="{DynamicResource LineBrush}" Margin="0,2"/>
+         <TextBlock Text="Перетащите другой файл для замены" Classes="muted" HorizontalAlignment="Center"/>
+         <TextBlock Text="{Binding FileSelectionMessage}" IsVisible="{Binding HasFileSelectionMessage}"
+                    Classes="error" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="8,0"/>
+        </StackPanel>
+       </Grid>
+      </Border>
+     </Grid>
+    </Border>
+    <Border Grid.Column="1" Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelCorner}">
+     <Grid RowDefinitions="38,*">
+      <Border Classes="panel-header" Grid.Row="0"><StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
+       <TextBlock Text="▤" FontSize="20" VerticalAlignment="Center"/>
+       <TextBlock Text="Информация о файле" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+      </StackPanel></Border>
+      <Grid Grid.Row="1" ColumnDefinitions="155,*" ColumnSpacing="10" Margin="10">
+       <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1"
+               CornerRadius="{DynamicResource ControlCorner}" ClipToBounds="True">
+        <Grid>
+         <Image Source="{Binding PreviewImage}" Stretch="Uniform" IsVisible="{Binding HasPreview}"/>
+         <TextBlock Text="▣" FontSize="50" Foreground="{DynamicResource MutedTextBrush}"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding HasNoPreview}"/>
+        </Grid>
+       </Border>
+       <StackPanel Grid.Column="1" Spacing="2">
+        <TextBlock Text="{Binding MediaFileName}" FontSize="15" FontWeight="SemiBold"
+                   TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding MediaFilePath}"/>
+        <Grid ColumnDefinitions="118,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="3">
+         <TextBlock Grid.Row="0" Text="Путь:" Classes="muted"/>
+         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MediaFilePath}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding MediaFilePath}"/>
+         <TextBlock Grid.Row="1" Text="Размер:" Classes="muted"/>
+         <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SizeDisplay}" ToolTip.Tip="{Binding SizeExactDisplay}"/>
+         <TextBlock Grid.Row="2" Text="Длительность:" Classes="muted"/>
+         <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding DurationDisplay}"/>
+         <TextBlock Grid.Row="3" Text="Формат:" Classes="muted"/>
+         <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding ContainerDisplay}" TextTrimming="CharacterEllipsis"/>
+         <TextBlock Grid.Row="4" Text="Видео:" Classes="muted"/>
+         <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding VideoCodecDisplay}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding VideoCodecDisplay}"/>
+         <TextBlock Grid.Row="5" Text="Аудио:" Classes="muted"/>
+         <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding AudioSummaryDisplay}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding AudioSummaryDisplay}"/>
+         <TextBlock Grid.Row="6" Text="Субтитры:" Classes="muted"/>
+         <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SubtitleSummaryDisplay}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding SubtitleSummaryDisplay}"/>
+        </Grid>
+        <ProgressBar IsVisible="{Binding IsAnalyzing}" IsIndeterminate="True" Height="3"/>
+       </StackPanel>
+      </Grid>
+     </Grid>
+    </Border>
+   </Grid>
+   <Grid Grid.Row="1" ColumnDefinitions="2.15*,0.92*" ColumnSpacing="8">
+    <Grid Grid.Column="0" RowDefinitions="1.45*,1*" RowSpacing="8">
+     <Border Grid.Row="0" Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelCorner}">
+      <Grid RowDefinitions="38,*">
+       <Border Classes="panel-header" Grid.Row="0"><StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
+        <Path Data="M 3,3 L 6,3 L 6,6 L 3,6 Z M 9,4.5 L 21,4.5 M 3,10.5 L 6,10.5 L 6,13.5 L 3,13.5 Z M 9,12 L 21,12 M 3,18 L 6,18 L 6,21 L 3,21 Z M 9,19.5 L 21,19.5"
+              Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.6" Width="19" Height="19" Stretch="Uniform"/>
+        <TextBlock Text="{Binding TrackHeading}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+       </StackPanel></Border>
+       <Grid Grid.Row="1">
+        <TableView x:Name="StreamsTable" ItemsSource="{Binding ExportTracks}"
+                   CanUserResizeColumns="True" SelectionMode="Single"
+                   PointerPressed="StreamsTable_PointerPressed" ScrollViewer.AllowAutoHide="False">
+         <TableView.Resources>
+          <Thickness x:Key="TableViewRowPadding">6,2,6,2</Thickness>
+          <Thickness x:Key="TableViewColumnResizerMargin">0,-2,-6,-2</Thickness>
+         </TableView.Resources>
+         <TableView.ContextMenu>
+          <ContextMenu><MenuItem Header="Свойства потока" Click="Properties_Click"/></ContextMenu>
+         </TableView.ContextMenu>
+         <TableView.Columns>
+          <TableViewColumn Header="#" Width="44">
+           <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
+            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" IsEnabled="{Binding CanSelect}"
+                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+           </DataTemplate></TableViewColumn.CellTemplate>
+          </TableViewColumn>
+          <TableViewColumn Header="Тип" Width="126">
+           <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
+            <TextBlock Text="{Binding TypeDisplay}" ToolTip.Tip="{Binding TypeDisplay}" TextTrimming="CharacterEllipsis"/>
+           </DataTemplate></TableViewColumn.CellTemplate>
+          </TableViewColumn>
+          <TableViewColumn Header="Индекс" Width="68" Binding="{Binding IndexDisplay}"/>
+          <TableViewColumn Header="Язык" Width="135">
+           <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
+            <TextBlock Text="{Binding LanguageDisplay}" ToolTip.Tip="{Binding LanguageDisplay}" TextTrimming="CharacterEllipsis"/>
+           </DataTemplate></TableViewColumn.CellTemplate>
+          </TableViewColumn>
+          <TableViewColumn Header="Кодек" Width="135">
+           <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
+            <TextBlock Text="{Binding CodecDisplay}" ToolTip.Tip="{Binding CodecDisplay}" TextTrimming="CharacterEllipsis"/>
+           </DataTemplate></TableViewColumn.CellTemplate>
+          </TableViewColumn>
+          <TableViewColumn Header="Битрейт" Width="112">
+           <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
+            <TextBlock Text="{Binding BitRateDisplay}" ToolTip.Tip="{Binding BitRateDisplay}" TextTrimming="CharacterEllipsis"/>
+           </DataTemplate></TableViewColumn.CellTemplate>
+          </TableViewColumn>
+          <TableViewColumn Header="Каналы / Разрешение" Width="180">
+           <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
+            <TextBlock Text="{Binding DetailsDisplay}" ToolTip.Tip="{Binding DetailsDisplay}" TextTrimming="CharacterEllipsis"/>
+           </DataTemplate></TableViewColumn.CellTemplate>
+          </TableViewColumn>
+          <TableViewColumn Header="Статус" Width="118">
+           <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
+            <TextBlock Text="{Binding StatusLabel}" Foreground="{Binding StatusForeground}"
+                       ToolTip.Tip="{Binding Status}" TextTrimming="CharacterEllipsis"/>
+           </DataTemplate></TableViewColumn.CellTemplate>
+          </TableViewColumn>
+         </TableView.Columns>
+        </TableView>
+        <TextBlock Text="Добавьте файл, чтобы увидеть его потоки." IsVisible="{Binding HasNoMedia}"
+                   Classes="muted" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
+       </Grid>
+      </Grid>
+     </Border>
+     <Border Grid.Row="1" Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelCorner}">
+      <Grid RowDefinitions="38,*">
+       <Border Classes="panel-header" Grid.Row="0"><Grid ColumnDefinitions="*,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
+         <TextBlock Text="▤" FontSize="19" VerticalAlignment="Center"/>
+         <TextBlock Text="Журнал событий" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7" Margin="5" VerticalAlignment="Center">
+         <Button Content="Очистить" Click="ClearLog_Click" FontSize="12" Height="26" Padding="8,2"/>
+         <Button Content="Сохранить лог" Click="SaveLog_Click" FontSize="12" Height="26" Padding="8,2"/>
+        </StackPanel>
+       </Grid></Border>
+       <Border Grid.Row="1" Background="#000000"><ScrollViewer x:Name="LogScroll" VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Disabled" AllowAutoHide="False">
+        <ItemsControl ItemsSource="{Binding UserEvents}">
+         <ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:UserLogEntry">
+          <Grid ColumnDefinitions="21,75,*" MinHeight="26" Margin="9,0,5,0">
+           <TextBlock Grid.Column="0" Text="{Binding Symbol}" Classes.success="{Binding IsSuccess}"
+                      Classes.warning="{Binding IsWarning}" Classes.error="{Binding IsError}"/>
+           <TextBlock Grid.Column="1" Text="{Binding Time}" Classes="muted"/>
+           <TextBlock Grid.Column="2" Text="{Binding Message}" TextWrapping="Wrap"
+                      Classes.error="{Binding IsError}" Classes.warning="{Binding IsWarning}"/>
+          </Grid>
+         </DataTemplate></ItemsControl.ItemTemplate>
+        </ItemsControl>
+       </ScrollViewer></Border>
+      </Grid>
+     </Border>
+    </Grid>
+    <Border Grid.Column="1" Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelCorner}">
+     <Grid RowDefinitions="38,*">
+      <Border Classes="panel-header" Grid.Row="0"><StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
+       <TextBlock Text="⚙" FontSize="18" VerticalAlignment="Center"/>
+       <TextBlock Text="Настройки извлечения" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+      </StackPanel></Border>
+      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" AllowAutoHide="False">
+       <StackPanel Margin="14" Spacing="9">
+        <TextBlock Text="Папка для сохранения" FontWeight="SemiBold"/>
+        <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
+         <TextBox Text="{Binding OutputDirectory}" IsReadOnly="True" PlaceholderText="Выберите папку"
+                  ToolTip.Tip="{Binding OutputDirectory}" VerticalContentAlignment="Center"/>
+         <Button Grid.Column="1" Click="ChooseFolder_Click" IsEnabled="{Binding CanChooseFolder}">
+          <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Center">
+           <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z"
+                 Stroke="{DynamicResource MainTextBrush}" StrokeThickness="2"
+                 Width="17" Height="15" Stretch="Uniform" VerticalAlignment="Center"/>
+           <TextBlock Text="Обзор" VerticalAlignment="Center"/>
+          </StackPanel>
+         </Button>
+        </Grid>
+        <TextBlock Text="Формат видео" FontWeight="SemiBold" Margin="0,8,0,0"/>
+        <ComboBox SelectedIndex="0" IsEnabled="False" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Выбор формата и преобразование пока недоступны"><ComboBoxItem Content="Без преобразования"/></ComboBox>
+        <TextBlock Text="Формат аудио" FontWeight="SemiBold"/>
+        <ComboBox SelectedIndex="0" IsEnabled="False" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Выбор формата и преобразование пока недоступны"><ComboBoxItem Content="Без преобразования"/></ComboBox>
+        <TextBlock Text="Формат субтитров" FontWeight="SemiBold"/>
+        <ComboBox SelectedIndex="0" IsEnabled="False" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Выбор формата и преобразование пока недоступны"><ComboBoxItem Content="Без преобразования"/></ComboBox>
+        <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Margin="0,7"/>
+        <CheckBox Content="Без перекодирования (копирование потоков)" IsChecked="True" IsEnabled="False"/>
+        <CheckBox Content="Сохранить все аудиодорожки" IsChecked="{Binding SelectAllAudio, Mode=TwoWay}" IsEnabled="{Binding CanBulkSelect}"/>
+        <CheckBox Content="Сохранить все субтитры" IsChecked="{Binding SelectAllSubtitles, Mode=TwoWay}" IsEnabled="{Binding CanBulkSelect}"/>
+        <CheckBox Content="Разбивать по языкам (создать подпапки)" IsEnabled="False"
+                  ToolTip.Tip="Создание подпапок по языкам пока не реализовано"/>
+       </StackPanel>
+      </ScrollViewer>
+     </Grid>
+    </Border>
+   </Grid>
+  </Grid>
+  <Border Grid.Row="2" Background="{DynamicResource HeaderBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
+   <Grid RowDefinitions="4,*">
+    <ProgressBar Grid.Row="0" Minimum="0" Maximum="100" Value="{Binding ExportProgress}"
+                 IsIndeterminate="{Binding ExportProgressIndeterminate}" Height="4" Foreground="{DynamicResource AccentBrush}"/>
+    <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,*,Auto" ColumnSpacing="13" Margin="16,5">
+     <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+      <TextBlock Text="●" Classes="success" FontSize="17" VerticalAlignment="Center"/>
+      <TextBlock Text="{Binding FooterStatus}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+     </StackPanel>
+     <TextBlock Grid.Column="1" Text="{Binding TrackHeading}" Classes="muted" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+     <TextBlock Grid.Column="2" Text="{Binding SelectedCountDisplay}" Classes="muted" VerticalAlignment="Center"/>
+     <TextBlock Grid.Column="3" Text="{Binding ExportStatus}" Classes="muted" TextTrimming="CharacterEllipsis"
+                ToolTip.Tip="{Binding ExportStatus}" VerticalAlignment="Center"/>
+     <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+      <Button Height="37" Width="146" Click="OpenOutputFolder_Click" IsEnabled="{Binding CanOpenOutputDirectory}">
+       <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z" Stroke="{DynamicResource MainTextBrush}" StrokeThickness="2" Width="17" Height="15" Stretch="Uniform"/>
+        <TextBlock Text="Открыть папку" FontWeight="SemiBold" VerticalAlignment="Center"/>
+       </StackPanel>
+      </Button>
+      <Button Classes="primary" Height="37" Width="120" Click="Extract_Click" IsEnabled="{Binding CanExtract}">
+       <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Path Data="M 3,2 L 15,2 L 21,8 L 21,20 L 16,20 M 3,2 L 3,22 L 9,22 M 15,2 L 15,8 L 21,8 M 12,11 L 12,24 M 8,20 L 12,24 L 16,20" Stroke="White" StrokeThickness="1.8" Width="18" Height="20" Stretch="Uniform"/>
+        <TextBlock Text="Извлечь" FontWeight="SemiBold" VerticalAlignment="Center"/>
+       </StackPanel>
+      </Button>
+      <Button Height="37" Width="124" Click="Stop_Click" IsEnabled="{Binding IsExporting}">
+       <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Path Data="M 4,4 L 20,4 L 20,20 L 4,20 Z" Fill="{DynamicResource ErrorBrush}" Width="15" Height="15" Stretch="Uniform"/>
+        <TextBlock Text="Остановить" FontWeight="SemiBold" VerticalAlignment="Center"/>
+       </StackPanel>
+      </Button>
+     </StackPanel>
+    </Grid>
+   </Grid>
+  </Border>
+  <Border Width="8" HorizontalAlignment="Left" Grid.RowSpan="3" Background="Transparent" Cursor="SizeWestEast" PointerPressed="ResizeEdge_PointerPressed" Tag="West"/>
+  <Border Width="8" HorizontalAlignment="Right" Grid.RowSpan="3" Background="Transparent" Cursor="SizeWestEast" PointerPressed="ResizeEdge_PointerPressed" Tag="East"/>
+  <Border Height="7" VerticalAlignment="Top" Grid.RowSpan="3" Background="Transparent" Cursor="SizeNorthSouth" PointerPressed="ResizeEdge_PointerPressed" Tag="North"/>
+  <Border Height="7" VerticalAlignment="Bottom" Grid.RowSpan="3" Background="Transparent" Cursor="SizeNorthSouth" PointerPressed="ResizeEdge_PointerPressed" Tag="South"/>
+  <Border Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.RowSpan="3" Background="Transparent" Cursor="TopLeftCorner" PointerPressed="ResizeEdge_PointerPressed" Tag="NorthWest"/>
+  <Border Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Top" Grid.RowSpan="3" Background="Transparent" Cursor="TopRightCorner" PointerPressed="ResizeEdge_PointerPressed" Tag="NorthEast"/>
+  <Border Width="12" Height="12" HorizontalAlignment="Left" VerticalAlignment="Bottom" Grid.RowSpan="3" Background="Transparent" Cursor="BottomLeftCorner" PointerPressed="ResizeEdge_PointerPressed" Tag="SouthWest"/>
+  <Border Width="12" Height="12" HorizontalAlignment="Right" VerticalAlignment="Bottom" Grid.RowSpan="3" Background="Transparent" Cursor="BottomRightCorner" PointerPressed="ResizeEdge_PointerPressed" Tag="SouthEast"/>
+ </Grid>
 </Window>
