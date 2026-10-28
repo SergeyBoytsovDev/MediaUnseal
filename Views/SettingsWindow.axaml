@@ -139,7 +139,7 @@
       <TextBlock Text="Медиасправочник" FontSize="21" FontWeight="SemiBold"/>
       <TextBlock Text="Справочник форматов содержит информацию о мультимедийных контейнерах, видео- и аудиокодеках, форматах субтитров и изображений." TextWrapping="Wrap"/>
       <TextBlock Text="Здесь вы сможете узнать об особенностях различных форматов, их совместимости, назначении и использовании при извлечении и конвертации медиапотоков." TextWrapping="Wrap"/>
-      <Button Content="Открыть справочник" IsEnabled="False" HorizontalAlignment="Left" Margin="0,18,0,0"/>
+      <Button Content="Открыть справочник" Click="OpenGuide_Click" HorizontalAlignment="Left" Margin="0,18,0,0"/>
      </StackPanel>
      <StackPanel x:Name="AboutSection" Margin="24,16" Spacing="5" IsVisible="False">
       <StackPanel Orientation="Horizontal" Spacing="14">
@@ -179,6 +179,8 @@
       <TextBlock Text="Avalonia UI — интерфейс приложения."/>
       <TextBlock Text="CommunityToolkit.Mvvm — поддержка MVVM."/>
       <TextBlock Text="FFmpeg и FFprobe — внешние утилиты обработки и анализа медиафайлов." TextWrapping="Wrap"/>
+      <TextBlock Text="Собственный модуль обработки вложений Matroska (MKV)" FontWeight="SemiBold" Margin="0,6,0,0"/>
+      <TextBlock Text="Модуль на C# ищет, читает и извлекает встроенные JPEG/PNG через структуры Matroska/EBML и индекс SeekHead. При непосредственном копировании вложения FFmpeg не используется." TextWrapping="Wrap"/>
       <TextBlock Text="Лицензионная информация будет дополнена перед выпуском" Classes="secondary" FontSize="12" Margin="0,3,0,0"/>
      </StackPanel>
     </Grid>

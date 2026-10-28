@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,51 +16,98 @@ internal static class MediaPreview
     private static readonly TimeSpan Deadline = TimeSpan.FromSeconds(15);
 
     internal static async Task<byte[]?> LoadAsync(MediaInfo media, string ffmpegPath,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, Action<string>? report = null)
     {
-        var covers = media.Streams.Where(s => s.IsCoverArt && s.ImageFormat is "JPEG" or "PNG")
-            .OrderBy(s => s.Index).ToArray();
+        var search = Stopwatch.StartNew();
+        var covers = media.Streams.Where(s => s.ImageFormat is "JPEG" or "PNG"
+                && (s.IsCoverArt || MatroskaAttachments.IsCandidate(media, s)))
+            .OrderByDescending(s => s.IsCoverArt).ThenBy(s => s.Index).ToArray();
+        report?.Invoke($"Поиск обложки: {search.Elapsed.TotalMilliseconds:0} мс; кандидатов {covers.Length}.");
+        IReadOnlyList<MatroskaAttachments.Attachment>? matroskaEntries = null;
+        var matroskaReadAttempted = false;
         foreach (var cover in covers)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (cover.Width is > 6000 || cover.Height is > 6000) continue;
+            if (cover.Width is > 6000 || cover.Height is > 6000)
+            { report?.Invoke("Обложка пропущена: размеры превышают предел."); continue; }
+            var stage = "поиск";
+            var watch = Stopwatch.StartNew();
+            MatroskaAttachments.NavigationStats? navigation = null;
             try
             {
                 if (MatroskaAttachments.IsCandidate(media, cover))
                 {
+                    if (matroskaReadAttempted && matroskaEntries is null) continue;
                     await using var input = new FileStream(media.FullPath, FileMode.Open, FileAccess.Read,
                         FileShare.Read, 4096, FileOptions.Asynchronous | FileOptions.RandomAccess);
-                    if (input.Length != media.Size) continue;
-                    var entries = await MatroskaAttachments.ReadAsync(input, cancellationToken);
-                    var match = MatroskaAttachments.Match(entries, media, cover);
-                    if (match.Size > MaxImageBytes) continue;
+                    if (input.Length != media.Size)
+                    { report?.Invoke("Поиск вложений Matroska: размер файла изменился после анализа."); continue; }
+                    if (matroskaEntries is null)
+                    {
+                        matroskaReadAttempted = true;
+                        navigation = new MatroskaAttachments.NavigationStats();
+                        stage = "чтение списка Matroska";
+                        matroskaEntries = await MatroskaAttachments.ReadPreviewAsync(input, cancellationToken, navigation);
+                        report?.Invoke($"Поиск вложений Matroska: {watch.Elapsed.TotalMilliseconds:0} мс; " +
+                            $"SeekHead={navigation.UsedSeekHead}; переходов={navigation.IndexJumps}; " +
+                            $"элементов={navigation.Elements}; прочитано {navigation.SearchBytesRead} байт; " +
+                            $"найдено {matroskaEntries.Count}.");
+                        watch.Restart();
+                    }
+                    stage = "сопоставление вложения";
+                    var match = MatroskaAttachments.Match(matroskaEntries, media, cover);
+                    if (match.Size > MaxImageBytes)
+                    { report?.Invoke("Чтение вложения: размер превышает предел предпросмотра."); continue; }
+                    report?.Invoke($"Сопоставление вложения: {watch.Elapsed.TotalMilliseconds:0} мс; " +
+                        $"размер {match.Size} байт.");
+                    watch.Restart();
+                    stage = "чтение вложения";
                     await using var output = new MemoryStream((int)match.Size);
                     await MatroskaAttachments.CopyAsync(input, output, match, null, cancellationToken);
+                    report?.Invoke($"Чтение вложения: {watch.Elapsed.TotalMilliseconds:0} мс; успешно.");
                     return output.ToArray();
                 }
                 if (cover.Index is { } index)
                 {
-                    var image = await GrabFrameAsync(media.FullPath, ffmpegPath, index, false, cancellationToken);
-                    if (image is not null) return image;
+                    var image = await GrabFrameAsync(media.FullPath, ffmpegPath, index, false,
+                        cancellationToken, report);
+                    if (image.Image is not null) return image.Image;
                 }
             }
-            catch (OperationCanceledException) { throw; }
+            catch (OperationCanceledException)
+            {
+                report?.Invoke($"{stage}: {watch.Elapsed.TotalMilliseconds:0} мс; отменено или тайм-аут" +
+                    (navigation is null ? "." : $"; SeekHead={navigation.UsedSeekHead}; " +
+                        $"переходов={navigation.IndexJumps}; элементов={navigation.Elements}; " +
+                        $"прочитано {navigation.SearchBytesRead} байт."));
+                throw;
+            }
             catch (Exception ex) when (ex is InvalidDataException or IOException or UnauthorizedAccessException
-                or Win32Exception or TimeoutException) { }
+                or Win32Exception or TimeoutException)
+            { report?.Invoke($"{stage}: {watch.Elapsed.TotalMilliseconds:0} мс; {ex.GetType().Name}" +
+                (navigation is null ? "." : $"; SeekHead={navigation.UsedSeekHead}; " +
+                    $"переходов={navigation.IndexJumps}; элементов={navigation.Elements}; " +
+                    $"прочитано {navigation.SearchBytesRead} байт.")); }
         }
         var video = media.Streams.FirstOrDefault(s => s.VisualKind == VisualKind.Video && s.Index is >= 0);
         if (video?.Index is { } videoIndex)
         {
-            var image = await GrabFrameAsync(media.FullPath, ffmpegPath, videoIndex, true, cancellationToken);
-            if (image is not null) return image;
-            return await GrabFrameAsync(media.FullPath, ffmpegPath, videoIndex, false, cancellationToken);
+            var image = await GrabFrameAsync(media.FullPath, ffmpegPath, videoIndex, true,
+                cancellationToken, report);
+            if (image.Image is not null || image.TimedOut) return image.Image;
+            return (await GrabFrameAsync(media.FullPath, ffmpegPath, videoIndex, false,
+                cancellationToken, report)).Image;
         }
+        report?.Invoke("Кадр FFmpeg: не запущен; подходящего видеопотока нет.");
         return null;
     }
 
-    private static async Task<byte[]?> GrabFrameAsync(string source, string ffmpegPath, int index,
-        bool seek, CancellationToken cancellationToken)
+    private sealed record FrameResult(byte[]? Image, bool TimedOut = false);
+
+    private static async Task<FrameResult> GrabFrameAsync(string source, string ffmpegPath, int index,
+        bool seek, CancellationToken cancellationToken, Action<string>? report)
     {
+        var watch = Stopwatch.StartNew();
         var directory = Path.Combine(Path.GetTempPath(), "TrackExtractor-preview-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         var output = Path.Combine(directory, "frame.png");
@@ -83,7 +131,10 @@ internal static class MediaPreview
             args.Add("-frames:v"); args.Add("1");
             args.Add("-vf"); args.Add("scale='min(360,iw)':-2");
             args.Add("-f"); args.Add("image2"); args.Add(output);
-            if (!process.Start()) return null;
+            if (!process.Start()) { report?.Invoke("Запуск FFmpeg: не удался."); return new(null); }
+            report?.Invoke($"Запуск FFmpeg: {watch.Elapsed.TotalMilliseconds:0} мс; " +
+                $"поток #{index}, {(seek ? "с переходом" : "с начала")}.");
+            watch.Restart();
             try
             {
                 var error = process.StandardError.ReadToEndAsync(deadline.Token);
@@ -92,19 +143,42 @@ internal static class MediaPreview
             }
             catch (OperationCanceledException)
             {
-                if (!process.HasExited) process.Kill(entireProcessTree: true);
+                if (!process.HasExited)
+                    try { process.Kill(entireProcessTree: true); }
+                    catch (InvalidOperationException) { }
                 await process.WaitForExitAsync(CancellationToken.None);
+                if (cancellationToken.IsCancellationRequested)
+                    report?.Invoke($"Получение кадра FFmpeg: {watch.Elapsed.TotalMilliseconds:0} мс; отменено.");
                 cancellationToken.ThrowIfCancellationRequested();
-                return null;
+                report?.Invoke($"Получение кадра FFmpeg: {watch.Elapsed.TotalMilliseconds:0} мс; тайм-аут.");
+                return new(null, true);
             }
-            if (process.ExitCode != 0 || !File.Exists(output)) return null;
+            if (process.ExitCode != 0 || !File.Exists(output))
+            {
+                report?.Invoke($"Получение кадра FFmpeg: {watch.Elapsed.TotalMilliseconds:0} мс; " +
+                    $"код {process.ExitCode}, файл не создан.");
+                return new(null);
+            }
             var length = new FileInfo(output).Length;
-            return length is > 0 and <= MaxImageBytes
-                ? await File.ReadAllBytesAsync(output, cancellationToken) : null;
+            if (length is not (> 0 and <= MaxImageBytes))
+            {
+                report?.Invoke($"Получение кадра FFmpeg: {watch.Elapsed.TotalMilliseconds:0} мс; " +
+                    "размер изображения вне допустимых пределов.");
+                return new(null);
+            }
+            var bytes = await File.ReadAllBytesAsync(output, cancellationToken);
+            report?.Invoke($"Получение кадра FFmpeg: {watch.Elapsed.TotalMilliseconds:0} мс; " +
+                $"успешно, {bytes.Length} байт.");
+            return new(bytes);
         }
         catch (OperationCanceledException) { throw; }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception
-            or InvalidOperationException) { return null; }
+            or InvalidOperationException)
+        {
+            report?.Invoke($"Получение кадра FFmpeg: {watch.Elapsed.TotalMilliseconds:0} мс; " +
+                $"{ex.GetType().Name}.");
+            return new(null);
+        }
         finally
         {
             try { Directory.Delete(directory, recursive: true); }

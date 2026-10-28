@@ -33,6 +33,8 @@ public class MainViewModel : ViewModelBase
     internal MainViewModel(FfmpegTools tools, MediaAnalyzer? analyzer = null, TrackExporter? exporter = null)
     {
         _tools = tools;
+        PreviewLoader = (media, ffmpeg, token) => MediaPreview.LoadAsync(media, ffmpeg, token,
+            message => _tools.Diagnostics.Record(DiagnosticLevel.Info, "Предпросмотр", message));
         _analyzer = analyzer ?? new MediaAnalyzer(tools.Diagnostics);
         _exporter = exporter ?? new TrackExporter(tools.Diagnostics);
         _tools.Diagnostics.EventRecorded += entry => Dispatcher.UIThread.Post(() =>
@@ -246,6 +248,13 @@ public class MainViewModel : ViewModelBase
         && SelectedMedia is not null && OutputDirectory is not null
         && ExportTracks.Any(t => t.IsSelected) && ExportTracks.Where(t => t.IsSelected).All(t => t.Plan is not null);
     internal string? FfmpegExecutable => _ffmpegPath;
+    internal DiagnosticLog Diagnostics => _tools.Diagnostics;
+    private bool _preserveMetadata = true;
+    private bool _groupByLanguage;
+    private bool _createSourceFolder;
+    public bool PreserveMetadata { get => _preserveMetadata; set => SetProperty(ref _preserveMetadata, value); }
+    public bool GroupByLanguage { get => _groupByLanguage; set => SetProperty(ref _groupByLanguage, value); }
+    public bool CreateSourceFolder { get => _createSourceFolder; set => SetProperty(ref _createSourceFolder, value); }
     private bool _formatsValid = true;
     internal void SetFormatsValid(bool value)
     {
@@ -258,6 +267,15 @@ public class MainViewModel : ViewModelBase
     public bool CanChooseFolder => !IsExporting;
     public bool CanOpenOutputDirectory => OutputDirectory is not null;
     public bool CanBulkSelect => SelectedMedia is not null && !IsExporting;
+    public bool AllTracksSelected => ExportTracks.Any(t => t.CanSelect) &&
+        ExportTracks.Where(t => t.CanSelect).All(t => t.IsSelected);
+    public void ToggleAllTracks()
+    {
+        if (!CanBulkSelect) return;
+        var select = !AllTracksSelected;
+        foreach (var track in ExportTracks.Where(t => t.CanSelect)) track.IsSelected = select;
+        OnPropertyChanged(nameof(AllTracksSelected));
+    }
     public bool HasMedia => SelectedMedia is not null;
     public bool HasNoMedia => !HasMedia;
     public string TrackHeading => $"Найденные медиапотоки ({ExportTracks.Count})";
@@ -266,7 +284,7 @@ public class MainViewModel : ViewModelBase
         ? "Обработать" : "Извлечь";
     public string FooterStatus => IsBusy ? "Проверка зависимостей…" : !IsReady
         ? "Нужны FFmpeg и FFprobe" : IsAnalyzing ? "Анализ файла…"
-        : IsExporting ? "Идёт обработка…" : AnalysisStatus == "Ошибка"
+        : IsExporting ? "Идёт обработка..." : AnalysisStatus == "Ошибка"
         ? "Ошибка анализа" : "Готов к работе";
     public string MediaFileName => SelectedMedia?.Name ?? "Файл не выбран";
     public string MediaFilePath => SelectedMedia?.FullPath ?? "Выберите файл или перетащите его в область слева";
@@ -309,7 +327,7 @@ public class MainViewModel : ViewModelBase
     }
     public bool HasPreview => PreviewImage is not null;
     public bool HasNoPreview => PreviewImage is null;
-    internal Func<MediaInfo, string, CancellationToken, Task<byte[]?>> PreviewLoader { get; set; } = MediaPreview.LoadAsync;
+    internal Func<MediaInfo, string, CancellationToken, Task<byte[]?>> PreviewLoader { get; set; }
     public string AudioSummaryDisplay => SelectedMedia is { } media
         ? FormatStreamSummary(media.Streams.Where(s => s.CodecType == "audio").ToArray()) : "—";
     public string SubtitleSummaryDisplay => SelectedMedia is { } media
@@ -369,6 +387,7 @@ public class MainViewModel : ViewModelBase
         ExportProgressIndeterminate = false;
         OnPropertyChanged(nameof(TrackHeading));
         OnPropertyChanged(nameof(SelectedCountDisplay));
+        OnPropertyChanged(nameof(AllTracksSelected));
         OnPropertyChanged(nameof(SelectAllAudio));
         OnPropertyChanged(nameof(SelectAllSubtitles));
         OnPropertyChanged(nameof(CanExtract));
@@ -445,6 +464,7 @@ public class MainViewModel : ViewModelBase
                     {
                         OnPropertyChanged(nameof(CanExtract));
                         OnPropertyChanged(nameof(SelectedCountDisplay));
+                        OnPropertyChanged(nameof(AllTracksSelected));
                         OnPropertyChanged(nameof(ExportActionLabel));
                         OnPropertyChanged(nameof(SelectAllAudio));
                         OnPropertyChanged(nameof(SelectAllSubtitles));
@@ -455,6 +475,7 @@ public class MainViewModel : ViewModelBase
             OnPropertyChanged(nameof(CanExtract));
             OnPropertyChanged(nameof(TrackHeading));
             OnPropertyChanged(nameof(SelectedCountDisplay));
+            OnPropertyChanged(nameof(AllTracksSelected));
             OnPropertyChanged(nameof(SelectAllAudio));
             OnPropertyChanged(nameof(SelectAllSubtitles));
             AnalysisStatus = "Готово";
@@ -469,15 +490,16 @@ public class MainViewModel : ViewModelBase
             if (generation == _analysisGeneration)
             {
                 AnalysisStatus = "Ошибка";
+                _tools.Diagnostics.Record(DiagnosticLevel.Error, "Анализ",
+                    "Файл может быть повреждён или не поддерживается.",
+                    $"FFprobe: {ex.GetType().Name}; {ex.Message}");
                 FileSelectionMessage = ex switch
                 {
                     FileNotFoundException => "Файл не найден. Выберите другой файл.",
                     UnauthorizedAccessException => "Нет доступа к файлу или FFprobe.",
-                    TimeoutException => "Время ожидания FFprobe истекло. Выберите другой файл или повторите попытку.",
-                    InvalidDataException or ArgumentException => ex.Message,
                     Win32Exception => "Не удалось запустить FFprobe. Повторите проверку зависимостей.",
                     IOException => "Не удалось прочитать файл. Проверьте доступ и повторите попытку.",
-                    _ => "Не удалось проанализировать файл. Выберите другой файл."
+                    _ => "Файл может быть повреждён или не поддерживается."
                 };
             }
         }
@@ -497,22 +519,45 @@ public class MainViewModel : ViewModelBase
     {
         using var operation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _previewOperation = operation;
+        operation.CancelAfter(TimeSpan.FromSeconds(30));
+        var previewWatch = Stopwatch.StartNew();
+        Stopwatch? decodeWatch = null;
+        var outcome = "изображение не получено";
         try
         {
             var bytes = await PreviewLoader(media, ffmpegPath, operation.Token);
-            if (generation != _analysisGeneration || operation.IsCancellationRequested || bytes is null) return;
+            if (generation != _analysisGeneration || operation.IsCancellationRequested)
+            { outcome = "отменено или заменено другим файлом"; return; }
+            if (bytes is null) return;
+            decodeWatch = Stopwatch.StartNew();
             await using var stream = new MemoryStream(bytes, writable: false);
             var bitmap = new Bitmap(stream);
-            if (generation == _analysisGeneration && !operation.IsCancellationRequested) PreviewImage = bitmap;
+            _tools.Diagnostics.Record(DiagnosticLevel.Info, "Предпросмотр",
+                $"Декодирование изображения: {decodeWatch.Elapsed.TotalMilliseconds:0} мс; успешно.");
+            if (generation == _analysisGeneration && !operation.IsCancellationRequested)
+            { PreviewImage = bitmap; outcome = "изображение получено"; }
             else bitmap.Dispose();
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException)
+        { outcome = cancellationToken.IsCancellationRequested || generation != _analysisGeneration
+            ? "отменено при смене файла" : "тайм-аут 30 с"; }
         catch (Exception ex) when (ex is InvalidDataException or IOException or UnauthorizedAccessException
             or ArgumentException or NotSupportedException or OutOfMemoryException)
         {
+            outcome = "ошибка декодирования или чтения: " + ex.GetType().Name;
+            if (decodeWatch is not null)
+                _tools.Diagnostics.Record(DiagnosticLevel.Info, "Предпросмотр",
+                    $"Декодирование изображения: {decodeWatch.Elapsed.TotalMilliseconds:0} мс; " +
+                    $"{ex.GetType().Name}.");
             // A missing or corrupt preview must not change the analyzed media state.
         }
-        finally { if (_previewOperation == operation) _previewOperation = null; }
+        finally
+        {
+            _tools.Diagnostics.Record(DiagnosticLevel.Info, "Предпросмотр",
+                $"Подготовка изображения: {previewWatch.Elapsed.TotalMilliseconds:0} мс; " +
+                $"результат {outcome}.");
+            if (_previewOperation == operation) _previewOperation = null;
+        }
     }
 
     public void SetOutputDirectory(string path)
@@ -557,7 +602,7 @@ public class MainViewModel : ViewModelBase
         _exportIdle = new(TaskCreationOptions.RunContinuationsAsynchronously);
         IsExporting = true;
         _exportWatch = Stopwatch.StartNew();
-        _exportActiveMessage = $"Начато извлечение {plans.Length} дорожек.";
+        _exportActiveMessage = "Подготовка обработки...";
         _exportTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _exportTimer.Tick += (_, _) =>
         {
@@ -577,20 +622,27 @@ public class MainViewModel : ViewModelBase
                 if (_exportOperation != operation || !IsExporting) return;
                 var track = selected.FirstOrDefault(t => t.Stream.Index == update.StreamIndex);
                 track?.SetResult(update.State, update.Message, null);
-                ExportProgressIndeterminate = update.OverallPercent is null;
-                if (update.OverallPercent is { } value) ExportProgress = value;
-                _exportActiveMessage = $"{update.Message} ({update.Processed}/{update.Total} обработано)";
+                ExportProgressIndeterminate = update.OverallPercent is null && ExportProgress == 0;
+                if (update.OverallPercent is { } value) ExportProgress = Math.Max(ExportProgress, value);
+                var ordinal = Math.Clamp(update.Processed + (update.State == ExportState.Completed ? 0 : 1), 1, update.Total);
+                _exportActiveMessage = update.State == ExportState.Running
+                    ? (update.GroupCount > 1
+                        ? $"{update.Message} ({ordinal}–{Math.Min(update.Total, ordinal + update.GroupCount - 1)} из {update.Total})"
+                        : $"Поток #{update.StreamIndex} ({ordinal} из {update.Total})") +
+                        (update.CurrentPercent is { } percent ? $" · {percent:0.#}%" : "")
+                    : update.Message;
                 ExportStatus = $"{_exportActiveMessage} Время: {TrackExporter.FormatElapsed(_exportWatch!.Elapsed)}";
             });
+            var options = new ExportOptions(PreserveMetadata, GroupByLanguage, CreateSourceFolder);
             var result = await Task.Run(() => _exporter.ExportAsync(media, plans, OutputDirectory,
-                _ffmpegPath, updates, operation.Token), operation.Token);
+                _ffmpegPath, updates, operation.Token, options), operation.Token);
             _exportOperation = null;
             foreach (var trackResult in result.Tracks)
                 selected.First(t => t.Stream.Index == trackResult.StreamIndex)
                     .SetResult(trackResult.State, trackResult.Message, trackResult.OutputPath);
             ExportProgressIndeterminate = false;
-            ExportProgress = result.Success ? 100 : Math.Min(99,
-                result.Tracks.Count(t => t.State is ExportState.Completed or ExportState.Failed) * 100.0 / plans.Length);
+            ExportProgress = result.Success ? 100 : Math.Max(ExportProgress, Math.Min(99,
+                result.Tracks.Count(t => t.State is ExportState.Completed or ExportState.Failed) * 100.0 / plans.Length));
             ExportStatus = (result.Success ? "Все выбранные дорожки обработаны."
                 : result.WasCancelled ? "Извлечение остановлено. Готовые файлы сохранены."
                 : "Очередь завершена с ошибками. Готовые файлы сохранены.") +
@@ -607,18 +659,26 @@ public class MainViewModel : ViewModelBase
         {
             ExportProgressIndeterminate = false;
             foreach (var track in selected) track.SetResult(ExportState.Failed, "Не удалось начать извлечение.", null);
-            ExportStatus = ex is UnauthorizedAccessException
-                ? "Нет доступа к папке сохранения."
-                : ex is DirectoryNotFoundException ? "Папка сохранения не найдена."
-                : "Не удалось начать извлечение. Проверьте исходный файл и папку сохранения.";
+            var reason = ex switch
+            {
+                FileNotFoundException => "Исходный файл не найден.",
+                DirectoryNotFoundException => "Папка сохранения не найдена.",
+                UnauthorizedAccessException => "Нет доступа к папке сохранения.",
+                _ => "Не удалось начать извлечение."
+            };
+            _tools.Diagnostics.Record(DiagnosticLevel.Error, "Экспорт", reason,
+                $"Операция: начало экспорта; источник: {media.FullPath}; папка: {OutputDirectory}; ошибка: {ex.GetType().Name}; код: {ex.HResult}.");
+            ExportStatus = reason;
             ExportStatus += " Общее время: " + TrackExporter.FormatElapsed(_exportWatch!.Elapsed);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             ExportProgressIndeterminate = false;
             foreach (var track in selected) track.SetResult(ExportState.Failed, "Ошибка извлечения.", null);
             ExportStatus = "Ошибка извлечения. Проверьте лог и повторите попытку. Общее время: " +
                 TrackExporter.FormatElapsed(_exportWatch!.Elapsed);
+            _tools.Diagnostics.Record(DiagnosticLevel.Error, "Экспорт", "Не удалось начать извлечение.",
+                $"Операция: начало экспорта; источник: {media.FullPath}; папка: {OutputDirectory}; ошибка: {ex.GetType().Name}; код: {ex.HResult}.");
         }
         finally
         {
@@ -927,6 +987,7 @@ public sealed class ExportTrackViewModel : ViewModelBase
     private string? _resultPath;
     private ConversionSettings? _conversion;
     private TrackExportPlan? _copyOverride;
+    private string? _configurationError;
     public MediaStreamInfo Stream { get; }
     public string Caption { get; }
     public ExportDecision Decision { get; }
@@ -957,8 +1018,11 @@ public sealed class ExportTrackViewModel : ViewModelBase
     {
         if (_locked || options is not null && (!CanConvert || options.Validate(Stream) is not null)) return;
         var hadCopyOverride = _copyOverride is not null;
+        var changed = hadCopyOverride || !Equals(_conversion, options);
         Conversion = options;
         _copyOverride = null;
+        _configurationError = null;
+        if (changed) { State = ExportState.Pending; ResultPath = null; }
         if (hadCopyOverride)
         {
             OnPropertyChanged(nameof(Plan));
@@ -966,14 +1030,29 @@ public sealed class ExportTrackViewModel : ViewModelBase
         }
         Status = options is null ? Decision.Plan is null ? "Доступна конвертация после настройки." : "Не выбран"
             : $"Конвертация в {options.Format.Extension.ToUpperInvariant()} ({options.Encoder.Name}).";
+        OnPropertyChanged(nameof(StatusLabel));
     }
     public void SetCopyOverride(TrackExportPlan? plan)
     {
         if (_locked || plan is not null && (plan.Stream != Stream || !plan.VerifiedCopy)) return;
+        var changed = _conversion is not null || _copyOverride != plan;
         Conversion = null;
         _copyOverride = plan;
+        _configurationError = null;
+        if (changed) { State = ExportState.Pending; ResultPath = null; }
+        Status = plan is null ? "Не выбран" : $"Копирование в {plan.Extension.ToUpperInvariant()} без перекодирования.";
         OnPropertyChanged(nameof(Plan));
         OnPropertyChanged(nameof(OutputPreview));
+        OnPropertyChanged(nameof(StatusLabel));
+    }
+    public void SetConfigurationError(string reason)
+    {
+        if (_locked) return;
+        _configurationError = reason;
+        State = ExportState.Pending;
+        ResultPath = null;
+        Status = reason;
+        OnPropertyChanged(nameof(StatusLabel));
     }
     public bool CanSelect => (IsSupported || CanConvert) && !_locked;
     public string IndexDisplay => Stream.Index?.ToString(CultureInfo.InvariantCulture) ?? "—";
@@ -1021,7 +1100,15 @@ public sealed class ExportTrackViewModel : ViewModelBase
     public bool IsSelected
     {
         get => _isSelected;
-        set { if (CanSelect) SetProperty(ref _isSelected, value); }
+        set
+        {
+            if (CanSelect && SetProperty(ref _isSelected, value))
+            {
+                OnPropertyChanged(nameof(StatusLabel));
+                OnPropertyChanged(nameof(StatusBadgeBackground));
+                OnPropertyChanged(nameof(StatusForeground));
+            }
+        }
     }
     public string Status { get => _status; private set => SetProperty(ref _status, value); }
     public string StatusLabel => !IsSupported && !CanConvert ? "Недоступен" : State switch
@@ -1029,8 +1116,10 @@ public sealed class ExportTrackViewModel : ViewModelBase
         ExportState.Running => Conversion is null ? "Извлекается" : "Конвертируется",
         ExportState.Completed => Conversion is null ? "Извлечён" : "Сконвертирован",
         ExportState.Failed => "Ошибка", ExportState.Cancelled => "Отменено",
+        _ when !IsSelected => Decision.Plan is null ? "Доступна конвертация" : "Доступен",
+        _ when _configurationError is not null => "Нужна настройка",
+        _ when Plan is null => "Нужна настройка",
         _ when Conversion is not null => "Конвертация",
-        _ when Decision.Plan is null => "Нужна настройка",
         _ => "Доступен"
     };
     public IBrush StatusBadgeBackground => !IsSupported && !CanConvert ? MutedBackground : State switch
@@ -1104,6 +1193,7 @@ public sealed record UserLogEntry(string Time, string Message, DiagnosticLevel L
             if (message.Contains("SeekHead=", StringComparison.Ordinal)
                 || message.StartsWith("FFmpeg для потока", StringComparison.OrdinalIgnoreCase)
                 || message.StartsWith("Чтение вложения Matroska", StringComparison.OrdinalIgnoreCase)
+                || Regex.IsMatch(message, @"^Поток #\d+: обработано примерно \d+%")
                 || message.Contains("команда FFmpeg", StringComparison.OrdinalIgnoreCase)) return null;
             if (message.StartsWith("Начало ", StringComparison.OrdinalIgnoreCase))
             {
@@ -1127,7 +1217,8 @@ public sealed record UserLogEntry(string Time, string Message, DiagnosticLevel L
                 var size = Regex.Match(entry.Details ?? "", @"размер ([\d\s\u00a0]+) байт");
                 message = $"{(message.Contains("режим конвертация", StringComparison.OrdinalIgnoreCase) ? "Сконвертирован" : "Извлечён")} поток #{index.Groups[1].Value}" +
                     (format.Success ? $" ({format.Groups[1].Value})" : "") +
-                    (size.Success ? $", {size.Groups[1].Value.Trim()} байт" : "") + ".";
+                    (size.Success && long.TryParse(Regex.Replace(size.Groups[1].Value, @"\s", ""), out var bytes)
+                        ? $", {TrackExporter.FormatByteSize(bytes)}" : "") + ".";
             }
             else if (message.StartsWith("Очередь завершена успешно", StringComparison.OrdinalIgnoreCase))
                 message = "Обработка завершена.";
@@ -1149,6 +1240,11 @@ public sealed record UserLogEntry(string Time, string Message, DiagnosticLevel L
                 var details = message.IndexOf(';');
                 if (details >= 0) message = message[..details] + ".";
             }
+        }
+        else if (entry.Operation is "Аппаратные кодировщики" or "Совместимые кодировщики")
+        {
+            if (!message.StartsWith("Поиск: ", StringComparison.Ordinal)) return null;
+            message = message[7..];
         }
         else if (entry.Operation is "HTTPS" or "Зависимости" &&
             (message.Contains("Источник ") || message.Contains("Путь "))) return null;

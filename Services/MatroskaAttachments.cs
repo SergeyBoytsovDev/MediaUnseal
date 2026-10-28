@@ -151,12 +151,25 @@ internal static class MatroskaAttachments
         NavigationStats? stats = null)
     {
         if (!input.CanRead || !input.CanSeek) throw new InvalidDataException("Matroska требует локальный файл с доступом по смещениям.");
-        try { return await new Reader(input, cancellationToken, stats ?? new NavigationStats()).ReadAsync().ConfigureAwait(false); }
+        try { return await new Reader(input, cancellationToken, stats ?? new NavigationStats(), false).ReadAsync().ConfigureAwait(false); }
         catch (EndOfStreamException ex) { throw new InvalidDataException("Обрезанная структура EBML/Matroska.", ex); }
         catch (DecoderFallbackException ex) { throw new InvalidDataException("Повреждённая строка метаданных Matroska.", ex); }
     }
 
-    private sealed class Reader(Stream input, CancellationToken cancellationToken, NavigationStats stats)
+    // Preview only needs a confirmed image attachment. It never creates an exported file;
+    // Match still verifies FFprobe metadata and attachment ordering before bytes are shown.
+    internal static async Task<IReadOnlyList<Attachment>> ReadPreviewAsync(Stream input,
+        CancellationToken cancellationToken, NavigationStats? stats = null)
+    {
+        if (!input.CanRead || !input.CanSeek)
+            throw new InvalidDataException("Matroska требует локальный файл с доступом по смещениям.");
+        try { return await new Reader(input, cancellationToken, stats ?? new NavigationStats(), true).ReadAsync().ConfigureAwait(false); }
+        catch (EndOfStreamException ex) { throw new InvalidDataException("Обрезанная структура EBML/Matroska.", ex); }
+        catch (DecoderFallbackException ex) { throw new InvalidDataException("Повреждённая строка метаданных Matroska.", ex); }
+    }
+
+    private sealed class Reader(Stream input, CancellationToken cancellationToken, NavigationStats stats,
+        bool previewOnly)
     {
         private const uint Segment = 0x18538067, Attachments = 0x1941A469, Cluster = 0x1F43B675;
         private const uint SeekHead = 0x114D9B74, Seek = 0x4DBB, SeekId = 0x53AB, SeekPosition = 0x53AC;
@@ -237,6 +250,7 @@ internal static class MatroskaAttachments
                     if (_foundAttachments) throw Bad("Повтор элемента Attachments");
                     _foundAttachments = true;
                     await ReadAttachmentsAsync(element.End!.Value).ConfigureAwait(false);
+                    if (previewOnly) return true;
                 }
                 else if (element.Id == SeekHead)
                 {
@@ -332,6 +346,7 @@ internal static class MatroskaAttachments
             stats.UsedSeekHead = true;
             _foundAttachments = true;
             await ReadAttachmentsAsync(attachments.End.Value).ConfigureAwait(false);
+            if (previewOnly) return true;
             // Keep checking the tail for duplicate Attachments and malformed
             // top-level elements. For the usual late attachment this is short.
             MoveTo(attachments.End.Value);
@@ -450,7 +465,9 @@ internal static class MatroskaAttachments
         private async Task<Element> HeaderAsync(long parentEnd)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (++_elements > 100_000) throw Bad("Превышен лимит заголовков EBML (100000)");
+            if (++_elements > (previewOnly ? 512 : 100_000))
+                throw Bad(previewOnly ? "Превышен лимит поиска обложки (512 элементов)"
+                    : "Превышен лимит заголовков EBML (100000)");
             stats.Elements = _elements;
             var start = input.Position;
             var (id, _) = await VintAsync(parentEnd, true).ConfigureAwait(false);

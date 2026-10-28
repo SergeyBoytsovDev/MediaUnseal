@@ -17,8 +17,11 @@ public enum ExportState { Pending, Running, Completed, Failed, Cancelled }
 public sealed record TrackExportPlan(MediaStreamInfo Stream, string Extension, string Muxer,
     bool StillImage, bool Attachment = false, ConversionSettings? Conversion = null, bool VerifiedCopy = false);
 public sealed record ExportDecision(TrackExportPlan? Plan, string? Reason);
+public sealed record ExportOptions(bool PreserveMetadata = true, bool GroupByLanguage = false,
+    bool CreateSourceFolder = false);
 public sealed record ExportUpdate(int StreamIndex, ExportState State, string Message,
-    double? OverallPercent, int Processed, int Total, TimeSpan? MediaPosition = null);
+    double? OverallPercent, int Processed, int Total, TimeSpan? MediaPosition = null,
+    double? CurrentPercent = null, int GroupCount = 1);
 public sealed record TrackExportResult(int StreamIndex, ExportState State, string Message, string? OutputPath,
     TimeSpan Elapsed = default, long? OutputBytes = null);
 public sealed record ExportResult(IReadOnlyList<TrackExportResult> Tracks, bool WasCancelled, TimeSpan Elapsed = default)
@@ -85,6 +88,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 "vorbis" => ("ogg", "ogg", false),
                 "ac3" => ("ac3", "ac3", false),
                 "eac3" => ("eac3", "eac3", false),
+                "dts" => ("dts", "dts", false),
                 "pcm_s16le" or "pcm_s24le" or "pcm_s32le" or "pcm_f32le" => ("wav", "wav", false),
                 "alac" => ("m4a", "ipod", false),
                 _ => null
@@ -109,8 +113,10 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
     }
 
     public async Task<ExportResult> ExportAsync(MediaInfo media, IReadOnlyList<TrackExportPlan> selected,
-        string outputDirectory, string ffmpegPath, IProgress<ExportUpdate>? progress, CancellationToken cancellationToken)
+        string outputDirectory, string ffmpegPath, IProgress<ExportUpdate>? progress, CancellationToken cancellationToken,
+        ExportOptions? options = null)
     {
+        options ??= new ExportOptions();
         if (selected.Count == 0) throw new ArgumentException("Выберите хотя бы одну дорожку.", nameof(selected));
         if (TimeoutPerTrack <= TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(TimeoutPerTrack));
         if (!Directory.Exists(outputDirectory)) throw new DirectoryNotFoundException("Выбранная папка сохранения не найдена.");
@@ -127,6 +133,9 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
               : Decide(media, p.Stream).Plan is not { } supported || supported != p))
             throw new ArgumentException("Один из выбранных форматов несовместим с потоком.", nameof(selected));
         var directory = Path.GetFullPath(outputDirectory);
+        if (options.CreateSourceFolder)
+            directory = Path.Combine(directory, SafeFolderName(Path.GetFileNameWithoutExtension(media.Name)));
+        Directory.CreateDirectory(directory);
         var stage = Path.Combine(directory, ".trackextractor-" + Guid.NewGuid().ToString("N"));
         var results = new List<TrackExportResult>();
         var reserved = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
@@ -150,7 +159,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 if (i > groupFallbackUntil && group.Length > 1)
                 {
                     var grouped = await TryExportGroupAsync(media, group, directory, stage, ffmpegPath,
-                        reserved, results, progress, i, selected.Count, cancellationToken).ConfigureAwait(false);
+                        reserved, results, progress, i, selected.Count, cancellationToken, options).ConfigureAwait(false);
                     if (grouped == GroupOutcome.Completed) { i += group.Length - 1; continue; }
                     if (grouped == GroupOutcome.Cancelled) { cancelled = true; break; }
                     groupFallbackUntil = i + group.Length - 1;
@@ -160,7 +169,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 var plan = selected[i];
                 var ordinal = i;
                 var index = plan.Stream.Index!.Value;
-                var target = ReserveName(media, plan, directory, reserved);
+                var target = ReserveName(media, plan, TargetDirectory(directory, plan, options), reserved);
                 var temp = Path.Combine(stage, $"{index}-{Guid.NewGuid():N}.{plan.Extension}");
                 progress?.Report(new(index, ExportState.Running,
                     $"Поток #{index}: {(plan.Conversion is null ? "извлечение" : "конвертация")} в {Path.GetFileName(target)}", null, i, selected.Count));
@@ -202,7 +211,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                                 $"Поток #{index}: обработано примерно {part * 100:0}%.");
                         }
                         progress?.Report(new(index, ExportState.Running,
-                            $"Поток #{index}: ≈{overall:0.#}% общей очереди", overall, ordinal, selected.Count, time));
+                            $"Поток #{index}", overall, ordinal, selected.Count, time, part * 100));
                     });
                     if (nativeAttachment)
                     {
@@ -211,7 +220,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         {
                             progress?.Report(new(index, ExportState.Running,
                                 $"Поток #{index}: копирование вложения Matroska, {part:P0}",
-                                Math.Min(99, (ordinal + part) * 100 / selected.Count), ordinal, selected.Count));
+                                Math.Min(99, (ordinal + part) * 100 / selected.Count), ordinal, selected.Count,
+                                CurrentPercent: part * 100));
                             var bucket = (int)(part * 10);
                             if (bucket > lastCopyBucket)
                             {
@@ -237,7 +247,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     }
                     if (!nativeCompleted)
                     {
-                        var args = BuildArguments(media.FullPath, index, plan, temp);
+                        var args = BuildArguments(media.FullPath, index, plan, temp, options.PreserveMetadata);
                         string? lastError = null;
                         exitCode = ProcessRunner is null
                             ? await RunFfmpegAsync(ffmpegPath, args, position, line => lastError = line, deadline.Token).ConfigureAwait(false)
@@ -250,7 +260,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     target = MoveWithoutOverwrite(temp, target, reserved);
                     var bytes = new FileInfo(target).Length;
                     var result = new TrackExportResult(index, ExportState.Completed,
-                        $"Сохранён: {Path.GetFileName(target)}; {FormatElapsed(trackWatch.Elapsed)}; {bytes:N0} байт", target,
+                        $"Сохранён: {Path.GetFileName(target)}; {FormatElapsed(trackWatch.Elapsed)}; {FormatByteSize(bytes)}", target,
                         trackWatch.Elapsed, bytes);
                     results.Add(result);
                     progress?.Report(new(index, result.State, result.Message,
@@ -313,14 +323,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                             : $"FFmpeg для потока #{index}: время {FormatElapsed(trackWatch.Elapsed)}, " +
                                 $"код завершения {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "нет")}, " +
                                 $"прогресс {(lastPosition is null ? "не получен" : "получен")}.");
-                    if (File.Exists(temp))
-                    {
-                        try { File.Delete(temp); }
-                        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                        {
-                            diagnostics.Record(DiagnosticLevel.Warn, "Экспорт", $"Не удалось удалить временный файл потока #{index}.");
-                        }
-                    }
+                    if (!await DeleteOwnTempAsync(temp).ConfigureAwait(false))
+                        diagnostics.Record(DiagnosticLevel.Warn, "Экспорт", $"Не удалось удалить временный файл потока #{index}.");
                 }
             }
         }
@@ -338,15 +342,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)
                 && Directory.Exists(stage))
             {
-                try
-                {
-                    if ((File.GetAttributes(stage) & FileAttributes.ReparsePoint) == 0)
-                        Directory.Delete(stage, recursive: false);
-                }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                {
+                if (!await DeleteOwnStageAsync(stage).ConfigureAwait(false))
                     diagnostics.Record(DiagnosticLevel.Warn, "Экспорт", "Временный каталог не удалось удалить автоматически.");
-                }
             }
         }
         if (cancelled)
@@ -372,9 +369,9 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
     private async Task<GroupOutcome> TryExportGroupAsync(MediaInfo media, TrackExportPlan[] group,
         string directory, string stage, string ffmpegPath, HashSet<string> reserved,
         List<TrackExportResult> results, IProgress<ExportUpdate>? progress, int processed, int total,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken, ExportOptions options)
     {
-        var targets = group.Select(p => ReserveName(media, p, directory, reserved)).ToArray();
+        var targets = group.Select(p => ReserveName(media, p, TargetDirectory(directory, p, options), reserved)).ToArray();
         var temps = group.Select(p => Path.Combine(stage,
             $"{p.Stream.Index}-{Guid.NewGuid():N}.{p.Extension}")).ToArray();
         var indexes = string.Join(", ", group.Select(p => $"#{p.Stream.Index}"));
@@ -401,13 +398,12 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 var part = duration is { } length
                     ? Math.Clamp(time.TotalSeconds / length.TotalSeconds, 0, 0.99) : (double?)null;
                 var overall = part is { } value
-                    ? Math.Min(99, (processed + value) * 100 / total) : (double?)null;
+                    ? Math.Min(99, (processed + value * group.Length) * 100 / total) : (double?)null;
                 progress?.Report(new(group[0].Stream.Index!.Value, ExportState.Running,
-                    $"Потоки {indexes}: общий проход, позиция FFmpeg {FormatElapsed(time)}",
-                    overall, processed, total, time));
+                    $"Потоки {indexes}", overall, processed, total, time, GroupCount: group.Length));
             });
             string? lastError = null;
-            var args = BuildGroupArguments(media.FullPath, group, temps);
+            var args = BuildGroupArguments(media.FullPath, group, temps, options.PreserveMetadata);
             exitCode = ProcessRunner is null
                 ? await RunFfmpegAsync(ffmpegPath, args, position, line => lastError = line,
                     deadline.Token).ConfigureAwait(false)
@@ -428,7 +424,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 {
                     var target = MoveWithoutOverwrite(temps[j], targets[j], reserved);
                     var bytes = new FileInfo(target).Length;
-                    var message = $"Сохранён: {Path.GetFileName(target)}; {FormatElapsed(watch.Elapsed)}; {bytes:N0} байт";
+                    var message = $"Сохранён: {Path.GetFileName(target)}; {FormatElapsed(watch.Elapsed)}; {FormatByteSize(bytes)}";
                     results.Add(new(index, ExportState.Completed, message, target, watch.Elapsed, bytes));
                     progress?.Report(new(index, ExportState.Completed, message,
                         Math.Min(99, (processed + j + 1) * 100.0 / total), processed + j + 1, total));
@@ -485,28 +481,37 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 $"код завершения {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "нет")}, " +
                 $"прогресс {(lastPosition is null ? "не получен" : "получен")}.");
             foreach (var temp in temps)
-                if (File.Exists(temp))
-                    try { File.Delete(temp); }
-                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                    { diagnostics.Record(DiagnosticLevel.Warn, "Экспорт", "Не удалось удалить временный файл общего прохода."); }
+                if (!await DeleteOwnTempAsync(temp).ConfigureAwait(false))
+                    diagnostics.Record(DiagnosticLevel.Warn, "Экспорт", "Не удалось удалить временный файл общего прохода.");
             if (!completed)
                 foreach (var target in targets) reserved.Remove(target);
         }
     }
 
     internal static string[] BuildGroupArguments(string input, IReadOnlyList<TrackExportPlan> group,
-        IReadOnlyList<string> temps)
+        IReadOnlyList<string> temps, bool preserveMetadata = true)
     {
         var args = new List<string> { "-hide_banner", "-loglevel", "error", "-nostdin",
             "-stats_period", "0.5", "-progress", "pipe:2", "-i", input };
         for (var i = 0; i < group.Count; i++)
-            args.AddRange(["-map", $"0:{group[i].Stream.Index}", "-c", "copy",
+        {
+            args.AddRange(["-map", $"0:{group[i].Stream.Index}", "-c", "copy"]);
+            args.AddRange(["-map_metadata", preserveMetadata ? "0" : "-1",
                 "-f", group[i].Muxer, temps[i]]);
+        }
         return args.ToArray();
     }
 
     internal static string FormatElapsed(TimeSpan time) =>
         $"{(long)time.TotalHours:00}:{time.Minutes:00}:{time.Seconds:00}";
+
+    internal static string FormatByteSize(long bytes) => bytes switch
+    {
+        >= 1L << 30 => $"{bytes / (double)(1L << 30):0.##} ГБ",
+        >= 1L << 20 => $"{bytes / (double)(1L << 20):0.##} МБ",
+        >= 1L << 10 => $"{bytes / (double)(1L << 10):0.##} КБ",
+        _ => $"{bytes} байт"
+    };
 
     private static string SafeFfmpegError(string line)
     {
@@ -515,17 +520,25 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             ? "отказ в доступе" : "подробности показаны в сообщении об ошибке";
     }
 
-    internal static string[] BuildArguments(string input, int index, TrackExportPlan plan, string temp) =>
+    internal static string[] BuildArguments(string input, int index, TrackExportPlan plan, string temp,
+        bool preserveMetadata = true) =>
         plan.Conversion is { } conversion
-            ? BuildConversionArguments(input, index, conversion, temp)
+            ? WithMetadata(BuildConversionArguments(input, index, conversion, temp), preserveMetadata)
             : plan.Attachment
             ? ["-hide_banner", "-loglevel", "error", "-nostdin", $"-dump_attachment:{index}", temp, "-i", input]
             : plan.StillImage
-            ? ["-hide_banner", "-loglevel", "error", "-nostdin", "-stats_period", "0.5", "-progress", "pipe:2",
+            ? WithMetadata(["-hide_banner", "-loglevel", "error", "-nostdin", "-stats_period", "0.5", "-progress", "pipe:2",
                 "-i", input, "-map", $"0:{index}", "-c", "copy", "-frames:v", "1", "-update", "1",
-                "-f", plan.Muxer, temp]
-            : ["-hide_banner", "-loglevel", "error", "-nostdin", "-stats_period", "0.5", "-progress", "pipe:2",
-                "-i", input, "-map", $"0:{index}", "-c", "copy", "-f", plan.Muxer, temp];
+                "-f", plan.Muxer, temp], preserveMetadata)
+            : WithMetadata(["-hide_banner", "-loglevel", "error", "-nostdin", "-stats_period", "0.5", "-progress", "pipe:2",
+                "-i", input, "-map", $"0:{index}", "-c", "copy", "-f", plan.Muxer, temp], preserveMetadata);
+
+    private static string[] WithMetadata(string[] args, bool preserve)
+    {
+        var result = args.ToList();
+        result.InsertRange(result.Count - 3, ["-map_metadata", preserve ? "0" : "-1"]);
+        return result.ToArray();
+    }
 
     internal static string[] BuildConversionArguments(string input, int index, ConversionSettings options, string temp)
     {
@@ -580,6 +593,24 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         return clean.Length == 0 ? "track" : clean;
     }
 
+    private static string SafeFolderName(string value)
+    {
+        var name = Sanitize(value);
+        if (name.Length > 100) name = name[..100].TrimEnd(' ', '.');
+        if (name is "CON" or "PRN" or "AUX" or "NUL") name = "_" + name;
+        return name.Length == 0 ? "media" : name;
+    }
+
+    private static string TargetDirectory(string root, TrackExportPlan plan, ExportOptions options)
+    {
+        if (!options.GroupByLanguage || plan.Stream.CodecType is not ("audio" or "subtitle")) return root;
+        var language = SafeFolderName(string.IsNullOrWhiteSpace(plan.Stream.Language)
+            ? "язык не указан" : plan.Stream.Language);
+        var target = Path.Combine(root, language);
+        Directory.CreateDirectory(target);
+        return target;
+    }
+
     private static string ReserveName(MediaInfo media, TrackExportPlan plan, string directory, HashSet<string> reserved)
     {
         var requested = BuildFileName(media, plan);
@@ -611,6 +642,41 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             catch (IOException) when (File.Exists(candidate) || Directory.Exists(candidate)) { }
         }
         throw new IOException("Не удалось подобрать свободное имя выходного файла.");
+    }
+
+    private static async Task<bool> DeleteOwnTempAsync(string path)
+    {
+        for (var attempt = 0; attempt < 6; attempt++)
+        {
+            if (!File.Exists(path)) return true;
+            try { File.Delete(path); return true; }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                if (attempt == 5) return false;
+                await Task.Delay(100).ConfigureAwait(false);
+            }
+        }
+        return false;
+    }
+
+    private static async Task<bool> DeleteOwnStageAsync(string path)
+    {
+        for (var attempt = 0; attempt < 6; attempt++)
+        {
+            if (!Directory.Exists(path)) return true;
+            try
+            {
+                if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0) return false;
+                Directory.Delete(path, recursive: false);
+                return true;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                if (attempt == 5) return false;
+                await Task.Delay(100).ConfigureAwait(false);
+            }
+        }
+        return false;
     }
 
     private static async Task<int> RunFfmpegAsync(string executable, string[] arguments,

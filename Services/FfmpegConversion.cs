@@ -72,6 +72,8 @@ public sealed class FfmpegConversionCatalog
     private readonly string _ffmpeg;
     private readonly List<ConversionFormat> _formats;
     private readonly List<ConversionEncoder> _encoders;
+    private readonly Dictionary<ConversionFormat, IReadOnlyList<ConversionEncoder>> _confirmedHardware = new();
+    private readonly Dictionary<(ConversionFormat Format, string Kind), IReadOnlyList<ConversionEncoder>> _confirmedAdditional = new();
     internal Func<string[], CancellationToken, Task<(int ExitCode, string Output)>>? CommandRunner { get; init; }
 
     private FfmpegConversionCatalog(string ffmpeg, List<ConversionFormat> formats, List<ConversionEncoder> encoders)
@@ -90,6 +92,27 @@ public sealed class FfmpegConversionCatalog
     public IReadOnlyList<ConversionEncoder> EncodersFor(string kind) => _encoders
         .Where(e => e.Kind == kind && (kind != "subtitle" || e.Name is not ("dvbsub" or "dvdsub" or "xsub")))
         .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+
+    internal IReadOnlyList<ConversionEncoder> ConfirmedHardwareFor(ConversionFormat format) =>
+        _confirmedHardware.TryGetValue(format, out var encoders) ? encoders : [];
+
+    internal void RememberConfirmedHardware(ConversionFormat format, IEnumerable<ConversionEncoder> encoders)
+    {
+        if (!_formats.Contains(format)) return;
+        _confirmedHardware[format] = encoders.Where(e => e.IsHardware && _encoders.Contains(e))
+            .Distinct().ToArray();
+    }
+
+    internal IReadOnlyList<ConversionEncoder> ConfirmedAdditionalFor(ConversionFormat format, string kind) =>
+        _confirmedAdditional.TryGetValue((format, kind), out var encoders) ? encoders : [];
+
+    internal void RememberConfirmedAdditional(ConversionFormat format, string kind,
+        IEnumerable<ConversionEncoder> encoders)
+    {
+        if (!_formats.Contains(format) || format.DefaultCodec(kind) is null) return;
+        _confirmedAdditional[(format, kind)] = encoders
+            .Where(e => e.Kind == kind && !e.IsHardware && _encoders.Contains(e)).Distinct().ToArray();
+    }
 
     public ConversionEncoder? SuggestedEncoder(ConversionFormat format, string kind) =>
         _encoders.Where(e => e.Kind == kind && e.Codec == format.DefaultCodec(kind))
@@ -128,9 +151,13 @@ public sealed class FfmpegConversionCatalog
         return result.ExitCode == 0 && Regex.IsMatch(result.Output, @"(?m)^\s*-crf\s");
     }
 
-    public static async Task<FfmpegConversionCatalog> DiscoverAsync(string ffmpeg, CancellationToken token)
+    public static Task<FfmpegConversionCatalog> DiscoverAsync(string ffmpeg, CancellationToken token) =>
+        DiscoverAsync(ffmpeg, token, null);
+
+    internal static async Task<FfmpegConversionCatalog> DiscoverAsync(string ffmpeg, CancellationToken token,
+        Func<string[], CancellationToken, Task<(int ExitCode, string Output)>>? commandRunner)
     {
-        var catalog = new FfmpegConversionCatalog(ffmpeg, [], []);
+        var catalog = new FfmpegConversionCatalog(ffmpeg, [], []) { CommandRunner = commandRunner };
         var encoders = await catalog.RunAsync(["-hide_banner", "-encoders"], token).ConfigureAwait(false);
         var muxers = await catalog.RunAsync(["-hide_banner", "-muxers"], token).ConfigureAwait(false);
         if (encoders.ExitCode != 0 || muxers.ExitCode != 0)
@@ -156,7 +183,7 @@ public sealed class FfmpegConversionCatalog
 
     public async Task<(bool Compatible, string Reason)> CheckCombinationAsync(
         ConversionFormat format, ConversionEncoder encoder, CancellationToken token,
-        ConversionSettings? settings = null)
+        ConversionSettings? settings = null, Action<string>? diagnostics = null)
     {
         if (!_formats.Contains(format) || !_encoders.Contains(encoder)
             || format.DefaultCodec(encoder.Kind) is null
@@ -169,7 +196,9 @@ public sealed class FfmpegConversionCatalog
             Directory.CreateDirectory(directory);
             string[] input;
             if (encoder.Kind == "video")
-                input = ["-f", "lavfi", "-i", "color=c=black:s=64x64:r=1:d=1", "-frames:v", "1"];
+                input = encoder.IsHardware
+                    ? ["-f", "lavfi", "-i", "testsrc2=size=320x240:rate=30:duration=0.2", "-frames:v", "3"]
+                    : ["-f", "lavfi", "-i", "color=c=black:s=64x64:r=1:d=1", "-frames:v", "1"];
             else if (encoder.Kind == "audio")
                 input = ["-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000:duration=0.2", "-t", "0.2"];
             else
@@ -184,12 +213,23 @@ public sealed class FfmpegConversionCatalog
             if (settings is not null) TrackExporter.AppendConversionOptions(args, settings);
             args.AddRange(["-f", format.Muxer, output]);
             var result = await RunAsync(args.ToArray(), token).ConfigureAwait(false);
+            if (result.ExitCode != 0 && diagnostics is not null)
+                diagnostics($"{encoder.Name}: код FFmpeg {result.ExitCode}; {result.Output}");
             return result.ExitCode == 0 && File.Exists(output) && new FileInfo(output).Length > 0
-                ? (true, "") : (false, "FFmpeg не смог создать пробный файл с этим кодировщиком и форматом.");
+                ? (true, "") : (false, $"Кодировщик {encoder.Name} найден в FFmpeg, но не смог создать пробный файл " +
+                    $"в формате {format.Extension.ToUpperInvariant()} (код FFmpeg: {result.ExitCode}).");
+        }
+        catch (TimeoutException)
+        {
+            diagnostics?.Invoke($"{encoder.Name}: время ожидания FFmpeg истекло.");
+            return (false, $"Проверка кодировщика {encoder.Name} превысила время ожидания.");
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception
-            or TimeoutException or InvalidDataException)
-        { return (false, "Не удалось проверить совместимость кодировщика и формата."); }
+            or InvalidDataException)
+        {
+            diagnostics?.Invoke($"{encoder.Name}: {ex.GetType().Name}: {ex.Message}");
+            return (false, $"Не удалось проверить кодировщик {encoder.Name} с форматом {format.Extension.ToUpperInvariant()}.");
+        }
         finally
         {
             foreach (var file in new[] { Path.Combine(directory, "probe.srt"), output })

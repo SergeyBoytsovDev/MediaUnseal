@@ -23,7 +23,15 @@
     </ComboBox>
     <TextBlock Text="Кодировщик" FontWeight="SemiBold"/>
     <ComboBox x:Name="EncoderBox" SelectionChanged="Encoder_SelectionChanged" HorizontalAlignment="Stretch">
-     <ComboBox.ItemTemplate><DataTemplate x:DataType="services:ConversionEncoder"><TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis"/></DataTemplate></ComboBox.ItemTemplate>
+     <ComboBox.ItemTemplate>
+      <DataTemplate x:DataType="services:ConversionEncoder">
+       <StackPanel>
+        <Border Height="1" Margin="0,4,0,5" Background="{DynamicResource LineBrush}"
+                IsVisible="False" Loaded="HardwareDivider_Loaded"/>
+        <TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis"/>
+       </StackPanel>
+      </DataTemplate>
+     </ComboBox.ItemTemplate>
     </ComboBox>
     <Button x:Name="MoreEncodersButton" Content="Найти другие совместимые кодировщики" Click="MoreEncoders_Click" HorizontalAlignment="Left"/>
     <TextBlock x:Name="EncoderNote" Classes="muted" TextWrapping="Wrap"/>
@@ -56,8 +64,8 @@
    </StackPanel>
   </ScrollViewer>
   <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="16,10">
-   <Button Content="Отмена" Click="Cancel_Click" MinWidth="105"/>
-   <Button x:Name="SaveButton" Classes="primary" Content="Применить" Click="Save_Click" MinWidth="170"/>
+   <Button Content="Отмена" Click="Cancel_Click" Padding="18,7" Height="38" HorizontalContentAlignment="Center"/>
+   <Button x:Name="SaveButton" Classes="primary" Content="Применить" Click="Save_Click" Padding="18,7" Height="38" HorizontalContentAlignment="Center"/>
   </StackPanel>
  </Grid>
 </Window>

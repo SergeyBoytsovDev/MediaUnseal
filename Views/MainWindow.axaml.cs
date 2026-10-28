@@ -33,6 +33,7 @@ public partial class MainWindow : Window
     private bool _reapplyFormats;
     private CancellationTokenSource? _formatChange;
     private readonly Dictionary<string, FormatChoice> _formatChoices = new();
+    private readonly HashSet<ExportTrackViewModel> _previouslySelected = new();
     private sealed record FormatChoice(string Display, ConversionFormat? Format = null,
         ConversionSettings? Settings = null)
     {
@@ -55,7 +56,7 @@ public partial class MainWindow : Window
             Width = appearance.Preferences.Width;
             Height = appearance.Preferences.Height;
             for (var i = 0; i < StreamsTable.Columns.Count; i++)
-                StreamsTable.Columns[i].Width = new GridLength(appearance.Preferences.ColumnWidths[i]);
+                StreamsTable.Columns[i].Width = new GridLength(i == 0 ? 36 : appearance.Preferences.ColumnWidths[i]);
         }
         for (var i = 0; i < StreamsTable.Columns.Count; i++)
         {
@@ -94,10 +95,10 @@ public partial class MainWindow : Window
             }
             RefreshFormatControls();
         };
-        DragDrop.SetAllowDrop(DropZone, true);
-        DragDrop.AddDragOverHandler(DropZone, DragOver);
-        DragDrop.AddDropHandler(DropZone, Drop);
-        DragDrop.AddDragLeaveHandler(DropZone, (_, _) => DropZone.Classes.Remove("dragging"));
+        DragDrop.SetAllowDrop(this, true);
+        this.AddHandler(DragDrop.DragOverEvent, DragOver, RoutingStrategies.Bubble, handledEventsToo: true);
+        this.AddHandler(DragDrop.DropEvent, Drop, RoutingStrategies.Bubble, handledEventsToo: true);
+        DragDrop.AddDragLeaveHandler(this, (_, _) => DropZone.Classes.Remove("dragging"));
     }
 
     private void Events_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -185,7 +186,7 @@ public partial class MainWindow : Window
             appearance.Preferences.Y = Position.Y;
         }
         appearance.Preferences.ColumnWidths = StreamsTable.Columns
-            .Select((column, index) => double.IsFinite(column.ActualWidth)
+            .Select((column, index) => index == 0 ? 36 : double.IsFinite(column.ActualWidth)
                 ? Math.Clamp(column.ActualWidth, MinimumColumnWidths[index], 1000)
                 : appearance.Preferences.ColumnWidths[index]).ToArray();
         appearance.Save();
@@ -216,6 +217,11 @@ public partial class MainWindow : Window
         if (DataContext is MainViewModel viewModel) viewModel.ClearCurrentFile();
     }
 
+    private void ToggleAllTracks_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel viewModel) viewModel.ToggleAllTracks();
+    }
+
     private void StreamsTable_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (!e.GetCurrentPoint(StreamsTable).Properties.IsRightButtonPressed) return;
@@ -235,6 +241,16 @@ public partial class MainWindow : Window
             {
                 _formatChange?.Cancel();
                 _formatChoices.Clear();
+                _previouslySelected.Clear();
+            }
+            if (e.PropertyName == nameof(MainViewModel.SelectedCountDisplay) &&
+                DataContext is MainViewModel selectionModel)
+            {
+                var current = selectionModel.ExportTracks.Where(t => t.IsSelected).ToHashSet();
+                foreach (var kind in new[] { "video", "audio" })
+                    if (ShouldResetFormat(kind, _previouslySelected, current)) _formatChoices.Remove(kind);
+                _previouslySelected.Clear();
+                _previouslySelected.UnionWith(current);
             }
             if (!_applyingFormats) RefreshFormatControls();
             if (e.PropertyName == nameof(MainViewModel.TrackHeading)) _ = LoadFormatsAsync();
@@ -245,6 +261,10 @@ public partial class MainWindow : Window
 
     private static string Kind(ExportTrackViewModel track) => track.Stream.VisualKind == VisualKind.Video
         ? "video" : track.Stream.CodecType ?? "";
+
+    internal static bool ShouldResetFormat(string kind, IEnumerable<ExportTrackViewModel> previous,
+        IEnumerable<ExportTrackViewModel> current) =>
+        !previous.Any(track => Kind(track) == kind) && current.Any(track => Kind(track) == kind);
 
     private static readonly Dictionary<string, (string Muxer, string Label)[]> PopularFormats = new()
     {
@@ -365,10 +385,11 @@ public partial class MainWindow : Window
                 if (!_formatChoices.TryGetValue(kind, out var choice) || choice.Format is null)
                 { track.SetConversion(null); continue; }
                 if (!track.CanConvert || _conversionCatalog is null)
-                { valid = false; continue; }
+                { track.SetConfigurationError("Для выбранного потока конвертация недоступна."); valid = false; continue; }
                 if (choice.Settings is { } settings)
                 {
-                    if (settings.Validate(track.Stream) is not null) { valid = false; continue; }
+                    if (settings.Validate(track.Stream) is { } reason)
+                    { track.SetConfigurationError(reason); valid = false; continue; }
                     track.SetConversion(settings);
                     continue;
                 }
@@ -384,8 +405,11 @@ public partial class MainWindow : Window
                     continue;
                 }
                 var encoder = _conversionCatalog.SuggestedEncoder(format, kind);
-                if (encoder is null || !(await _conversionCatalog.CheckCombinationAsync(format, encoder,
-                    cancellation.Token)).Compatible) { valid = false; continue; }
+                if (encoder is null)
+                { track.SetConfigurationError("Нет подходящего кодировщика для этого формата."); valid = false; continue; }
+                var check = await _conversionCatalog.CheckCombinationAsync(format, encoder, cancellation.Token);
+                if (!check.Compatible)
+                { track.SetConfigurationError(check.Reason); valid = false; continue; }
                 track.SetConversion(new(format, encoder));
             }
         }
@@ -416,9 +440,16 @@ public partial class MainWindow : Window
         if (_conversionCatalog is null) await LoadFormatsAsync();
         if (_conversionCatalog is null) return;
         var choice = _formatChoices.GetValueOrDefault(kind);
-        var dialog = new ConversionWindow(_conversionCatalog, media, track.Stream, choice?.Settings,
-            _shutdown.Token, choice?.Format);
+        var dialog = new ConversionWindow(_conversionCatalog, viewModel.Diagnostics, media, track.Stream, choice?.Settings,
+            _shutdown.Token, choice?.Format, choice?.Format is null ? track.Decision.Plan : null);
         var settings = await dialog.ShowDialog<ConversionSettings?>(this);
+        if (dialog.AppliedCopy && viewModel.SelectedMedia == media)
+        {
+            _formatChoices[kind] = new FormatChoice("Исходный — без перекодирования");
+            RefreshFormatControls();
+            await ApplyAllFormatsAsync();
+            return;
+        }
         if (settings is null || viewModel.SelectedMedia != media) return;
         _formatChoices[kind] = new($"{settings.Format.Extension.ToUpperInvariant()} — пользовательская настройка",
             settings.Format, settings);
@@ -482,6 +513,7 @@ public partial class MainWindow : Window
 
     private async void Drop(object? sender, DragEventArgs e)
     {
+        e.Handled = true;
         DropZone.Classes.Remove("dragging");
         if (DataContext is not MainViewModel viewModel) return;
         if (!viewModel.SelectFile())

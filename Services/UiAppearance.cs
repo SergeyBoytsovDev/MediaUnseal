@@ -15,7 +15,7 @@ internal sealed class UiPreferences
     public double Height { get; set; } = 900;
     public int? X { get; set; }
     public int? Y { get; set; }
-    public double[] ColumnWidths { get; set; } = [44, 126, 68, 135, 135, 112, 180, 118];
+    public double[] ColumnWidths { get; set; } = [36, 126, 68, 135, 135, 112, 180, 118];
     public string? OutputDirectory { get; set; }
 }
 

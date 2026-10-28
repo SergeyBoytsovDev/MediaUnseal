@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using TrackExtractor.Services;
 using TrackExtractor.ViewModels;
 
@@ -56,6 +57,8 @@ public partial class SettingsWindow : Window
     }
 
     internal void SetShowContinue(bool value) => _installer.SetShowContinue(value);
+
+    private void OpenGuide_Click(object? sender, RoutedEventArgs e) => new MediaGuideWindow().Show(this);
 
     private void Sections_SelectionChanged(object? sender, SelectionChangedEventArgs e) =>
         SelectSection(SectionsList.SelectedIndex);
