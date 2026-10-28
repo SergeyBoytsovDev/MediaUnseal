@@ -242,7 +242,16 @@ public class MainViewModel : ViewModelBase
         }
     }
     public bool CanExtract => IsReady && !IsBusy && !IsAnalyzing && !IsExporting
-        && SelectedMedia is not null && OutputDirectory is not null && ExportTracks.Any(t => t.IsSelected && t.IsSupported);
+        && _formatsValid
+        && SelectedMedia is not null && OutputDirectory is not null
+        && ExportTracks.Any(t => t.IsSelected) && ExportTracks.Where(t => t.IsSelected).All(t => t.Plan is not null);
+    internal string? FfmpegExecutable => _ffmpegPath;
+    private bool _formatsValid = true;
+    internal void SetFormatsValid(bool value)
+    {
+        _formatsValid = value;
+        OnPropertyChanged(nameof(CanExtract));
+    }
     public bool CanChooseFile => !IsBusy && !IsExporting;
     public bool CanClearFile => (HasMedia || IsAnalyzing) && !IsExporting;
     public bool HasSourceOrAnalysis => HasMedia || IsAnalyzing;
@@ -252,10 +261,12 @@ public class MainViewModel : ViewModelBase
     public bool HasMedia => SelectedMedia is not null;
     public bool HasNoMedia => !HasMedia;
     public string TrackHeading => $"Найденные медиапотоки ({ExportTracks.Count})";
-    public string SelectedCountDisplay => $"Выбрано: {ExportTracks.Count(t => t.IsSelected && t.IsSupported)}";
+    public string SelectedCountDisplay => $"Выбрано: {ExportTracks.Count(t => t.IsSelected && t.Plan is not null)}";
+    public string ExportActionLabel => ExportTracks.Any(t => t.IsSelected && t.Conversion is not null)
+        ? "Обработать" : "Извлечь";
     public string FooterStatus => IsBusy ? "Проверка зависимостей…" : !IsReady
         ? "Нужны FFmpeg и FFprobe" : IsAnalyzing ? "Анализ файла…"
-        : IsExporting ? "Идёт извлечение…" : AnalysisStatus == "Ошибка"
+        : IsExporting ? "Идёт обработка…" : AnalysisStatus == "Ошибка"
         ? "Ошибка анализа" : "Готов к работе";
     public string MediaFileName => SelectedMedia?.Name ?? "Файл не выбран";
     public string MediaFilePath => SelectedMedia?.FullPath ?? "Выберите файл или перетащите его в область слева";
@@ -365,14 +376,14 @@ public class MainViewModel : ViewModelBase
 
     private bool AllSelected(string codecType)
     {
-        var group = ExportTracks.Where(t => t.Stream.CodecType == codecType && t.IsSupported).ToArray();
+        var group = ExportTracks.Where(t => t.Stream.CodecType == codecType && t.Plan is not null).ToArray();
         return group.Length > 0 && group.All(t => t.IsSelected);
     }
 
     private void SetGroupSelected(string codecType, bool selected)
     {
         if (!CanBulkSelect) return;
-        foreach (var track in ExportTracks.Where(t => t.Stream.CodecType == codecType && t.CanSelect))
+        foreach (var track in ExportTracks.Where(t => t.Stream.CodecType == codecType && t.CanSelect && t.Plan is not null))
             track.IsSelected = selected;
         OnPropertyChanged(nameof(SelectAllAudio));
         OnPropertyChanged(nameof(SelectAllSubtitles));
@@ -430,10 +441,11 @@ public class MainViewModel : ViewModelBase
                 var track = new ExportTrackViewModel(stream, description, TrackExporter.Decide(media, stream));
                 track.PropertyChanged += (_, args) =>
                 {
-                    if (args.PropertyName == nameof(ExportTrackViewModel.IsSelected))
+                    if (args.PropertyName is nameof(ExportTrackViewModel.IsSelected) or nameof(ExportTrackViewModel.Conversion))
                     {
                         OnPropertyChanged(nameof(CanExtract));
                         OnPropertyChanged(nameof(SelectedCountDisplay));
+                        OnPropertyChanged(nameof(ExportActionLabel));
                         OnPropertyChanged(nameof(SelectAllAudio));
                         OnPropertyChanged(nameof(SelectAllSubtitles));
                     }
@@ -538,8 +550,8 @@ public class MainViewModel : ViewModelBase
             return;
         }
         var media = SelectedMedia;
-        var selected = ExportTracks.Where(t => t.IsSelected && t.Decision.Plan is not null).ToArray();
-        var plans = selected.Select(t => t.Decision.Plan!).ToArray();
+        var selected = ExportTracks.Where(t => t.IsSelected && t.Plan is not null).ToArray();
+        var plans = selected.Select(t => t.Plan!).ToArray();
         using var operation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _exportOperation = operation;
         _exportIdle = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -579,7 +591,7 @@ public class MainViewModel : ViewModelBase
             ExportProgressIndeterminate = false;
             ExportProgress = result.Success ? 100 : Math.Min(99,
                 result.Tracks.Count(t => t.State is ExportState.Completed or ExportState.Failed) * 100.0 / plans.Length);
-            ExportStatus = (result.Success ? "Все выбранные дорожки извлечены."
+            ExportStatus = (result.Success ? "Все выбранные дорожки обработаны."
                 : result.WasCancelled ? "Извлечение остановлено. Готовые файлы сохранены."
                 : "Очередь завершена с ошибками. Готовые файлы сохранены.") +
                 $" Общее время: {TrackExporter.FormatElapsed(result.Elapsed)}";
@@ -905,7 +917,7 @@ public sealed class ExportTrackViewModel : ViewModelBase
         Stream = stream;
         Caption = caption;
         Decision = decision;
-        _status = decision.Plan is null ? "Недоступно: " + decision.Reason : "Не выбран";
+        _status = decision.Plan is null ? (CanConvert ? "Доступна конвертация после настройки." : "Недоступно: " + decision.Reason) : "Не выбран";
     }
 
     private bool _isSelected;
@@ -913,11 +925,57 @@ public sealed class ExportTrackViewModel : ViewModelBase
     private ExportState _state = ExportState.Pending;
     private string _status;
     private string? _resultPath;
+    private ConversionSettings? _conversion;
+    private TrackExportPlan? _copyOverride;
     public MediaStreamInfo Stream { get; }
     public string Caption { get; }
     public ExportDecision Decision { get; }
+    public bool CanConvert => Stream.Index is >= 0 &&
+        (Stream.VisualKind == VisualKind.Video || Stream.CodecType == "audio"
+            || Stream.CodecType == "subtitle" && Stream.SubtitleKind == SubtitleKind.Text);
     public bool IsSupported => Decision.Plan is not null;
-    public bool CanSelect => IsSupported && !_locked;
+    public ConversionSettings? Conversion
+    {
+        get => _conversion;
+        private set
+        {
+            if (!SetProperty(ref _conversion, value)) return;
+            OnPropertyChanged(nameof(Plan));
+            OnPropertyChanged(nameof(ModeDisplay));
+            OnPropertyChanged(nameof(OutputPreview));
+            OnPropertyChanged(nameof(StatusLabel));
+        }
+    }
+    public TrackExportPlan? Plan => Conversion is { } options
+        ? new(Stream, options.Format.Extension, options.Format.Muxer, false, false, options)
+        : _copyOverride ?? Decision.Plan;
+    public string ModeDisplay => Conversion is null ? "Извлечение" : "Конвертация";
+    public string OutputPreview => Conversion is null
+        ? Plan is { } copy ? $".{copy.Extension} · без перекодирования" : "Для извлечения формат не определён"
+        : $".{Conversion.Format.Extension} · {Conversion.Encoder.Name}";
+    public void SetConversion(ConversionSettings? options)
+    {
+        if (_locked || options is not null && (!CanConvert || options.Validate(Stream) is not null)) return;
+        var hadCopyOverride = _copyOverride is not null;
+        Conversion = options;
+        _copyOverride = null;
+        if (hadCopyOverride)
+        {
+            OnPropertyChanged(nameof(Plan));
+            OnPropertyChanged(nameof(OutputPreview));
+        }
+        Status = options is null ? Decision.Plan is null ? "Доступна конвертация после настройки." : "Не выбран"
+            : $"Конвертация в {options.Format.Extension.ToUpperInvariant()} ({options.Encoder.Name}).";
+    }
+    public void SetCopyOverride(TrackExportPlan? plan)
+    {
+        if (_locked || plan is not null && (plan.Stream != Stream || !plan.VerifiedCopy)) return;
+        Conversion = null;
+        _copyOverride = plan;
+        OnPropertyChanged(nameof(Plan));
+        OnPropertyChanged(nameof(OutputPreview));
+    }
+    public bool CanSelect => (IsSupported || CanConvert) && !_locked;
     public string IndexDisplay => Stream.Index?.ToString(CultureInfo.InvariantCulture) ?? "—";
     public string TypeDisplay => Stream.VisualKind switch
     {
@@ -966,19 +1024,22 @@ public sealed class ExportTrackViewModel : ViewModelBase
         set { if (CanSelect) SetProperty(ref _isSelected, value); }
     }
     public string Status { get => _status; private set => SetProperty(ref _status, value); }
-    public string StatusLabel => !IsSupported ? "Недоступен" : State switch
+    public string StatusLabel => !IsSupported && !CanConvert ? "Недоступен" : State switch
     {
-        ExportState.Running => "Извлекается", ExportState.Completed => "Извлечён",
+        ExportState.Running => Conversion is null ? "Извлекается" : "Конвертируется",
+        ExportState.Completed => Conversion is null ? "Извлечён" : "Сконвертирован",
         ExportState.Failed => "Ошибка", ExportState.Cancelled => "Отменено",
+        _ when Conversion is not null => "Конвертация",
+        _ when Decision.Plan is null => "Нужна настройка",
         _ => "Доступен"
     };
-    public IBrush StatusBadgeBackground => !IsSupported ? MutedBackground : State switch
+    public IBrush StatusBadgeBackground => !IsSupported && !CanConvert ? MutedBackground : State switch
     {
         ExportState.Running => RunningBackground,
         ExportState.Failed or ExportState.Cancelled => ErrorBackground,
         _ => ReadyBackground
     };
-    public IBrush StatusForeground => !IsSupported ? new SolidColorBrush(Color.Parse("#F0989D")) : State switch
+    public IBrush StatusForeground => !IsSupported && !CanConvert ? new SolidColorBrush(Color.Parse("#F0989D")) : State switch
     {
         ExportState.Failed or ExportState.Cancelled => new SolidColorBrush(Color.Parse("#F0989D")),
         ExportState.Running => new SolidColorBrush(Color.Parse("#82BAFF")),
@@ -1047,31 +1108,33 @@ public sealed record UserLogEntry(string Time, string Message, DiagnosticLevel L
             if (message.StartsWith("Начало ", StringComparison.OrdinalIgnoreCase))
             {
                 var count = Regex.Match(message, @"потоков: (\d+)");
-                message = count.Success ? $"Начато извлечение: {count.Groups[1].Value} потоков."
-                    : "Начато извлечение.";
+                message = count.Success ? $"Начата обработка: {count.Groups[1].Value} потоков."
+                    : "Начата обработка.";
             }
-            else if (message.StartsWith("Начато извлечение:", StringComparison.OrdinalIgnoreCase))
+            else if (message.StartsWith("Начато извлечение:", StringComparison.OrdinalIgnoreCase)
+                || message.StartsWith("Начата конвертация:", StringComparison.OrdinalIgnoreCase))
             {
                 var index = Regex.Match(message, @"поток #(\d+)");
                 var format = Regex.Match(message, @"формат ([^;]+)");
-                message = index.Success ? $"Начато извлечение потока #{index.Groups[1].Value}" +
-                    (format.Success ? $" в формате {format.Groups[1].Value}." : ".") : "Начато извлечение потока.";
+                var converted = message.StartsWith("Начата конвертация:", StringComparison.OrdinalIgnoreCase);
+                message = index.Success ? $"Начат{(converted ? "а конвертация" : "о извлечение")} потока #{index.Groups[1].Value}" +
+                    (format.Success ? $" в формате {format.Groups[1].Value.Split(';')[0]}." : ".") : "Начата обработка потока.";
             }
             else if (message.StartsWith("Завершён поток #", StringComparison.OrdinalIgnoreCase))
             {
                 var index = Regex.Match(message, @"#(\d+)");
                 var format = Regex.Match(message, @"контейнер ([^.;]+)");
                 var size = Regex.Match(entry.Details ?? "", @"размер ([\d\s\u00a0]+) байт");
-                message = $"Извлечён поток #{index.Groups[1].Value}" +
+                message = $"{(message.Contains("режим конвертация", StringComparison.OrdinalIgnoreCase) ? "Сконвертирован" : "Извлечён")} поток #{index.Groups[1].Value}" +
                     (format.Success ? $" ({format.Groups[1].Value})" : "") +
                     (size.Success ? $", {size.Groups[1].Value.Trim()} байт" : "") + ".";
             }
             else if (message.StartsWith("Очередь завершена успешно", StringComparison.OrdinalIgnoreCase))
-                message = "Извлечение завершено.";
+                message = "Обработка завершена.";
             else if (message.StartsWith("Очередь остановлена", StringComparison.OrdinalIgnoreCase))
-                message = "Извлечение остановлено пользователем.";
+                message = "Обработка остановлена пользователем.";
             else if (message.StartsWith("Очередь завершена с ошибками", StringComparison.OrdinalIgnoreCase))
-                message = "Извлечение завершено с ошибками.";
+                message = "Обработка завершена с ошибками.";
             else if (message.StartsWith("Ошибка потока #", StringComparison.OrdinalIgnoreCase))
             {
                 var index = Regex.Match(message, @"#(\d+)");

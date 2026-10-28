@@ -186,6 +186,7 @@
        <Grid Grid.Row="1">
         <TableView x:Name="StreamsTable" ItemsSource="{Binding ExportTracks}"
                    CanUserResizeColumns="True" SelectionMode="Single"
+                   SelectionChanged="StreamsTable_SelectionChanged"
                    PointerPressed="StreamsTable_PointerPressed" ScrollViewer.AllowAutoHide="False">
          <TableView.Resources>
           <Thickness x:Key="TableViewRowPadding">6,2,6,2</Thickness>
@@ -291,16 +292,21 @@
          </Button>
         </Grid>
         <TextBlock Text="Формат видео" FontWeight="SemiBold" Margin="0,8,0,0"/>
-        <ComboBox SelectedIndex="0" IsEnabled="False" HorizontalAlignment="Stretch"
-                  ToolTip.Tip="Выбор формата и преобразование пока недоступны"><ComboBoxItem Content="Без преобразования"/></ComboBox>
+        <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
+         <ComboBox x:Name="VideoFormatBox" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
+         <Button x:Name="VideoConfigureButton" Grid.Column="1" Content="Настроить" Click="ConfigureFormat_Click" Tag="video" IsEnabled="False"/>
+        </Grid>
         <TextBlock Text="Формат аудио" FontWeight="SemiBold"/>
-        <ComboBox SelectedIndex="0" IsEnabled="False" HorizontalAlignment="Stretch"
-                  ToolTip.Tip="Выбор формата и преобразование пока недоступны"><ComboBoxItem Content="Без преобразования"/></ComboBox>
+        <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
+         <ComboBox x:Name="AudioFormatBox" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
+         <Button x:Name="AudioConfigureButton" Grid.Column="1" Content="Настроить" Click="ConfigureFormat_Click" Tag="audio" IsEnabled="False"/>
+        </Grid>
         <TextBlock Text="Формат субтитров" FontWeight="SemiBold"/>
-        <ComboBox SelectedIndex="0" IsEnabled="False" HorizontalAlignment="Stretch"
-                  ToolTip.Tip="Выбор формата и преобразование пока недоступны"><ComboBoxItem Content="Без преобразования"/></ComboBox>
+        <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
+         <ComboBox x:Name="SubtitleFormatBox" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
+         <Button x:Name="SubtitleConfigureButton" Grid.Column="1" Content="Настроить" Click="ConfigureFormat_Click" Tag="subtitle" IsEnabled="False"/>
+        </Grid>
         <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Margin="0,7"/>
-        <CheckBox Content="Без перекодирования (копирование потоков)" IsChecked="True" IsEnabled="False"/>
         <CheckBox Content="Сохранить все аудиодорожки" IsChecked="{Binding SelectAllAudio, Mode=TwoWay}" IsEnabled="{Binding CanBulkSelect}"/>
         <CheckBox Content="Сохранить все субтитры" IsChecked="{Binding SelectAllSubtitles, Mode=TwoWay}" IsEnabled="{Binding CanBulkSelect}"/>
         <CheckBox Content="Разбивать по языкам (создать подпапки)" IsEnabled="False"
@@ -334,7 +340,7 @@
       <Button Classes="primary" Height="37" Width="120" Click="Extract_Click" IsEnabled="{Binding CanExtract}">
        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
         <Path Data="M 3,2 L 15,2 L 21,8 L 21,20 L 16,20 M 3,2 L 3,22 L 9,22 M 15,2 L 15,8 L 21,8 M 12,11 L 12,24 M 8,20 L 12,24 L 16,20" Stroke="White" StrokeThickness="1.8" Width="18" Height="20" Stretch="Uniform"/>
-        <TextBlock Text="Извлечь" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        <TextBlock Text="{Binding ExportActionLabel}" FontWeight="SemiBold" VerticalAlignment="Center"/>
        </StackPanel>
       </Button>
       <Button Height="37" Width="124" Click="Stop_Click" IsEnabled="{Binding IsExporting}">

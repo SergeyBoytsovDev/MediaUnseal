@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -99,7 +100,7 @@ public sealed partial class FfmpegTools
         var knownFFprobe = OperatingSystem.IsWindows() && _searchPathOverride is null
             ? KnownWindowsPaths("ffprobe.exe").Where(File.Exists).ToArray() : [];
         var comparer = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-        var checkedPaths = new Dictionary<string, ToolStatus>(comparer);
+        var checkedPaths = new ConcurrentDictionary<string, ToolStatus>(comparer);
 
         async Task<ToolStatus> Check(string name, string path)
         {

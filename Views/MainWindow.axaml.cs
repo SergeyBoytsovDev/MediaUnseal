@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Specialized;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -15,6 +16,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using TrackExtractor.Services;
+using TrackExtractor.Models;
 using TrackExtractor.ViewModels;
 
 namespace TrackExtractor.Views;
@@ -23,6 +25,19 @@ public partial class MainWindow : Window
 {
     private readonly CancellationTokenSource _shutdown = new();
     private SettingsWindow? _settingsWindow;
+    private FfmpegConversionCatalog? _conversionCatalog;
+    private string? _conversionCatalogPath;
+    private bool _conversionLoading;
+    private bool _refreshingFormats;
+    private bool _applyingFormats;
+    private bool _reapplyFormats;
+    private CancellationTokenSource? _formatChange;
+    private readonly Dictionary<string, FormatChoice> _formatChoices = new();
+    private sealed record FormatChoice(string Display, ConversionFormat? Format = null,
+        ConversionSettings? Settings = null)
+    {
+        public override string ToString() => Display;
+    }
     private MainViewModel? _logViewModel;
     private static readonly double[] MinimumColumnWidths = [36, 65, 54, 65, 65, 72, 95, 75];
     private UiAppearance? Appearance => (Avalonia.Application.Current as App)?.Appearance;
@@ -58,13 +73,26 @@ public partial class MainWindow : Window
         Closed += (_, _) =>
         {
             _shutdown.Cancel();
-            if (_logViewModel is not null) _logViewModel.UserEvents.CollectionChanged -= Events_CollectionChanged;
+            if (_logViewModel is not null)
+            {
+                _logViewModel.UserEvents.CollectionChanged -= Events_CollectionChanged;
+                _logViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            }
         };
         DataContextChanged += (_, _) =>
         {
-            if (_logViewModel is not null) _logViewModel.UserEvents.CollectionChanged -= Events_CollectionChanged;
+            if (_logViewModel is not null)
+            {
+                _logViewModel.UserEvents.CollectionChanged -= Events_CollectionChanged;
+                _logViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            }
             _logViewModel = DataContext as MainViewModel;
-            if (_logViewModel is not null) _logViewModel.UserEvents.CollectionChanged += Events_CollectionChanged;
+            if (_logViewModel is not null)
+            {
+                _logViewModel.UserEvents.CollectionChanged += Events_CollectionChanged;
+                _logViewModel.PropertyChanged += ViewModel_PropertyChanged;
+            }
+            RefreshFormatControls();
         };
         DragDrop.SetAllowDrop(DropZone, true);
         DragDrop.AddDragOverHandler(DropZone, DragOver);
@@ -193,6 +221,209 @@ public partial class MainWindow : Window
         if (!e.GetCurrentPoint(StreamsTable).Properties.IsRightButtonPressed) return;
         if (e.Source is Avalonia.Visual visual && visual.FindAncestorOfType<TableViewRow>() is { } row)
             StreamsTable.SelectedItem = row.DataContext;
+    }
+
+    private void StreamsTable_SelectionChanged(object? sender, SelectionChangedEventArgs e) { }
+
+    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(MainViewModel.IsExporting) or nameof(MainViewModel.SelectedMedia)
+            or nameof(MainViewModel.IsReady) or nameof(MainViewModel.IsAnalyzing)
+            or nameof(MainViewModel.SelectedCountDisplay) or nameof(MainViewModel.TrackHeading))
+        {
+            if (e.PropertyName == nameof(MainViewModel.SelectedMedia))
+            {
+                _formatChange?.Cancel();
+                _formatChoices.Clear();
+            }
+            if (!_applyingFormats) RefreshFormatControls();
+            if (e.PropertyName == nameof(MainViewModel.TrackHeading)) _ = LoadFormatsAsync();
+            if (e.PropertyName == nameof(MainViewModel.SelectedCountDisplay) && !_applyingFormats)
+                _ = ApplyAllFormatsAsync();
+        }
+    }
+
+    private static string Kind(ExportTrackViewModel track) => track.Stream.VisualKind == VisualKind.Video
+        ? "video" : track.Stream.CodecType ?? "";
+
+    private static readonly Dictionary<string, (string Muxer, string Label)[]> PopularFormats = new()
+    {
+        ["video"] = [("mp4", "MP4 — высокая совместимость"), ("matroska", "MKV — гибкий контейнер"),
+            ("mov", "MOV — видео QuickTime"), ("avi", "AVI — классический контейнер"),
+            ("webm", "WebM — видео для веба")],
+        ["audio"] = [("mp3", "MP3 — компактный звук"), ("wav", "WAV — несжатый звук"),
+            ("flac", "FLAC — без потерь"), ("adts", "AAC — компактный звук"),
+            ("ac3", "AC3 — многоканальный звук"), ("ogg", "OGG — открытый контейнер"),
+            ("opus", "Opus — эффективное сжатие")],
+        ["subtitle"] = [("srt", "SRT — текстовые субтитры"), ("ass", "ASS — стили и оформление"),
+            ("webvtt", "WebVTT — субтитры для веба")]
+    };
+
+    private ComboBox? FormatBox(string kind) => kind switch
+    { "video" => VideoFormatBox, "audio" => AudioFormatBox, "subtitle" => SubtitleFormatBox, _ => null };
+    private Button? FormatButton(string kind) => kind switch
+    { "video" => VideoConfigureButton, "audio" => AudioConfigureButton,
+      "subtitle" => SubtitleConfigureButton, _ => null };
+
+    private void RefreshFormatControls()
+    {
+        if (VideoFormatBox is null || AudioFormatBox is null || SubtitleFormatBox is null ||
+            VideoConfigureButton is null || AudioConfigureButton is null || SubtitleConfigureButton is null)
+            return;
+        _refreshingFormats = true;
+        try
+        {
+            foreach (var kind in new[] { "video", "audio", "subtitle" })
+            {
+                var tracks = (DataContext as MainViewModel)?.ExportTracks
+                    .Where(t => t.IsSelected && Kind(t) == kind).ToArray() ?? [];
+                var codecs = tracks.Select(t => t.Stream.Codec?.ToUpperInvariant() ?? "?")
+                    .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                var source = codecs.Length == 1
+                    ? $"{codecs[0]} — исходный — " + (kind == "subtitle" ? "текстовые субтитры"
+                        : kind == "audio" ? codecs[0] switch
+                        { "AC3" => "сжатый звук", "DTS" => "многоканальный звук", _ => "исходный звук" } :
+                        $"видео; файл .{tracks[0].Decision.Plan?.Extension ?? "?"}")
+                    : "Исходный — без перекодирования";
+                var choices = new List<FormatChoice> { new(source) };
+                if (_conversionCatalog is { } catalog)
+                    foreach (var (muxer, label) in PopularFormats[kind])
+                    {
+                        var format = catalog.FormatsFor(kind).FirstOrDefault(f => f.Muxer == muxer);
+                        if (format is not null) choices.Add(new(label, format));
+                    }
+                _formatChoices.TryGetValue(kind, out var selected);
+                if (selected is { Format: not null } && !choices.Any(c => c.Format == selected.Format && c.Settings == selected.Settings))
+                    choices.Add(selected);
+                var box = FormatBox(kind)!;
+                box.ItemsSource = choices;
+                box.SelectedItem = selected is null ? choices[0] :
+                    choices.FirstOrDefault(c => c.Format == selected.Format && c.Settings == selected.Settings) ?? choices[0];
+                var enabled = tracks.Length > 0 && DataContext is MainViewModel
+                    { IsReady: true, IsExporting: false, IsAnalyzing: false } && !_conversionLoading;
+                box.IsEnabled = enabled && tracks.All(t => t.CanConvert)
+                    && (choices.Count > 1 || selected?.Format is not null);
+                FormatButton(kind)!.IsEnabled = enabled && _conversionCatalog is not null
+                    && tracks.All(t => t.CanConvert);
+            }
+        }
+        finally { _refreshingFormats = false; }
+    }
+
+    private async Task LoadFormatsAsync()
+    {
+        if (_conversionLoading || DataContext is not MainViewModel { FfmpegExecutable: { } ffmpeg }) return;
+        if (_conversionCatalog is not null && _conversionCatalogPath == ffmpeg) { RefreshFormatControls(); return; }
+        _conversionLoading = true;
+        try
+        {
+            _conversionCatalog = await FfmpegConversionCatalog.DiscoverAsync(ffmpeg, _shutdown.Token);
+            _conversionCatalogPath = ffmpeg;
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception
+            or TimeoutException or InvalidDataException)
+        { (DataContext as MainViewModel)?.ReportExportError("Не удалось прочитать форматы FFmpeg."); }
+        finally
+        {
+            _conversionLoading = false;
+            RefreshFormatControls();
+            if (DataContext is MainViewModel { SelectedMedia: not null }) _ = ApplyAllFormatsAsync();
+        }
+    }
+
+    private void Format_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (_refreshingFormats || sender is not ComboBox box || box.SelectedItem is not FormatChoice choice) return;
+        var kind = box == VideoFormatBox ? "video" : box == AudioFormatBox ? "audio" : "subtitle";
+        _formatChoices[kind] = choice;
+        _ = ApplyAllFormatsAsync();
+    }
+
+    private async Task ApplyAllFormatsAsync()
+    {
+        if (_applyingFormats)
+        {
+            _reapplyFormats = true;
+            _formatChange?.Cancel();
+            return;
+        }
+        if (_conversionLoading || DataContext is not MainViewModel
+            { SelectedMedia: { } media, FfmpegExecutable: not null } viewModel) return;
+        _formatChange?.Cancel();
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token);
+        _formatChange = cancellation;
+        _applyingFormats = true;
+        viewModel.SetFormatsValid(false);
+        var valid = true;
+        try
+        {
+            foreach (var track in viewModel.ExportTracks.Where(t => t.IsSelected))
+            {
+                cancellation.Token.ThrowIfCancellationRequested();
+                var kind = Kind(track);
+                if (!_formatChoices.TryGetValue(kind, out var choice) || choice.Format is null)
+                { track.SetConversion(null); continue; }
+                if (!track.CanConvert || _conversionCatalog is null)
+                { valid = false; continue; }
+                if (choice.Settings is { } settings)
+                {
+                    if (settings.Validate(track.Stream) is not null) { valid = false; continue; }
+                    track.SetConversion(settings);
+                    continue;
+                }
+                var format = choice.Format;
+                if (track.Decision.Plan is { } original && original.Muxer == format.Muxer
+                    && original.Extension == format.Extension)
+                { track.SetConversion(null); continue; }
+                if (await _conversionCatalog.CheckCopyAsync(media.FullPath, track.Stream.Index!.Value,
+                    format, cancellation.Token))
+                {
+                    track.SetCopyOverride(new(track.Stream, format.Extension, format.Muxer, false,
+                        VerifiedCopy: true));
+                    continue;
+                }
+                var encoder = _conversionCatalog.SuggestedEncoder(format, kind);
+                if (encoder is null || !(await _conversionCatalog.CheckCombinationAsync(format, encoder,
+                    cancellation.Token)).Compatible) { valid = false; continue; }
+                track.SetConversion(new(format, encoder));
+            }
+        }
+        catch (OperationCanceledException) { valid = false; }
+        finally
+        {
+            _applyingFormats = false;
+            if (_formatChange == cancellation)
+            {
+                viewModel.SetFormatsValid(valid && viewModel.SelectedMedia == media);
+                _formatChange = null;
+            }
+            RefreshFormatControls();
+            if (_reapplyFormats)
+            {
+                _reapplyFormats = false;
+                _ = ApplyAllFormatsAsync();
+            }
+        }
+    }
+
+    private async void ConfigureFormat_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string kind } || _conversionLoading ||
+            DataContext is not MainViewModel { SelectedMedia: { } media } viewModel) return;
+        var track = viewModel.ExportTracks.FirstOrDefault(t => t.IsSelected && Kind(t) == kind && t.CanConvert);
+        if (track is null) return;
+        if (_conversionCatalog is null) await LoadFormatsAsync();
+        if (_conversionCatalog is null) return;
+        var choice = _formatChoices.GetValueOrDefault(kind);
+        var dialog = new ConversionWindow(_conversionCatalog, media, track.Stream, choice?.Settings,
+            _shutdown.Token, choice?.Format);
+        var settings = await dialog.ShowDialog<ConversionSettings?>(this);
+        if (settings is null || viewModel.SelectedMedia != media) return;
+        _formatChoices[kind] = new($"{settings.Format.Extension.ToUpperInvariant()} — пользовательская настройка",
+            settings.Format, settings);
+        RefreshFormatControls();
+        await ApplyAllFormatsAsync();
     }
 
     private void Properties_Click(object? sender, RoutedEventArgs e)

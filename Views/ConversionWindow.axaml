@@ -1,0 +1,63 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:services="using:TrackExtractor.Services"
+        x:Class="TrackExtractor.Views.ConversionWindow"
+        Title="Параметры конвертации" Icon="/Assets/Icons/TrackExtractor-256.png"
+        Width="610" Height="620" MinWidth="500" MinHeight="510"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
+        FontFamily="Inter" FontSize="14">
+ <Window.Styles>
+  <Style Selector="TextBlock.muted"><Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/></Style>
+  <Style Selector="Button"><Setter Property="Background" Value="{DynamicResource PanelAltBackground}"/><Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/><Setter Property="BorderBrush" Value="{DynamicResource LineBrush}"/></Style>
+  <Style Selector="Button.primary"><Setter Property="Background" Value="{DynamicResource AccentBrush}"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/></Style>
+ </Window.Styles>
+ <Grid RowDefinitions="*,Auto">
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+   <StackPanel Margin="20" Spacing="10">
+    <TextBlock x:Name="StreamHeading" FontSize="18" FontWeight="SemiBold"/>
+    <TextBlock Text="Каждый поток сохраняется в отдельный файл. Пустые поля означают «Автоматически»." Classes="muted" TextWrapping="Wrap"/>
+    <TextBlock Text="Выходной контейнер / формат" FontWeight="SemiBold" Margin="0,6,0,0"/>
+    <ComboBox x:Name="FormatBox" SelectionChanged="Format_SelectionChanged" HorizontalAlignment="Stretch">
+     <ComboBox.ItemTemplate><DataTemplate x:DataType="services:ConversionFormat"><TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis"/></DataTemplate></ComboBox.ItemTemplate>
+    </ComboBox>
+    <TextBlock Text="Кодировщик" FontWeight="SemiBold"/>
+    <ComboBox x:Name="EncoderBox" SelectionChanged="Encoder_SelectionChanged" HorizontalAlignment="Stretch">
+     <ComboBox.ItemTemplate><DataTemplate x:DataType="services:ConversionEncoder"><TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis"/></DataTemplate></ComboBox.ItemTemplate>
+    </ComboBox>
+    <Button x:Name="MoreEncodersButton" Content="Найти другие совместимые кодировщики" Click="MoreEncoders_Click" HorizontalAlignment="Left"/>
+    <TextBlock x:Name="EncoderNote" Classes="muted" TextWrapping="Wrap"/>
+    <StackPanel x:Name="VideoOptions" Spacing="8">
+     <TextBlock Text="Видео" FontWeight="SemiBold" Margin="0,6,0,0"/>
+     <Button x:Name="HardwareButton" Content="Найти доступные аппаратные кодировщики" Click="Hardware_Click" HorizontalAlignment="Left"/>
+     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+      <StackPanel Spacing="4"><TextBlock Text="Качество / CRF"/><TextBox x:Name="CrfBox" PlaceholderText="Автоматически"/></StackPanel>
+      <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Битрейт, Кбит/с"/><TextBox x:Name="VideoBitrateBox" PlaceholderText="Автоматически"/></StackPanel>
+     </Grid>
+     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+      <StackPanel Spacing="4"><TextBlock Text="Ширина, пикс."/><TextBox x:Name="WidthBox" PlaceholderText="Автоматически"/></StackPanel>
+      <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Высота, пикс."/><TextBox x:Name="HeightBox" PlaceholderText="Автоматически"/></StackPanel>
+     </Grid>
+     <StackPanel Spacing="4"><TextBlock Text="Частота кадров, кадр/с"/><TextBox x:Name="FrameRateBox" PlaceholderText="Автоматически"/></StackPanel>
+    </StackPanel>
+    <StackPanel x:Name="AudioOptions" Spacing="8">
+     <TextBlock Text="Аудио" FontWeight="SemiBold" Margin="0,6,0,0"/>
+     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+      <StackPanel Spacing="4"><TextBlock Text="Битрейт, Кбит/с"/><TextBox x:Name="AudioBitrateBox" PlaceholderText="Автоматически"/></StackPanel>
+      <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Качество, 0–10"/><TextBox x:Name="QualityBox" PlaceholderText="Автоматически"/></StackPanel>
+     </Grid>
+     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+      <StackPanel Spacing="4"><TextBlock Text="Частота, Гц"/><TextBox x:Name="SampleRateBox" PlaceholderText="Автоматически"/></StackPanel>
+      <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Каналы"/><TextBox x:Name="ChannelsBox" PlaceholderText="Автоматически"/></StackPanel>
+     </Grid>
+    </StackPanel>
+    <TextBlock x:Name="OutputExample" TextWrapping="Wrap"/>
+    <TextBlock x:Name="ValidationMessage" Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap"/>
+   </StackPanel>
+  </ScrollViewer>
+  <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="16,10">
+   <Button Content="Отмена" Click="Cancel_Click" MinWidth="105"/>
+   <Button x:Name="SaveButton" Classes="primary" Content="Применить" Click="Save_Click" MinWidth="170"/>
+  </StackPanel>
+ </Grid>
+</Window>

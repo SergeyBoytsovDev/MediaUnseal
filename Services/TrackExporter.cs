@@ -15,7 +15,7 @@ namespace TrackExtractor.Services;
 public enum ExportState { Pending, Running, Completed, Failed, Cancelled }
 
 public sealed record TrackExportPlan(MediaStreamInfo Stream, string Extension, string Muxer,
-    bool StillImage, bool Attachment = false);
+    bool StillImage, bool Attachment = false, ConversionSettings? Conversion = null, bool VerifiedCopy = false);
 public sealed record ExportDecision(TrackExportPlan? Plan, string? Reason);
 public sealed record ExportUpdate(int StreamIndex, ExportState State, string Message,
     double? OverallPercent, int Processed, int Total, TimeSpan? MediaPosition = null);
@@ -118,7 +118,13 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         if (selected.Any(p => p.Stream.Index is not >= 0 || !media.Streams.Contains(p.Stream)) ||
             selected.Select(p => p.Stream.Index).Distinct().Count() != selected.Count)
             throw new ArgumentException("Выбор потоков устарел или содержит повторения.", nameof(selected));
-        if (selected.Any(p => Decide(media, p.Stream).Plan is not { } supported || supported != p))
+        if (selected.Any(p => p.Conversion is { } conversion
+            ? conversion.Validate(p.Stream) is not null || p.Extension != conversion.Format.Extension
+                || p.Muxer != conversion.Format.Muxer || p.Attachment || p.StillImage
+            : p.VerifiedCopy ? p.StillImage || p.Attachment ||
+                !System.Text.RegularExpressions.Regex.IsMatch(p.Extension, @"\A[a-zA-Z0-9]{1,10}\z") ||
+                !System.Text.RegularExpressions.Regex.IsMatch(p.Muxer, @"\A[a-zA-Z0-9_]{1,64}\z")
+              : Decide(media, p.Stream).Plan is not { } supported || supported != p))
             throw new ArgumentException("Один из выбранных форматов несовместим с потоком.", nameof(selected));
         var directory = Path.GetFullPath(outputDirectory);
         var stage = Path.Combine(directory, ".trackextractor-" + Guid.NewGuid().ToString("N"));
@@ -140,7 +146,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             for (var i = 0; i < selected.Count; i++)
             {
                 if (cancellationToken.IsCancellationRequested) { cancelled = true; break; }
-                var group = selected.Skip(i).TakeWhile(p => !p.StillImage && !p.Attachment).ToArray();
+                var group = selected.Skip(i).TakeWhile(p => p.Conversion is null && !p.StillImage && !p.Attachment).ToArray();
                 if (i > groupFallbackUntil && group.Length > 1)
                 {
                     var grouped = await TryExportGroupAsync(media, group, directory, stage, ffmpegPath,
@@ -157,14 +163,15 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 var target = ReserveName(media, plan, directory, reserved);
                 var temp = Path.Combine(stage, $"{index}-{Guid.NewGuid():N}.{plan.Extension}");
                 progress?.Report(new(index, ExportState.Running,
-                    $"Поток #{index}: извлечение в {Path.GetFileName(target)}", null, i, selected.Count));
+                    $"Поток #{index}: {(plan.Conversion is null ? "извлечение" : "конвертация")} в {Path.GetFileName(target)}", null, i, selected.Count));
                 diagnostics.Record(DiagnosticLevel.Info, "Экспорт",
-                    $"Начато извлечение: тип {plan.Stream.CodecType}, поток #{index}, кодек {plan.Stream.Codec}, " +
-                    $"формат {plan.Muxer}; копирование без перекодирования.");
+                    $"{(plan.Conversion is null ? "Начато извлечение" : "Начата конвертация")}: тип {plan.Stream.CodecType}, поток #{index}, " +
+                    $"кодек {plan.Stream.Codec}, формат {plan.Muxer}; " +
+                    (plan.Conversion is null ? "копирование без перекодирования." : $"кодировщик {plan.Conversion.Encoder.Name}."));
                 var trackWatch = Stopwatch.StartNew();
                 int? exitCode = null;
                 TimeSpan? lastPosition = null;
-                var nativeAttachment = MatroskaAttachments.IsCandidate(media, plan.Stream);
+                var nativeAttachment = plan.Conversion is null && MatroskaAttachments.IsCandidate(media, plan.Stream);
                 var nativeCompleted = false;
                 try
                 {
@@ -248,7 +255,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     results.Add(result);
                     progress?.Report(new(index, result.State, result.Message,
                         Math.Min(99.0, (i + 1) * 100.0 / selected.Count), i + 1, selected.Count));
-                    diagnostics.Record(DiagnosticLevel.Info, "Экспорт", $"Завершён поток #{index}; контейнер {plan.Muxer}.",
+                    diagnostics.Record(DiagnosticLevel.Info, "Экспорт", $"Завершён поток #{index}; контейнер {plan.Muxer}; " +
+                        $"режим {(plan.Conversion is null ? "извлечение" : "конвертация")}.",
                         $"Время {FormatElapsed(trackWatch.Elapsed)}; размер {bytes:N0} байт; " +
                         $"Путь результата: {Path.GetFileName(target)}");
                 }
@@ -256,8 +264,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 {
                     cancelled = true;
                     results.Add(new(index, ExportState.Cancelled,
-                        $"Извлечение отменено через {FormatElapsed(trackWatch.Elapsed)}.", null, trackWatch.Elapsed));
-                    progress?.Report(new(index, ExportState.Cancelled, "Извлечение отменено.", null, i, selected.Count));
+                        $"Обработка отменена через {FormatElapsed(trackWatch.Elapsed)}.", null, trackWatch.Elapsed));
+                    progress?.Report(new(index, ExportState.Cancelled, "Обработка отменена.", null, i, selected.Count));
                     diagnostics.Record(DiagnosticLevel.Warn, "Экспорт", $"Отменён поток #{index}.");
                     break;
                 }
@@ -508,7 +516,9 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
     }
 
     internal static string[] BuildArguments(string input, int index, TrackExportPlan plan, string temp) =>
-        plan.Attachment
+        plan.Conversion is { } conversion
+            ? BuildConversionArguments(input, index, conversion, temp)
+            : plan.Attachment
             ? ["-hide_banner", "-loglevel", "error", "-nostdin", $"-dump_attachment:{index}", temp, "-i", input]
             : plan.StillImage
             ? ["-hide_banner", "-loglevel", "error", "-nostdin", "-stats_period", "0.5", "-progress", "pipe:2",
@@ -516,6 +526,33 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 "-f", plan.Muxer, temp]
             : ["-hide_banner", "-loglevel", "error", "-nostdin", "-stats_period", "0.5", "-progress", "pipe:2",
                 "-i", input, "-map", $"0:{index}", "-c", "copy", "-f", plan.Muxer, temp];
+
+    internal static string[] BuildConversionArguments(string input, int index, ConversionSettings options, string temp)
+    {
+        var args = new List<string> { "-hide_banner", "-loglevel", "error", "-nostdin",
+            "-stats_period", "0.5", "-progress", "pipe:2", "-i", input,
+            "-map", $"0:{index}", "-c", options.Encoder.Name };
+        AppendConversionOptions(args, options);
+        args.AddRange(["-f", options.Format.Muxer, temp]);
+        return args.ToArray();
+    }
+
+    internal static void AppendConversionOptions(List<string> args, ConversionSettings options)
+    {
+        var kind = options.Encoder.Kind;
+        if (options.Crf is { } crf) args.AddRange(["-crf", crf.ToString(CultureInfo.InvariantCulture)]);
+        if (options.BitRateKbps is { } bitrate)
+            args.AddRange([kind == "video" ? "-b:v" : "-b:a", bitrate.ToString(CultureInfo.InvariantCulture) + "k"]);
+        if (options.Width is not null || options.Height is not null)
+            args.AddRange(["-vf", $"scale={options.Width?.ToString(CultureInfo.InvariantCulture) ?? "-2"}:{options.Height?.ToString(CultureInfo.InvariantCulture) ?? "-2"}"]);
+        if (options.FrameRate is { } fps) args.AddRange(["-r", fps.ToString(CultureInfo.InvariantCulture)]);
+        if (options.SampleRate is { } sampleRate)
+            args.AddRange(["-ar", sampleRate.ToString(CultureInfo.InvariantCulture)]);
+        if (options.Channels is { } channels)
+            args.AddRange(["-ac", channels.ToString(CultureInfo.InvariantCulture)]);
+        if (options.Quality is { } quality)
+            args.AddRange(["-q:a", quality.ToString(CultureInfo.InvariantCulture)]);
+    }
 
     internal static string BuildFileName(MediaInfo media, TrackExportPlan plan)
     {
