@@ -1,37 +1,334 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using ColorTextBlock.Avalonia;
+using TrackExtractor.Services;
 
 namespace TrackExtractor.Views;
 
 public partial class MediaGuideWindow : Window
 {
-    private sealed record Article(string Title, string Body)
-    {
-        public override string ToString() => Title;
-    }
-
-    private static readonly Article[] Articles =
-    [
-        new("Основы: контейнер и кодек", "Контейнер — это файл, в котором находятся видео, звук, субтитры и метаданные. Кодек определяет, как закодирован отдельный поток. Например, MP4 — контейнер, а H.264 — видеокодек. Один контейнер может содержать несколько потоков разных типов. Совместимость кодека с контейнером нужно проверять отдельно."),
-        new("Видеоконтейнеры", "MP4 — распространённый выбор для совместимого воспроизведения. MKV (Matroska) гибко хранит несколько дорожек, субтитры и вложения. MOV близок к MP4 и часто используется в рабочих процессах монтажа. AVI — старый контейнер с ограничениями для новых кодеков и метаданных. WebM рассчитан на веб и обычно содержит VP8, VP9 или AV1 с Opus/Vorbis. Расширение файла указывает на контейнер, но не гарантирует конкретный кодек."),
-        new("Видеокодеки", "H.264 (AVC) широко поддерживается устройствами. H.265 (HEVC) обычно эффективнее по размеру при сопоставимом качестве, но требования к воспроизведению выше. AV1 — современный открытый кодек с высокой эффективностью. VP8 и VP9 часто применяются в WebM. MPEG-4 ASP — более старое семейство, встречающееся в AVI. Перекодирование между ними требует времени и может ухудшить качество."),
-        new("Аудио", "MP3 и AAC — кодеки с потерями для компактных файлов. AC3 и DTS часто встречаются в многоканальном кино. Opus эффективен для речи и музыки, особенно в WebM и OGG. FLAC сохраняет звук без потерь при сжатии. WAV — контейнер; чаще всего в нём находится несжатый PCM. При копировании аудиопотока его кодек и качество остаются исходными."),
-        new("Субтитры", "SRT хранит текст и временные метки с минимальным оформлением. ASS/SSA поддерживает стили и позиционирование. WebVTT предназначен для веб-видео. Текстовые субтитры можно преобразовать между совместимыми форматами, но часть оформления может потеряться. Графические субтитры состоят из изображений; преобразование их в текст требует распознавания (OCR)."),
-        new("Извлечение и конвертация", "Извлечение сохраняет отдельный поток без изменения его кодека. Копирование потоков в другой контейнер называют перепаковкой: оно быстрое и не ухудшает качество, если сочетание поддерживается. Перекодирование создаёт новый поток другим кодировщиком. Оно нужно при несовместимости или при явном выборе новых параметров. Программа проверяет доступность форматов и кодировщиков установленного FFmpeg."),
-        new("Качество и выбор формата", "Сначала попробуйте сохранить исходный поток: качество останется неизменным. Формат выхода выбирайте по устройствам, на которых будет воспроизводиться файл, и по нужным дорожкам. При перекодировании с потерями качество может снизиться; повторное перекодирование усиливает потери. Разрешение, частоту кадров, дискретизацию и число каналов лучше оставлять исходными, если нет конкретной причины их менять.")
-    ];
+    private readonly Dictionary<MediaGuideArticle, TreeViewItem> _articleItems = [];
+    private MediaGuideSearch? _search;
+    private MediaGuideDiagramCatalog? _diagrams;
+    private MediaGuideArticle? _currentArticle;
+    private IReadOnlyList<MediaGuideMatch> _currentMatches = [];
+    private CTextBlock? _highlightedBlock;
+    private TextBlock? _highlightedDiagramLabel;
+    private int _currentMatchIndex = -1;
+    private int _navigationVersion;
+    private int _articleVersion;
 
     public MediaGuideWindow()
     {
         InitializeComponent();
-        ArticlesList.ItemsSource = Articles;
-        ArticlesList.SelectedIndex = 0;
+        try
+        {
+            var guide = MediaGuideContent.Load();
+            _diagrams = MediaGuideDiagramCatalog.Load();
+            TreeViewItem? firstArticle = null;
+            foreach (var section in guide.Sections)
+            {
+                var sectionItem = new TreeViewItem { Header = section.Title, IsExpanded = true };
+                foreach (var article in section.Articles)
+                {
+                    var articleItem = new TreeViewItem { Header = article.Title, Tag = article };
+                    sectionItem.Items.Add(articleItem);
+                    _articleItems.Add(article, articleItem);
+                    firstArticle ??= articleItem;
+                }
+                ContentsTree.Items.Add(sectionItem);
+            }
+            _search = new MediaGuideSearch(guide, _diagrams);
+            if (firstArticle is not null)
+            {
+                firstArticle.IsSelected = true;
+                ShowArticle((MediaGuideArticle)firstArticle.Tag!);
+            }
+        }
+        catch (Exception ex)
+        {
+            ArticleViewer.Markdown = $"Не удалось загрузить медиасправочник: {ex.Message}";
+            SearchBox.IsEnabled = false;
+        }
+        SizeForScreen();
     }
 
-    private void Articles_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    private void Contents_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (ArticleTitle is null || ArticleBody is null || ArticlesList?.SelectedItem is not Article article) return;
-        ArticleTitle.Text = article.Title;
-        ArticleBody.Text = article.Body;
+        if (ArticleViewer is null || ContentsTree?.SelectedItem is not TreeViewItem { Tag: MediaGuideArticle article })
+            return;
+        ShowArticle(article);
+        ClearCurrentMatch();
+    }
+
+    private void Search_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (_search is null || SearchBox is null || ResultsList is null) return;
+        _navigationVersion++;
+        ClearHighlight();
+        _currentMatches = [];
+        _currentMatchIndex = -1;
+        var query = SearchBox.Text?.Trim();
+        var hasQuery = !string.IsNullOrEmpty(query);
+        ClearSearchButton.IsEnabled = hasQuery;
+        ContentsTree.IsVisible = !hasQuery;
+        ResultsList.IsVisible = hasQuery;
+        NavigationTitle.Text = hasQuery ? "Результаты поиска" : "Содержание";
+        ResultsList.Items.Clear();
+        if (!hasQuery)
+        {
+            NoResultsText.IsVisible = false;
+            SearchPosition.Text = "";
+            UpdateNavigationButtons();
+            return;
+        }
+
+        var results = _search.Find(query);
+        foreach (var result in results)
+        {
+            var item = new ListBoxItem { Tag = result };
+            var text = new StackPanel { Spacing = 3, Margin = new Thickness(5, 7) };
+            text.Children.Add(new TextBlock
+            {
+                Text = result.Article.Title, FontWeight = FontWeight.SemiBold,
+                TextWrapping = TextWrapping.Wrap
+            });
+            text.Children.Add(new TextBlock
+            {
+                Text = result.First.Snippet, FontSize = 12, Opacity = 0.75,
+                TextWrapping = TextWrapping.Wrap
+            });
+            item.Content = text;
+            ResultsList.Items.Add(item);
+        }
+        NoResultsText.IsVisible = results.Count == 0;
+        SearchPosition.Text = results.Count == 0 ? "0" : $"{results.Count} статей";
+        UpdateNavigationButtons();
+        if (results.Count > 0) ResultsList.SelectedIndex = 0;
+    }
+
+    private void Results_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (ResultsList?.SelectedItem is not ListBoxItem { Tag: MediaGuideSearchResult result }) return;
+        var item = _articleItems[result.Article];
+        var section = ContentsTree.Items.OfType<TreeViewItem>().First(parent => parent.Items.Contains(item));
+        section.IsExpanded = true;
+        ContentsTree.SelectedItem = item;
+        item.IsSelected = true;
+        ShowArticle(result.Article);
+        _currentMatches = result.Matches;
+        NavigateToMatch(0);
+    }
+
+    private void ClearSearch_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        SearchBox.Text = "";
+        SearchBox.Focus();
+    }
+
+    private void PreviousMatch_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_currentMatches.Count > 0)
+            NavigateToMatch((_currentMatchIndex + _currentMatches.Count - 1) % _currentMatches.Count);
+    }
+
+    private void NextMatch_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_currentMatches.Count > 0)
+            NavigateToMatch((_currentMatchIndex + 1) % _currentMatches.Count);
+    }
+
+    private void ShowArticle(MediaGuideArticle article)
+    {
+        if (ReferenceEquals(_currentArticle, article)) return;
+        _navigationVersion++;
+        ClearHighlight();
+        _currentArticle = article;
+        ArticleViewer.Markdown = article.Markdown;
+        ArticleViewer.ScrollValue = default;
+        var version = ++_articleVersion;
+        Dispatcher.UIThread.Post(() => InsertDiagrams(version, 0), DispatcherPriority.Loaded);
+    }
+
+    private void InsertDiagrams(int version, int attempt)
+    {
+        if (version != _articleVersion || _currentArticle is null || _diagrams is null) return;
+        ArticleViewer.UpdateLayout();
+        var markers = ArticleViewer.GetVisualDescendants().OfType<CTextBlock>()
+            .Select(block => (Block: block, Id: MediaGuideDiagramCatalog.MarkerId(block.Text)))
+            .Where(entry => entry.Id is not null).ToArray();
+        if (markers.Length == 0 && _currentArticle.Markdown.Contains("{{diagram:", StringComparison.Ordinal) && attempt < 3)
+        {
+            Dispatcher.UIThread.Post(() => InsertDiagrams(version, attempt + 1), DispatcherPriority.Render);
+            return;
+        }
+        foreach (var (block, id) in markers)
+        {
+            var diagram = MediaGuideDiagramView.Create(_diagrams.Get(id!));
+            switch (block.GetVisualParent())
+            {
+                case Panel panel:
+                    var position = panel.Children.IndexOf(block);
+                    if (position >= 0)
+                    {
+                        panel.Children.RemoveAt(position);
+                        panel.Children.Insert(position, diagram);
+                    }
+                    break;
+                case Decorator decorator when ReferenceEquals(decorator.Child, block):
+                    decorator.Child = diagram;
+                    break;
+                case ContentControl content when ReferenceEquals(content.Content, block):
+                    content.Content = diagram;
+                    break;
+            }
+        }
+    }
+
+    private void NavigateToMatch(int index)
+    {
+        if (index < 0 || index >= _currentMatches.Count) return;
+        _currentMatchIndex = index;
+        SearchPosition.Text = $"{index + 1} / {_currentMatches.Count}";
+        UpdateNavigationButtons();
+        var match = _currentMatches[index];
+        var version = ++_navigationVersion;
+        Dispatcher.UIThread.Post(() => HighlightMatch(match, version, 0), DispatcherPriority.Loaded);
+    }
+
+    private void HighlightMatch(MediaGuideMatch match, int version, int attempt)
+    {
+        if (version != _navigationVersion || !ReferenceEquals(_currentArticle, match.Article) || _search is null)
+            return;
+        ArticleViewer.UpdateLayout();
+        if (match.DiagramId is not null)
+        {
+            var label = ArticleViewer.GetVisualDescendants().OfType<TextBlock>().FirstOrDefault(text =>
+                text.Tag is MediaGuideDiagramLabel key && key.DiagramId == match.DiagramId && key.NodeId == match.NodeId);
+            if (label is null)
+            {
+                if (attempt < 3)
+                    Dispatcher.UIThread.Post(() => HighlightMatch(match, version, attempt + 1), DispatcherPriority.Render);
+                else
+                    SearchPosition.Text = "Переход недоступен";
+                return;
+            }
+            ClearHighlight();
+            label.Classes.Add("guide-hit");
+            label.BringIntoView();
+            _highlightedDiagramLabel = label;
+            return;
+        }
+        var rendered = ArticleViewer.GetVisualDescendants().OfType<CTextBlock>().ToArray();
+        var indexed = _search.BlocksFor(match.Article);
+        if (rendered.Length != indexed.Count || rendered.Where((block, i) => block.Text != indexed[i]).Any())
+        {
+            SearchPosition.Text = "Переход недоступен";
+            return;
+        }
+        var target = rendered[match.BlockIndex];
+        if (target.Bounds.Height <= 0)
+        {
+            if (attempt < 2)
+                Dispatcher.UIThread.Post(() => HighlightMatch(match, version, attempt + 1), DispatcherPriority.Render);
+            else
+                SearchPosition.Text = "Переход недоступен";
+            return;
+        }
+        ClearHighlight();
+        try
+        {
+            target.Select(match.Start, match.Start + match.Length);
+            if (!string.Equals(target.GetSelectedText(), match.Text, StringComparison.OrdinalIgnoreCase))
+            {
+                target.ClearSelection();
+                SearchPosition.Text = "Переход недоступен";
+                return;
+            }
+            var rect = FindMatchRect(target, match.Start);
+            target.Select(match.Start, match.Start + match.Length);
+            target.BringIntoView(rect);
+            _highlightedBlock = target;
+        }
+        catch (Exception)
+        {
+            target.ClearSelection();
+            SearchPosition.Text = "Переход недоступен";
+        }
+    }
+
+    private static Rect FindMatchRect(CTextBlock block, int start)
+    {
+        var lastY = Math.Max(0, (int)Math.Ceiling(block.Bounds.Height) - 1);
+        if (PrefixAt(block, block.Bounds.Width, lastY) <= start)
+            throw new InvalidOperationException("Не удалось определить строку совпадения.");
+        var low = 0;
+        var high = lastY;
+        while (low < high)
+        {
+            var mid = low + (high - low) / 2;
+            if (PrefixAt(block, block.Bounds.Width, mid) > start) high = mid;
+            else low = mid + 1;
+        }
+        var y = low;
+        var lastX = Math.Max(0, (int)Math.Ceiling(block.Bounds.Width));
+        if (PrefixAt(block, lastX, y) <= start)
+            throw new InvalidOperationException("Не удалось определить положение совпадения в строке.");
+        low = 0;
+        high = lastX;
+        while (low < high)
+        {
+            var mid = low + (high - low) / 2;
+            if (PrefixAt(block, mid, y) > start) high = mid;
+            else low = mid + 1;
+        }
+        var x = low;
+        return new Rect(Math.Max(0, x - 8), Math.Max(0, y - 2), 32, Math.Max(18, block.FontSize * 1.5));
+    }
+
+    private static int PrefixAt(CTextBlock block, double x, double y)
+    {
+        block.Select(block.GetBegin(), block.CalcuatePointerFrom(x, y));
+        return block.GetSelectedText().Length;
+    }
+
+    private void ClearCurrentMatch()
+    {
+        _navigationVersion++;
+        ClearHighlight();
+        _currentMatches = [];
+        _currentMatchIndex = -1;
+        UpdateNavigationButtons();
+    }
+
+    private void ClearHighlight()
+    {
+        _highlightedBlock?.ClearSelection();
+        _highlightedBlock = null;
+        _highlightedDiagramLabel?.Classes.Remove("guide-hit");
+        _highlightedDiagramLabel = null;
+    }
+
+    private void UpdateNavigationButtons()
+    {
+        var enabled = _currentMatches.Count > 1;
+        PreviousMatchButton.IsEnabled = enabled;
+        NextMatchButton.IsEnabled = enabled;
+    }
+
+    private void SizeForScreen()
+    {
+        var screen = Screens.Primary;
+        if (screen is null) return;
+        var scale = screen.Scaling;
+        Width = Math.Clamp(screen.WorkingArea.Width / scale * 0.65, MinWidth, 1450);
+        Height = Math.Clamp(screen.WorkingArea.Height / scale * 0.80, MinHeight, 950);
     }
 }

@@ -1,0 +1,58 @@
+{
+  "diagrams": [
+    {
+      "id": "container", "width": 820, "height": 210,
+      "nodes": [
+        { "id": "file", "label": "Медиафайл · контейнер", "x": 15, "y": 12, "width": 790, "height": 185, "kind": "frame" },
+        { "id": "video", "label": "Видеопоток", "x": 40, "y": 72, "width": 160, "height": 74 },
+        { "id": "audio1", "label": "Аудиодорожка 1", "x": 210, "y": 72, "width": 160, "height": 74 },
+        { "id": "audio2", "label": "Аудиодорожка 2", "x": 380, "y": 72, "width": 160, "height": 74 },
+        { "id": "subtitles", "label": "Субтитры", "x": 550, "y": 72, "width": 110, "height": 74 },
+        { "id": "metadata", "label": "Метаданные", "x": 670, "y": 72, "width": 110, "height": 74 }
+      ], "links": []
+    },
+    {
+      "id": "stream-copy", "width": 820, "height": 192,
+      "nodes": [
+        { "id": "source", "label": "Исходный контейнер", "x": 10, "y": 40, "width": 160, "height": 70 },
+        { "id": "select", "label": "Выбранный поток", "x": 220, "y": 40, "width": 150, "height": 70 },
+        { "id": "copy", "label": "Копирование исходных байтов", "x": 420, "y": 40, "width": 170, "height": 70 },
+        { "id": "output", "label": "Новый совместимый файл", "x": 640, "y": 40, "width": 170, "height": 70 },
+        { "id": "quality", "label": "Кодек и качество потока не изменяются", "x": 215, "y": 132, "width": 390, "height": 44, "kind": "note" }
+      ],
+      "links": [{ "from": "source", "to": "select" }, { "from": "select", "to": "copy" }, { "from": "copy", "to": "output" }]
+    },
+    {
+      "id": "transcode", "width": 820, "height": 150,
+      "nodes": [
+        { "id": "source", "label": "Исходный поток", "x": 10, "y": 35, "width": 140, "height": 76 },
+        { "id": "decode", "label": "Декодирование", "x": 178, "y": 35, "width": 140, "height": 76 },
+        { "id": "process", "label": "Обработка параметров", "x": 346, "y": 35, "width": 140, "height": 76 },
+        { "id": "encode", "label": "Кодирование", "x": 514, "y": 35, "width": 140, "height": 76 },
+        { "id": "output", "label": "Выходной контейнер", "x": 682, "y": 35, "width": 128, "height": 76 }
+      ],
+      "links": [{ "from": "source", "to": "decode" }, { "from": "decode", "to": "process" }, { "from": "process", "to": "encode" }, { "from": "encode", "to": "output" }]
+    },
+    {
+      "id": "matroska-attachments", "width": 820, "height": 160,
+      "nodes": [
+        { "id": "probe", "label": "FFprobe · сведения о вложении", "x": 10, "y": 35, "width": 160, "height": 86 },
+        { "id": "seek", "label": "Matroska · поиск Attachments", "x": 213, "y": 35, "width": 165, "height": 86 },
+        { "id": "verify", "label": "Проверка имени, MIME и границ", "x": 421, "y": 35, "width": 165, "height": 86 },
+        { "id": "copy", "label": "Копирование исходных байтов JPEG/PNG", "x": 629, "y": 35, "width": 180, "height": 86 }
+      ],
+      "links": [{ "from": "probe", "to": "seek" }, { "from": "seek", "to": "verify" }, { "from": "verify", "to": "copy" }]
+    },
+    {
+      "id": "components", "width": 820, "height": 220,
+      "nodes": [
+        { "id": "app", "label": "Track Extractor", "x": 10, "y": 70, "width": 155, "height": 80 },
+        { "id": "probe", "label": "FFprobe · анализ файла", "x": 245, "y": 18, "width": 190, "height": 75 },
+        { "id": "table", "label": "Информация и таблица потоков", "x": 565, "y": 18, "width": 245, "height": 75 },
+        { "id": "ffmpeg", "label": "FFmpeg · предпросмотр и обработка", "x": 245, "y": 127, "width": 190, "height": 75 },
+        { "id": "files", "label": "Файлы результата", "x": 565, "y": 127, "width": 245, "height": 75 }
+      ],
+      "links": [{ "from": "app", "to": "probe" }, { "from": "probe", "to": "table" }, { "from": "app", "to": "ffmpeg" }, { "from": "ffmpeg", "to": "files" }]
+    }
+  ]
+}

@@ -17,7 +17,6 @@ public partial class ConversionWindow : Window
 {
     private FfmpegConversionCatalog? _catalog;
     private DiagnosticLog? _diagnostics;
-    private MediaInfo? _media;
     private MediaStreamInfo? _stream;
     private ConversionSettings? _existing;
     private CancellationToken _shutdown;
@@ -33,28 +32,39 @@ public partial class ConversionWindow : Window
     public ConversionWindow()
     {
         InitializeComponent();
+        CrfBox.ItemsSource = new[] { "18", "20", "23", "28", "32" };
+        VideoBitrateBox.ItemsSource = new[] { "1000", "2500", "5000", "8000", "12000", "20000" };
+        WidthBox.ItemsSource = new[] { "640", "1280", "1920", "2560", "3840" };
+        HeightBox.ItemsSource = new[] { "360", "720", "1080", "1440", "2160" };
+        FrameRateBox.ItemsSource = new[] { "24", "25", "30", "50", "60" };
+        AudioBitrateBox.ItemsSource = new[] { "96", "128", "192", "256", "320", "640" };
+        QualityBox.ItemsSource = new[] { "0", "2", "4", "6", "8", "10" };
+        SampleRateBox.ItemsSource = new[] { "22050", "44100", "48000", "96000", "192000" };
+        ChannelsBox.ItemsSource = new[] { "1", "2", "6", "8" };
         Closed += (_, _) => _closed.Cancel();
     }
 
-    internal ConversionWindow(FfmpegConversionCatalog catalog, DiagnosticLog diagnostics, MediaInfo media, MediaStreamInfo stream,
+    internal ConversionWindow(FfmpegConversionCatalog catalog, DiagnosticLog diagnostics, MediaStreamInfo stream,
         ConversionSettings? existing, CancellationToken shutdown, ConversionFormat? initialFormat = null,
         TrackExportPlan? copyPlan = null) : this()
     {
         _catalog = catalog;
         _diagnostics = diagnostics;
-        _media = media;
         _stream = stream;
         _existing = existing;
         _shutdown = shutdown;
         _kind = stream.VisualKind == VisualKind.Video ? "video" : stream.CodecType ?? "";
-        Title = StreamHeading.Text = _kind switch
+        StreamHeading.Text = _kind switch
         {
-            "video" => "Расширенные настройки видео",
-            "audio" => "Расширенные настройки аудио",
-            _ => "Расширенные настройки субтитров"
+            "video" => "Настройки конвертации видео",
+            "audio" => "Настройки конвертации аудио",
+            _ => "Настройки конвертации субтитров"
         };
+        Width = _kind == "subtitle" ? 570 : 620;
         VideoOptions.IsVisible = _kind == "video";
         AudioOptions.IsVisible = _kind == "audio";
+        HardwareButton.IsVisible = _kind == "video";
+        Grid.SetColumnSpan(MoreEncodersButton, _kind == "video" ? 1 : 2);
         _copyPlan = copyPlan;
         if (copyPlan is not null)
             _copyFormat = new(copyPlan.Muxer, copyPlan.Extension, "Исходный — без перекодирования",
@@ -78,7 +88,6 @@ public partial class ConversionWindow : Window
         if (!ReferenceEquals(FormatBox.SelectedItem, _copyFormat))
             EncoderBox.SelectedItem = existing?.Encoder ??
                 (FormatBox.SelectedItem is ConversionFormat format ? catalog.SuggestedEncoder(format, _kind) : null);
-        UpdateExample();
     }
 
     private void Format_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -96,13 +105,11 @@ public partial class ConversionWindow : Window
                 "копирование без перекодирования") };
             EncoderBox.SelectedIndex = 0;
             EncoderNote.Text = "Оригинальный поток будет скопирован без перекодирования.";
-            UpdateExample();
             return;
         }
         EncoderBox.ItemsSource = InitialEncoders(_catalog, format, _kind, _existing);
         EncoderBox.SelectedItem = _catalog.SuggestedEncoder(format, _kind);
         EncoderNote.Text = "Другие кодировщики можно проверить для выбранного формата.";
-        UpdateExample();
     }
 
     internal static ConversionEncoder[] InitialEncoders(FfmpegConversionCatalog catalog,
@@ -187,7 +194,6 @@ public partial class ConversionWindow : Window
 
     private async void Encoder_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        UpdateExample();
         if (_catalog is null || _kind != "video" || EncoderBox.SelectedItem is not ConversionEncoder encoder) return;
         var revision = ++_encoderRevision;
         CrfBox.IsEnabled = false;
@@ -273,15 +279,6 @@ public partial class ConversionWindow : Window
         finally { HardwareButton.IsEnabled = true; }
     }
 
-    private void UpdateExample()
-    {
-        if (_media is null || _stream is null || FormatBox.SelectedItem is not ConversionFormat format
-            || EncoderBox.SelectedItem is not ConversionEncoder encoder) return;
-        var plan = ReferenceEquals(format, _copyFormat) ? _copyPlan! : new TrackExportPlan(_stream, format.Extension, format.Muxer, false,
-            Conversion: new ConversionSettings(format, encoder));
-        OutputExample.Text = "Выходной файл: " + TrackExporter.BuildFileName(_media, plan);
-    }
-
     private async void Save_Click(object? sender, RoutedEventArgs e)
     {
         if (ReferenceEquals(FormatBox.SelectedItem, _copyFormat) && _copyPlan is not null)
@@ -295,9 +292,9 @@ public partial class ConversionWindow : Window
         { ValidationMessage.Text = "Выберите выходной формат и кодировщик."; return; }
         try
         {
-            int? Number(TextBox box) => string.IsNullOrWhiteSpace(box.Text) ? null
+            int? Number(ComboBox box) => string.IsNullOrWhiteSpace(box.Text) ? null
                 : int.Parse(box.Text, NumberStyles.None, CultureInfo.InvariantCulture);
-            double? Decimal(TextBox box) => string.IsNullOrWhiteSpace(box.Text) ? null
+            double? Decimal(ComboBox box) => string.IsNullOrWhiteSpace(box.Text) ? null
                 : double.Parse(box.Text, NumberStyles.Float, CultureInfo.CurrentCulture);
             var options = new ConversionSettings(format, encoder,
                 _kind == "video" && CrfBox.IsEnabled ? Number(CrfBox) : null,

@@ -198,7 +198,7 @@
           <ContextMenu><MenuItem Header="Свойства потока" Click="Properties_Click"/></ContextMenu>
          </TableView.ContextMenu>
          <TableView.Columns>
-          <TableViewColumn Width="36" CanUserResize="False">
+          <TableViewColumn Width="36" CanUserResize="False" HorizontalContentAlignment="Center">
            <TableViewColumn.Header>
             <Button Classes="bulk-select" Classes.all-selected="{Binding AllTracksSelected}"
                     Width="20" Height="20" Padding="0" CornerRadius="10" Content="●"
@@ -208,6 +208,7 @@
            </TableViewColumn.Header>
            <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
             <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" IsEnabled="{Binding CanSelect}"
+                      Width="20" Padding="0"
                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
            </DataTemplate></TableViewColumn.CellTemplate>
           </TableViewColumn>

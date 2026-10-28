@@ -440,7 +440,7 @@ public partial class MainWindow : Window
         if (_conversionCatalog is null) await LoadFormatsAsync();
         if (_conversionCatalog is null) return;
         var choice = _formatChoices.GetValueOrDefault(kind);
-        var dialog = new ConversionWindow(_conversionCatalog, viewModel.Diagnostics, media, track.Stream, choice?.Settings,
+        var dialog = new ConversionWindow(_conversionCatalog, viewModel.Diagnostics, track.Stream, choice?.Settings,
             _shutdown.Token, choice?.Format, choice?.Format is null ? track.Decision.Plan : null);
         var settings = await dialog.ShowDialog<ConversionSettings?>(this);
         if (dialog.AppliedCopy && viewModel.SelectedMedia == media)
