@@ -1,11 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media;
@@ -13,11 +12,11 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using TrackExtractor.Models;
 using TrackExtractor.Services;
-
 namespace TrackExtractor.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
+    private static LocalizationManager L => LocalizationManager.Active;
     private enum DependencyState { Checking, Ready, Missing, Error }
 
     private readonly FfmpegTools _tools;
@@ -34,7 +33,7 @@ public class MainViewModel : ViewModelBase
     {
         _tools = tools;
         PreviewLoader = (media, ffmpeg, token) => MediaPreview.LoadAsync(media, ffmpeg, token,
-            message => _tools.Diagnostics.Record(DiagnosticLevel.Info, "Предпросмотр", message));
+            message => _tools.Diagnostics.Record(DiagnosticLevel.Info, "Preview", message));
         _analyzer = analyzer ?? new MediaAnalyzer(tools.Diagnostics);
         _exporter = exporter ?? new TrackExporter(tools.Diagnostics);
         _tools.Diagnostics.EventRecorded += entry => Dispatcher.UIThread.Post(() =>
@@ -51,24 +50,32 @@ public class MainViewModel : ViewModelBase
     }
     private bool _isBusy;
     private bool _isReady;
-    private string _greeting = "Проверка FFmpeg и FFprobe…";
-    private string _ffmpegStatus = "Проверка…";
-    private string _ffprobeStatus = "Проверка…";
-    private string _ffmpegBriefStatus = "Проверяется…";
-    private string _ffprobeBriefStatus = "Проверяется…";
+    private string _greeting = L.Get("InstallerCheckingTools");
+    private string _ffmpegStatus = L.Get("InstallerCheckingBrief");
+    private string _ffprobeStatus = L.Get("InstallerCheckingBrief");
+    private string _ffmpegBriefStatus = L.Get("InstallerCheckingBrief");
+    private string _ffprobeBriefStatus = L.Get("InstallerCheckingBrief");
     private string _knownBuildSource = "";
+    private ToolStatus? _lastFFmpegToolStatus;
+    private ToolStatus? _lastFFprobeToolStatus;
     private DependencyState _ffmpegState;
     private DependencyState _ffprobeState;
     private bool _installFailed;
     private string _fallbackNotice = "";
+    private string? _fallbackNoticeKey;
     private string _message = "";
+    private LocalizedMessage? _messageToken;
+    private string? _installerNoticeOverrideKey;
     private string _installOption = "";
+    private LocalizedMessage? _installOptionToken;
     private string _fileSelectionMessage = "";
+    private string? _fileSelectionMessageKey;
     private bool _showDependencyOffer;
     private string? _ffprobePath;
     private string? _ffmpegPath;
     private MediaInfo? _selectedMedia;
-    private string _analysisStatus = "Файл не выбран";
+    private string _analysisStatusKey = "MainNoFile";
+    private bool _analysisFailed;
     private string _mediaSummary = "";
     private bool _isAnalyzing;
     private CancellationTokenSource? _analysisOperation;
@@ -79,7 +86,8 @@ public class MainViewModel : ViewModelBase
     private TaskCompletionSource? _analysesIdle;
     private string? _outputDirectory;
     private bool _isExporting;
-    private string _exportStatus = "Выберите папку и дорожки.";
+    private string _exportStatus = L.Get("MainSelectFolderAndTracks");
+    private Func<string>? _exportStatusFactory = () => L.Get("MainSelectFolderAndTracks");
     private double _exportProgress;
     private bool _exportProgressIndeterminate;
     private CancellationTokenSource? _exportOperation;
@@ -87,6 +95,7 @@ public class MainViewModel : ViewModelBase
     private Stopwatch? _exportWatch;
     private DispatcherTimer? _exportTimer;
     private string _exportActiveMessage = "";
+    private LocalizedMessage? _exportActiveToken;
     private CancellationTokenSource? _operation;
     private TaskCompletionSource? _idle;
     private double _progress;
@@ -149,16 +158,54 @@ public class MainViewModel : ViewModelBase
     public bool FFprobeMissing => _ffprobeState == DependencyState.Missing;
     public bool FFprobeError => _ffprobeState == DependencyState.Error;
     public bool InstallFailed { get => _installFailed; private set { if (SetProperty(ref _installFailed, value)) OnPropertyChanged(nameof(InstallButtonText)); } }
-    public string InstallButtonText => InstallFailed ? "Повторить установку" : OperatingSystem.IsWindows() ? "Установить компоненты" : "Способ установки";
-    public string FallbackNotice { get => _fallbackNotice; private set { if (SetProperty(ref _fallbackNotice, value)) { OnPropertyChanged(nameof(HasFallbackNotice)); OnPropertyChanged(nameof(InstallerNotice)); } } }
+    public string InstallButtonText => L.Get(InstallFailed ? "InstallerRetryInstall" : OperatingSystem.IsWindows()
+        ? "InstallerInstallComponents" : "InstallerInstallationMethod");
+    public string FallbackNotice { get => _fallbackNoticeKey is { } key ? L.Get(key) : _fallbackNotice; private set { _fallbackNoticeKey = null; if (SetProperty(ref _fallbackNotice, value)) { OnPropertyChanged(nameof(HasFallbackNotice)); OnPropertyChanged(nameof(InstallerNotice)); } } }
     public bool HasFallbackNotice => !string.IsNullOrEmpty(FallbackNotice);
-    public string Message { get => _message; private set { if (SetProperty(ref _message, value)) { OnPropertyChanged(nameof(InstallerNotice)); OnPropertyChanged(nameof(HasInstallerNotice)); } } }
-    private string InstallerMessage => IsReady && Message == "Обе утилиты готовы." ? ""
-        : Message.StartsWith("Файл не найден:", StringComparison.OrdinalIgnoreCase)
-            ? "Файл не найден. Укажите существующий исполняемый файл."
-        : (FFmpegError || FFprobeError) && Message == "Установите недостающие утилиты или укажите их пути."
-            ? "Проверка утилиты завершилась ошибкой. Повторите проверку или укажите другой путь."
-        : Message;
+    public string Message { get => _messageToken?.Resolve() ?? _message; private set { _messageToken = null; _installerNoticeOverrideKey = null; if (SetProperty(ref _message, value)) { OnPropertyChanged(nameof(InstallerNotice)); OnPropertyChanged(nameof(HasInstallerNotice)); } } }
+    private string InstallerMessage => IsReady ? "" : _installerNoticeOverrideKey is { } key ? L.Get(key) : Message;
+    private void SetLocalizedMessage(string key) => SetLocalizedMessage(new LocalizedMessage(key));
+    private void SetLocalizedMessage(LocalizedMessage token)
+    {
+        Message = token.Resolve();
+        _messageToken = token;
+    }
+    private void OverrideInstallerNotice(string key)
+    {
+        _installerNoticeOverrideKey = key;
+        OnPropertyChanged(nameof(InstallerNotice));
+        OnPropertyChanged(nameof(HasInstallerNotice));
+    }
+    private void SetFallbackNotice(string key) { FallbackNotice = L.Get(key); _fallbackNoticeKey = key; }
+
+    internal void RefreshInstallerLocalization()
+    {
+        OnPropertyChanged(nameof(InstallButtonText));
+        OnPropertyChanged(nameof(Message));
+        OnPropertyChanged(nameof(InstallOption));
+        OnPropertyChanged(nameof(FallbackNotice));
+        if (_lastFFmpegToolStatus is { } ffmpeg)
+        {
+            FFmpegStatus = Format(ffmpeg);
+            SetDependencyStatus(ffmpeg, ffmpeg: true);
+        }
+        else FFmpegBriefStatus = L.Get("InstallerCheckingBrief");
+        if (_lastFFprobeToolStatus is { } ffprobe)
+        {
+            FFprobeStatus = Format(ffprobe);
+            SetDependencyStatus(ffprobe, ffmpeg: false);
+        }
+        else FFprobeBriefStatus = L.Get("InstallerCheckingBrief");
+        if (_lastFFmpegToolStatus is { } a && _lastFFprobeToolStatus is { } b)
+        {
+            Greeting = IsReady ? L.Format("InstallerReadyVersions", Version(a), Version(b))
+                : L.Get("InstallerToolsRequired");
+            UpdateKnownBuildSource(a, b);
+        }
+        else Greeting = L.Get("InstallerCheckingTools");
+        OnPropertyChanged(nameof(InstallerNotice));
+        OnPropertyChanged(nameof(HasInstallerNotice));
+    }
     public string InstallerNotice
     {
         get
@@ -166,20 +213,25 @@ public class MainViewModel : ViewModelBase
             if (IsReady || HasFallbackNotice) return InstallerMessage;
             var method = OperatingSystem.IsWindows() ? _tools.WinGetAvailable switch
             {
-                true when _tools.NetworkCheckFailed => "WinGet доступен, но источники установки не ответили.",
-                true when _tools.OfferDirectDownload => "WinGet доступен, но источник не ответил. Резерв — gyan.dev.",
-                true => "WinGet доступен.",
-                false when !_tools.CanDirectDownload => "WinGet недоступен. Укажите пути вручную.",
-                false when _tools.NetworkCheckFailed => "WinGet недоступен. Источник gyan.dev не ответил.",
-                false => "WinGet недоступен. Резервная установка через gyan.dev.",
+                true when _tools.NetworkCheckFailed => L.Get("InstallerWingetSourcesUnavailable"),
+                true when _tools.OfferDirectDownload => L.Get("InstallerWingetFallbackAvailable"),
+                true => L.Get("InstallerWingetAvailable"),
+                false when !_tools.CanDirectDownload => L.Get("InstallerWingetUnavailableManual"),
+                false when _tools.NetworkCheckFailed => L.Get("InstallerWingetAndSourceUnavailable"),
+                false => L.Get("InstallerWingetUnavailableFallback"),
                 null => ""
             } : InstallOption;
             return string.IsNullOrWhiteSpace(method) ? InstallerMessage
-                : string.IsNullOrWhiteSpace(InstallerMessage) ? method : $"{InstallerMessage} {method}";
+                : string.IsNullOrWhiteSpace(InstallerMessage) ? method : L.Format("InstallerNoticeWithMethod", InstallerMessage, method);
         }
     }
     public bool HasInstallerNotice => !string.IsNullOrWhiteSpace(InstallerNotice);
-    public string InstallOption { get => _installOption; private set { if (SetProperty(ref _installOption, value)) { OnPropertyChanged(nameof(InstallerNotice)); OnPropertyChanged(nameof(HasInstallerNotice)); } } }
+    public string InstallOption { get => _installOptionToken?.Resolve() ?? _installOption; private set { _installOptionToken = null; if (SetProperty(ref _installOption, value)) { OnPropertyChanged(nameof(InstallerNotice)); OnPropertyChanged(nameof(HasInstallerNotice)); } } }
+    private void SetInstallOption(string value, LocalizedMessage? token)
+    {
+        InstallOption = value;
+        _installOptionToken = token;
+    }
     public string FileSelectionMessage
     {
         get => _fileSelectionMessage;
@@ -211,10 +263,13 @@ public class MainViewModel : ViewModelBase
             OnPropertyChanged(nameof(FooterStatus));
         }
     }
-    public string AnalysisStatus
+    public string AnalysisStatus => L.Get(_analysisStatusKey);
+    private void SetAnalysisStatus(string key)
     {
-        get => _analysisStatus;
-        private set { if (SetProperty(ref _analysisStatus, value)) OnPropertyChanged(nameof(FooterStatus)); }
+        if (_analysisStatusKey == key) return;
+        _analysisStatusKey = key;
+        OnPropertyChanged(nameof(AnalysisStatus));
+        OnPropertyChanged(nameof(FooterStatus));
     }
     public string MediaSummary { get => _mediaSummary; private set => SetProperty(ref _mediaSummary, value); }
     public bool IsAnalyzing
@@ -278,20 +333,20 @@ public class MainViewModel : ViewModelBase
     }
     public bool HasMedia => SelectedMedia is not null;
     public bool HasNoMedia => !HasMedia;
-    public string TrackHeading => $"Найденные медиапотоки ({ExportTracks.Count})";
-    public string SelectedCountDisplay => $"Выбрано: {ExportTracks.Count(t => t.IsSelected && t.Plan is not null)}";
+    public string TrackHeading => L.Format("MainTracksHeading", ExportTracks.Count);
+    public string SelectedCountDisplay => L.Format("MainSelectedCount", ExportTracks.Count(t => t.IsSelected && t.Plan is not null));
     public string ExportActionLabel => ExportTracks.Any(t => t.IsSelected && t.Conversion is not null)
-        ? "Обработать" : "Извлечь";
-    public string FooterStatus => IsBusy ? "Проверка зависимостей…" : !IsReady
-        ? "Нужны FFmpeg и FFprobe" : IsAnalyzing ? "Анализ файла…"
-        : IsExporting ? "Идёт обработка..." : AnalysisStatus == "Ошибка"
-        ? "Ошибка анализа" : "Готов к работе";
-    public string MediaFileName => SelectedMedia?.Name ?? "Файл не выбран";
-    public string MediaFilePath => SelectedMedia?.FullPath ?? "Выберите файл или перетащите его в область слева";
+        ? L.Get("MainProcess") : L.Get("MainExtract");
+    public string FooterStatus => L.Get(IsBusy ? "MainCheckingDependencies" : !IsReady
+        ? "MainNeedTools" : IsAnalyzing ? "MainAnalyzingFile"
+        : IsExporting ? "MainProcessing" : _analysisFailed
+        ? "MainAnalysisError" : "MainReady");
+    public string MediaFileName => SelectedMedia?.Name ?? L.Get("MainNoFile");
+    public string MediaFilePath => SelectedMedia?.FullPath ?? L.Get("MainChooseOrDropFile");
     public string ContainerDisplay => SelectedMedia?.Container ?? "—";
     public string DurationDisplay => SelectedMedia is { } media ? FormatDuration(media.Duration) : "—";
     public string SizeDisplay => SelectedMedia is { } media ? FormatByteSize(media.Size) : "—";
-    public string SizeExactDisplay => SelectedMedia is { } media ? $"{media.Size:N0} байт" : "—";
+    public string SizeExactDisplay => SelectedMedia is { } media ? L.Format("MainBytesExact", media.Size) : "—";
     public string ResolutionDisplay
     {
         get
@@ -332,6 +387,28 @@ public class MainViewModel : ViewModelBase
         ? FormatStreamSummary(media.Streams.Where(s => s.CodecType == "audio").ToArray()) : "—";
     public string SubtitleSummaryDisplay => SelectedMedia is { } media
         ? FormatStreamSummary(media.Streams.Where(s => s.CodecType == "subtitle").ToArray()) : "—";
+    public void RefreshMainLocalization()
+    {
+        if (_exportStatusFactory is not null) ExportStatus = _exportStatusFactory();
+        if (_fileSelectionMessageKey is not null) FileSelectionMessage = L.Get(_fileSelectionMessageKey);
+        if (SelectedMedia is { } media)
+        {
+            MediaSummary = FormatMediaSummary(media);
+            StreamSummaries.Clear();
+            foreach (var stream in media.Streams) StreamSummaries.Add(Describe(stream));
+        }
+        OnPropertyChanged(nameof(AnalysisStatus));
+        OnPropertyChanged(nameof(TrackHeading));
+        OnPropertyChanged(nameof(SelectedCountDisplay));
+        OnPropertyChanged(nameof(ExportActionLabel));
+        OnPropertyChanged(nameof(FooterStatus));
+        OnPropertyChanged(nameof(MediaFileName));
+        OnPropertyChanged(nameof(MediaFilePath));
+        OnPropertyChanged(nameof(SizeExactDisplay));
+        OnPropertyChanged(nameof(AudioSummaryDisplay));
+        OnPropertyChanged(nameof(SubtitleSummaryDisplay));
+        foreach (var track in ExportTracks) track.RefreshMainLocalization();
+    }
     public bool SelectAllAudio
     {
         get => AllSelected("audio");
@@ -343,6 +420,11 @@ public class MainViewModel : ViewModelBase
         set => SetGroupSelected("subtitle", value);
     }
     public string ExportStatus { get => _exportStatus; private set => SetProperty(ref _exportStatus, value); }
+    private void SetLocalizedExportStatus(Func<string> factory)
+    {
+        _exportStatusFactory = factory;
+        ExportStatus = factory();
+    }
     public double ExportProgress { get => _exportProgress; private set => SetProperty(ref _exportProgress, value); }
     public bool ExportProgressIndeterminate { get => _exportProgressIndeterminate; private set => SetProperty(ref _exportProgressIndeterminate, value); }
     public double Progress { get => _progress; private set { if (SetProperty(ref _progress, value)) OnPropertyChanged(nameof(ProgressPercentDisplay)); } }
@@ -358,11 +440,25 @@ public class MainViewModel : ViewModelBase
     public Task WaitForExportAsync() => _exportIdle?.Task ?? Task.CompletedTask;
 
     public void ReportError(string message) => Message = message;
-    public void ReportExportError(string message) => ExportStatus = message;
+    public void ReportExportErrorKey(string key) => SetLocalizedExportStatus(() => L.Get(key));
+    public void ReportExportError(string message)
+    {
+        _exportStatusFactory = null;
+        ExportStatus = message;
+    }
     public void ReportFileError(string message)
     {
+        _fileSelectionMessageKey = null;
         FileSelectionMessage = message;
-        AnalysisStatus = "Ошибка";
+        _analysisFailed = true;
+        SetAnalysisStatus("InstallerError");
+    }
+    public void ReportFileErrorKey(string key)
+    {
+        _fileSelectionMessageKey = key;
+        FileSelectionMessage = L.Get(key);
+        _analysisFailed = true;
+        SetAnalysisStatus("InstallerError");
     }
     public string DiagnosticReport() => _tools.Diagnostics.ExportReport();
     public void ClearVisibleLog() { Events.Clear(); UserEvents.Clear(); }
@@ -380,9 +476,11 @@ public class MainViewModel : ViewModelBase
         StreamSummaries.Clear();
         ExportTracks.Clear();
         MediaSummary = "";
-        AnalysisStatus = "Файл не выбран";
+        _analysisFailed = false;
+        SetAnalysisStatus("MainNoFile");
+        _fileSelectionMessageKey = null;
         FileSelectionMessage = "";
-        ExportStatus = "Выберите файл и дорожки.";
+        SetLocalizedExportStatus(() => L.Get("MainSelectFileAndTracks"));
         ExportProgress = 0;
         ExportProgressIndeterminate = false;
         OnPropertyChanged(nameof(TrackHeading));
@@ -412,15 +510,18 @@ public class MainViewModel : ViewModelBase
     {
         if (IsExporting)
         {
-            FileSelectionMessage = "Сначала остановите или завершите извлечение.";
+            _fileSelectionMessageKey = "MainStopBeforeFile";
+            FileSelectionMessage = L.Get(_fileSelectionMessageKey);
             return false;
         }
         if (!IsReady)
         {
-            FileSelectionMessage = "Для выбора файла сначала установите FFmpeg и FFprobe.";
+            _fileSelectionMessageKey = "MainInstallBeforeFile";
+            FileSelectionMessage = L.Get(_fileSelectionMessageKey);
             ShowDependencyOffer = true;
             return false;
         }
+        _fileSelectionMessageKey = null;
         FileSelectionMessage = "";
         ShowDependencyOffer = false;
         return true;
@@ -446,7 +547,8 @@ public class MainViewModel : ViewModelBase
         OnPropertyChanged(nameof(SelectAllAudio));
         OnPropertyChanged(nameof(SelectAllSubtitles));
         MediaSummary = "";
-        AnalysisStatus = "Анализируется";
+        _analysisFailed = false;
+        SetAnalysisStatus("MainAnalyzing");
         try
         {
             var media = await Task.Run(() => _analyzer.AnalyzeAsync(path, _ffprobePath, operation.Token), operation.Token);
@@ -478,29 +580,32 @@ public class MainViewModel : ViewModelBase
             OnPropertyChanged(nameof(AllTracksSelected));
             OnPropertyChanged(nameof(SelectAllAudio));
             OnPropertyChanged(nameof(SelectAllSubtitles));
-            AnalysisStatus = "Готово";
+            SetAnalysisStatus("MainDone");
             if (_ffmpegPath is { } ffmpeg) _ = LoadPreviewAsync(media, ffmpeg, generation, cancellationToken);
         }
         catch (OperationCanceledException)
         {
-            if (generation == _analysisGeneration) AnalysisStatus = "Анализ отменён";
+            if (generation == _analysisGeneration) SetAnalysisStatus("MainAnalysisCancelled");
         }
         catch (Exception ex)
         {
             if (generation == _analysisGeneration)
             {
-                AnalysisStatus = "Ошибка";
-                _tools.Diagnostics.Record(DiagnosticLevel.Error, "Анализ",
-                    "Файл может быть повреждён или не поддерживается.",
-                    $"FFprobe: {ex.GetType().Name}; {ex.Message}");
-                FileSelectionMessage = ex switch
+                _analysisFailed = true;
+                SetAnalysisStatus("InstallerError");
+                _tools.Diagnostics.Record(DiagnosticLevel.Error, "Analysis",
+                    "File may be damaged or unsupported.",
+                    $"FFprobe: {ex.GetType().Name}; {ex.Message}",
+                    userMessageKey: "LogAnalysisFailed");
+                _fileSelectionMessageKey = ex switch
                 {
-                    FileNotFoundException => "Файл не найден. Выберите другой файл.",
-                    UnauthorizedAccessException => "Нет доступа к файлу или FFprobe.",
-                    Win32Exception => "Не удалось запустить FFprobe. Повторите проверку зависимостей.",
-                    IOException => "Не удалось прочитать файл. Проверьте доступ и повторите попытку.",
-                    _ => "Файл может быть повреждён или не поддерживается."
+                    FileNotFoundException => "MainFileNotFound",
+                    UnauthorizedAccessException => "MainFileAccessDenied",
+                    Win32Exception => "MainProbeLaunchFailed",
+                    IOException => "MainFileReadFailed",
+                    _ => "MainFileDamaged"
                 };
+                FileSelectionMessage = L.Get(_fileSelectionMessageKey);
             }
         }
         finally
@@ -522,40 +627,46 @@ public class MainViewModel : ViewModelBase
         operation.CancelAfter(TimeSpan.FromSeconds(30));
         var previewWatch = Stopwatch.StartNew();
         Stopwatch? decodeWatch = null;
-        var outcome = "изображение не получено";
+        var outcome = "no image obtained";
+        var userOutcomeKey = "LogPreviewUnavailable";
         try
         {
             var bytes = await PreviewLoader(media, ffmpegPath, operation.Token);
             if (generation != _analysisGeneration || operation.IsCancellationRequested)
-            { outcome = "отменено или заменено другим файлом"; return; }
+            { outcome = "cancelled or replaced by another file"; userOutcomeKey = "LogPreviewCancelled"; return; }
             if (bytes is null) return;
             decodeWatch = Stopwatch.StartNew();
             await using var stream = new MemoryStream(bytes, writable: false);
             var bitmap = new Bitmap(stream);
-            _tools.Diagnostics.Record(DiagnosticLevel.Info, "Предпросмотр",
-                $"Декодирование изображения: {decodeWatch.Elapsed.TotalMilliseconds:0} мс; успешно.");
+            _tools.Diagnostics.Record(DiagnosticLevel.Info, "Preview",
+                $"Image decoding: {decodeWatch.Elapsed.TotalMilliseconds:0} ms; succeeded.");
             if (generation == _analysisGeneration && !operation.IsCancellationRequested)
-            { PreviewImage = bitmap; outcome = "изображение получено"; }
-            else bitmap.Dispose();
+            { PreviewImage = bitmap; outcome = "image obtained"; userOutcomeKey = "LogPreviewReady"; }
+            else { bitmap.Dispose(); userOutcomeKey = "LogPreviewCancelled"; }
         }
         catch (OperationCanceledException)
-        { outcome = cancellationToken.IsCancellationRequested || generation != _analysisGeneration
-            ? "отменено при смене файла" : "тайм-аут 30 с"; }
+        {
+            var replaced = cancellationToken.IsCancellationRequested || generation != _analysisGeneration;
+            outcome = replaced ? "cancelled on file change" : "30 s timeout";
+            userOutcomeKey = replaced ? "LogPreviewCancelled" : "LogPreviewUnavailable";
+        }
         catch (Exception ex) when (ex is InvalidDataException or IOException or UnauthorizedAccessException
             or ArgumentException or NotSupportedException or OutOfMemoryException)
         {
-            outcome = "ошибка декодирования или чтения: " + ex.GetType().Name;
+            outcome = "decoding or reading error: " + ex.GetType().Name;
             if (decodeWatch is not null)
-                _tools.Diagnostics.Record(DiagnosticLevel.Info, "Предпросмотр",
-                    $"Декодирование изображения: {decodeWatch.Elapsed.TotalMilliseconds:0} мс; " +
+                _tools.Diagnostics.Record(DiagnosticLevel.Info, "Preview",
+                    $"Image decoding: {decodeWatch.Elapsed.TotalMilliseconds:0} ms; " +
                     $"{ex.GetType().Name}.");
             // A missing or corrupt preview must not change the analyzed media state.
         }
         finally
         {
-            _tools.Diagnostics.Record(DiagnosticLevel.Info, "Предпросмотр",
-                $"Подготовка изображения: {previewWatch.Elapsed.TotalMilliseconds:0} мс; " +
-                $"результат {outcome}.");
+            _tools.Diagnostics.Record(DiagnosticLevel.Info, "Preview",
+                $"Image preparation: {previewWatch.Elapsed.TotalMilliseconds:0} ms; " +
+                $"result: {outcome}.",
+                userMessageKey: generation == _analysisGeneration ? userOutcomeKey : null,
+                userSuccess: userOutcomeKey == "LogPreviewReady");
             if (_previewOperation == operation) _previewOperation = null;
         }
     }
@@ -573,17 +684,17 @@ public class MainViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
         {
-            ExportStatus = "Недопустимый путь к папке сохранения.";
+            SetLocalizedExportStatus(() => L.Get("MainInvalidOutputFolder"));
             return;
         }
         if (!Directory.Exists(normalized))
         {
-            ExportStatus = "Папка сохранения не найдена. Выберите другую папку.";
+            SetLocalizedExportStatus(() => L.Get("MainOutputFolderMissingChoose"));
             return;
         }
         // Keep the trailing separator for drive and filesystem roots.
         OutputDirectory = normalized;
-        ExportStatus = "Папка выбрана. Совпадающие имена получат номер; существующие файлы сохранятся.";
+        SetLocalizedExportStatus(() => L.Get("MainOutputFolderSelected"));
     }
 
     public async Task StartExportAsync(CancellationToken cancellationToken)
@@ -591,7 +702,7 @@ public class MainViewModel : ViewModelBase
         if (IsExporting) return;
         if (!CanExtract || SelectedMedia is null || OutputDirectory is null || _ffmpegPath is null)
         {
-            ExportStatus = "Выберите доступные дорожки и папку сохранения; проверьте FFmpeg и FFprobe.";
+            SetLocalizedExportStatus(() => L.Get("MainExportRequirements"));
             return;
         }
         var media = SelectedMedia;
@@ -602,36 +713,48 @@ public class MainViewModel : ViewModelBase
         _exportIdle = new(TaskCreationOptions.RunContinuationsAsynchronously);
         IsExporting = true;
         _exportWatch = Stopwatch.StartNew();
-        _exportActiveMessage = "Подготовка обработки...";
+        _exportActiveToken = new("MainPreparingExport");
+        _exportActiveMessage = _exportActiveToken.Resolve();
         _exportTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _exportTimer.Tick += (_, _) =>
         {
             if (IsExporting && _exportWatch is not null)
-                ExportStatus = $"{_exportActiveMessage} Время: {TrackExporter.FormatElapsed(_exportWatch.Elapsed)}";
+                SetLocalizedExportStatus(() => L.Format("MainStatusWithTime",
+                    _exportActiveToken?.Resolve() ?? _exportActiveMessage, TrackExporter.FormatElapsed(_exportWatch.Elapsed)));
         };
         _exportTimer.Start();
         foreach (var track in ExportTracks) track.SetLocked(true);
-        foreach (var track in selected) track.SetResult(ExportState.Pending, "Ожидает извлечения.", null);
+        foreach (var track in selected) track.SetResult(ExportState.Pending, L.Get("MainAwaitingExtraction"), null,
+            new("MainAwaitingExtraction"));
         ExportProgress = 0;
         ExportProgressIndeterminate = true;
-        ExportStatus = _exportActiveMessage;
+        SetLocalizedExportStatus(() => L.Get("MainPreparingExport"));
         try
         {
             var updates = new Progress<ExportUpdate>(update =>
             {
                 if (_exportOperation != operation || !IsExporting) return;
                 var track = selected.FirstOrDefault(t => t.Stream.Index == update.StreamIndex);
-                track?.SetResult(update.State, update.Message, null);
+                track?.SetResult(update.State, update.Message, null, update.LocalizedMessage);
                 ExportProgressIndeterminate = update.OverallPercent is null && ExportProgress == 0;
                 if (update.OverallPercent is { } value) ExportProgress = Math.Max(ExportProgress, value);
                 var ordinal = Math.Clamp(update.Processed + (update.State == ExportState.Completed ? 0 : 1), 1, update.Total);
                 _exportActiveMessage = update.State == ExportState.Running
                     ? (update.GroupCount > 1
-                        ? $"{update.Message} ({ordinal}–{Math.Min(update.Total, ordinal + update.GroupCount - 1)} из {update.Total})"
-                        : $"Поток #{update.StreamIndex} ({ordinal} из {update.Total})") +
+                        ? L.Format("MainGroupedProgress", update.Message, ordinal, Math.Min(update.Total, ordinal + update.GroupCount - 1), update.Total)
+                        : L.Format("MainStreamProgress", update.StreamIndex, ordinal, update.Total)) +
                         (update.CurrentPercent is { } percent ? $" · {percent:0.#}%" : "")
                     : update.Message;
-                ExportStatus = $"{_exportActiveMessage} Время: {TrackExporter.FormatElapsed(_exportWatch!.Elapsed)}";
+                _exportActiveToken = update.State == ExportState.Running
+                    ? update.GroupCount > 1
+                        ? new LocalizedMessage("MainGroupedProgress", (object?)update.LocalizedMessage ?? update.Message,
+                            ordinal, Math.Min(update.Total, ordinal + update.GroupCount - 1), update.Total)
+                        : new LocalizedMessage("MainStreamProgress", update.StreamIndex, ordinal, update.Total)
+                    : update.LocalizedMessage;
+                if (update.State == ExportState.Running && update.CurrentPercent is { } currentPercent)
+                    _exportActiveToken = new("MainProgressWithPercent", _exportActiveToken!, currentPercent);
+                SetLocalizedExportStatus(() => L.Format("MainStatusWithTime",
+                    _exportActiveToken?.Resolve() ?? _exportActiveMessage, TrackExporter.FormatElapsed(_exportWatch!.Elapsed)));
             });
             var options = new ExportOptions(PreserveMetadata, GroupByLanguage, CreateSourceFolder);
             var result = await Task.Run(() => _exporter.ExportAsync(media, plans, OutputDirectory,
@@ -639,46 +762,53 @@ public class MainViewModel : ViewModelBase
             _exportOperation = null;
             foreach (var trackResult in result.Tracks)
                 selected.First(t => t.Stream.Index == trackResult.StreamIndex)
-                    .SetResult(trackResult.State, trackResult.Message, trackResult.OutputPath);
+                    .SetResult(trackResult.State, trackResult.Message, trackResult.OutputPath, trackResult.LocalizedMessage);
             ExportProgressIndeterminate = false;
             ExportProgress = result.Success ? 100 : Math.Max(ExportProgress, Math.Min(99,
                 result.Tracks.Count(t => t.State is ExportState.Completed or ExportState.Failed) * 100.0 / plans.Length));
-            ExportStatus = (result.Success ? "Все выбранные дорожки обработаны."
-                : result.WasCancelled ? "Извлечение остановлено. Готовые файлы сохранены."
-                : "Очередь завершена с ошибками. Готовые файлы сохранены.") +
-                $" Общее время: {TrackExporter.FormatElapsed(result.Elapsed)}";
+            var completionKey = result.Success ? "MainExportComplete"
+                : result.WasCancelled ? "MainExportCancelled" : "MainExportPartial";
+            var elapsed = TrackExporter.FormatElapsed(result.Elapsed);
+            SetLocalizedExportStatus(() => L.Format("MainStatusWithTotalTime", L.Get(completionKey), elapsed));
         }
         catch (OperationCanceledException)
         {
             ExportProgressIndeterminate = false;
-            foreach (var track in selected) track.SetResult(ExportState.Cancelled, "Извлечение отменено.", null);
-            ExportStatus = "Извлечение остановлено. Готовые файлы сохранены. Общее время: " +
-                TrackExporter.FormatElapsed(_exportWatch!.Elapsed);
+            foreach (var track in selected) track.SetResult(ExportState.Cancelled, L.Get("MainExtractionCancelled"), null,
+                new("MainExtractionCancelled"));
+            var elapsed = TrackExporter.FormatElapsed(_exportWatch!.Elapsed);
+            SetLocalizedExportStatus(() => L.Format("MainStatusWithTotalTime", L.Get("MainExportCancelled"), elapsed));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
         {
             ExportProgressIndeterminate = false;
-            foreach (var track in selected) track.SetResult(ExportState.Failed, "Не удалось начать извлечение.", null);
-            var reason = ex switch
+            foreach (var track in selected) track.SetResult(ExportState.Failed, L.Get("MainExportStartFailed"), null,
+                new("MainExportStartFailed"));
+            var reasonKey = ex switch
             {
-                FileNotFoundException => "Исходный файл не найден.",
-                DirectoryNotFoundException => "Папка сохранения не найдена.",
-                UnauthorizedAccessException => "Нет доступа к папке сохранения.",
-                _ => "Не удалось начать извлечение."
+                FileNotFoundException => "MainSourceMissing",
+                DirectoryNotFoundException => "MainOutputFolderMissing",
+                UnauthorizedAccessException => "MainOutputFolderAccessDenied",
+                _ => "MainExportStartFailed"
             };
-            _tools.Diagnostics.Record(DiagnosticLevel.Error, "Экспорт", reason,
-                $"Операция: начало экспорта; источник: {media.FullPath}; папка: {OutputDirectory}; ошибка: {ex.GetType().Name}; код: {ex.HResult}.");
-            ExportStatus = reason;
-            ExportStatus += " Общее время: " + TrackExporter.FormatElapsed(_exportWatch!.Elapsed);
+            var reason = L.Get(reasonKey);
+            _tools.Diagnostics.Record(DiagnosticLevel.Error, "Export",
+                $"Export could not start: {ex.GetType().Name}.",
+                $"Operation: export start; source: {media.FullPath}; directory: {OutputDirectory}; error: {ex.GetType().Name}; code: {ex.HResult}.",
+                userMessageKey: reasonKey);
+            var elapsed = TrackExporter.FormatElapsed(_exportWatch!.Elapsed);
+            SetLocalizedExportStatus(() => L.Format("MainStatusWithTotalTime", L.Get(reasonKey), elapsed));
         }
         catch (Exception ex)
         {
             ExportProgressIndeterminate = false;
-            foreach (var track in selected) track.SetResult(ExportState.Failed, "Ошибка извлечения.", null);
-            ExportStatus = "Ошибка извлечения. Проверьте лог и повторите попытку. Общее время: " +
-                TrackExporter.FormatElapsed(_exportWatch!.Elapsed);
-            _tools.Diagnostics.Record(DiagnosticLevel.Error, "Экспорт", "Не удалось начать извлечение.",
-                $"Операция: начало экспорта; источник: {media.FullPath}; папка: {OutputDirectory}; ошибка: {ex.GetType().Name}; код: {ex.HResult}.");
+            foreach (var track in selected) track.SetResult(ExportState.Failed, L.Get("MainExtractionError"), null,
+                new("MainExtractionError"));
+            var elapsed = TrackExporter.FormatElapsed(_exportWatch!.Elapsed);
+            SetLocalizedExportStatus(() => L.Format("MainStatusWithTotalTime", L.Get("MainExportErrorAdvice"), elapsed));
+            _tools.Diagnostics.Record(DiagnosticLevel.Error, "Export", "Failed to start extraction.",
+                $"Operation: export start; source: {media.FullPath}; directory: {OutputDirectory}; error: {ex.GetType().Name}; code: {ex.HResult}.",
+                userMessageKey: "MainExportStartFailed");
         }
         finally
         {
@@ -696,11 +826,10 @@ public class MainViewModel : ViewModelBase
     {
         var onlyStillImages = media.ImageCount > 0 && media.VideoCount == 0 && media.AnimationCount == 0
             && media.AudioCount == 0 && media.SubtitleCount == 0 && media.UnknownVisualCount == 0;
-        return $"{media.Name}\n{media.FullPath}\nРазмер: {media.Size:N0} байт; контейнер: {media.Container ?? "—"}; " +
-            $"длительность: {(onlyStillImages ? "—" : FormatDuration(media.Duration))}; битрейт: {FormatBitRate(media.BitRate)}\n" +
-            $"Видео: {media.VideoCount}; изображения: {media.ImageCount}; анимации: {media.AnimationCount}; " +
-            $"аудио: {media.AudioCount}; субтитры: {media.SubtitleCount}; " +
-            $"неопределённые визуальные: {media.UnknownVisualCount}; всего потоков: {media.Streams.Count}";
+        return L.Format("MainMediaSummary", media.Name, media.FullPath, media.Size,
+            media.Container ?? "—", onlyStillImages ? "—" : FormatDuration(media.Duration),
+            FormatBitRate(media.BitRate), media.VideoCount, media.ImageCount, media.AnimationCount,
+            media.AudioCount, media.SubtitleCount, media.UnknownVisualCount, media.Streams.Count);
     }
 
     internal static string Describe(MediaStreamInfo stream)
@@ -708,30 +837,31 @@ public class MainViewModel : ViewModelBase
         var details = new System.Collections.Generic.List<string>();
         var visual = stream.CodecType == "video" || stream.VisualKind is VisualKind.Image or VisualKind.Animation;
         if (visual)
-            details.Add(stream.Width is { } width && stream.Height is { } height ? $"{width}×{height}" : "разрешение: —");
+            details.Add(stream.Width is { } width && stream.Height is { } height ? $"{width}×{height}" : L.Get("MainDescriptionResolutionUnknown"));
         if (stream.VisualKind is VisualKind.Video or VisualKind.Animation)
         {
-            details.Add(stream.FrameRate is > 0 and <= 1000 ? $"{stream.FrameRate.Value:0.##} кадр/с" : "FPS: —");
-            details.Add("длительность: " + FormatDuration(stream.Duration));
+            details.Add(stream.FrameRate is > 0 and <= 1000 ? L.Format("MainDescriptionFps", stream.FrameRate.Value) : L.Get("MainDescriptionFpsUnknown"));
+            details.Add(L.Format("MainDescriptionDuration", FormatDuration(stream.Duration)));
         }
         if (stream.CodecType == "audio")
         {
-            details.Add(stream.Channels is { } channels ? $"{channels} канал(ов)" : "каналы: —");
-            details.Add(stream.SampleRate is { } sampleRate ? $"{sampleRate} Гц" : "частота: —");
+            details.Add(stream.Channels is { } channels ? L.Format("MainDescriptionChannels", channels) : L.Get("MainDescriptionChannelsUnknown"));
+            details.Add(stream.SampleRate is { } sampleRate ? L.Format("MainDescriptionSampleRate", sampleRate) : L.Get("MainDescriptionSampleRateUnknown"));
         }
         if (stream.Language is { } language) details.Add(language);
         if (stream.Title is { } title) details.Add(title.Length > 80 ? title[..80] + "…" : title);
-        if (stream.SubtitleKind != SubtitleKind.Unknown) details.Add(stream.SubtitleKind == SubtitleKind.Text ? "текстовые" : "графические");
+        if (stream.SubtitleKind != SubtitleKind.Unknown) details.Add(L.Get(stream.SubtitleKind == SubtitleKind.Text ? "MainDescriptionText" : "MainDescriptionGraphic"));
         var type = stream.VisualKind switch
         {
-            VisualKind.Video => "Видео",
-            VisualKind.Image => stream.IsCoverArt ? "Изображение (обложка)" : "Изображение",
-            VisualKind.Animation => "Анимация",
-            _ when stream.CodecType == "video" => "Неопределённый визуальный поток",
+            VisualKind.Video => L.Get("MainTypeVideo"),
+            VisualKind.Image => L.Get(stream.IsCoverArt ? "MainDescriptionCover" : "MainTypeImage"),
+            VisualKind.Animation => L.Get("MainTypeAnimation"),
+            _ when stream.CodecType == "video" => L.Get("MainDescriptionUnknownVisual"),
             _ => stream.CodecType switch
             {
-                "audio" => "Аудио", "subtitle" => "Субтитры", "attachment" => "Вложение",
-                null => "Неизвестный тип", _ => stream.CodecType
+                "audio" => L.Get("MainTypeAudio"), "subtitle" => L.Get("MainTypeSubtitle"),
+                "attachment" => L.Get("MainTypeAttachment"),
+                null => L.Get("MainDescriptionUnknownType"), _ => stream.CodecType
             }
         };
         var codec = stream.ImageFormat is { } imageFormat && stream.VisualKind is VisualKind.Image or VisualKind.Animation
@@ -746,10 +876,10 @@ public class MainViewModel : ViewModelBase
 
     private static string FormatByteSize(long bytes) => bytes switch
     {
-        >= 1L << 30 => $"{bytes / (double)(1L << 30):0.##} ГиБ",
-        >= 1L << 20 => $"{bytes / (double)(1L << 20):0.##} МиБ",
-        >= 1L << 10 => $"{bytes / (double)(1L << 10):0.##} КиБ",
-        _ => $"{bytes} байт"
+        >= 1L << 30 => L.Format("MainSizeGiB", bytes / (double)(1L << 30)),
+        >= 1L << 20 => L.Format("MainSizeMiB", bytes / (double)(1L << 20)),
+        >= 1L << 10 => L.Format("MainSizeKiB", bytes / (double)(1L << 10)),
+        _ => L.Format("MainSizeBytes", bytes)
     };
 
     internal static string FormatCount(int count, string one, string few, string many)
@@ -767,15 +897,16 @@ public class MainViewModel : ViewModelBase
         if (streams.Length == 0) return "—";
         var codecs = string.Join(", ", streams.Select(s => s.Codec?.ToUpperInvariant() ?? "—")
             .Distinct(StringComparer.OrdinalIgnoreCase).Take(4));
-        return $"{FormatCount(streams.Length, "дорожка", "дорожки", "дорожек")} ({codecs})";
+        return L.Format("MainStreamSummary", FormatCount(streams.Length,
+            L.Get("MainTrackOne"), L.Get("MainTrackFew"), L.Get("MainTrackMany")), codecs);
     }
 
     internal static string FormatBitRate(long? value) => value switch
     {
         null => "—",
-        >= 1_000_000 => $"{value.Value / 1_000_000.0:0.##} Мбит/с",
-        >= 1_000 => $"{value.Value / 1_000.0:0.##} Кбит/с",
-        _ => $"{value.Value} бит/с"
+        >= 1_000_000 => L.Format("MainBitrateMbps", value.Value / 1_000_000.0),
+        >= 1_000 => L.Format("MainBitrateKbps", value.Value / 1_000.0),
+        _ => L.Format("MainBitrateBps", value.Value)
     };
 
     public async Task CheckAsync(CancellationToken cancellationToken)
@@ -795,12 +926,13 @@ public class MainViewModel : ViewModelBase
             {
                 IsReady = false;
                 KnownBuildSource = "";
-                SetDependencyStatus(new ToolStatus("ffmpeg", false, "Ошибка проверки."), ffmpeg: true);
-                SetDependencyStatus(new ToolStatus("ffprobe", false, "Ошибка проверки."), ffmpeg: false);
+                SetDependencyStatus(new ToolStatus("ffmpeg", false, L.Get("InstallerCheckError")), ffmpeg: true);
+                SetDependencyStatus(new ToolStatus("ffprobe", false, L.Get("InstallerCheckError")), ffmpeg: false);
                 throw;
             }
             if (!IsReady)
-                InstallOption = await Task.Run(() => _tools.GetInstallOptionAsync(cancellationToken), cancellationToken);
+                SetInstallOption(await Task.Run(() => _tools.GetInstallOptionAsync(cancellationToken), cancellationToken),
+                    _tools.LastInstallOptionMessage);
             FallbackNotice = "";
         }
         finally { _operation = null; IsBusy = false; }
@@ -811,13 +943,13 @@ public class MainViewModel : ViewModelBase
         if (IsBusy || IsReady) return;
         if (!OperatingSystem.IsWindows())
         {
-            Message = "Автоматическая установка здесь недоступна. Используйте указанную команду или задайте пути вручную.";
+            SetLocalizedMessage("InstallerAutoInstallUnavailable");
             return;
         }
         var useDirectDownload = directDownload ?? _tools.OfferDirectDownload;
         if (useDirectDownload && !_tools.CanDirectDownload)
         {
-            Message = "Прямая загрузка поддерживается только в Windows 10/11 x64.";
+            SetLocalizedMessage("InstallerDirectDownloadWindowsOnly");
             return;
         }
 
@@ -835,35 +967,36 @@ public class MainViewModel : ViewModelBase
             var progress = new Progress<InstallProgress>(value =>
             {
                 if (!acceptProgress || _operation != operation || operation.IsCancellationRequested) return;
-                Message = value.Message;
+                if (value.LocalizedMessage is { } token) SetLocalizedMessage(token);
+                else Message = value.Message;
                 ProgressIndeterminate = !value.Percent.HasValue;
                 Progress = value.Percent ?? 0;
             });
-            Message = useDirectDownload ? "Подготовка загрузки с gyan.dev…" : "Выполняется установка через WinGet…";
+            SetLocalizedMessage(useDirectDownload ? "InstallerPreparingDirectDownload" : "InstallerInstallingWithWinget");
             var result = useDirectDownload
                 ? await Task.Run(() => _tools.DownloadWindowsAsync(progress, cancellationToken), cancellationToken)
                 : await Task.Run(() => _tools.InstallOnWindowsAsync(cancellationToken), cancellationToken);
             if (!result.Success && !useDirectDownload && _tools.OfferDirectDownload && _tools.CanDirectDownload)
             {
-                FallbackNotice = result.Message.StartsWith("WinGet недоступен", StringComparison.OrdinalIgnoreCase)
-                    ? "WinGet недоступен. Используется прямая загрузка FFmpeg."
-                    : "Установка через WinGet не завершилась. Используется прямая загрузка FFmpeg.";
-                InstallOption = "Прямая загрузка с gyan.dev выполняется в пользовательский каталог. PATH не изменяется.";
-                Message = "Подготовка загрузки с gyan.dev…";
+                SetFallbackNotice(_tools.WinGetAvailable == false
+                    ? "InstallerDirectFallbackNoWinget" : "InstallerDirectFallbackFailedWinget");
+                SetInstallOption(L.Get("InstallerDirectDownloadLocation"), new("InstallerDirectDownloadLocation"));
+                SetLocalizedMessage("InstallerPreparingDirectDownload");
                 result = await Task.Run(() => _tools.DownloadWindowsAsync(progress, cancellationToken), cancellationToken);
             }
             acceptProgress = false;
-            await RefreshAsync(cancellationToken, "Проверка компонентов после установки…");
+            await RefreshAsync(cancellationToken, new("InstallerCheckingAfterInstall"));
             if (!IsReady)
-                InstallOption = await Task.Run(() => _tools.GetInstallOptionAsync(cancellationToken), cancellationToken);
-            Message = result.Success && !IsReady
-                ? "Повторная проверка не подтвердила готовность обеих утилит. Повторите проверку или укажите пути вручную."
-                : result.Message;
+                SetInstallOption(await Task.Run(() => _tools.GetInstallOptionAsync(cancellationToken), cancellationToken),
+                    _tools.LastInstallOptionMessage);
+            if (result.Success && !IsReady) SetLocalizedMessage("InstallerVerificationFailed");
+            else if (result.LocalizedMessage is { } token) SetLocalizedMessage(token);
+            else Message = result.Message;
             InstallFailed = !IsReady;
         }
         catch (OperationCanceledException)
         {
-            Message = "Установка отменена. Можно повторить попытку.";
+            SetLocalizedMessage("InstallerInstallCancelled");
             throw;
         }
         catch
@@ -887,11 +1020,16 @@ public class MainViewModel : ViewModelBase
             var error = await Task.Run(() => _tools.SetManualPathAsync(name, path, cancellationToken), cancellationToken);
             if (error is not null)
             {
+                var missing = ManualPathMissing(path);
                 if (name == "ffmpeg" && !FFmpegReady)
-                    SetDependencyStatus(new ToolStatus(name, false, error), ffmpeg: true);
+                    SetDependencyStatus(new ToolStatus(name, false, error, IsMissing: missing)
+                    { LocalizedDetails = _tools.ManualPathErrorMessage }, ffmpeg: true);
                 if (name == "ffprobe" && !FFprobeReady)
-                    SetDependencyStatus(new ToolStatus(name, false, error), ffmpeg: false);
-                Message = error;
+                    SetDependencyStatus(new ToolStatus(name, false, error, IsMissing: missing)
+                    { LocalizedDetails = _tools.ManualPathErrorMessage }, ffmpeg: false);
+                if (_tools.ManualPathErrorMessage is { } token) SetLocalizedMessage(token);
+                else Message = error;
+                if (missing) OverrideInstallerNotice("InstallerManualFileMissing");
                 return;
             }
             await RefreshAsync(cancellationToken);
@@ -899,46 +1037,68 @@ public class MainViewModel : ViewModelBase
         finally { _operation = null; IsBusy = false; }
     }
 
-    private async Task RefreshAsync(CancellationToken cancellationToken, string? stage = null)
+    private static bool ManualPathMissing(string path)
+    {
+        try { _ = File.GetAttributes(path); return false; }
+        catch (FileNotFoundException) { return true; }
+        catch (DirectoryNotFoundException) { return true; }
+        catch { return false; }
+    }
+
+    private async Task RefreshAsync(CancellationToken cancellationToken, LocalizedMessage? stage = null)
     {
         if (stage is not null || string.IsNullOrWhiteSpace(Message))
-            Message = stage ?? "Проверка утилит…";
+        {
+            if (stage is null) SetLocalizedMessage("InstallerCheckingTools");
+            else SetLocalizedMessage(stage);
+        }
         var status = await Task.Run(() => _tools.CheckAsync(cancellationToken), cancellationToken);
         FFmpegStatus = Format(status.FFmpeg);
         FFprobeStatus = Format(status.FFprobe);
         SetDependencyStatus(status.FFmpeg, ffmpeg: true);
         SetDependencyStatus(status.FFprobe, ffmpeg: false);
-        var ffmpegFromGyan = status.FFmpeg.IsReady && status.FFmpeg.Details.Contains("gyan.dev", StringComparison.OrdinalIgnoreCase);
-        var ffprobeFromGyan = status.FFprobe.IsReady && status.FFprobe.Details.Contains("gyan.dev", StringComparison.OrdinalIgnoreCase);
-        KnownBuildSource = (ffmpegFromGyan, ffprobeFromGyan) switch
-        {
-            (true, true) => "Источник сборок FFmpeg и FFprobe: gyan.dev",
-            (true, false) => "Источник сборки FFmpeg: gyan.dev",
-            (false, true) => "Источник сборки FFprobe: gyan.dev",
-            _ => ""
-        };
+        UpdateKnownBuildSource(status.FFmpeg, status.FFprobe);
         IsReady = status.IsReady;
         _ffmpegPath = status.IsReady ? status.FFmpeg.Path : null;
         _ffprobePath = status.IsReady ? status.FFprobe.Path : null;
         if (!status.IsReady) { CancelAnalysis(); CancelExport(); }
         if (IsReady) { InstallOption = ""; InstallFailed = false; }
         Greeting = IsReady
-            ? $"Готово. FFmpeg {Version(status.FFmpeg)}, FFprobe {Version(status.FFprobe)}."
-            : "FFmpeg и FFprobe требуются для работы с медиафайлами.";
-        Message = _tools.SettingsError ?? (IsReady ? "Обе утилиты готовы." : "Установите недостающие утилиты или укажите их пути.");
+            ? L.Format("InstallerReadyVersions", Version(status.FFmpeg), Version(status.FFprobe))
+            : L.Get("InstallerToolsRequired");
+        if (_tools.SettingsErrorMessage is { } settingsError) SetLocalizedMessage(settingsError);
+        else if (_tools.SettingsError is { } error) Message = error;
+        else SetLocalizedMessage(IsReady ? "InstallerBothReady" : "InstallerMissingPrompt");
+        if (!IsReady && (FFmpegError || FFprobeError) && _tools.SettingsError is null)
+            OverrideInstallerNotice("InstallerToolCheckFailed");
+    }
+
+    private void UpdateKnownBuildSource(ToolStatus ffmpeg, ToolStatus ffprobe)
+    {
+        var ffmpegFromGyan = ffmpeg.IsReady && ffmpeg.Details.Contains("gyan.dev", StringComparison.OrdinalIgnoreCase);
+        var ffprobeFromGyan = ffprobe.IsReady && ffprobe.Details.Contains("gyan.dev", StringComparison.OrdinalIgnoreCase);
+        KnownBuildSource = (ffmpegFromGyan, ffprobeFromGyan) switch
+        {
+            (true, true) => L.Get("InstallerBuildSourceBoth"),
+            (true, false) => L.Get("InstallerBuildSourceFfmpeg"),
+            (false, true) => L.Get("InstallerBuildSourceFfprobe"),
+            _ => ""
+        };
     }
 
     private void SetDependencyStatus(ToolStatus? status, bool ffmpeg)
     {
+        if (ffmpeg) _lastFFmpegToolStatus = status;
+        else _lastFFprobeToolStatus = status;
         var state = status is null ? DependencyState.Checking : status.IsReady ? DependencyState.Ready
-            : status.Details.StartsWith("Файл не найден", StringComparison.OrdinalIgnoreCase)
+            : status.IsMissing
                 ? DependencyState.Missing : DependencyState.Error;
         var summary = state switch
         {
-            DependencyState.Ready => $"Найден · {Version(status!)}",
-            DependencyState.Missing => "Не найден",
-            DependencyState.Error => "Ошибка",
-            _ => "Проверяется…"
+            DependencyState.Ready => L.Format("InstallerFoundVersion", Version(status!)),
+            DependencyState.Missing => L.Get("InstallerNotFound"),
+            DependencyState.Error => L.Get("InstallerError"),
+            _ => L.Get("InstallerCheckingBrief")
         };
         if (ffmpeg)
         {
@@ -961,13 +1121,15 @@ public class MainViewModel : ViewModelBase
     }
 
     private static string Format(ToolStatus status) =>
-        status.IsReady ? $"{status.Name}: {status.Details}\n{status.Path}" : $"{status.Name}: {status.Details}";
+        status.IsReady ? $"{status.Name}: {status.Details}\n{status.Path}"
+            : $"{status.Name}: {status.LocalizedDetails?.Resolve() ?? status.Details}";
 
     private static string Version(ToolStatus status) => status.Details.Split(' ', StringSplitOptions.RemoveEmptyEntries)[2];
 }
 
 public sealed class ExportTrackViewModel : ViewModelBase
 {
+    private static LocalizationManager L => LocalizationManager.Active;
     private static readonly IBrush ReadyBackground = new SolidColorBrush(Color.Parse("#175541"));
     private static readonly IBrush RunningBackground = new SolidColorBrush(Color.Parse("#19477B"));
     private static readonly IBrush ErrorBackground = new SolidColorBrush(Color.Parse("#633042"));
@@ -977,13 +1139,16 @@ public sealed class ExportTrackViewModel : ViewModelBase
         Stream = stream;
         Caption = caption;
         Decision = decision;
-        _status = decision.Plan is null ? (CanConvert ? "Доступна конвертация после настройки." : "Недоступно: " + decision.Reason) : "Не выбран";
+        _statusFactory = () => decision.Plan is null ? (CanConvert ? L.Get("MainConversionAfterSetup")
+            : L.Format("MainUnavailableReason", decision.LocalizedReason?.Resolve() ?? decision.Reason)) : L.Get("MainNotSelected");
+        _status = _statusFactory();
     }
 
     private bool _isSelected;
     private bool _locked;
     private ExportState _state = ExportState.Pending;
     private string _status;
+    private Func<string>? _statusFactory;
     private string? _resultPath;
     private ConversionSettings? _conversion;
     private TrackExportPlan? _copyOverride;
@@ -1010,9 +1175,9 @@ public sealed class ExportTrackViewModel : ViewModelBase
     public TrackExportPlan? Plan => Conversion is { } options
         ? new(Stream, options.Format.Extension, options.Format.Muxer, false, false, options)
         : _copyOverride ?? Decision.Plan;
-    public string ModeDisplay => Conversion is null ? "Извлечение" : "Конвертация";
+    public string ModeDisplay => L.Get(Conversion is null ? "MainModeExtract" : "MainModeConvert");
     public string OutputPreview => Conversion is null
-        ? Plan is { } copy ? $".{copy.Extension} · без перекодирования" : "Для извлечения формат не определён"
+        ? Plan is { } copy ? L.Format("MainCopyPreview", copy.Extension) : L.Get("MainCopyFormatUnknown")
         : $".{Conversion.Format.Extension} · {Conversion.Encoder.Name}";
     public void SetConversion(ConversionSettings? options)
     {
@@ -1028,8 +1193,9 @@ public sealed class ExportTrackViewModel : ViewModelBase
             OnPropertyChanged(nameof(Plan));
             OnPropertyChanged(nameof(OutputPreview));
         }
-        Status = options is null ? Decision.Plan is null ? "Доступна конвертация после настройки." : "Не выбран"
-            : $"Конвертация в {options.Format.Extension.ToUpperInvariant()} ({options.Encoder.Name}).";
+        SetLocalizedStatus(() => options is null ? Decision.Plan is null
+            ? L.Get("MainConversionAfterSetup") : L.Get("MainNotSelected")
+            : L.Format("MainConvertingTo", options.Format.Extension.ToUpperInvariant(), options.Encoder.Name));
         OnPropertyChanged(nameof(StatusLabel));
     }
     public void SetCopyOverride(TrackExportPlan? plan)
@@ -1040,7 +1206,8 @@ public sealed class ExportTrackViewModel : ViewModelBase
         _copyOverride = plan;
         _configurationError = null;
         if (changed) { State = ExportState.Pending; ResultPath = null; }
-        Status = plan is null ? "Не выбран" : $"Копирование в {plan.Extension.ToUpperInvariant()} без перекодирования.";
+        SetLocalizedStatus(() => plan is null ? L.Get("MainNotSelected")
+            : L.Format("MainCopyingTo", plan.Extension.ToUpperInvariant()));
         OnPropertyChanged(nameof(Plan));
         OnPropertyChanged(nameof(OutputPreview));
         OnPropertyChanged(nameof(StatusLabel));
@@ -1051,20 +1218,26 @@ public sealed class ExportTrackViewModel : ViewModelBase
         _configurationError = reason;
         State = ExportState.Pending;
         ResultPath = null;
+        _statusFactory = null;
         Status = reason;
         OnPropertyChanged(nameof(StatusLabel));
+    }
+    internal void SetConfigurationErrorKey(string key)
+    {
+        SetConfigurationError(L.Get(key));
+        _statusFactory = () => L.Get(key);
     }
     public bool CanSelect => (IsSupported || CanConvert) && !_locked;
     public string IndexDisplay => Stream.Index?.ToString(CultureInfo.InvariantCulture) ?? "—";
     public string TypeDisplay => Stream.VisualKind switch
     {
-        VisualKind.Image => Stream.IsCoverArt ? "Обложка" : "Изображение",
-        VisualKind.Animation => "Анимация",
-        VisualKind.Video => "Видео",
+        VisualKind.Image => L.Get(Stream.IsCoverArt ? "MainTypeCover" : "MainTypeImage"),
+        VisualKind.Animation => L.Get("MainTypeAnimation"),
+        VisualKind.Video => L.Get("MainTypeVideo"),
         _ => Stream.CodecType switch
         {
-            "audio" => "Аудио", "subtitle" => "Субтитры", "attachment" => "Вложение",
-            _ => "Другой"
+            "audio" => L.Get("MainTypeAudio"), "subtitle" => L.Get("MainTypeSubtitle"), "attachment" => L.Get("MainTypeAttachment"),
+            _ => L.Get("MainTypeOther")
         }
     };
     public string TypeGlyph => Stream.CodecType switch
@@ -1087,12 +1260,12 @@ public sealed class ExportTrackViewModel : ViewModelBase
     public string DetailsDisplay => Stream.CodecType switch
     {
         "audio" => Stream.Channels is { } channels
-            ? MainViewModel.FormatCount(channels, "канал", "канала", "каналов")
+            ? MainViewModel.FormatCount(channels, L.Get("MainChannelOne"), L.Get("MainChannelFew"), L.Get("MainChannelMany"))
                 + (string.IsNullOrWhiteSpace(Stream.ChannelLayout) ? "" : $" ({Stream.ChannelLayout})")
-            : "Каналы: —",
+            : L.Get("MainChannelsUnknown"),
         "subtitle" => Stream.SubtitleKind switch
         {
-            SubtitleKind.Text => "Текстовые", SubtitleKind.Graphic => "Графические", _ => "—"
+            SubtitleKind.Text => L.Get("MainSubtitleText"), SubtitleKind.Graphic => L.Get("MainSubtitleGraphic"), _ => "—"
         },
         _ => Stream.Width is { } width && Stream.Height is { } height ? $"{width} × {height}" : "—"
     };
@@ -1111,17 +1284,33 @@ public sealed class ExportTrackViewModel : ViewModelBase
         }
     }
     public string Status { get => _status; private set => SetProperty(ref _status, value); }
-    public string StatusLabel => !IsSupported && !CanConvert ? "Недоступен" : State switch
+    private void SetLocalizedStatus(Func<string> factory)
     {
-        ExportState.Running => Conversion is null ? "Извлекается" : "Конвертируется",
-        ExportState.Completed => Conversion is null ? "Извлечён" : "Сконвертирован",
-        ExportState.Failed => "Ошибка", ExportState.Cancelled => "Отменено",
-        _ when !IsSelected => Decision.Plan is null ? "Доступна конвертация" : "Доступен",
-        _ when _configurationError is not null => "Нужна настройка",
-        _ when Plan is null => "Нужна настройка",
-        _ when Conversion is not null => "Конвертация",
-        _ => "Доступен"
+        _statusFactory = factory;
+        Status = factory();
+    }
+    public string StatusLabel => !IsSupported && !CanConvert ? L.Get("MainStatusUnavailable") : State switch
+    {
+        ExportState.Running => L.Get(Conversion is null ? "MainStatusExtracting" : "MainStatusConverting"),
+        ExportState.Completed => L.Get(Conversion is null ? "MainStatusExtracted" : "MainStatusConverted"),
+        ExportState.Failed => L.Get("InstallerError"), ExportState.Cancelled => L.Get("MainStatusCancelled"),
+        _ when !IsSelected => L.Get(Decision.Plan is null ? "MainStatusConversionAvailable" : "MainStatusAvailable"),
+        _ when _configurationError is not null => L.Get("MainStatusNeedsSetup"),
+        _ when Plan is null => L.Get("MainStatusNeedsSetup"),
+        _ when Conversion is not null => L.Get("MainModeConvert"),
+        _ => L.Get("MainStatusAvailable")
     };
+    public void RefreshMainLocalization()
+    {
+        if (_statusFactory is not null) Status = _statusFactory();
+        OnPropertyChanged(nameof(TypeDisplay));
+        OnPropertyChanged(nameof(LanguageDisplay));
+        OnPropertyChanged(nameof(DetailsDisplay));
+        OnPropertyChanged(nameof(BitRateDisplay));
+        OnPropertyChanged(nameof(StatusLabel));
+        OnPropertyChanged(nameof(ModeDisplay));
+        OnPropertyChanged(nameof(OutputPreview));
+    }
     public IBrush StatusBadgeBackground => !IsSupported && !CanConvert ? MutedBackground : State switch
     {
         ExportState.Running => RunningBackground,
@@ -1141,10 +1330,11 @@ public sealed class ExportTrackViewModel : ViewModelBase
         if (SetProperty(ref _locked, locked)) OnPropertyChanged(nameof(CanSelect));
     }
 
-    public void SetResult(ExportState state, string message, string? path)
+    public void SetResult(ExportState state, string message, string? path, LocalizedMessage? localizedMessage = null)
     {
         State = state;
-        Status = message;
+        _statusFactory = localizedMessage is null ? null : localizedMessage.Resolve;
+        Status = localizedMessage?.Resolve() ?? message;
         ResultPath = path;
         OnPropertyChanged(nameof(StatusLabel));
         OnPropertyChanged(nameof(StatusBadgeBackground));
@@ -1160,101 +1350,12 @@ public sealed record UserLogEntry(string Time, string Message, DiagnosticLevel L
 
     internal static UserLogEntry? FromDiagnostic(DiagnosticEvent entry)
     {
-        var message = entry.Message;
-        if (entry.Operation == "Проверка")
-        {
-            if (message.StartsWith("Проверяется ", StringComparison.OrdinalIgnoreCase))
-                message = message.Split(':')[0] + "…";
-            else if (message.Contains("не прошёл проверку", StringComparison.OrdinalIgnoreCase))
-                message = message.Split(' ')[0] + " не найден или не работает.";
-            else if (message.StartsWith("ffmpeg ", StringComparison.OrdinalIgnoreCase)
-                || message.StartsWith("ffprobe ", StringComparison.OrdinalIgnoreCase))
-            {
-                var version = Regex.Match(message,
-                    @"(?i)^(ffmpeg|ffprobe)\s+(?:ffmpeg|ffprobe)\s+version\s+([^\s]+)");
-                message = version.Success
-                    ? $"{(version.Groups[1].Value.Equals("ffmpeg", StringComparison.OrdinalIgnoreCase) ? "FFmpeg" : "FFprobe")} {version.Groups[2].Value} обнаружен. Готов к работе."
-                    : message.Split(':')[0] + ". Готов к работе.";
-            }
-        }
-        else if (entry.Operation == "Анализ")
-        {
-            if (message.StartsWith("Анализ завершён", StringComparison.OrdinalIgnoreCase))
-            {
-                var marker = message.LastIndexOf("потоков: ", StringComparison.OrdinalIgnoreCase);
-                message = marker >= 0 ? "Анализ завершён. Обнаружено медиапотоков: "
-                    + message[(marker + 9)..].TrimEnd('.') : "Анализ завершён.";
-            }
-            else if (message.StartsWith("Начат", StringComparison.OrdinalIgnoreCase))
-                message = "Начат анализ файла.";
-        }
-        else if (entry.Operation == "Экспорт")
-        {
-            if (message.Contains("SeekHead=", StringComparison.Ordinal)
-                || message.StartsWith("FFmpeg для потока", StringComparison.OrdinalIgnoreCase)
-                || message.StartsWith("Чтение вложения Matroska", StringComparison.OrdinalIgnoreCase)
-                || Regex.IsMatch(message, @"^Поток #\d+: обработано примерно \d+%")
-                || message.Contains("команда FFmpeg", StringComparison.OrdinalIgnoreCase)) return null;
-            if (message.StartsWith("Начало ", StringComparison.OrdinalIgnoreCase))
-            {
-                var count = Regex.Match(message, @"потоков: (\d+)");
-                message = count.Success ? $"Начата обработка: {count.Groups[1].Value} потоков."
-                    : "Начата обработка.";
-            }
-            else if (message.StartsWith("Начато извлечение:", StringComparison.OrdinalIgnoreCase)
-                || message.StartsWith("Начата конвертация:", StringComparison.OrdinalIgnoreCase))
-            {
-                var index = Regex.Match(message, @"поток #(\d+)");
-                var format = Regex.Match(message, @"формат ([^;]+)");
-                var converted = message.StartsWith("Начата конвертация:", StringComparison.OrdinalIgnoreCase);
-                message = index.Success ? $"Начат{(converted ? "а конвертация" : "о извлечение")} потока #{index.Groups[1].Value}" +
-                    (format.Success ? $" в формате {format.Groups[1].Value.Split(';')[0]}." : ".") : "Начата обработка потока.";
-            }
-            else if (message.StartsWith("Завершён поток #", StringComparison.OrdinalIgnoreCase))
-            {
-                var index = Regex.Match(message, @"#(\d+)");
-                var format = Regex.Match(message, @"контейнер ([^.;]+)");
-                var size = Regex.Match(entry.Details ?? "", @"размер ([\d\s\u00a0]+) байт");
-                message = $"{(message.Contains("режим конвертация", StringComparison.OrdinalIgnoreCase) ? "Сконвертирован" : "Извлечён")} поток #{index.Groups[1].Value}" +
-                    (format.Success ? $" ({format.Groups[1].Value})" : "") +
-                    (size.Success && long.TryParse(Regex.Replace(size.Groups[1].Value, @"\s", ""), out var bytes)
-                        ? $", {TrackExporter.FormatByteSize(bytes)}" : "") + ".";
-            }
-            else if (message.StartsWith("Очередь завершена успешно", StringComparison.OrdinalIgnoreCase))
-                message = "Обработка завершена.";
-            else if (message.StartsWith("Очередь остановлена", StringComparison.OrdinalIgnoreCase))
-                message = "Обработка остановлена пользователем.";
-            else if (message.StartsWith("Очередь завершена с ошибками", StringComparison.OrdinalIgnoreCase))
-                message = "Обработка завершена с ошибками.";
-            else if (message.StartsWith("Ошибка потока #", StringComparison.OrdinalIgnoreCase))
-            {
-                var index = Regex.Match(message, @"#(\d+)");
-                var reason = message.Contains("UnauthorizedAccessException") ? "нет доступа к папке сохранения"
-                    : message.Contains("IOException") ? "ошибка записи файла"
-                    : message.Contains("Win32Exception") ? "не удалось запустить FFmpeg"
-                    : message.Split(';')[0].Split(':', 2).Last().Trim();
-                message = $"Не удалось извлечь поток #{index.Groups[1].Value}: {reason}.";
-            }
-            else
-            {
-                var details = message.IndexOf(';');
-                if (details >= 0) message = message[..details] + ".";
-            }
-        }
-        else if (entry.Operation is "Аппаратные кодировщики" or "Совместимые кодировщики")
-        {
-            if (!message.StartsWith("Поиск: ", StringComparison.Ordinal)) return null;
-            message = message[7..];
-        }
-        else if (entry.Operation is "HTTPS" or "Зависимости" &&
-            (message.Contains("Источник ") || message.Contains("Путь "))) return null;
-        if (message.Length > 240) message = message[..237] + "…";
+        if (entry.UserMessageKey is not { } key) return null;
+        var localizer = LocalizationManager.Active;
+        var message = entry.UserMessageArgs is { Length: > 0 } args
+            ? localizer.Format(key, args)
+            : localizer.Get(key);
         return new UserLogEntry(entry.Time.ToString("HH:mm:ss"), message, entry.Level,
-            entry.Level == DiagnosticLevel.Info &&
-            (message.Contains("готов", StringComparison.OrdinalIgnoreCase)
-                || message.Contains("заверш", StringComparison.OrdinalIgnoreCase)
-                || message.Contains("успеш", StringComparison.OrdinalIgnoreCase)
-                || message.Contains("извлечён", StringComparison.OrdinalIgnoreCase)
-                || message.Contains("обнаружен", StringComparison.OrdinalIgnoreCase)));
+            entry.UserSuccess && entry.Level == DiagnosticLevel.Info);
     }
 }

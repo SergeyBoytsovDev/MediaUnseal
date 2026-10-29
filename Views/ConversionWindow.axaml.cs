@@ -25,8 +25,13 @@ public partial class ConversionWindow : Window
     private string _kind = "";
     private ConversionFormat? _copyFormat;
     private TrackExportPlan? _copyPlan;
-    private const string CompatibleSearch = "Совместимые кодировщики";
-    private const string HardwareSearch = "Аппаратные кодировщики";
+    private string? _encoderNoteKey;
+    private object?[] _encoderNoteArguments = [];
+    private string? _validationKey;
+    private object?[] _validationArguments = [];
+    private static LocalizationManager L => LocalizationManager.Active;
+    private const string CompatibleSearch = "Compatible encoders";
+    private const string HardwareSearch = "Hardware encoders";
     internal bool AppliedCopy { get; private set; }
 
     public ConversionWindow()
@@ -41,7 +46,12 @@ public partial class ConversionWindow : Window
         QualityBox.ItemsSource = new[] { "0", "2", "4", "6", "8", "10" };
         SampleRateBox.ItemsSource = new[] { "22050", "44100", "48000", "96000", "192000" };
         ChannelsBox.ItemsSource = new[] { "1", "2", "6", "8" };
-        Closed += (_, _) => _closed.Cancel();
+        L.PropertyChanged += Localization_PropertyChanged;
+        Closed += (_, _) =>
+        {
+            _closed.Cancel();
+            L.PropertyChanged -= Localization_PropertyChanged;
+        };
     }
 
     internal ConversionWindow(FfmpegConversionCatalog catalog, DiagnosticLog diagnostics, MediaStreamInfo stream,
@@ -54,12 +64,7 @@ public partial class ConversionWindow : Window
         _existing = existing;
         _shutdown = shutdown;
         _kind = stream.VisualKind == VisualKind.Video ? "video" : stream.CodecType ?? "";
-        StreamHeading.Text = _kind switch
-        {
-            "video" => "Настройки конвертации видео",
-            "audio" => "Настройки конвертации аудио",
-            _ => "Настройки конвертации субтитров"
-        };
+        RefreshHeading();
         Width = _kind == "subtitle" ? 570 : 620;
         VideoOptions.IsVisible = _kind == "video";
         AudioOptions.IsVisible = _kind == "audio";
@@ -67,7 +72,7 @@ public partial class ConversionWindow : Window
         Grid.SetColumnSpan(MoreEncodersButton, _kind == "video" ? 1 : 2);
         _copyPlan = copyPlan;
         if (copyPlan is not null)
-            _copyFormat = new(copyPlan.Muxer, copyPlan.Extension, "Исходный — без перекодирования",
+            _copyFormat = new(copyPlan.Muxer, copyPlan.Extension, L.Get("MainOriginalNoTranscode"),
                 _kind == "video" ? stream.Codec : null, _kind == "audio" ? stream.Codec : null,
                 _kind == "subtitle" ? stream.Codec : null);
         FormatBox.ItemsSource = _copyFormat is null ? catalog.FormatsFor(_kind) :
@@ -90,6 +95,47 @@ public partial class ConversionWindow : Window
                 (FormatBox.SelectedItem is ConversionFormat format ? catalog.SuggestedEncoder(format, _kind) : null);
     }
 
+    private void RefreshHeading()
+    {
+        if (_stream is null) return;
+        StreamHeading.Text = L.Get(_kind switch
+        {
+            "video" => "ConversionHeadingVideo",
+            "audio" => "ConversionHeadingAudio",
+            _ => "ConversionHeadingSubtitles"
+        });
+    }
+
+    private void SetEncoderNote(string key, params object?[] arguments)
+    {
+        _encoderNoteKey = key;
+        _encoderNoteArguments = arguments;
+        EncoderNote.Text = L.Format(key, arguments);
+    }
+
+    private void SetValidationMessage(string key, params object?[] arguments)
+    {
+        _validationKey = key;
+        _validationArguments = arguments;
+        ValidationMessage.Text = L.Format(key, arguments);
+    }
+
+    private void Localization_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != "Item[]") return;
+        RefreshHeading();
+        if (_encoderNoteKey is not null) EncoderNote.Text = L.Format(_encoderNoteKey, _encoderNoteArguments);
+        if (_validationKey is not null) ValidationMessage.Text = L.Format(_validationKey, _validationArguments);
+        if (_copyFormat is null || FormatBox.ItemsSource is not System.Collections.IEnumerable source) return;
+        var format = FormatBox.SelectedItem;
+        var encoder = EncoderBox.SelectedItem;
+        var oldCopy = _copyFormat;
+        _copyFormat = oldCopy with { Description = L.Get("MainOriginalNoTranscode") };
+        FormatBox.ItemsSource = new[] { _copyFormat }.Concat(source.Cast<ConversionFormat>().Skip(1)).ToArray();
+        FormatBox.SelectedItem = ReferenceEquals(format, oldCopy) ? _copyFormat : format;
+        if (!ReferenceEquals(format, oldCopy) && encoder is not null) EncoderBox.SelectedItem = encoder;
+    }
+
     private void Format_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_catalog is null || FormatBox.SelectedItem is not ConversionFormat format) return;
@@ -102,14 +148,14 @@ public partial class ConversionWindow : Window
         if (copying)
         {
             EncoderBox.ItemsSource = new[] { new ConversionEncoder("copy", _stream?.Codec ?? "copy", _kind,
-                "копирование без перекодирования") };
+                L.Get("ConversionCopyEncoderDescription")) };
             EncoderBox.SelectedIndex = 0;
-            EncoderNote.Text = "Оригинальный поток будет скопирован без перекодирования.";
+            SetEncoderNote("ConversionCopyNote");
             return;
         }
         EncoderBox.ItemsSource = InitialEncoders(_catalog, format, _kind, _existing);
         EncoderBox.SelectedItem = _catalog.SuggestedEncoder(format, _kind);
-        EncoderNote.Text = "Другие кодировщики можно проверить для выбранного формата.";
+        SetEncoderNote("ConversionOtherEncodersHint");
     }
 
     internal static ConversionEncoder[] InitialEncoders(FfmpegConversionCatalog catalog,
@@ -137,9 +183,9 @@ public partial class ConversionWindow : Window
     {
         if (_catalog is null || FormatBox.SelectedItem is not ConversionFormat format) return;
         MoreEncodersButton.IsEnabled = false;
-        EncoderNote.Text = "Проверка дополнительных кодировщиков…";
-        RecordSearch(CompatibleSearch, "Начат поиск совместимых кодировщиков.",
-            $"формат {format.Muxer}; тип {_kind}");
+        SetEncoderNote("ConversionCheckingAdditional");
+        RecordSearch(CompatibleSearch, "Compatible encoder search started.",
+            $"format {format.Muxer}; type {_kind}", userMessageKey: "LogCompatibleSearchStarted");
         try
         {
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(_shutdown, _closed.Token);
@@ -149,17 +195,18 @@ public partial class ConversionWindow : Window
                 linked.Token.ThrowIfCancellationRequested();
                 var result = await _catalog.CheckCombinationAsync(format, encoder, linked.Token,
                     diagnostics: details => _diagnostics?.Record(DiagnosticLevel.Info,
-                        CompatibleSearch, "Ответ FFmpeg при проверке кодировщика.", details));
+                        CompatibleSearch, "FFmpeg response during encoder check.", details));
                 if (result.Compatible) working.Add(encoder);
                 _diagnostics?.Record(DiagnosticLevel.Info, CompatibleSearch,
-                    $"{encoder.Name}: проверка {(result.Compatible ? "пройдена" : "не пройдена")}.",
-                    result.Compatible ? null : result.Reason);
+                    $"{encoder.Name}: check {(result.Compatible ? "passed" : "failed")}.",
+                    result.Compatible ? null : result.InfrastructureFailure
+                        ? "Encoder verification could not run." : "Encoder/container combination was rejected.");
             }
             _catalog.RememberConfirmedAdditional(format, _kind, working);
             if (FormatBox.SelectedItem is not ConversionFormat selectedFormat || selectedFormat != format)
             {
-                RecordSearch(CompatibleSearch, "Результат поиска не применён: выходной формат изменён.",
-                    level: DiagnosticLevel.Warn);
+                RecordSearch(CompatibleSearch, "Search result not applied: output format changed.",
+                    level: DiagnosticLevel.Warn, userMessageKey: "LogSearchStale");
                 return;
             }
             var current = EncoderBox.SelectedItem;
@@ -168,29 +215,34 @@ public partial class ConversionWindow : Window
                 : Enumerable.Empty<ConversionEncoder>();
             EncoderBox.ItemsSource = working.Concat(hardware).Distinct().ToArray();
             EncoderBox.SelectedItem = current;
-            EncoderNote.Text = $"Подтверждено совместимых кодировщиков: {working.Count}.";
+            SetEncoderNote("ConversionConfirmedCompatibleCount", working.Count);
             RecordSearch(CompatibleSearch, working.Count == 0
-                ? "Совместимые кодировщики не найдены."
-                : $"Найдено {working.Count} совместимых кодировщиков.");
+                ? "No compatible encoders found."
+                : $"Found {working.Count} compatible encoders.",
+                userMessageKey: working.Count == 0 ? "LogCompatibleNotFound" : "LogCompatibleFoundCount",
+                userMessageArgs: working.Count == 0 ? null : [working.Count]);
         }
         catch (OperationCanceledException)
         {
-            EncoderNote.Text = "Проверка кодировщиков отменена.";
-            RecordSearch(CompatibleSearch, "Поиск совместимых кодировщиков отменён.", level: DiagnosticLevel.Warn);
+            SetEncoderNote("ConversionAdditionalCancelled");
+            RecordSearch(CompatibleSearch, "Compatible encoder search cancelled.", level: DiagnosticLevel.Warn,
+                userMessageKey: "LogCompatibleSearchCancelled");
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception
             or TimeoutException or InvalidDataException)
         {
-            EncoderNote.Text = "Не удалось проверить дополнительные кодировщики.";
-            RecordSearch(CompatibleSearch, "Не удалось завершить поиск совместимых кодировщиков.",
-                ex.Message, DiagnosticLevel.Error);
+            SetEncoderNote("ConversionAdditionalFailed");
+            RecordSearch(CompatibleSearch, "Compatible encoder search failed.",
+                ex.Message, DiagnosticLevel.Error, "LogCompatibleSearchFailed");
         }
         finally { MoreEncodersButton.IsEnabled = true; }
     }
 
     private void RecordSearch(string operation, string message, string? details = null,
-        DiagnosticLevel level = DiagnosticLevel.Info) =>
-        _diagnostics?.Record(level, operation, "Поиск: " + message, details);
+        DiagnosticLevel level = DiagnosticLevel.Info, string? userMessageKey = null,
+        object?[]? userMessageArgs = null) =>
+        _diagnostics?.Record(level, operation, "Search: " + message, details,
+            userMessageKey, userMessageArgs);
 
     private async void Encoder_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
@@ -215,8 +267,9 @@ public partial class ConversionWindow : Window
     {
         if (_catalog is null || FormatBox.SelectedItem is not ConversionFormat format) return;
         HardwareButton.IsEnabled = false;
-        EncoderNote.Text = "Проверка аппаратных кодировщиков…";
-        RecordSearch(HardwareSearch, "Начат поиск аппаратных кодировщиков.", $"формат {format.Muxer}");
+        SetEncoderNote("ConversionCheckingHardware");
+        RecordSearch(HardwareSearch, "Hardware encoder search started.", $"format {format.Muxer}",
+            userMessageKey: "LogHardwareSearchStarted");
         try
         {
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(_shutdown, _closed.Token);
@@ -227,25 +280,26 @@ public partial class ConversionWindow : Window
                 linked.Token.ThrowIfCancellationRequested();
                 var result = await _catalog.CheckCombinationAsync(format, encoder, linked.Token,
                     diagnostics: details => _diagnostics?.Record(DiagnosticLevel.Info,
-                        HardwareSearch, "Ответ FFmpeg при проверке кодировщика.", details));
+                        HardwareSearch, "FFmpeg response during encoder check.", details));
                 if (result.Compatible)
                 {
                     working.Add(encoder);
                     _diagnostics?.Record(DiagnosticLevel.Info, HardwareSearch,
-                        $"{encoder.Name}: проверка пройдена.");
+                        $"{encoder.Name}: check passed.");
                 }
                 else
                 {
-                    searchFailed |= result.Reason.StartsWith("Не удалось проверить кодировщик", StringComparison.Ordinal);
+                    searchFailed |= result.InfrastructureFailure;
                     _diagnostics?.Record(DiagnosticLevel.Info, HardwareSearch,
-                        $"{encoder.Name}: проверка не пройдена.", result.Reason);
+                        $"{encoder.Name}: check failed.", result.InfrastructureFailure
+                            ? "Encoder verification could not run." : "Encoder/container combination was rejected.");
                 }
             }
             if (!searchFailed) _catalog.RememberConfirmedHardware(format, working);
             if (FormatBox.SelectedItem is not ConversionFormat selectedFormat || selectedFormat != format)
             {
-                RecordSearch(HardwareSearch, "Результат поиска не применён: выходной формат изменён.",
-                    level: DiagnosticLevel.Warn);
+                RecordSearch(HardwareSearch, "Search result not applied: output format changed.",
+                    level: DiagnosticLevel.Warn, userMessageKey: "LogSearchStale");
                 return;
             }
             var current = EncoderBox.SelectedItem;
@@ -254,27 +308,30 @@ public partial class ConversionWindow : Window
                 : Enumerable.Empty<ConversionEncoder>();
             EncoderBox.ItemsSource = software.Concat(working).Distinct().ToArray();
             EncoderBox.SelectedItem = current;
-            EncoderNote.Text = searchFailed
-                ? "Не удалось завершить проверку аппаратных кодировщиков. Подробности в диагностическом журнале."
-                : working.Count > 0 ? $"Найдено {working.Count} доступных аппаратных кодировщиков."
-                : "Доступные аппаратные кодировщики не найдены.";
+            if (searchFailed) SetEncoderNote("ConversionHardwareSearchFailedDetails");
+            else if (working.Count > 0) SetEncoderNote("ConversionHardwareFoundCount", working.Count);
+            else SetEncoderNote("ConversionHardwareNotFound");
             RecordSearch(HardwareSearch, searchFailed
-                ? "Не удалось завершить поиск аппаратных кодировщиков."
-                : working.Count > 0 ? $"Найдено {working.Count} доступных аппаратных кодировщиков."
-                : "Доступные аппаратные кодировщики не найдены.",
-                level: searchFailed ? DiagnosticLevel.Error : DiagnosticLevel.Info);
+                ? "Hardware encoder search failed."
+                : working.Count > 0 ? $"Found {working.Count} available hardware encoders."
+                : "No available hardware encoders found.",
+                level: searchFailed ? DiagnosticLevel.Error : DiagnosticLevel.Info,
+                userMessageKey: searchFailed ? "LogHardwareSearchFailed" : working.Count > 0
+                    ? "ConversionHardwareFoundCount" : "ConversionHardwareNotFound",
+                userMessageArgs: searchFailed || working.Count == 0 ? null : [working.Count]);
         }
         catch (OperationCanceledException)
         {
-            EncoderNote.Text = "Проверка аппаратных кодировщиков отменена.";
-            RecordSearch(HardwareSearch, "Поиск аппаратных кодировщиков отменён.", level: DiagnosticLevel.Warn);
+            SetEncoderNote("ConversionHardwareCancelled");
+            RecordSearch(HardwareSearch, "Hardware encoder search cancelled.", level: DiagnosticLevel.Warn,
+                userMessageKey: "LogHardwareSearchCancelled");
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception
             or TimeoutException or InvalidDataException)
         {
-            RecordSearch(HardwareSearch, "Не удалось завершить поиск аппаратных кодировщиков.",
-                ex.Message, DiagnosticLevel.Error);
-            EncoderNote.Text = "Не удалось проверить аппаратные кодировщики.";
+            RecordSearch(HardwareSearch, "Hardware encoder search failed.",
+                ex.Message, DiagnosticLevel.Error, "LogHardwareSearchFailed");
+            SetEncoderNote("ConversionHardwareFailed");
         }
         finally { HardwareButton.IsEnabled = true; }
     }
@@ -289,7 +346,7 @@ public partial class ConversionWindow : Window
         }
         if (_catalog is null || _stream is null || FormatBox.SelectedItem is not ConversionFormat format
             || EncoderBox.SelectedItem is not ConversionEncoder encoder)
-        { ValidationMessage.Text = "Выберите выходной формат и кодировщик."; return; }
+        { SetValidationMessage("ConversionSelectFormatAndEncoder"); return; }
         try
         {
             int? Number(ComboBox box) => string.IsNullOrWhiteSpace(box.Text) ? null
@@ -305,20 +362,21 @@ public partial class ConversionWindow : Window
                 _kind == "audio" ? Number(SampleRateBox) : null,
                 _kind == "audio" ? Number(ChannelsBox) : null,
                 _kind == "audio" ? Number(QualityBox) : null);
-            if (options.Validate(_stream) is { } error) { ValidationMessage.Text = error; return; }
+            if (options.Validate(_stream) is { } error)
+            { _validationKey = null; ValidationMessage.Text = error; return; }
             SaveButton.IsEnabled = false;
-            ValidationMessage.Text = "Проверяется совместимость кодировщика и выходного формата…";
+            SetValidationMessage("ConversionCheckingCompatibility");
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(_shutdown, _closed.Token);
             var check = await _catalog.CheckCombinationAsync(format, encoder, linked.Token, options);
-            if (!check.Compatible) { ValidationMessage.Text = check.Reason; return; }
+            if (!check.Compatible) { _validationKey = null; ValidationMessage.Text = check.Reason; return; }
             Close(options);
         }
-        catch (FormatException) { ValidationMessage.Text = "Введите числовые значения или оставьте поля пустыми."; }
-        catch (OverflowException) { ValidationMessage.Text = "Числовое значение слишком велико."; }
-        catch (OperationCanceledException) { ValidationMessage.Text = "Проверка отменена."; }
+        catch (FormatException) { SetValidationMessage("ConversionNumbersOrEmpty"); }
+        catch (OverflowException) { SetValidationMessage("ConversionNumberTooLarge"); }
+        catch (OperationCanceledException) { SetValidationMessage("ConversionCheckCancelled"); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception
             or TimeoutException or InvalidDataException)
-        { ValidationMessage.Text = "Не удалось проверить параметры. Проверьте доступность FFmpeg."; }
+        { SetValidationMessage("ConversionCheckParametersFailed"); }
         finally { SaveButton.IsEnabled = true; }
     }
 

@@ -10,7 +10,6 @@ namespace TrackExtractor.Services;
 
 internal sealed class MediaGuideDiagramCatalog
 {
-    private static readonly Uri ResourceUri = new("avares://TrackExtractor/docs/media-guide-diagrams.ru.json");
     private static readonly Regex Marker = new(@"^\{\{diagram:([a-z0-9-]+)\}\}$", RegexOptions.Compiled);
     private readonly Dictionary<string, MediaGuideDiagram> _diagrams;
 
@@ -30,9 +29,11 @@ internal sealed class MediaGuideDiagramCatalog
         }
     }
 
-    internal static MediaGuideDiagramCatalog Load()
+    internal static MediaGuideDiagramCatalog Load(string language = LocalizationManager.DefaultLanguage)
     {
-        using var stream = AssetLoader.Open(ResourceUri);
+        if (LanguagePackCatalog.ValidateGuideFiles(language).Count != 0)
+            throw new InvalidDataException($"Недоступен язык схем медиасправочника: {language}.");
+        using var stream = AssetLoader.Open(new Uri($"avares://TrackExtractor/docs/media-guide-diagrams.{language}.json"));
         var data = JsonSerializer.Deserialize<MediaGuideDiagramFile>(stream,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         if (data?.Diagrams is null) throw new InvalidDataException("Не удалось загрузить схемы медиасправочника.");

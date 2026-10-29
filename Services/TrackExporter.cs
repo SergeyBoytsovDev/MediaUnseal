@@ -16,14 +16,23 @@ public enum ExportState { Pending, Running, Completed, Failed, Cancelled }
 
 public sealed record TrackExportPlan(MediaStreamInfo Stream, string Extension, string Muxer,
     bool StillImage, bool Attachment = false, ConversionSettings? Conversion = null, bool VerifiedCopy = false);
-public sealed record ExportDecision(TrackExportPlan? Plan, string? Reason);
+public sealed record ExportDecision(TrackExportPlan? Plan, string? Reason)
+{
+    internal LocalizedMessage? LocalizedReason { get; init; }
+}
 public sealed record ExportOptions(bool PreserveMetadata = true, bool GroupByLanguage = false,
     bool CreateSourceFolder = false);
 public sealed record ExportUpdate(int StreamIndex, ExportState State, string Message,
     double? OverallPercent, int Processed, int Total, TimeSpan? MediaPosition = null,
-    double? CurrentPercent = null, int GroupCount = 1);
+    double? CurrentPercent = null, int GroupCount = 1)
+{
+    internal LocalizedMessage? LocalizedMessage { get; init; }
+}
 public sealed record TrackExportResult(int StreamIndex, ExportState State, string Message, string? OutputPath,
-    TimeSpan Elapsed = default, long? OutputBytes = null);
+    TimeSpan Elapsed = default, long? OutputBytes = null)
+{
+    internal LocalizedMessage? LocalizedMessage { get; init; }
+}
 public sealed record ExportResult(IReadOnlyList<TrackExportResult> Tracks, bool WasCancelled, TimeSpan Elapsed = default)
 {
     public bool Success => !WasCancelled && Tracks.Count > 0 && Tracks.All(t => t.State == ExportState.Completed);
@@ -31,19 +40,25 @@ public sealed record ExportResult(IReadOnlyList<TrackExportResult> Tracks, bool 
 
 public sealed class TrackExporter(DiagnosticLog diagnostics)
 {
+    private static LocalizationManager L => LocalizationManager.Active;
     internal Func<string, string[], IProgress<TimeSpan>?, CancellationToken, Task<int>>? ProcessRunner { get; init; }
     public TimeSpan TimeoutPerTrack { get; set; } = TimeSpan.FromHours(2);
 
     public static ExportDecision Decide(MediaInfo media, MediaStreamInfo stream)
     {
-        if (stream.Index is not >= 0) return new(null, "FFprobe не сообщил индекс потока.");
+        static ExportDecision Unavailable(string key, params object?[] arguments)
+        {
+            var message = new LocalizedMessage(key, arguments);
+            return new(null, message.Resolve()) { LocalizedReason = message };
+        }
+        if (stream.Index is not >= 0) return Unavailable("MainReasonNoStreamIndex");
         var codec = stream.Codec?.ToLowerInvariant();
         if (codec is null && stream.CodecType != "attachment")
-            return new(null, "Кодек не определён; безопасный формат без перекодирования неизвестен.");
+            return Unavailable("MainReasonUnknownCodec");
         if (stream.VisualKind == VisualKind.Animation)
-            return new(null, "Анимации пока только анализируются; извлечение добавим отдельно.");
+            return Unavailable("MainReasonAnimation");
         if (stream.VisualKind == VisualKind.Unknown && stream.CodecType == "video")
-            return new(null, "Не удалось надёжно отличить видео от изображения.");
+            return Unavailable("MainReasonUnknownVisual");
 
         (string Extension, string Muxer, bool StillImage)? output = null;
         if (stream.VisualKind == VisualKind.Image)
@@ -53,11 +68,11 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 {
                     "JPEG" => new(new TrackExportPlan(stream, "jpg", "attachment", false, true), null),
                     "PNG" => new(new TrackExportPlan(stream, "png", "attachment", false, true), null),
-                    _ => new(null, "Формат графического вложения не подтверждён для извлечения без перекодирования.")
+                    _ => Unavailable("MainReasonUnknownAttachmentFormat")
                 };
             if (media.Streams.Count == 1 && media.Container?.Split(',').Any(format =>
                     format.Trim().EndsWith("_pipe", StringComparison.Ordinal) || format.Trim() == "image2") == true)
-                return new(null, "Это отдельное изображение, а не дорожка медиаконтейнера.");
+                return Unavailable("MainReasonStandaloneImage");
             output = codec switch
             {
                 "mjpeg" or "jpeg" => ("jpg", "image2", true),
@@ -105,11 +120,11 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 _ => null
             };
         }
-        else return new(null, "Этот тип потока пока нельзя извлечь без перекодирования.");
+        else return Unavailable("MainReasonUnsupportedStreamType");
 
         return output is { } format
             ? new(new TrackExportPlan(stream, format.Extension, format.Muxer, format.StillImage), null)
-            : new(null, $"Для кодека {codec} нет подтверждённого способа копирования в отдельный файл.");
+            : Unavailable("MainReasonUnsupportedCodec", codec);
     }
 
     public async Task<ExportResult> ExportAsync(MediaInfo media, IReadOnlyList<TrackExportPlan> selected,
@@ -143,8 +158,9 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         var createdStage = false;
         var groupFallbackUntil = -1;
         var operationWatch = Stopwatch.StartNew();
-        diagnostics.Record(DiagnosticLevel.Info, "Экспорт",
-            $"Начало {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}; потоков: {selected.Count}.");
+        diagnostics.Record(DiagnosticLevel.Info, "Export",
+            $"Started {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}; streams: {selected.Count}.",
+            userMessageKey: "LogProcessingStartedCount", userMessageArgs: [selected.Count]);
         try
         {
             if (Directory.Exists(stage)) throw new IOException("Временный каталог уже существует.");
@@ -172,14 +188,20 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 var target = ReserveName(media, plan, TargetDirectory(directory, plan, options), reserved);
                 var temp = Path.Combine(stage, $"{index}-{Guid.NewGuid():N}.{plan.Extension}");
                 progress?.Report(new(index, ExportState.Running,
-                    $"Поток #{index}: {(plan.Conversion is null ? "извлечение" : "конвертация")} в {Path.GetFileName(target)}", null, i, selected.Count));
-                diagnostics.Record(DiagnosticLevel.Info, "Экспорт",
-                    $"{(plan.Conversion is null ? "Начато извлечение" : "Начата конвертация")}: тип {plan.Stream.CodecType}, поток #{index}, " +
-                    $"кодек {plan.Stream.Codec}, формат {plan.Muxer}; " +
-                    (plan.Conversion is null ? "копирование без перекодирования." : $"кодировщик {plan.Conversion.Encoder.Name}."));
+                    L.Format(plan.Conversion is null ? "MainProgressExtractingTo" : "MainProgressConvertingTo",
+                        index, Path.GetFileName(target)), null, i, selected.Count)
+                { LocalizedMessage = new(plan.Conversion is null ? "MainProgressExtractingTo" : "MainProgressConvertingTo",
+                    index, Path.GetFileName(target)) });
+                diagnostics.Record(DiagnosticLevel.Info, "Export",
+                    $"{(plan.Conversion is null ? "Extraction started" : "Conversion started")}: type {plan.Stream.CodecType}, stream #{index}, " +
+                    $"codec {plan.Stream.Codec}, format {plan.Muxer}; " +
+                    (plan.Conversion is null ? "stream copy without re-encoding." : $"encoder {plan.Conversion.Encoder.Name}."),
+                    userMessageKey: plan.Conversion is null ? "LogExtractingStreamFormat" : "LogConvertingStreamFormat",
+                    userMessageArgs: [index, plan.Muxer]);
                 var trackWatch = Stopwatch.StartNew();
                 int? exitCode = null;
                 TimeSpan? lastPosition = null;
+                string? lastError = null;
                 var nativeAttachment = plan.Conversion is null && MatroskaAttachments.IsCandidate(media, plan.Stream);
                 var nativeCompleted = false;
                 try
@@ -188,8 +210,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     deadline.CancelAfter(TimeoutPerTrack);
                     var duration = plan.Stream.Duration ?? media.Duration;
                     if (!nativeAttachment && duration is null or { Ticks: <= 0 })
-                        diagnostics.Record(DiagnosticLevel.Info, "Экспорт",
-                            $"Поток #{index}: длительность неизвестна, процент хода недоступен.");
+                        diagnostics.Record(DiagnosticLevel.Info, "Export",
+                            $"Stream #{index}: duration unknown; percentage unavailable.");
                     var lastLoggedBucket = -1;
                     var position = new InlineProgress<TimeSpan>(time =>
                     {
@@ -197,8 +219,9 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         if (duration is not { } known || known <= TimeSpan.Zero)
                         {
                             progress?.Report(new(index, ExportState.Running,
-                                $"Поток #{index}: позиция FFmpeg {FormatElapsed(time)}",
-                                null, ordinal, selected.Count, time));
+                                L.Format("MainProgressFfmpegPosition", index, FormatElapsed(time)),
+                                null, ordinal, selected.Count, time)
+                            { LocalizedMessage = new("MainProgressFfmpegPosition", index, FormatElapsed(time)) });
                             return;
                         }
                         var part = Math.Clamp(time.TotalSeconds / known.TotalSeconds, 0, 0.99);
@@ -207,11 +230,12 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         if (bucket > lastLoggedBucket)
                         {
                             lastLoggedBucket = bucket;
-                            diagnostics.Record(DiagnosticLevel.Info, "Экспорт",
-                                $"Поток #{index}: обработано примерно {part * 100:0}%.");
+                            diagnostics.Record(DiagnosticLevel.Info, "Export",
+                                $"Stream #{index}: processed approximately {part * 100:0}%.");
                         }
                         progress?.Report(new(index, ExportState.Running,
-                            $"Поток #{index}", overall, ordinal, selected.Count, time, part * 100));
+                            L.Format("MainProgressStream", index), overall, ordinal, selected.Count, time, part * 100)
+                        { LocalizedMessage = new("MainProgressStream", index) });
                     });
                     if (nativeAttachment)
                     {
@@ -219,120 +243,150 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         var copyProgress = new InlineProgress<double>(part =>
                         {
                             progress?.Report(new(index, ExportState.Running,
-                                $"Поток #{index}: копирование вложения Matroska, {part:P0}",
+                                L.Format("MainProgressAttachment", index, part),
                                 Math.Min(99, (ordinal + part) * 100 / selected.Count), ordinal, selected.Count,
-                                CurrentPercent: part * 100));
+                                CurrentPercent: part * 100)
+                            { LocalizedMessage = new("MainProgressAttachment", index, part) });
                             var bucket = (int)(part * 10);
                             if (bucket > lastCopyBucket)
                             {
                                 lastCopyBucket = bucket;
-                                diagnostics.Record(DiagnosticLevel.Info, "Экспорт",
-                                    $"Вложение Matroska #{index}: скопировано {part:P0} байтов.");
+                                diagnostics.Record(DiagnosticLevel.Info, "Export",
+                                    $"Matroska attachment #{index}: copied {part:P0} of attachment.");
                             }
                         });
                         var attachment = await MatroskaAttachments.TryExtractAsync(media, plan.Stream, temp,
-                            copyProgress, deadline.Token, stats => diagnostics.Record(DiagnosticLevel.Info, "Экспорт",
-                                $"Matroska #{index}: SeekHead={stats.UsedSeekHead}; переходов по индексу={stats.IndexJumps}; " +
-                                $"перемещений указателя={stats.PositionChanges}; элементов={stats.Elements}; " +
-                                $"поиск: прочитано {stats.SearchBytesRead} байт за {stats.SearchElapsed.TotalMilliseconds:0} мс; " +
-                                $"сопоставление={stats.MatchElapsed.TotalMilliseconds:0} мс; " +
-                                $"копирование: прочитано {stats.CopyBytesRead} байт за {stats.CopyElapsed.TotalMilliseconds:0} мс."))
+                            copyProgress, deadline.Token, stats => diagnostics.Record(DiagnosticLevel.Info, "Export",
+                                $"Matroska #{index}: SeekHead={stats.UsedSeekHead}; index jumps={stats.IndexJumps}; " +
+                                $"position changes={stats.PositionChanges}; elements={stats.Elements}; " +
+                                $"search: read {stats.SearchBytesRead} bytes in {stats.SearchElapsed.TotalMilliseconds:0} ms; " +
+                                $"matching={stats.MatchElapsed.TotalMilliseconds:0} ms; " +
+                                $"copy: read {stats.CopyBytesRead} bytes in {stats.CopyElapsed.TotalMilliseconds:0} ms."))
                             .ConfigureAwait(false);
                         nativeCompleted = attachment is not null;
                         nativeAttachment = nativeCompleted;
                         if (attachment is not null)
-                            diagnostics.Record(DiagnosticLevel.Info, "Экспорт",
-                                $"Matroska: поток FFprobe #{index} сопоставлен с FileUID {attachment.Uid}; " +
-                                $"размер {attachment.Size} байт; копирование завершено.");
+                            diagnostics.Record(DiagnosticLevel.Info, "Export",
+                                $"Matroska: FFprobe stream #{index} matched to FileUID {attachment.Uid}; " +
+                                $"size {attachment.Size} bytes; copy completed.");
                     }
                     if (!nativeCompleted)
                     {
                         var args = BuildArguments(media.FullPath, index, plan, temp, options.PreserveMetadata);
-                        string? lastError = null;
                         exitCode = ProcessRunner is null
                             ? await RunFfmpegAsync(ffmpegPath, args, position, line => lastError = line, deadline.Token).ConfigureAwait(false)
                             : await ProcessRunner(ffmpegPath, args, position, deadline.Token).WaitAsync(deadline.Token).ConfigureAwait(false);
-                        if (exitCode != 0) throw new InvalidDataException($"FFmpeg завершился с кодом {exitCode}." +
+                        if (exitCode != 0) throw new InvalidDataException(L.Format("MainResultFfmpegExitCode", exitCode) +
                             (lastError is null ? "" : " " + lastError));
                     }
                     if (!File.Exists(temp) || new FileInfo(temp).Length == 0)
-                        throw new InvalidDataException("Не создан непустой файл дорожки.");
+                        throw new InvalidDataException(L.Get("MainResultEmptyOutput"));
                     target = MoveWithoutOverwrite(temp, target, reserved);
                     var bytes = new FileInfo(target).Length;
                     var result = new TrackExportResult(index, ExportState.Completed,
-                        $"Сохранён: {Path.GetFileName(target)}; {FormatElapsed(trackWatch.Elapsed)}; {FormatByteSize(bytes)}", target,
-                        trackWatch.Elapsed, bytes);
+                        L.Format("MainResultSaved", Path.GetFileName(target), FormatElapsed(trackWatch.Elapsed), FormatByteSize(bytes)), target,
+                        trackWatch.Elapsed, bytes)
+                    { LocalizedMessage = SavedMessage(target, trackWatch.Elapsed, bytes) };
                     results.Add(result);
                     progress?.Report(new(index, result.State, result.Message,
-                        Math.Min(99.0, (i + 1) * 100.0 / selected.Count), i + 1, selected.Count));
-                    diagnostics.Record(DiagnosticLevel.Info, "Экспорт", $"Завершён поток #{index}; контейнер {plan.Muxer}; " +
-                        $"режим {(plan.Conversion is null ? "извлечение" : "конвертация")}.",
-                        $"Время {FormatElapsed(trackWatch.Elapsed)}; размер {bytes:N0} байт; " +
-                        $"Путь результата: {Path.GetFileName(target)}");
+                        Math.Min(99.0, (i + 1) * 100.0 / selected.Count), i + 1, selected.Count)
+                    { LocalizedMessage = result.LocalizedMessage });
+                    diagnostics.Record(DiagnosticLevel.Info, "Export", $"Completed stream #{index}; container {plan.Muxer}; " +
+                        $"mode {(plan.Conversion is null ? "extraction" : "conversion")}.",
+                        $"Elapsed {FormatElapsed(trackWatch.Elapsed)}; size {bytes:N0} bytes; " +
+                        $"Output path: {Path.GetFileName(target)}",
+                        userMessageKey: plan.Conversion is null ? "LogStreamExtracted" : "LogStreamConverted",
+                        userMessageArgs: [index, $" ({plan.Muxer})", $", {FormatByteSize(bytes)}"], userSuccess: true);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
                     cancelled = true;
                     results.Add(new(index, ExportState.Cancelled,
-                        $"Обработка отменена через {FormatElapsed(trackWatch.Elapsed)}.", null, trackWatch.Elapsed));
-                    progress?.Report(new(index, ExportState.Cancelled, "Обработка отменена.", null, i, selected.Count));
-                    diagnostics.Record(DiagnosticLevel.Warn, "Экспорт", $"Отменён поток #{index}.");
+                        L.Format("MainResultCancelledAfter", FormatElapsed(trackWatch.Elapsed)), null, trackWatch.Elapsed)
+                    { LocalizedMessage = new("MainResultCancelledAfter", FormatElapsed(trackWatch.Elapsed)) });
+                    progress?.Report(new ExportUpdate(index, ExportState.Cancelled, L.Get("MainResultCancelled"), null, i, selected.Count)
+                    { LocalizedMessage = new("MainResultCancelled") });
+                    diagnostics.Record(DiagnosticLevel.Warn, "Export", $"Stream #{index} cancelled.",
+                        userMessageKey: "LogStreamCancelled", userMessageArgs: [index]);
                     break;
                 }
                 catch (OperationCanceledException)
                 {
                     var result = new TrackExportResult(index, ExportState.Failed,
-                        $"Превышено время ожидания извлечения ({FormatElapsed(trackWatch.Elapsed)}).", null,
-                        trackWatch.Elapsed);
+                        L.Format("MainResultTimeout", FormatElapsed(trackWatch.Elapsed)), null,
+                        trackWatch.Elapsed)
+                    { LocalizedMessage = new("MainResultTimeout", FormatElapsed(trackWatch.Elapsed)) };
                     results.Add(result);
-                    progress?.Report(new(index, result.State, result.Message, null, i + 1, selected.Count));
-                    diagnostics.Record(DiagnosticLevel.Error, "Экспорт", $"Тайм-аут потока #{index}.");
+                    progress?.Report(new ExportUpdate(index, result.State, result.Message, null, i + 1, selected.Count)
+                    { LocalizedMessage = result.LocalizedMessage });
+                    diagnostics.Record(DiagnosticLevel.Error, "Export", $"Stream #{index} timed out.",
+                        userMessageKey: "LogStreamTimeout", userMessageArgs: [index]);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException or Win32Exception)
                 {
+                    LocalizedMessage? reasonMessage = ex switch
+                    {
+                        InvalidDataException when nativeAttachment => new("MainResultAttachmentFailed"),
+                        InvalidDataException when exitCode is { } code and not 0 =>
+                            lastError is null ? new("MainResultFfmpegExitCode", code)
+                                : new("MainResultTechnicalDetail", new LocalizedMessage("MainResultFfmpegExitCode", code), lastError),
+                        InvalidDataException => new("MainResultEmptyOutput"),
+                        UnauthorizedAccessException => new("MainResultOutputAccessDenied"),
+                        IOException => new("MainResultWriteFailed"),
+                        _ => new("MainResultFfmpegLaunchFailed")
+                    };
                     var message = ex switch
                     {
+                        InvalidDataException when nativeAttachment => L.Get("MainResultAttachmentFailed"),
                         InvalidDataException => ex.Message,
-                        UnauthorizedAccessException => "Нет доступа к папке или выходному файлу.",
-                        IOException => "Не удалось записать файл. Проверьте свободное место и права доступа.",
-                        _ => "Не удалось запустить FFmpeg. Повторите проверку зависимостей."
+                        UnauthorizedAccessException => L.Get("MainResultOutputAccessDenied"),
+                        IOException => L.Get("MainResultWriteFailed"),
+                        _ => L.Get("MainResultFfmpegLaunchFailed")
                     };
                     results.Add(new(index, ExportState.Failed,
-                        $"{message} Время: {FormatElapsed(trackWatch.Elapsed)}.", null, trackWatch.Elapsed));
-                    progress?.Report(new(index, ExportState.Failed, message, null, i + 1, selected.Count));
-                    diagnostics.Record(DiagnosticLevel.Error, "Экспорт",
-                        $"Ошибка потока #{index}: " +
+                        L.Format("MainResultFailureWithTime", message, FormatElapsed(trackWatch.Elapsed)), null, trackWatch.Elapsed)
+                    { LocalizedMessage = new("MainResultFailureWithTime", reasonMessage, FormatElapsed(trackWatch.Elapsed)) });
+                    progress?.Report(new ExportUpdate(index, ExportState.Failed, message, null, i + 1, selected.Count)
+                    { LocalizedMessage = reasonMessage });
+                    diagnostics.Record(DiagnosticLevel.Error, "Export",
+                        $"Stream #{index} failed: " +
                         (nativeAttachment && ex is InvalidDataException ? ex.Message : ex.GetType().Name) + "; " +
-                        (nativeAttachment ? "чтение Matroska; " : $"код FFmpeg {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "нет")}; ") +
-                        $"время {FormatElapsed(trackWatch.Elapsed)}.");
+                        (nativeAttachment ? "Matroska reading; " : $"FFmpeg exit code {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "unknown")}; ") +
+                        $"elapsed {FormatElapsed(trackWatch.Elapsed)}.",
+                        userMessageKey: plan.Conversion is null ? "LogStreamFailed" : "LogStreamConversionFailed",
+                        userMessageArgs: [index, message]);
                 }
                 catch (Exception ex)
                 {
                     results.Add(new(index, ExportState.Failed,
-                        $"Не удалось извлечь поток. Время: {FormatElapsed(trackWatch.Elapsed)}. Проверьте лог и повторите попытку.",
-                        null, trackWatch.Elapsed));
-                    progress?.Report(new(index, ExportState.Failed, "Ошибка извлечения.", null, i + 1, selected.Count));
-                    diagnostics.Record(DiagnosticLevel.Error, "Экспорт", $"Неожиданная ошибка потока #{index}: {ex.GetType().Name}.");
+                        L.Format("MainResultUnexpectedFailure", FormatElapsed(trackWatch.Elapsed)),
+                        null, trackWatch.Elapsed)
+                    { LocalizedMessage = new("MainResultUnexpectedFailure", FormatElapsed(trackWatch.Elapsed)) });
+                    progress?.Report(new ExportUpdate(index, ExportState.Failed, L.Get("MainExtractionError"), null, i + 1, selected.Count)
+                    { LocalizedMessage = new("MainExtractionError") });
+                    diagnostics.Record(DiagnosticLevel.Error, "Export", $"Unexpected error in stream #{index}: {ex.GetType().Name}.",
+                        userMessageKey: plan.Conversion is null ? "LogStreamFailed" : "LogStreamConversionFailed",
+                        userMessageArgs: [index, L.Get("MainExtractionError")]);
                 }
                 finally
                 {
-                    diagnostics.Record(exitCode == 0 || nativeCompleted ? DiagnosticLevel.Info : DiagnosticLevel.Warn, "Экспорт",
+                    diagnostics.Record(exitCode == 0 || nativeCompleted ? DiagnosticLevel.Info : DiagnosticLevel.Warn, "Export",
                         nativeAttachment
-                            ? $"Чтение вложения Matroska #{index}: время {FormatElapsed(trackWatch.Elapsed)}; " +
-                                $"результат {(nativeCompleted ? "байты скопированы" : "не завершено")}."
-                            : $"FFmpeg для потока #{index}: время {FormatElapsed(trackWatch.Elapsed)}, " +
-                                $"код завершения {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "нет")}, " +
-                                $"прогресс {(lastPosition is null ? "не получен" : "получен")}.");
+                            ? $"Matroska attachment reading #{index}: elapsed {FormatElapsed(trackWatch.Elapsed)}; " +
+                                $"result {(nativeCompleted ? "bytes copied" : "incomplete")}."
+                            : $"FFmpeg for stream #{index}: elapsed {FormatElapsed(trackWatch.Elapsed)}, " +
+                                $"exit code {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "unknown")}, " +
+                                $"progress {(lastPosition is null ? "unavailable" : "received")}.");
                     if (!await DeleteOwnTempAsync(temp).ConfigureAwait(false))
-                        diagnostics.Record(DiagnosticLevel.Warn, "Экспорт", $"Не удалось удалить временный файл потока #{index}.");
+                        diagnostics.Record(DiagnosticLevel.Warn, "Export", $"Failed to delete temporary file for stream #{index}.");
                 }
             }
         }
         catch (Exception ex)
         {
-            diagnostics.Record(DiagnosticLevel.Error, "Экспорт",
-                $"Очередь прервана: {ex.GetType().Name}; время {FormatElapsed(operationWatch.Elapsed)}; " +
-                $"окончание {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}.");
+            diagnostics.Record(DiagnosticLevel.Error, "Export",
+                $"Queue interrupted: {ex.GetType().Name}; elapsed {FormatElapsed(operationWatch.Elapsed)}; " +
+                $"finished {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}.");
             throw;
         }
         finally
@@ -343,24 +397,29 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 && Directory.Exists(stage))
             {
                 if (!await DeleteOwnStageAsync(stage).ConfigureAwait(false))
-                    diagnostics.Record(DiagnosticLevel.Warn, "Экспорт", "Временный каталог не удалось удалить автоматически.");
+                    diagnostics.Record(DiagnosticLevel.Warn, "Export", "Temporary directory could not be deleted automatically.");
             }
         }
         if (cancelled)
             foreach (var remaining in selected.Skip(results.Count))
-                results.Add(new(remaining.Stream.Index!.Value, ExportState.Cancelled, "Не запускалось из-за отмены.", null));
+                results.Add(new TrackExportResult(remaining.Stream.Index!.Value, ExportState.Cancelled,
+                    L.Get("MainResultNotStartedCancelled"), null)
+                { LocalizedMessage = new("MainResultNotStartedCancelled") });
         operationWatch.Stop();
         if (results.Count == selected.Count && results.All(r => r.State == ExportState.Completed))
         {
             progress?.Report(new(selected[^1].Stream.Index!.Value, ExportState.Completed,
-                "Все дорожки извлечены.", 100, selected.Count, selected.Count));
-            diagnostics.Record(DiagnosticLevel.Info, "Экспорт",
-                $"Очередь завершена успешно в {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}; " +
-                $"время {FormatElapsed(operationWatch.Elapsed)}.");
+                L.Get("MainAllTracksExtracted"), 100, selected.Count, selected.Count)
+            { LocalizedMessage = new("MainAllTracksExtracted") });
+            diagnostics.Record(DiagnosticLevel.Info, "Export",
+                $"Queue completed successfully at {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}; " +
+                $"elapsed {FormatElapsed(operationWatch.Elapsed)}.",
+                userMessageKey: "LogProcessingComplete", userSuccess: true);
         }
-        else diagnostics.Record(cancelled ? DiagnosticLevel.Warn : DiagnosticLevel.Error, "Экспорт",
-            (cancelled ? "Очередь остановлена пользователем" : "Очередь завершена с ошибками") +
-            $" в {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}; время {FormatElapsed(operationWatch.Elapsed)}.");
+        else diagnostics.Record(cancelled ? DiagnosticLevel.Warn : DiagnosticLevel.Error, "Export",
+            (cancelled ? "Queue cancelled by user" : "Queue completed with errors") +
+            $" at {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}; elapsed {FormatElapsed(operationWatch.Elapsed)}.",
+            userMessageKey: cancelled ? "LogProcessingCancelled" : "LogProcessingErrors");
         return new ExportResult(results, cancelled, operationWatch.Elapsed);
     }
 
@@ -379,12 +438,13 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         int? exitCode = null;
         TimeSpan? lastPosition = null;
         var completed = false;
-        diagnostics.Record(DiagnosticLevel.Info, "Экспорт",
-            $"Начат общий FFmpeg для потоков {indexes}; " +
+        diagnostics.Record(DiagnosticLevel.Info, "Export",
+            $"Shared FFmpeg pass started for streams {indexes}; " +
             string.Join("; ", group.Select(p => $"#{p.Stream.Index} {p.Stream.CodecType}/{p.Stream.Codec} → {p.Muxer}")));
         foreach (var plan in group)
             progress?.Report(new(plan.Stream.Index!.Value, ExportState.Running,
-                $"Поток #{plan.Stream.Index}: общий проход FFmpeg", null, processed, total));
+                L.Format("MainProgressSharedPass", plan.Stream.Index), null, processed, total)
+            { LocalizedMessage = new("MainProgressSharedPass", plan.Stream.Index) });
         try
         {
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -400,7 +460,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 var overall = part is { } value
                     ? Math.Min(99, (processed + value * group.Length) * 100 / total) : (double?)null;
                 progress?.Report(new(group[0].Stream.Index!.Value, ExportState.Running,
-                    $"Потоки {indexes}", overall, processed, total, time, GroupCount: group.Length));
+                    L.Format("MainProgressStreams", indexes), overall, processed, total, time, GroupCount: group.Length)
+                { LocalizedMessage = new("MainProgressStreams", indexes) });
             });
             string? lastError = null;
             var args = BuildGroupArguments(media.FullPath, group, temps, options.PreserveMetadata);
@@ -411,10 +472,10 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     .WaitAsync(deadline.Token).ConfigureAwait(false);
             if (exitCode != 0 || temps.Any(t => !File.Exists(t) || new FileInfo(t).Length == 0))
             {
-                diagnostics.Record(DiagnosticLevel.Warn, "Экспорт",
-                    $"Общий FFmpeg для {indexes}: код {exitCode}; " +
-                    "результат неполный, повтор по отдельным потокам." +
-                    (lastError is null ? "" : $" Диагностика: {SafeFfmpegError(lastError)}"));
+                diagnostics.Record(DiagnosticLevel.Warn, "Export",
+                    $"Shared FFmpeg pass for {indexes}: exit code {exitCode}; " +
+                    "incomplete output; retrying streams separately." +
+                    (lastError is null ? "" : $" Diagnostics: {SafeFfmpegError(lastError)}"));
                 return GroupOutcome.RetrySeparately;
             }
             for (var j = 0; j < group.Length; j++)
@@ -424,22 +485,31 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 {
                     var target = MoveWithoutOverwrite(temps[j], targets[j], reserved);
                     var bytes = new FileInfo(target).Length;
-                    var message = $"Сохранён: {Path.GetFileName(target)}; {FormatElapsed(watch.Elapsed)}; {FormatByteSize(bytes)}";
-                    results.Add(new(index, ExportState.Completed, message, target, watch.Elapsed, bytes));
+                    var message = L.Format("MainResultSaved", Path.GetFileName(target), FormatElapsed(watch.Elapsed), FormatByteSize(bytes));
+                    var savedMessage = SavedMessage(target, watch.Elapsed, bytes);
+                    results.Add(new TrackExportResult(index, ExportState.Completed, message, target, watch.Elapsed, bytes)
+                    { LocalizedMessage = savedMessage });
                     progress?.Report(new(index, ExportState.Completed, message,
-                        Math.Min(99, (processed + j + 1) * 100.0 / total), processed + j + 1, total));
-                    diagnostics.Record(DiagnosticLevel.Info, "Экспорт",
-                        $"Поток #{index} завершён; формат {group[j].Muxer}; " +
-                        $"время {FormatElapsed(watch.Elapsed)}; размер {bytes:N0} байт; " +
-                        $"Путь результата: {Path.GetFileName(target)}");
+                        Math.Min(99, (processed + j + 1) * 100.0 / total), processed + j + 1, total)
+                    { LocalizedMessage = savedMessage });
+                    diagnostics.Record(DiagnosticLevel.Info, "Export",
+                        $"Stream #{index} completed; format {group[j].Muxer}; " +
+                        $"elapsed {FormatElapsed(watch.Elapsed)}; size {bytes:N0} bytes; " +
+                        $"Output path: {Path.GetFileName(target)}",
+                        userMessageKey: "LogStreamExtracted",
+                        userMessageArgs: [index, $" ({group[j].Muxer})", $", {FormatByteSize(bytes)}"], userSuccess: true);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
-                    var message = $"Не удалось сохранить поток #{index}. Время: {FormatElapsed(watch.Elapsed)}.";
-                    results.Add(new(index, ExportState.Failed, message, null, watch.Elapsed));
-                    progress?.Report(new(index, ExportState.Failed, message, null, processed + j + 1, total));
-                    diagnostics.Record(DiagnosticLevel.Error, "Экспорт",
-                        $"Поток #{index}: ошибка переноса результата {ex.GetType().Name}.");
+                    var message = L.Format("MainResultSaveStreamFailed", index, FormatElapsed(watch.Elapsed));
+                    var failureMessage = new LocalizedMessage("MainResultSaveStreamFailed", index, FormatElapsed(watch.Elapsed));
+                    results.Add(new TrackExportResult(index, ExportState.Failed, message, null, watch.Elapsed)
+                    { LocalizedMessage = failureMessage });
+                    progress?.Report(new ExportUpdate(index, ExportState.Failed, message, null, processed + j + 1, total)
+                    { LocalizedMessage = failureMessage });
+                    diagnostics.Record(DiagnosticLevel.Error, "Export",
+                        $"Stream #{index}: failed to move output: {ex.GetType().Name}.",
+                        userMessageKey: "LogStreamFailed", userMessageArgs: [index, L.Get("MainResultWriteFailed")]);
                 }
             }
             completed = true;
@@ -448,9 +518,11 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             var index = group[0].Stream.Index!.Value;
-            results.Add(new(index, ExportState.Cancelled,
-                $"Извлечение отменено через {FormatElapsed(watch.Elapsed)}.", null, watch.Elapsed));
-            progress?.Report(new(index, ExportState.Cancelled, "Извлечение отменено.", null, processed, total));
+            results.Add(new TrackExportResult(index, ExportState.Cancelled,
+                L.Format("MainResultExtractionCancelledAfter", FormatElapsed(watch.Elapsed)), null, watch.Elapsed)
+            { LocalizedMessage = new("MainResultExtractionCancelledAfter", FormatElapsed(watch.Elapsed)) });
+            progress?.Report(new ExportUpdate(index, ExportState.Cancelled, L.Get("MainExtractionCancelled"), null, processed, total)
+            { LocalizedMessage = new("MainExtractionCancelled") });
             return GroupOutcome.Cancelled;
         }
         catch (OperationCanceledException)
@@ -459,30 +531,33 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             {
                 var plan = group[j];
                 var index = plan.Stream.Index!.Value;
-                var message = $"Превышено время ожидания FFmpeg ({FormatElapsed(watch.Elapsed)}).";
-                results.Add(new(index, ExportState.Failed, message, null, watch.Elapsed));
-                progress?.Report(new(index, ExportState.Failed, message, null, processed + j + 1, total));
+                var message = L.Format("MainResultFfmpegTimeout", FormatElapsed(watch.Elapsed));
+                var timeoutMessage = new LocalizedMessage("MainResultFfmpegTimeout", FormatElapsed(watch.Elapsed));
+                results.Add(new TrackExportResult(index, ExportState.Failed, message, null, watch.Elapsed)
+                { LocalizedMessage = timeoutMessage });
+                progress?.Report(new ExportUpdate(index, ExportState.Failed, message, null, processed + j + 1, total)
+                { LocalizedMessage = timeoutMessage });
             }
-            diagnostics.Record(DiagnosticLevel.Error, "Экспорт",
-                $"Общий FFmpeg для {indexes}: тайм-аут через {FormatElapsed(watch.Elapsed)}.");
+            diagnostics.Record(DiagnosticLevel.Error, "Export",
+                $"Shared FFmpeg pass for {indexes}: timed out after {FormatElapsed(watch.Elapsed)}.");
             completed = true;
             return GroupOutcome.Completed;
         }
         catch (Exception ex)
         {
-            diagnostics.Record(DiagnosticLevel.Warn, "Экспорт",
-                $"Общий FFmpeg для {indexes}: {ex.GetType().Name}; повтор по отдельным потокам.");
+            diagnostics.Record(DiagnosticLevel.Warn, "Export",
+                $"Shared FFmpeg pass for {indexes}: {ex.GetType().Name}; retrying streams separately.");
             return GroupOutcome.RetrySeparately;
         }
         finally
         {
-            diagnostics.Record(exitCode == 0 ? DiagnosticLevel.Info : DiagnosticLevel.Warn, "Экспорт",
-                $"Общий FFmpeg для {indexes}: время {FormatElapsed(watch.Elapsed)}, " +
-                $"код завершения {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "нет")}, " +
-                $"прогресс {(lastPosition is null ? "не получен" : "получен")}.");
+            diagnostics.Record(exitCode == 0 ? DiagnosticLevel.Info : DiagnosticLevel.Warn, "Export",
+                $"Shared FFmpeg pass for {indexes}: elapsed {FormatElapsed(watch.Elapsed)}, " +
+                $"exit code {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "unknown")}, " +
+                $"progress {(lastPosition is null ? "unavailable" : "received")}.");
             foreach (var temp in temps)
                 if (!await DeleteOwnTempAsync(temp).ConfigureAwait(false))
-                    diagnostics.Record(DiagnosticLevel.Warn, "Экспорт", "Не удалось удалить временный файл общего прохода.");
+                    diagnostics.Record(DiagnosticLevel.Warn, "Export", "Failed to delete temporary file from shared pass.");
             if (!completed)
                 foreach (var target in targets) reserved.Remove(target);
         }
@@ -505,19 +580,30 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
     internal static string FormatElapsed(TimeSpan time) =>
         $"{(long)time.TotalHours:00}:{time.Minutes:00}:{time.Seconds:00}";
 
+    private static LocalizedMessage SavedMessage(string path, TimeSpan elapsed, long bytes) =>
+        new("MainResultSaved", Path.GetFileName(path), FormatElapsed(elapsed), ByteSizeMessage(bytes));
+
+    private static LocalizedMessage ByteSizeMessage(long bytes) => bytes switch
+    {
+        >= 1L << 30 => new("MainResultSizeGb", bytes / (double)(1L << 30)),
+        >= 1L << 20 => new("MainResultSizeMb", bytes / (double)(1L << 20)),
+        >= 1L << 10 => new("MainResultSizeKb", bytes / (double)(1L << 10)),
+        _ => new("MainSizeBytes", bytes)
+    };
+
     internal static string FormatByteSize(long bytes) => bytes switch
     {
-        >= 1L << 30 => $"{bytes / (double)(1L << 30):0.##} ГБ",
-        >= 1L << 20 => $"{bytes / (double)(1L << 20):0.##} МБ",
-        >= 1L << 10 => $"{bytes / (double)(1L << 10):0.##} КБ",
-        _ => $"{bytes} байт"
+        >= 1L << 30 => L.Format("MainResultSizeGb", bytes / (double)(1L << 30)),
+        >= 1L << 20 => L.Format("MainResultSizeMb", bytes / (double)(1L << 20)),
+        >= 1L << 10 => L.Format("MainResultSizeKb", bytes / (double)(1L << 10)),
+        _ => L.Format("MainSizeBytes", bytes)
     };
 
     private static string SafeFfmpegError(string line)
     {
         // FFmpeg errors may include full input paths; record only a short generic hint.
         return line.Contains("Permission denied", StringComparison.OrdinalIgnoreCase)
-            ? "отказ в доступе" : "подробности показаны в сообщении об ошибке";
+            ? "permission denied" : "details are shown in the error message";
     }
 
     internal static string[] BuildArguments(string input, int index, TrackExportPlan plan, string temp,
@@ -605,7 +691,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
     {
         if (!options.GroupByLanguage || plan.Stream.CodecType is not ("audio" or "subtitle")) return root;
         var language = SafeFolderName(string.IsNullOrWhiteSpace(plan.Stream.Language)
-            ? "язык не указан" : plan.Stream.Language);
+            ? L.Get("OutputLanguageUnspecified") : plan.Stream.Language);
         var target = Path.Combine(root, language);
         Directory.CreateDirectory(target);
         return target;

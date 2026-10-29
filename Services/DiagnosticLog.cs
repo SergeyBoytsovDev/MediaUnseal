@@ -8,7 +8,8 @@ namespace TrackExtractor.Services;
 public enum DiagnosticLevel { Info, Warn, Error }
 
 public sealed record DiagnosticEvent(DateTimeOffset Time, DiagnosticLevel Level,
-    string Operation, string Message, string? Details = null);
+    string Operation, string Message, string? Details = null,
+    string? UserMessageKey = null, object?[]? UserMessageArgs = null, bool UserSuccess = false);
 
 public sealed class DiagnosticLog
 {
@@ -19,10 +20,11 @@ public sealed class DiagnosticLog
 
     public DiagnosticLog(string directory) => _directory = directory;
 
-    public void Record(DiagnosticLevel level, string operation, string message, string? details = null)
+    public void Record(DiagnosticLevel level, string operation, string message, string? details = null,
+        string? userMessageKey = null, object?[]? userMessageArgs = null, bool userSuccess = false)
     {
         var entry = new DiagnosticEvent(DateTimeOffset.Now, level, Clean(operation),
-            Clean(message), details is null ? null : Clean(details));
+            Clean(message), details is null ? null : Clean(details), userMessageKey, userMessageArgs, userSuccess);
         EventRecorded?.Invoke(entry);
         var line = Format(entry) + Environment.NewLine;
         try
@@ -63,19 +65,19 @@ public sealed class DiagnosticLog
     private static string Clean(string value)
     {
         value = value.Replace('\r', ' ').Replace('\n', ' ');
-        value = Regex.Replace(value, @"(?i)\bBearer\s+\S+", "Bearer [скрыто]");
-        value = Regex.Replace(value, @"(?i)(authorization|bearer|token|password|secret|api[_-]?key)\s*[:=]\s*\S+", "$1=[скрыто]");
+        value = Regex.Replace(value, @"(?i)\bBearer\s+\S+", "Bearer [redacted]");
+        value = Regex.Replace(value, @"(?i)(authorization|bearer|token|password|secret|api[_-]?key)\s*[:=]\s*\S+", "$1=[redacted]");
         return value.Length > 1000 ? value[..1000] + "…" : value;
     }
 
     internal static string RedactPersonalPaths(string text)
     {
-        text = Regex.Replace(text, @"(?im)(Путь результата:\s*)[^\r\n]+", "$1[скрыт]");
+        text = Regex.Replace(text, @"(?im)((?:Путь результата|Output path):\s*)[^\r\n]+", "$1[redacted]");
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (!string.IsNullOrWhiteSpace(home))
-            text = text.Replace(home, "[домашний каталог]", StringComparison.OrdinalIgnoreCase)
-                .Replace(home.Replace('\\', '/'), "[домашний каталог]", StringComparison.OrdinalIgnoreCase);
-        text = Regex.Replace(text, @"(?i)(?:[A-Z]:[/\\]Users[/\\]|/home/|/Users/)[^/\\\s]+", "[домашний каталог]");
+            text = text.Replace(home, "[home directory]", StringComparison.OrdinalIgnoreCase)
+                .Replace(home.Replace('\\', '/'), "[home directory]", StringComparison.OrdinalIgnoreCase);
+        text = Regex.Replace(text, @"(?i)(?:[A-Z]:[/\\]Users[/\\]|/home/|/Users/)[^/\\\s]+", "[home directory]");
         return text;
     }
 }

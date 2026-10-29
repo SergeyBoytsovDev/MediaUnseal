@@ -1,9 +1,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using TrackExtractor.Services;
 using TrackExtractor.ViewModels;
 
 namespace TrackExtractor.Views;
@@ -12,6 +14,8 @@ public partial class DependencyPanel : UserControl
 {
     private readonly MainViewModel _viewModel;
     private readonly CancellationToken _cancellationToken;
+    private readonly LocalizationManager _fallbackLocalization = new();
+    private LocalizationManager Localization => (Application.Current as App)?.Localization ?? _fallbackLocalization;
     public event EventHandler? ContinueRequested;
 
     public DependencyPanel() : this(new MainViewModel(), CancellationToken.None) { }
@@ -52,31 +56,31 @@ public partial class DependencyPanel : UserControl
             var storage = TopLevel.GetTopLevel(this)?.StorageProvider;
             if (storage is null)
             {
-                _viewModel.ReportError("Не удалось открыть выбор файла. Повторите попытку.");
+                _viewModel.ReportError(Localization.Get("InstallerFilePickerUnavailable"));
                 return;
             }
             var files = await storage.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = $"Выберите исполняемый файл {name}",
+                Title = Localization.Format("InstallerSelectExecutableFormat", name),
                 AllowMultiple = false
             });
             if (files.Count == 0) return;
             if (!files[0].Path.IsFile)
             {
-                _viewModel.ReportError("Выберите локальный исполняемый файл.");
+                _viewModel.ReportError(Localization.Get("InstallerSelectLocalExecutable"));
                 return;
             }
             await RunAsync(() => _viewModel.SetManualPathAsync(name, files[0].Path.LocalPath, _cancellationToken));
         }
         catch (OperationCanceledException) when (_cancellationToken.IsCancellationRequested) { }
-        catch (Exception) { _viewModel.ReportError("Не удалось выбрать файл. Проверьте доступ к нему и повторите попытку."); }
+        catch (Exception) { _viewModel.ReportError(Localization.Get("InstallerSelectFileFailed")); }
     }
 
     private async Task RunAsync(Func<Task> action)
     {
         try { await action(); }
         catch (OperationCanceledException) when (_cancellationToken.IsCancellationRequested) { }
-        catch (OperationCanceledException) { _viewModel.ReportError("Операция отменена. Можно повторить проверку или установку."); }
-        catch (Exception) { _viewModel.ReportError("Не удалось завершить операцию. Повторите попытку или укажите пути вручную."); }
+        catch (OperationCanceledException) { _viewModel.ReportError(Localization.Get("InstallerOperationCancelled")); }
+        catch (Exception) { _viewModel.ReportError(Localization.Get("InstallerOperationFailed")); }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using TrackExtractor.Services;
 using TrackExtractor.ViewModels;
 
 namespace TrackExtractor;
@@ -27,7 +28,7 @@ public class ViewLocator : IDataTemplate
             return (Control)Activator.CreateInstance(type)!;
         }
         
-        return new TextBlock { Text = "Not Found: " + name };
+        return new TextBlock { Text = LocalizationManager.Active.Format("ViewNotFound", name) };
     }
 
     public bool Match(object? data)

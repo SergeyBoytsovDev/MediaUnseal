@@ -24,22 +24,26 @@ public sealed partial class FfmpegTools
     public async Task<InstallResult> DownloadWindowsAsync(IProgress<InstallProgress>? progress, CancellationToken cancellationToken)
     {
         if (!CanDirectDownload)
-            return new(false, "Прямая загрузка доступна только для Windows 10/11 x64. Укажите совместимые утилиты вручную.");
+            return new(false, L.Get("ToolsDirectDownloadWindowsOnly"))
+            { LocalizedMessage = new("ToolsDirectDownloadWindowsOnly") };
         if ((await CheckAsync(cancellationToken)).IsReady)
-            return new(true, "FFmpeg и FFprobe уже найдены и готовы. Повторная загрузка не требуется.");
+            return new(true, L.Get("ToolsAlreadyDownloaded"))
+            { LocalizedMessage = new("ToolsAlreadyDownloaded") };
         var priorPaths = _savedPaths;
 
         var toolsRoot = Path.Combine(_dataDirectory, "tools");
         var work = Path.Combine(toolsRoot, ".download-" + Guid.NewGuid().ToString("N"));
         string? installed = null;
         var committed = false;
+        var checksumFailure = false;
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(TimeSpan.FromMinutes(20));
         var token = deadline.Token;
         try
         {
             token.ThrowIfCancellationRequested();
-            Log("Начата резервная установка с gyan.dev.", operation: "Загрузка");
+            Log("Fallback installation from gyan.dev started.", operation: "Download",
+                userMessageKey: "InstallerPreparingDirectDownload");
             EnsureNoLinks(toolsRoot);
             Directory.CreateDirectory(work);
             using var http = _httpHandler is null
@@ -48,33 +52,44 @@ public sealed partial class FfmpegTools
             http.Timeout = Timeout.InfiniteTimeSpan;
             http.DefaultRequestHeaders.UserAgent.ParseAdd("TrackExtractor/1.0");
 
-            progress?.Report(new("Получение контрольной суммы с gyan.dev…"));
-            Log("Запрошена контрольная сумма SHA-256.", operation: "SHA-256");
+            progress?.Report(new InstallProgress(L.Get("ToolsDownloadingChecksum"))
+            { LocalizedMessage = new("ToolsDownloadingChecksum") });
+            Log("SHA-256 checksum requested.", operation: "SHA-256");
             await using var hashBytes = new MemoryStream();
             await DownloadAsync(http, ChecksumUri, hashBytes, 4096, null, token);
             var checksum = Encoding.UTF8.GetString(hashBytes.ToArray()).Trim().TrimStart('\uFEFF');
             var hashMatch = Regex.Match(checksum, @"\A([0-9a-fA-F]{64})(?:\s+\*?[^\r\n]+)?\z");
-            if (!hashMatch.Success) throw new InvalidDataException("Источник не предоставил корректную SHA-256. Файлы не будут запущены.");
+            if (!hashMatch.Success)
+            {
+                checksumFailure = true;
+                throw new InvalidDataException("Источник не предоставил корректную SHA-256. Файлы не будут запущены.");
+            }
             var expected = Convert.FromHexString(hashMatch.Groups[1].Value);
 
             var archivePath = Path.Combine(work, "ffmpeg.zip");
             await using (var archive = new FileStream(archivePath, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 81920, useAsync: true))
             {
-                progress?.Report(new("Загрузка FFmpeg и FFprobe с gyan.dev…"));
+                progress?.Report(new InstallProgress(L.Get("ToolsDownloadingArchive"))
+                { LocalizedMessage = new("ToolsDownloadingArchive") });
                 await DownloadAsync(http, ArchiveUri, archive, ArchiveLimit, progress, token);
                 archive.Position = 0;
-                progress?.Report(new("Проверка SHA-256…"));
+                progress?.Report(new InstallProgress(L.Get("ToolsCheckingChecksum"))
+                { LocalizedMessage = new("ToolsCheckingChecksum") });
                 var actual = await SHA256.HashDataAsync(archive, token);
                 if (!CryptographicOperations.FixedTimeEquals(expected, actual))
+                {
+                    checksumFailure = true;
                     throw new InvalidDataException("Контрольная сумма SHA-256 не совпала. Архив удалён; повторите загрузку. Файлы не были запущены.");
+                }
             }
-            Log("Архив загружен и проверен по SHA-256.", operation: "SHA-256");
+            Log("Archive downloaded and verified with SHA-256.", operation: "SHA-256");
 
             // The saved paths are the activation point. Extract into a new, unreferenced directory
             // to avoid renaming an EXE directory while Windows/antivirus is inspecting its files.
             installed = Path.Combine(toolsRoot, "ffmpeg-" + Guid.NewGuid().ToString("N"));
-            progress?.Report(new("Безопасная распаковка архива…"));
-            Log("Начата распаковка в пользовательский каталог.", operation: "Распаковка");
+            progress?.Report(new InstallProgress(L.Get("ToolsExtractingArchive"))
+            { LocalizedMessage = new("ToolsExtractingArchive") });
+            Log("Extraction into the user data directory started.", operation: "Extraction");
             await ExtractAsync(archivePath, installed, token);
             var ffmpeg = FindDownloadedTool(installed, "ffmpeg.exe");
             var ffprobe = FindDownloadedTool(installed, "ffprobe.exe");
@@ -83,7 +98,8 @@ public sealed partial class FfmpegTools
             VerifyWindowsX64(ffmpeg);
             VerifyWindowsX64(ffprobe);
 
-            progress?.Report(new("Проверка установленных FFmpeg и FFprobe…"));
+            progress?.Report(new InstallProgress(L.Get("ToolsCheckingDownloadedExecutables"))
+            { LocalizedMessage = new("ToolsCheckingDownloadedExecutables") });
             var ffmpegStatus = await CheckCandidateAsync("ffmpeg", ffmpeg, token);
             var ffprobeStatus = await CheckCandidateAsync("ffprobe", ffprobe, token);
             if (!ffmpegStatus.IsReady || !ffprobeStatus.IsReady)
@@ -95,38 +111,51 @@ public sealed partial class FfmpegTools
                 await WorkingSavedPathAsync("ffprobe", priorPaths.FFprobe, existing.FFprobe.IsReady ? existing.FFprobe.Path! : ffprobe, token)), token);
             committed = true;
             OfferDirectDownload = false;
-            Log("FFmpeg и FFprobe проверены, установлены и пути сохранены.");
-            progress?.Report(new("FFmpeg и FFprobe проверены и готовы.", 100));
-            return new(true, "FFmpeg и FFprobe установлены в пользовательский каталог и доступны Track Extractor. В PATH они не добавлены, поэтому короткие команды в терминале не работают.");
+            Log("FFmpeg and FFprobe verified, installed, and paths saved.",
+                userMessageKey: "ToolsDownloadedReady");
+            progress?.Report(new InstallProgress(L.Get("ToolsVerifiedReady"), 100)
+            { LocalizedMessage = new("ToolsVerifiedReady") });
+            return new(true, L.Get("ToolsDownloadedReady"))
+            { LocalizedMessage = new("ToolsDownloadedReady") };
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            Log("Загрузка или установка отменена.", DiagnosticLevel.Warn, "Загрузка");
+            Log("Download or installation cancelled.", DiagnosticLevel.Warn, "Download", "InstallerInstallCancelled");
             throw;
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            Log("Истекло время резервной установки.", DiagnosticLevel.Warn, "Загрузка");
-            return new(false, "Истекло время загрузки или установки (20 минут). Проверьте сеть и повторите попытку.");
+            Log("Fallback installation timed out.", DiagnosticLevel.Warn, "Download", "ToolsDownloadTimeout");
+            return new(false, L.Get("ToolsDownloadTimeout"))
+            { LocalizedMessage = new("ToolsDownloadTimeout") };
         }
         catch (HttpRequestException ex)
         {
-            Log("Ошибка соединения с сервером загрузки.", DiagnosticLevel.Error, "Загрузка");
+            Log("Connection to the download server failed.", DiagnosticLevel.Error, "Download",
+                "ToolsDownloadNetworkFailure");
             return new(false, ex.StatusCode is { } code
-                ? $"Сервер загрузки сейчас недоступен (HTTP {(int)code}). Повторите попытку позже."
-                : "Соединение с сервером загрузки прервалось или не установлено. Проверьте сеть и повторите попытку.");
+                ? L.Format("ToolsDownloadHttpFailure", (int)code)
+                : L.Get("ToolsDownloadNetworkFailure"))
+            { LocalizedMessage = ex.StatusCode is { } statusCode
+                ? new("ToolsDownloadHttpFailure", (int)statusCode)
+                : new("ToolsDownloadNetworkFailure") };
         }
-        catch (InvalidDataException ex)
+        catch (InvalidDataException)
         {
-            Log("Архив или контрольная сумма не прошли проверку.", DiagnosticLevel.Error, "SHA-256");
-            return new(false, ex.Message.Contains("SHA-256", StringComparison.OrdinalIgnoreCase)
-                ? "Не удалось проверить SHA-256 архива. Файлы не запускались; повторите загрузку."
-                : "Полученный архив повреждён, неполон или небезопасен. Файлы не запускались; повторите загрузку.");
+            Log("Archive or checksum verification failed.", DiagnosticLevel.Error, "SHA-256",
+                checksumFailure ? "ToolsDownloadChecksumFailure" : "ToolsDownloadArchiveFailure");
+            return new(false, checksumFailure
+                ? L.Get("ToolsDownloadChecksumFailure")
+                : L.Get("ToolsDownloadArchiveFailure"))
+            { LocalizedMessage = new(checksumFailure
+                ? "ToolsDownloadChecksumFailure" : "ToolsDownloadArchiveFailure") };
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or CryptographicException)
         {
-            Log("Не удалось записать или распаковать файлы установки.", DiagnosticLevel.Error, "Распаковка");
-            return new(false, "Не удалось записать файлы в пользовательский каталог. Проверьте свободное место и права доступа.");
+            Log("Failed to write or extract installation files.", DiagnosticLevel.Error, "Extraction",
+                "ToolsDownloadWriteFailure");
+            return new(false, L.Get("ToolsDownloadWriteFailure"))
+            { LocalizedMessage = new("ToolsDownloadWriteFailure") };
         }
         finally
         {
@@ -160,14 +189,18 @@ public sealed partial class FfmpegTools
         }
         if (total == 0 || (length.HasValue && total != length)) throw new InvalidDataException("Загрузка завершилась не полностью.");
         progress?.Report(DownloadProgress(total, length));
-        progress?.Report(new("Загрузка завершена.", 100));
+        progress?.Report(new InstallProgress(L.Get("ToolsDownloadComplete"), 100)
+        { LocalizedMessage = new("ToolsDownloadComplete") });
     }
 
     internal static InstallProgress DownloadProgress(long bytes, long? totalBytes) =>
         new(totalBytes is > 0
-                ? $"Загружено {bytes / 1048576.0:F1} из {totalBytes.Value / 1048576.0:F1} МБ"
-                : $"Загружено {bytes / 1048576.0:F1} МБ",
-            totalBytes is > 0 ? Math.Min(100, bytes * 100.0 / totalBytes.Value) : null);
+                ? L.Format("ToolsDownloadProgressOf", bytes / 1048576.0, totalBytes.Value / 1048576.0)
+                : L.Format("ToolsDownloadProgress", bytes / 1048576.0),
+            totalBytes is > 0 ? Math.Min(100, bytes * 100.0 / totalBytes.Value) : null)
+        { LocalizedMessage = totalBytes is > 0
+            ? new("ToolsDownloadProgressOf", bytes / 1048576.0, totalBytes.Value / 1048576.0)
+            : new("ToolsDownloadProgress", bytes / 1048576.0) };
 
     private static async Task<HttpResponseMessage> GetTrustedResponseAsync(HttpClient http, Uri uri, CancellationToken cancellationToken)
     {

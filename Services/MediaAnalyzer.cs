@@ -29,9 +29,10 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
         if (Timeout <= TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(Timeout));
         var watch = Stopwatch.StartNew();
         var root = Path.GetPathRoot(fullPath);
-        var fileDetails = $"Том: {(root?.StartsWith("\\\\", StringComparison.Ordinal) == true ? "[сетевой каталог]" : root)}; " +
-            $"расширение: {Path.GetExtension(fullPath)}";
-        diagnostics.Record(DiagnosticLevel.Info, "Анализ", "Начат анализ файла.", fileDetails);
+        var fileDetails = $"Volume: {(root?.StartsWith("\\\\", StringComparison.Ordinal) == true ? "[network share]" : root)}; " +
+            $"extension: {Path.GetExtension(fullPath)}";
+        diagnostics.Record(DiagnosticLevel.Info, "Analysis", "File analysis started.", fileDetails,
+            userMessageKey: "LogAnalysisStarted");
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(Timeout);
         try
@@ -45,25 +46,29 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
             if (result.ExitCode != 0)
                 throw new InvalidDataException($"FFprobe завершился с кодом {result.ExitCode}. Файл может быть повреждён или не поддерживается.");
             var media = ParseJson(result.Stdout, fullPath, size);
-            diagnostics.Record(DiagnosticLevel.Info, "Анализ",
-                $"Анализ завершён за {watch.Elapsed.TotalSeconds:F1} с; потоков: {media.Streams.Count}.", fileDetails);
+            diagnostics.Record(DiagnosticLevel.Info, "Analysis",
+                $"Analysis completed in {watch.Elapsed.TotalSeconds:F1} s; streams: {media.Streams.Count}.", fileDetails,
+                userMessageKey: "LogAnalysisCompleteCount", userMessageArgs: [media.Streams.Count], userSuccess: true);
             return media;
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested && deadline.IsCancellationRequested)
         {
-            diagnostics.Record(DiagnosticLevel.Warn, "Анализ", $"Превышено время ожидания FFprobe после {watch.Elapsed.TotalSeconds:F1} с.", fileDetails);
+            diagnostics.Record(DiagnosticLevel.Warn, "Analysis", $"FFprobe timed out after {watch.Elapsed.TotalSeconds:F1} s.", fileDetails,
+                userMessageKey: "LogAnalysisTimeout");
             throw new TimeoutException("FFprobe не завершил анализ за отведённое время.");
         }
         catch (OperationCanceledException)
         {
-            diagnostics.Record(DiagnosticLevel.Warn, "Анализ", $"Анализ отменён через {watch.Elapsed.TotalSeconds:F1} с.", fileDetails);
+            diagnostics.Record(DiagnosticLevel.Warn, "Analysis", $"Analysis cancelled after {watch.Elapsed.TotalSeconds:F1} s.", fileDetails,
+                userMessageKey: "LogAnalysisCancelled");
             throw;
         }
         catch (Exception ex)
         {
-            diagnostics.Record(DiagnosticLevel.Error, "Анализ",
-                $"Ошибка анализа через {watch.Elapsed.TotalSeconds:F1} с: {ex.GetType().Name}" +
-                (ex is InvalidDataException or TimeoutException ? $" ({ex.Message})" : ""), fileDetails);
+            diagnostics.Record(DiagnosticLevel.Error, "Analysis",
+                $"Analysis failed after {watch.Elapsed.TotalSeconds:F1} s: {ex.GetType().Name}" +
+                (ex is InvalidDataException or TimeoutException ? $" ({ex.Message})" : ""), fileDetails,
+                userMessageKey: "LogAnalysisFailed");
             throw;
         }
     }

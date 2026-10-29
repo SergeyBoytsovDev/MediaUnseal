@@ -39,36 +39,40 @@ public sealed record ConversionSettings(ConversionFormat Format, ConversionEncod
     int? Crf = null, int? BitRateKbps = null, int? Width = null, int? Height = null,
     double? FrameRate = null, int? SampleRate = null, int? Channels = null, int? Quality = null)
 {
-    public string? Validate(MediaStreamInfo stream)
+    private static LocalizationManager L => LocalizationManager.Active;
+    public string? Validate(MediaStreamInfo stream) => ValidationKey(stream) is { } key ? L.Get(key) : null;
+
+    internal string? ValidationKey(MediaStreamInfo stream)
     {
         var kind = stream.VisualKind == VisualKind.Video ? "video" : stream.CodecType;
         if (kind is not ("video" or "audio" or "subtitle") || Encoder.Kind != kind
             || Format.DefaultCodec(kind) is null)
-            return "Выбранный формат не поддерживает этот тип потока.";
+            return "MainValidationUnsupportedType";
         if (!Regex.IsMatch(Format.Extension, @"\A[a-zA-Z0-9]{1,10}\z")
             || !Regex.IsMatch(Format.Muxer, @"\A[a-zA-Z0-9_]{1,64}\z")
             || !Regex.IsMatch(Encoder.Name, @"\A[a-zA-Z0-9_\-]{1,64}\z"))
-            return "Некорректное имя выходного формата или кодировщика.";
+            return "MainValidationInvalidName";
         if (stream.CodecType == "subtitle" && stream.SubtitleKind != SubtitleKind.Text)
-            return "Графические субтитры нельзя преобразовать в текст без OCR.";
+            return "MainValidationGraphicSubtitle";
         if (kind == "subtitle" && (Encoder.Name is "dvbsub" or "dvdsub" or "xsub"
             || BitRateKbps is not null))
-            return "Выбранный кодировщик не создаёт текстовые субтитры.";
+            return "MainValidationSubtitleEncoder";
         if (Crf is < 0 or > 63 || BitRateKbps is < 8 or > 1_000_000
             || Width is < 16 or > 16384 || Height is < 16 or > 16384
             || FrameRate is { } fps && (!double.IsFinite(fps) || fps <= 0 || fps > 240)
             || SampleRate is < 8000 or > 384000
             || Channels is < 1 or > 32 || Quality is < 0 or > 10)
-            return "Параметры конвертации выходят за допустимые пределы.";
+            return "MainValidationOutOfRange";
         if (kind != "video" && (Crf is not null || Width is not null || Height is not null || FrameRate is not null)
             || kind != "audio" && (SampleRate is not null || Channels is not null || Quality is not null))
-            return "Параметры не соответствуют типу потока.";
+            return "MainValidationWrongTypeParameters";
         return null;
     }
 }
 
 public sealed class FfmpegConversionCatalog
 {
+    private static LocalizationManager L => LocalizationManager.Active;
     private readonly string _ffmpeg;
     private readonly List<ConversionFormat> _formats;
     private readonly List<ConversionEncoder> _encoders;
@@ -181,14 +185,14 @@ public sealed class FfmpegConversionCatalog
         return catalog;
     }
 
-    public async Task<(bool Compatible, string Reason)> CheckCombinationAsync(
+    public async Task<(bool Compatible, string Reason, bool InfrastructureFailure)> CheckCombinationAsync(
         ConversionFormat format, ConversionEncoder encoder, CancellationToken token,
         ConversionSettings? settings = null, Action<string>? diagnostics = null)
     {
         if (!_formats.Contains(format) || !_encoders.Contains(encoder)
             || format.DefaultCodec(encoder.Kind) is null
             || settings is not null && (settings.Format != format || settings.Encoder != encoder))
-            return (false, "Этот тип потока не поддерживается выходным форматом.");
+            return (false, L.Get("MainValidationUnsupportedOutputFormat"), false);
         var directory = Path.Combine(Path.GetTempPath(), "trackextractor-probe-" + Guid.NewGuid().ToString("N"));
         var output = Path.Combine(directory, "output." + format.Extension);
         try
@@ -214,21 +218,21 @@ public sealed class FfmpegConversionCatalog
             args.AddRange(["-f", format.Muxer, output]);
             var result = await RunAsync(args.ToArray(), token).ConfigureAwait(false);
             if (result.ExitCode != 0 && diagnostics is not null)
-                diagnostics($"{encoder.Name}: код FFmpeg {result.ExitCode}; {result.Output}");
+                diagnostics($"{encoder.Name}: FFmpeg exit code {result.ExitCode}; {result.Output}");
             return result.ExitCode == 0 && File.Exists(output) && new FileInfo(output).Length > 0
-                ? (true, "") : (false, $"Кодировщик {encoder.Name} найден в FFmpeg, но не смог создать пробный файл " +
-                    $"в формате {format.Extension.ToUpperInvariant()} (код FFmpeg: {result.ExitCode}).");
+                ? (true, "", false) : (false, L.Format("MainValidationProbeFileFailed",
+                    encoder.Name, format.Extension.ToUpperInvariant(), result.ExitCode), false);
         }
         catch (TimeoutException)
         {
-            diagnostics?.Invoke($"{encoder.Name}: время ожидания FFmpeg истекло.");
-            return (false, $"Проверка кодировщика {encoder.Name} превысила время ожидания.");
+            diagnostics?.Invoke($"{encoder.Name}: FFmpeg timed out.");
+            return (false, L.Format("MainValidationEncoderTimeout", encoder.Name), true);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception
             or InvalidDataException)
         {
             diagnostics?.Invoke($"{encoder.Name}: {ex.GetType().Name}: {ex.Message}");
-            return (false, $"Не удалось проверить кодировщик {encoder.Name} с форматом {format.Extension.ToUpperInvariant()}.");
+            return (false, L.Format("MainValidationEncoderCheckFailed", encoder.Name, format.Extension.ToUpperInvariant()), true);
         }
         finally
         {

@@ -69,11 +69,14 @@ public partial class MainWindow : Window
                     StreamsTable.Columns[index].Width = new GridLength(MinimumColumnWidths[index]);
             };
         }
+        RefreshColumnHeaders();
         Opened += MainWindow_Opened;
+        LocalizationManager.Active.PropertyChanged += Localization_PropertyChanged;
         Closing += MainWindow_Closing;
         Closed += (_, _) =>
         {
             _shutdown.Cancel();
+            LocalizationManager.Active.PropertyChanged -= Localization_PropertyChanged;
             if (_logViewModel is not null)
             {
                 _logViewModel.UserEvents.CollectionChanged -= Events_CollectionChanged;
@@ -99,6 +102,31 @@ public partial class MainWindow : Window
         this.AddHandler(DragDrop.DragOverEvent, DragOver, RoutingStrategies.Bubble, handledEventsToo: true);
         this.AddHandler(DragDrop.DropEvent, Drop, RoutingStrategies.Bubble, handledEventsToo: true);
         DragDrop.AddDragLeaveHandler(this, (_, _) => DropZone.Classes.Remove("dragging"));
+    }
+
+    private void Localization_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != "Item[]") return;
+        _logViewModel?.RefreshMainLocalization();
+        RefreshColumnHeaders();
+        foreach (var kind in new[] { "video", "audio", "subtitle" })
+        {
+            if (!_formatChoices.TryGetValue(kind, out var choice) || choice.Settings is null) continue;
+            _formatChoices[kind] = choice with
+            {
+                Display = LocalizationManager.Active.Format("MainCustomFormat",
+                    choice.Settings.Format.Extension.ToUpperInvariant())
+            };
+        }
+        RefreshFormatControls();
+    }
+
+    private void RefreshColumnHeaders()
+    {
+        var keys = new[] { "MainColumnType", "MainColumnIndex", "MainColumnLanguage",
+            "MainColumnCodec", "MainColumnBitrate", "MainColumnDetails", "MainColumnStatus" };
+        for (var i = 0; i < keys.Length; i++)
+            StreamsTable.Columns[i + 1].Header = LocalizationManager.Active.Get(keys[i]);
     }
 
     private void Events_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -168,7 +196,7 @@ public partial class MainWindow : Window
         catch (OperationCanceledException) when (_shutdown.IsCancellationRequested) { }
         catch (Exception ex)
         {
-            viewModel.ReportError($"Не удалось проверить утилиты: {ex.Message}");
+            viewModel.ReportError(LocalizationManager.Active.Format("MainToolsCheckFailed", ex.Message));
             if (!_shutdown.IsCancellationRequested) ShowSettings(0, showContinue: true);
         }
     }
@@ -266,17 +294,15 @@ public partial class MainWindow : Window
         IEnumerable<ExportTrackViewModel> current) =>
         !previous.Any(track => Kind(track) == kind) && current.Any(track => Kind(track) == kind);
 
-    private static readonly Dictionary<string, (string Muxer, string Label)[]> PopularFormats = new()
+    private static readonly Dictionary<string, (string Muxer, string LabelKey)[]> PopularFormats = new()
     {
-        ["video"] = [("mp4", "MP4 — высокая совместимость"), ("matroska", "MKV — гибкий контейнер"),
-            ("mov", "MOV — видео QuickTime"), ("avi", "AVI — классический контейнер"),
-            ("webm", "WebM — видео для веба")],
-        ["audio"] = [("mp3", "MP3 — компактный звук"), ("wav", "WAV — несжатый звук"),
-            ("flac", "FLAC — без потерь"), ("adts", "AAC — компактный звук"),
-            ("ac3", "AC3 — многоканальный звук"), ("ogg", "OGG — открытый контейнер"),
-            ("opus", "Opus — эффективное сжатие")],
-        ["subtitle"] = [("srt", "SRT — текстовые субтитры"), ("ass", "ASS — стили и оформление"),
-            ("webvtt", "WebVTT — субтитры для веба")]
+        ["video"] = [("mp4", "MainFormatMp4"), ("matroska", "MainFormatMkv"),
+            ("mov", "MainFormatMov"), ("avi", "MainFormatAvi"), ("webm", "MainFormatWebm")],
+        ["audio"] = [("mp3", "MainFormatMp3"), ("wav", "MainFormatWav"),
+            ("flac", "MainFormatFlac"), ("adts", "MainFormatAac"),
+            ("ac3", "MainFormatAc3"), ("ogg", "MainFormatOgg"), ("opus", "MainFormatOpus")],
+        ["subtitle"] = [("srt", "MainFormatSrt"), ("ass", "MainFormatAss"),
+            ("webvtt", "MainFormatWebvtt")]
     };
 
     private ComboBox? FormatBox(string kind) => kind switch
@@ -299,18 +325,19 @@ public partial class MainWindow : Window
                     .Where(t => t.IsSelected && Kind(t) == kind).ToArray() ?? [];
                 var codecs = tracks.Select(t => t.Stream.Codec?.ToUpperInvariant() ?? "?")
                     .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                var loc = LocalizationManager.Active;
                 var source = codecs.Length == 1
-                    ? $"{codecs[0]} — исходный — " + (kind == "subtitle" ? "текстовые субтитры"
-                        : kind == "audio" ? codecs[0] switch
-                        { "AC3" => "сжатый звук", "DTS" => "многоканальный звук", _ => "исходный звук" } :
-                        $"видео; файл .{tracks[0].Decision.Plan?.Extension ?? "?"}")
-                    : "Исходный — без перекодирования";
+                    ? loc.Format(kind == "subtitle" ? "MainOriginalSubtitles" : kind == "audio"
+                        ? codecs[0] switch { "AC3" => "MainOriginalCompressedAudio",
+                            "DTS" => "MainOriginalMultichannelAudio", _ => "MainOriginalAudio" }
+                        : "MainOriginalVideo", codecs[0], tracks[0].Decision.Plan?.Extension ?? "?")
+                    : loc.Get("MainOriginalNoTranscode");
                 var choices = new List<FormatChoice> { new(source) };
                 if (_conversionCatalog is { } catalog)
-                    foreach (var (muxer, label) in PopularFormats[kind])
+                    foreach (var (muxer, labelKey) in PopularFormats[kind])
                     {
                         var format = catalog.FormatsFor(kind).FirstOrDefault(f => f.Muxer == muxer);
-                        if (format is not null) choices.Add(new(label, format));
+                        if (format is not null) choices.Add(new(loc.Get(labelKey), format));
                     }
                 _formatChoices.TryGetValue(kind, out var selected);
                 if (selected is { Format: not null } && !choices.Any(c => c.Format == selected.Format && c.Settings == selected.Settings))
@@ -343,7 +370,7 @@ public partial class MainWindow : Window
         catch (OperationCanceledException) { }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception
             or TimeoutException or InvalidDataException)
-        { (DataContext as MainViewModel)?.ReportExportError("Не удалось прочитать форматы FFmpeg."); }
+        { (DataContext as MainViewModel)?.ReportExportError(LocalizationManager.Active.Get("MainFormatsReadFailed")); }
         finally
         {
             _conversionLoading = false;
@@ -385,11 +412,11 @@ public partial class MainWindow : Window
                 if (!_formatChoices.TryGetValue(kind, out var choice) || choice.Format is null)
                 { track.SetConversion(null); continue; }
                 if (!track.CanConvert || _conversionCatalog is null)
-                { track.SetConfigurationError("Для выбранного потока конвертация недоступна."); valid = false; continue; }
+                { track.SetConfigurationErrorKey("MainConversionUnavailable"); valid = false; continue; }
                 if (choice.Settings is { } settings)
                 {
-                    if (settings.Validate(track.Stream) is { } reason)
-                    { track.SetConfigurationError(reason); valid = false; continue; }
+                    if (settings.ValidationKey(track.Stream) is { } reasonKey)
+                    { track.SetConfigurationErrorKey(reasonKey); valid = false; continue; }
                     track.SetConversion(settings);
                     continue;
                 }
@@ -406,7 +433,7 @@ public partial class MainWindow : Window
                 }
                 var encoder = _conversionCatalog.SuggestedEncoder(format, kind);
                 if (encoder is null)
-                { track.SetConfigurationError("Нет подходящего кодировщика для этого формата."); valid = false; continue; }
+                { track.SetConfigurationErrorKey("MainNoSuitableEncoder"); valid = false; continue; }
                 var check = await _conversionCatalog.CheckCombinationAsync(format, encoder, cancellation.Token);
                 if (!check.Compatible)
                 { track.SetConfigurationError(check.Reason); valid = false; continue; }
@@ -445,13 +472,13 @@ public partial class MainWindow : Window
         var settings = await dialog.ShowDialog<ConversionSettings?>(this);
         if (dialog.AppliedCopy && viewModel.SelectedMedia == media)
         {
-            _formatChoices[kind] = new FormatChoice("Исходный — без перекодирования");
+            _formatChoices[kind] = new FormatChoice(LocalizationManager.Active.Get("MainOriginalNoTranscode"));
             RefreshFormatControls();
             await ApplyAllFormatsAsync();
             return;
         }
         if (settings is null || viewModel.SelectedMedia != media) return;
-        _formatChoices[kind] = new($"{settings.Format.Extension.ToUpperInvariant()} — пользовательская настройка",
+        _formatChoices[kind] = new(LocalizationManager.Active.Format("MainCustomFormat", settings.Format.Extension.ToUpperInvariant()),
             settings.Format, settings);
         RefreshFormatControls();
         await ApplyAllFormatsAsync();
@@ -493,14 +520,14 @@ public partial class MainWindow : Window
         {
             var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = "Выберите медиафайл", AllowMultiple = false
+                Title = LocalizationManager.Active.Get("MainPickMediaFile"), AllowMultiple = false
             });
             if (files.Count == 1) await AddFileAsync(files[0].Path);
         }
         catch (Exception)
         {
             if (!_shutdown.IsCancellationRequested)
-                viewModel.ReportFileError("Не удалось выбрать файл. Проверьте доступ и повторите попытку.");
+                viewModel.ReportFileErrorKey("MainFilePickFailed");
         }
     }
 
@@ -526,7 +553,7 @@ public partial class MainWindow : Window
             var files = e.DataTransfer.TryGetFiles()?.Take(2).ToArray();
             if (files is null || files.Length != 1)
             {
-                viewModel.ReportFileError("Перетащите один локальный файл.");
+                viewModel.ReportFileErrorKey("MainDropOneLocalFile");
                 return;
             }
             await AddFileAsync(files[0].Path);
@@ -534,14 +561,14 @@ public partial class MainWindow : Window
         catch (Exception)
         {
             if (!_shutdown.IsCancellationRequested)
-                viewModel.ReportFileError("Не удалось открыть перетащенный файл.");
+                viewModel.ReportFileErrorKey("MainDropOpenFailed");
         }
     }
 
     private async Task AddFileAsync(Uri uri)
     {
         if (DataContext is not MainViewModel viewModel) return;
-        if (!uri.IsFile) { viewModel.ReportFileError("Выберите локальный файл."); return; }
+        if (!uri.IsFile) { viewModel.ReportFileErrorKey("MainPickLocalFile"); return; }
         await viewModel.AnalyzeFileAsync(uri.LocalPath, _shutdown.Token);
     }
 
@@ -552,7 +579,7 @@ public partial class MainWindow : Window
         {
             var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = "Выберите папку сохранения", AllowMultiple = false
+                Title = LocalizationManager.Active.Get("MainPickSaveFolder"), AllowMultiple = false
             });
             if (folders.Count == 1)
             {
@@ -571,13 +598,13 @@ public partial class MainWindow : Window
                         appearance.Save();
                     }
                 }
-                else viewModel.ReportExportError("Выберите локальную папку сохранения.");
+                else viewModel.ReportExportErrorKey("MainPickLocalFolder");
             }
         }
         catch (Exception)
         {
             if (!_shutdown.IsCancellationRequested)
-                viewModel.ReportExportError("Не удалось выбрать папку. Проверьте доступ к ней.");
+                viewModel.ReportExportErrorKey("MainFolderPickFailed");
         }
     }
 
@@ -602,7 +629,7 @@ public partial class MainWindow : Window
         var folder = viewModel.OutputDirectory;
         if (folder is null || !Directory.Exists(folder))
         {
-            viewModel.ReportExportError("Папка результатов не найдена. Выберите существующую папку.");
+            viewModel.ReportExportErrorKey("MainResultFolderMissing");
             return;
         }
         try
@@ -620,7 +647,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) when (ex is Win32Exception or IOException or UnauthorizedAccessException)
         {
-            viewModel.ReportExportError("Не удалось открыть папку результатов. Проверьте доступ к ней.");
+            viewModel.ReportExportErrorKey("MainResultFolderOpenFailed");
         }
     }
 
@@ -630,10 +657,18 @@ public partial class MainWindow : Window
         try
         {
             var report = await Task.Run(viewModel.DiagnosticReport);
-            var preview = new Window { Title = "Диагностический отчёт", Width = 760, Height = 540,
+            var preview = new Window { Title = LocalizationManager.Active.Get("DiagnosticPreviewTitle"), Width = 760, Height = 540,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner };
             var panel = new DockPanel { Margin = new Avalonia.Thickness(12) };
-            var save = new Button { Content = "Сохранить", HorizontalAlignment = HorizontalAlignment.Right };
+            var save = new Button { Content = LocalizationManager.Active.Get("DiagnosticPreviewSave"), HorizontalAlignment = HorizontalAlignment.Right };
+            void RefreshPreviewLanguage(object? source, PropertyChangedEventArgs args)
+            {
+                if (args.PropertyName != "Item[]") return;
+                preview.Title = LocalizationManager.Active.Get("DiagnosticPreviewTitle");
+                save.Content = LocalizationManager.Active.Get("DiagnosticPreviewSave");
+            }
+            LocalizationManager.Active.PropertyChanged += RefreshPreviewLanguage;
+            preview.Closed += (_, _) => LocalizationManager.Active.PropertyChanged -= RefreshPreviewLanguage;
             DockPanel.SetDock(save, Dock.Bottom);
             panel.Children.Add(save);
             panel.Children.Add(new ScrollViewer
@@ -650,7 +685,7 @@ public partial class MainWindow : Window
                 {
                     var file = await preview.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
                     {
-                        Title = "Сохранить диагностический отчёт",
+                        Title = LocalizationManager.Active.Get("DiagnosticPreviewSaveTitle"),
                         SuggestedFileName = "TrackExtractor-diagnostic.txt"
                     });
                     if (file is null) return;
@@ -662,14 +697,14 @@ public partial class MainWindow : Window
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)
                 {
-                    viewModel.ReportError("Не удалось сохранить лог. Проверьте доступ к выбранному файлу.");
+                    viewModel.ReportError(LocalizationManager.Active.Get("DiagnosticPreviewSaveFailed"));
                 }
             };
             preview.Show(this);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            viewModel.ReportError("Не удалось прочитать диагностический лог.");
+            viewModel.ReportError(LocalizationManager.Active.Get("DiagnosticPreviewReadFailed"));
         }
     }
 }

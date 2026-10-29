@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -14,6 +15,7 @@ namespace TrackExtractor.Views;
 
 public partial class MediaGuideWindow : Window
 {
+    private static LocalizationManager L => LocalizationManager.Active;
     private readonly Dictionary<MediaGuideArticle, TreeViewItem> _articleItems = [];
     private MediaGuideSearch? _search;
     private MediaGuideDiagramCatalog? _diagrams;
@@ -24,40 +26,86 @@ public partial class MediaGuideWindow : Window
     private int _currentMatchIndex = -1;
     private int _navigationVersion;
     private int _articleVersion;
+    private string? _loadedLanguage;
 
     public MediaGuideWindow()
     {
         InitializeComponent();
+        L.PropertyChanged += Localization_PropertyChanged;
+        Closed += (_, _) => L.PropertyChanged -= Localization_PropertyChanged;
         try
         {
-            var guide = MediaGuideContent.Load();
-            _diagrams = MediaGuideDiagramCatalog.Load();
-            TreeViewItem? firstArticle = null;
-            foreach (var section in guide.Sections)
-            {
-                var sectionItem = new TreeViewItem { Header = section.Title, IsExpanded = true };
-                foreach (var article in section.Articles)
-                {
-                    var articleItem = new TreeViewItem { Header = article.Title, Tag = article };
-                    sectionItem.Items.Add(articleItem);
-                    _articleItems.Add(article, articleItem);
-                    firstArticle ??= articleItem;
-                }
-                ContentsTree.Items.Add(sectionItem);
-            }
-            _search = new MediaGuideSearch(guide, _diagrams);
-            if (firstArticle is not null)
-            {
-                firstArticle.IsSelected = true;
-                ShowArticle((MediaGuideArticle)firstArticle.Tag!);
-            }
+            LoadGuide(L.Language);
         }
         catch (Exception ex)
         {
-            ArticleViewer.Markdown = $"Не удалось загрузить медиасправочник: {ex.Message}";
+            ArticleViewer.Markdown = L.Format("GuideLoadFailed", ex.Message);
             SearchBox.IsEnabled = false;
         }
         SizeForScreen();
+    }
+
+    private void Localization_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != "Item[]") return;
+        var language = L.Language;
+        if (_loadedLanguage != language)
+        {
+            try { LoadGuide(language); }
+            catch (Exception ex) { ArticleViewer.Markdown = L.Format("GuideLoadFailed", ex.Message); }
+        }
+        GuideFallbackNotice.Text = L.Get("GuideRussianOriginalNotice");
+        NavigationTitle.Text = string.IsNullOrWhiteSpace(SearchBox.Text)
+            ? L.Get("GuideContents") : L.Get("GuideSearchResults");
+        if (_currentMatchIndex < 0 && !string.IsNullOrWhiteSpace(SearchBox.Text))
+            SearchPosition.Text = ResultsList.Items.Count == 0 ? "0"
+                : L.Format("GuideArticleCount", ResultsList.Items.Count);
+    }
+
+    private void LoadGuide(string language)
+    {
+        var guideLanguage = LanguagePackCatalog.GuideLanguageFor(language);
+        var guide = MediaGuideContent.Load(guideLanguage);
+        var diagrams = MediaGuideDiagramCatalog.Load(guideLanguage);
+        _search = null;
+        _articleVersion++;
+        ClearHighlight();
+        _currentArticle = null;
+        _currentMatches = [];
+        _currentMatchIndex = -1;
+        SearchBox.Text = "";
+        ResultsList.Items.Clear();
+        ClearSearchButton.IsEnabled = false;
+        ContentsTree.IsVisible = true;
+        ResultsList.IsVisible = false;
+        NoResultsText.IsVisible = false;
+        SearchPosition.Text = "";
+        UpdateNavigationButtons();
+        ContentsTree.Items.Clear();
+        _articleItems.Clear();
+        _diagrams = diagrams;
+        TreeViewItem? firstArticle = null;
+        foreach (var section in guide.Sections)
+        {
+            var sectionItem = new TreeViewItem { Header = section.Title, IsExpanded = true };
+            foreach (var article in section.Articles)
+            {
+                var articleItem = new TreeViewItem { Header = article.Title, Tag = article };
+                sectionItem.Items.Add(articleItem);
+                _articleItems.Add(article, articleItem);
+                firstArticle ??= articleItem;
+            }
+            ContentsTree.Items.Add(sectionItem);
+        }
+        _search = new MediaGuideSearch(guide, diagrams);
+        _loadedLanguage = language;
+        GuideFallbackNotice.Text = L.Get("GuideRussianOriginalNotice");
+        GuideFallbackNotice.IsVisible = guideLanguage != language;
+        if (firstArticle is not null)
+        {
+            firstArticle.IsSelected = true;
+            ShowArticle((MediaGuideArticle)firstArticle.Tag!);
+        }
     }
 
     private void Contents_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -80,7 +128,7 @@ public partial class MediaGuideWindow : Window
         ClearSearchButton.IsEnabled = hasQuery;
         ContentsTree.IsVisible = !hasQuery;
         ResultsList.IsVisible = hasQuery;
-        NavigationTitle.Text = hasQuery ? "Результаты поиска" : "Содержание";
+        NavigationTitle.Text = L.Get(hasQuery ? "GuideSearchResults" : "GuideContents");
         ResultsList.Items.Clear();
         if (!hasQuery)
         {
@@ -109,7 +157,7 @@ public partial class MediaGuideWindow : Window
             ResultsList.Items.Add(item);
         }
         NoResultsText.IsVisible = results.Count == 0;
-        SearchPosition.Text = results.Count == 0 ? "0" : $"{results.Count} статей";
+        SearchPosition.Text = results.Count == 0 ? "0" : L.Format("GuideArticleCount", results.Count);
         UpdateNavigationButtons();
         if (results.Count > 0) ResultsList.SelectedIndex = 0;
     }
@@ -217,7 +265,7 @@ public partial class MediaGuideWindow : Window
                 if (attempt < 3)
                     Dispatcher.UIThread.Post(() => HighlightMatch(match, version, attempt + 1), DispatcherPriority.Render);
                 else
-                    SearchPosition.Text = "Переход недоступен";
+                    SearchPosition.Text = L.Get("GuideNavigationUnavailable");
                 return;
             }
             ClearHighlight();
@@ -230,7 +278,7 @@ public partial class MediaGuideWindow : Window
         var indexed = _search.BlocksFor(match.Article);
         if (rendered.Length != indexed.Count || rendered.Where((block, i) => block.Text != indexed[i]).Any())
         {
-            SearchPosition.Text = "Переход недоступен";
+            SearchPosition.Text = L.Get("GuideNavigationUnavailable");
             return;
         }
         var target = rendered[match.BlockIndex];
@@ -239,7 +287,7 @@ public partial class MediaGuideWindow : Window
             if (attempt < 2)
                 Dispatcher.UIThread.Post(() => HighlightMatch(match, version, attempt + 1), DispatcherPriority.Render);
             else
-                SearchPosition.Text = "Переход недоступен";
+                SearchPosition.Text = L.Get("GuideNavigationUnavailable");
             return;
         }
         ClearHighlight();
@@ -249,7 +297,7 @@ public partial class MediaGuideWindow : Window
             if (!string.Equals(target.GetSelectedText(), match.Text, StringComparison.OrdinalIgnoreCase))
             {
                 target.ClearSelection();
-                SearchPosition.Text = "Переход недоступен";
+                SearchPosition.Text = L.Get("GuideNavigationUnavailable");
                 return;
             }
             var rect = FindMatchRect(target, match.Start);
@@ -260,7 +308,7 @@ public partial class MediaGuideWindow : Window
         catch (Exception)
         {
             target.ClearSelection();
-            SearchPosition.Text = "Переход недоступен";
+            SearchPosition.Text = L.Get("GuideNavigationUnavailable");
         }
     }
 

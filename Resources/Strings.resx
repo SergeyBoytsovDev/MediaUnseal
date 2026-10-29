@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="SettingsTitle" xml:space="preserve"><value>Настройки</value></data>
+  <data name="LanguageSection" xml:space="preserve"><value>Язык интерфейса</value></data>
+  <data name="RussianName" xml:space="preserve"><value>Русский</value></data>
+  <data name="UnknownLanguageFolder" xml:space="preserve"><value>язык не указан</value></data>
+  <data name="VersionFormat" xml:space="preserve"><value>Версия: {0}</value></data>
+  <data name="VersionUnspecified" xml:space="preserve"><value>не указана</value></data>
+  <data name="SettingsSections" xml:space="preserve"><value>РАЗДЕЛЫ</value></data>
+  <data name="SettingsInstaller" xml:space="preserve"><value>Установщик FFmpeg</value></data>
+  <data name="SettingsAppearance" xml:space="preserve"><value>Оформление</value></data>
+  <data name="SettingsKnowledgeBase" xml:space="preserve"><value>База знаний</value></data>
+  <data name="SettingsAbout" xml:space="preserve"><value>О программе</value></data>
+  <data name="SettingsThemeLabel" xml:space="preserve"><value>Тема интерфейса</value></data>
+  <data name="SettingsThemeStudioDark" xml:space="preserve"><value>Studio Dark</value></data>
+  <data name="SettingsThemeStudioDarkDescription" xml:space="preserve"><value>Контрастный студийный стиль</value></data>
+  <data name="SettingsThemeResolve" xml:space="preserve"><value>Resolve Workspace</value></data>
+  <data name="SettingsThemeResolveDescription" xml:space="preserve"><value>Плотная рабочая среда</value></data>
+  <data name="SettingsThemeAdobe" xml:space="preserve"><value>Adobe Clean Pro</value></data>
+  <data name="SettingsThemeAdobeDescription" xml:space="preserve"><value>Чистая типографика и отступы</value></data>
+  <data name="SettingsThemeIndustrial" xml:space="preserve"><value>Industrial Utility</value></data>
+  <data name="SettingsThemeIndustrialDescription" xml:space="preserve"><value>Строгая утилитарная тема</value></data>
+  <data name="SettingsThemeHybrid" xml:space="preserve"><value>Hybrid Modern Panel</value></data>
+  <data name="SettingsThemeHybridDescription" xml:space="preserve"><value>Мягкие панели и холодный акцент</value></data>
+  <data name="LanguageEnglishName" xml:space="preserve"><value>English</value></data>
+  <data name="LanguageEnglishDescription" xml:space="preserve"><value>Английский</value></data>
+  <data name="LanguageGermanName" xml:space="preserve"><value>Deutsch</value></data>
+  <data name="LanguageGermanDescription" xml:space="preserve"><value>Немецкий</value></data>
+  <data name="LanguageFrenchName" xml:space="preserve"><value>Français</value></data>
+  <data name="LanguageFrenchDescription" xml:space="preserve"><value>Французский</value></data>
+  <data name="LanguageSpanishName" xml:space="preserve"><value>Español</value></data>
+  <data name="LanguageSpanishDescription" xml:space="preserve"><value>Испанский</value></data>
+  <data name="LanguagePortugueseName" xml:space="preserve"><value>Português</value></data>
+  <data name="LanguagePortugueseDescription" xml:space="preserve"><value>Португальский</value></data>
+  <data name="LanguageItalianName" xml:space="preserve"><value>Italiano</value></data>
+  <data name="LanguageItalianDescription" xml:space="preserve"><value>Итальянский</value></data>
+  <data name="LanguageChineseName" xml:space="preserve"><value>中文（简体）</value></data>
+  <data name="LanguageChineseDescription" xml:space="preserve"><value>Китайский (упрощённый)</value></data>
+  <data name="LanguageJapaneseName" xml:space="preserve"><value>日本語</value></data>
+  <data name="LanguageJapaneseDescription" xml:space="preserve"><value>Японский</value></data>
+  <data name="LanguageKoreanName" xml:space="preserve"><value>한국어</value></data>
+  <data name="LanguageKoreanDescription" xml:space="preserve"><value>Корейский</value></data>
+  <data name="SettingsGuideTitle" xml:space="preserve"><value>Медиасправочник</value></data>
+  <data name="SettingsGuideDescription1" xml:space="preserve"><value>Справочник форматов содержит информацию о мультимедийных контейнерах, видео- и аудиокодеках, форматах субтитров и изображений.</value></data>
+  <data name="SettingsGuideDescription2" xml:space="preserve"><value>Здесь вы сможете узнать об особенностях различных форматов, их совместимости, назначении и использовании при извлечении и конвертации медиапотоков.</value></data>
+  <data name="SettingsOpenGuide" xml:space="preserve"><value>Открыть справочник</value></data>
+  <data name="SettingsProductName" xml:space="preserve"><value>Track Extractor</value></data>
+  <data name="SettingsDevelopmentBadge" xml:space="preserve"><value>Development</value></data>
+  <data name="SettingsAboutSummary" xml:space="preserve"><value>Анализ мультимедийных файлов и извлечение видео, аудио, субтитров и вложений.</value></data>
+  <data name="SettingsCheckUpdates" xml:space="preserve"><value>Проверить обновления</value></data>
+  <data name="SettingsGeneralInformation" xml:space="preserve"><value>Общие сведения</value></data>
+  <data name="SettingsDeveloper" xml:space="preserve"><value>Разработчик: Sergey Boitcov</value></data>
+  <data name="SettingsPlatforms" xml:space="preserve"><value>Платформы: Windows 10/11, Linux; macOS — планируется</value></data>
+  <data name="SettingsTechnology" xml:space="preserve"><value>Технологии: .NET 10, Avalonia UI 12.1.4</value></data>
+  <data name="SettingsMediaComponents" xml:space="preserve"><value>Мультимедийные компоненты</value></data>
+  <data name="SettingsFfmpegRights" xml:space="preserve"><value>Права на FFmpeg и FFprobe принадлежат их правообладателям; поставщик готовой сборки может отличаться.</value></data>
+  <data name="SettingsThirdParty" xml:space="preserve"><value>Сторонние компоненты и лицензии</value></data>
+  <data name="SettingsAvalonia" xml:space="preserve"><value>Avalonia UI — интерфейс приложения.</value></data>
+  <data name="SettingsMvvm" xml:space="preserve"><value>CommunityToolkit.Mvvm — поддержка MVVM.</value></data>
+  <data name="SettingsExternalTools" xml:space="preserve"><value>FFmpeg и FFprobe — внешние утилиты обработки и анализа медиафайлов.</value></data>
+  <data name="SettingsMatroskaTitle" xml:space="preserve"><value>Собственный модуль обработки вложений Matroska (MKV)</value></data>
+  <data name="SettingsMatroskaDescription" xml:space="preserve"><value>Модуль на C# ищет, читает и извлекает встроенные JPEG/PNG через структуры Matroska/EBML и индекс SeekHead. При непосредственном копировании вложения FFmpeg не используется.</value></data>
+  <data name="SettingsLicensePending" xml:space="preserve"><value>Лицензионная информация будет дополнена перед выпуском</value></data>
+  <data name="InstallerRequirement" xml:space="preserve"><value>Для работы с медиафайлами необходимы FFmpeg и FFprobe</value></data>
+  <data name="InstallerFfmpegRole" xml:space="preserve"><value>Обработка медиапотоков</value></data>
+  <data name="InstallerFfprobeRole" xml:space="preserve"><value>Анализ медиафайлов</value></data>
+  <data name="InstallerAllReady" xml:space="preserve"><value>Все компоненты готовы</value></data>
+  <data name="InstallerCancel" xml:space="preserve"><value>Отменить</value></data>
+  <data name="InstallerContinue" xml:space="preserve"><value>Продолжить</value></data>
+  <data name="InstallerRetry" xml:space="preserve"><value>Проверить повторно</value></data>
+  <data name="InstallerSelectFfmpeg" xml:space="preserve"><value>Указать путь FFmpeg</value></data>
+  <data name="InstallerSelectFfprobe" xml:space="preserve"><value>Указать путь FFprobe</value></data>
+  <data name="InstallerFilePickerUnavailable" xml:space="preserve"><value>Не удалось открыть выбор файла. Повторите попытку.</value></data>
+  <data name="InstallerSelectExecutableFormat" xml:space="preserve"><value>Выберите исполняемый файл {0}</value></data>
+  <data name="InstallerSelectLocalExecutable" xml:space="preserve"><value>Выберите локальный исполняемый файл.</value></data>
+  <data name="InstallerSelectFileFailed" xml:space="preserve"><value>Не удалось выбрать файл. Проверьте доступ к нему и повторите попытку.</value></data>
+  <data name="InstallerOperationCancelled" xml:space="preserve"><value>Операция отменена. Можно повторить проверку или установку.</value></data>
+  <data name="InstallerOperationFailed" xml:space="preserve"><value>Не удалось завершить операцию. Повторите попытку или укажите пути вручную.</value></data>
+  <data name="InstallerRetryInstall" xml:space="preserve"><value>Повторить установку</value></data>
+  <data name="InstallerInstallComponents" xml:space="preserve"><value>Установить компоненты</value></data>
+  <data name="InstallerInstallationMethod" xml:space="preserve"><value>Способ установки</value></data>
+  <data name="InstallerManualFileMissing" xml:space="preserve"><value>Файл не найден. Укажите существующий исполняемый файл.</value></data>
+  <data name="InstallerToolCheckFailed" xml:space="preserve"><value>Проверка утилиты завершилась ошибкой. Повторите проверку или укажите другой путь.</value></data>
+  <data name="InstallerWingetSourcesUnavailable" xml:space="preserve"><value>WinGet доступен, но источники установки не ответили.</value></data>
+  <data name="InstallerWingetFallbackAvailable" xml:space="preserve"><value>WinGet доступен, но источник не ответил. Резерв — gyan.dev.</value></data>
+  <data name="InstallerWingetAvailable" xml:space="preserve"><value>WinGet доступен.</value></data>
+  <data name="InstallerWingetUnavailableManual" xml:space="preserve"><value>WinGet недоступен. Укажите пути вручную.</value></data>
+  <data name="InstallerWingetAndSourceUnavailable" xml:space="preserve"><value>WinGet недоступен. Источник gyan.dev не ответил.</value></data>
+  <data name="InstallerWingetUnavailableFallback" xml:space="preserve"><value>WinGet недоступен. Резервная установка через gyan.dev.</value></data>
+  <data name="InstallerNoticeWithMethod" xml:space="preserve"><value>{0} {1}</value></data>
+  <data name="InstallerCheckError" xml:space="preserve"><value>Ошибка проверки.</value></data>
+  <data name="InstallerAutoInstallUnavailable" xml:space="preserve"><value>Автоматическая установка здесь недоступна. Используйте указанную команду или задайте пути вручную.</value></data>
+  <data name="InstallerDirectDownloadWindowsOnly" xml:space="preserve"><value>Прямая загрузка поддерживается только в Windows 10/11 x64.</value></data>
+  <data name="InstallerPreparingDirectDownload" xml:space="preserve"><value>Подготовка загрузки с gyan.dev…</value></data>
+  <data name="InstallerInstallingWithWinget" xml:space="preserve"><value>Выполняется установка через WinGet…</value></data>
+  <data name="InstallerDirectFallbackNoWinget" xml:space="preserve"><value>WinGet недоступен. Используется прямая загрузка FFmpeg.</value></data>
+  <data name="InstallerDirectFallbackFailedWinget" xml:space="preserve"><value>Установка через WinGet не завершилась. Используется прямая загрузка FFmpeg.</value></data>
+  <data name="InstallerDirectDownloadLocation" xml:space="preserve"><value>Прямая загрузка с gyan.dev выполняется в пользовательский каталог. PATH не изменяется.</value></data>
+  <data name="InstallerCheckingAfterInstall" xml:space="preserve"><value>Проверка компонентов после установки…</value></data>
+  <data name="InstallerVerificationFailed" xml:space="preserve"><value>Повторная проверка не подтвердила готовность обеих утилит. Повторите проверку или укажите пути вручную.</value></data>
+  <data name="InstallerInstallCancelled" xml:space="preserve"><value>Установка отменена. Можно повторить попытку.</value></data>
+  <data name="InstallerCheckingTools" xml:space="preserve"><value>Проверка утилит…</value></data>
+  <data name="InstallerBuildSourceBoth" xml:space="preserve"><value>Источник сборок FFmpeg и FFprobe: gyan.dev</value></data>
+  <data name="InstallerBuildSourceFfmpeg" xml:space="preserve"><value>Источник сборки FFmpeg: gyan.dev</value></data>
+  <data name="InstallerBuildSourceFfprobe" xml:space="preserve"><value>Источник сборки FFprobe: gyan.dev</value></data>
+  <data name="InstallerReadyVersions" xml:space="preserve"><value>Готово. FFmpeg {0}, FFprobe {1}.</value></data>
+  <data name="InstallerToolsRequired" xml:space="preserve"><value>FFmpeg и FFprobe требуются для работы с медиафайлами.</value></data>
+  <data name="InstallerBothReady" xml:space="preserve"><value>Обе утилиты готовы.</value></data>
+  <data name="InstallerMissingPrompt" xml:space="preserve"><value>Установите недостающие утилиты или укажите их пути.</value></data>
+  <data name="InstallerFoundVersion" xml:space="preserve"><value>Найден · {0}</value></data>
+  <data name="InstallerNotFound" xml:space="preserve"><value>Не найден</value></data>
+  <data name="InstallerError" xml:space="preserve"><value>Ошибка</value></data>
+  <data name="InstallerCheckingBrief" xml:space="preserve"><value>Проверяется…</value></data>
+  <data name="ToolsSavedPathsReadFailed" xml:space="preserve"><value>Не удалось прочитать сохранённые пути. Проверьте файл пользовательских настроек.</value></data>
+  <data name="ToolsFileNotFound" xml:space="preserve"><value>Файл не найден.</value></data>
+  <data name="ToolsFileNotFoundPath" xml:space="preserve"><value>Файл не найден: {0}</value></data>
+  <data name="ToolsRecoveredPathsSaveFailed" xml:space="preserve"><value>Рабочие утилиты найдены, но пути не удалось сохранить. Проверьте доступ к пользовательским настройкам.</value></data>
+  <data name="ToolsManualPathSaveFailed" xml:space="preserve"><value>Утилита работает, но путь не удалось сохранить. Проверьте доступ к пользовательским настройкам.</value></data>
+  <data name="ToolsWingetOption" xml:space="preserve"><value>Доступен WinGet для установки пакета Gyan.FFmpeg.</value></data>
+  <data name="ToolsWingetSourceFallback" xml:space="preserve"><value>Источник WinGet не ответил. Доступна резервная загрузка с gyan.dev.</value></data>
+  <data name="ToolsNoWingetFallback" xml:space="preserve"><value>WinGet недоступен. Доступна резервная загрузка с gyan.dev.</value></data>
+  <data name="ToolsInstallSourcesUnavailable" xml:space="preserve"><value>Не удалось связаться с источниками установки. Проверьте подключение к интернету и повторите попытку</value></data>
+  <data name="ToolsMacBrewOption" xml:space="preserve"><value>Выполните в терминале: brew install ffmpeg. Затем нажмите «Проверить повторно». Homebrew из приложения не запускается; прямая загрузка сборок macOS не поддерживается. Альтернатива: https://ffmpeg.org/download.html и ручное указание путей.</value></data>
+  <data name="ToolsMacNoBrewOption" xml:space="preserve"><value>Homebrew не найден. Установите Homebrew с https://brew.sh и выполните brew install ffmpeg либо укажите пути вручную. Автоматическая загрузка сборок macOS не поддерживается.</value></data>
+  <data name="ToolsLinuxManagerOption" xml:space="preserve"><value>Выполните в терминале: {0}. Наличие пакета зависит от репозиториев дистрибутива. Затем нажмите «Проверить повторно». Если пакет недоступен, см. https://ffmpeg.org/download.html или укажите пути вручную. Универсальная прямая загрузка для Linux не поддерживается.</value></data>
+  <data name="ToolsLinuxNoManagerOption" xml:space="preserve"><value>Поддерживаемый пакетный менеджер не найден. Выберите пакет для своего дистрибутива и архитектуры на https://ffmpeg.org/download.html и укажите пути вручную. Универсальная прямая загрузка для Linux не поддерживается.</value></data>
+  <data name="ToolsManualInstallOption" xml:space="preserve"><value>Установите FFmpeg вручную и нажмите «Проверить повторно».</value></data>
+  <data name="ToolsAlreadyInstalled" xml:space="preserve"><value>FFmpeg и FFprobe уже найдены и готовы. Повторная установка не требуется.</value></data>
+  <data name="ToolsWingetUnavailable" xml:space="preserve"><value>WinGet недоступен.</value></data>
+  <data name="ToolsVerifiedReady" xml:space="preserve"><value>FFmpeg и FFprobe проверены и готовы.</value></data>
+  <data name="ToolsWingetExitFailure" xml:space="preserve"><value>WinGet не установил FFmpeg (код завершения {0}).</value></data>
+  <data name="ToolsWingetMissingAfterInstall" xml:space="preserve"><value>WinGet завершился, но обе работоспособные утилиты не найдены. Можно повторить проверку после перезапуска приложения.</value></data>
+  <data name="ToolsWingetTimeout" xml:space="preserve"><value>Время ожидания WinGet истекло. Повторите проверку.</value></data>
+  <data name="ToolsWingetInstallFailed" xml:space="preserve"><value>Не удалось завершить установку через WinGet. Проверьте права доступа или попробуйте резервный способ.</value></data>
+  <data name="ToolsDirectDownloadAdvice" xml:space="preserve"><value> Доступна резервная загрузка с gyan.dev в пользовательский каталог. PATH не изменится.</value></data>
+  <data name="ToolsFailureWithAdvice" xml:space="preserve"><value>{0}{1}</value></data>
+  <data name="ToolsManualArchitectureAdvice" xml:space="preserve"><value> Прямая загрузка поддерживается только для Windows 10/11 x64. Для этой архитектуры укажите совместимые утилиты вручную: https://ffmpeg.org/download.html.</value></data>
+  <data name="ToolsExecutableExitFailure" xml:space="preserve"><value>{0}: ошибка выполнения (код завершения {1}).</value></data>
+  <data name="ToolsWrongExecutable" xml:space="preserve"><value>{0}: неверный исполняемый файл — ответ на -version не соответствует утилите.</value></data>
+  <data name="ToolsVersionTimeout" xml:space="preserve"><value>{0}: превышено время ожидания ответа (5 секунд).</value></data>
+  <data name="ToolsLaunchFailed" xml:space="preserve"><value>{0}: ошибка запуска. Проверьте права доступа и совместимость файла.</value></data>
+  <data name="ToolsDirectDownloadWindowsOnly" xml:space="preserve"><value>Прямая загрузка доступна только для Windows 10/11 x64. Укажите совместимые утилиты вручную.</value></data>
+  <data name="ToolsAlreadyDownloaded" xml:space="preserve"><value>FFmpeg и FFprobe уже найдены и готовы. Повторная загрузка не требуется.</value></data>
+  <data name="ToolsDownloadingChecksum" xml:space="preserve"><value>Получение контрольной суммы с gyan.dev…</value></data>
+  <data name="ToolsDownloadingArchive" xml:space="preserve"><value>Загрузка FFmpeg и FFprobe с gyan.dev…</value></data>
+  <data name="ToolsCheckingChecksum" xml:space="preserve"><value>Проверка SHA-256…</value></data>
+  <data name="ToolsExtractingArchive" xml:space="preserve"><value>Безопасная распаковка архива…</value></data>
+  <data name="ToolsCheckingDownloadedExecutables" xml:space="preserve"><value>Проверка установленных FFmpeg и FFprobe…</value></data>
+  <data name="ToolsDownloadedReady" xml:space="preserve"><value>FFmpeg и FFprobe установлены в пользовательский каталог и доступны Track Extractor. В PATH они не добавлены, поэтому короткие команды в терминале не работают.</value></data>
+  <data name="ToolsDownloadTimeout" xml:space="preserve"><value>Истекло время загрузки или установки (20 минут). Проверьте сеть и повторите попытку.</value></data>
+  <data name="ToolsDownloadHttpFailure" xml:space="preserve"><value>Сервер загрузки сейчас недоступен (HTTP {0}). Повторите попытку позже.</value></data>
+  <data name="ToolsDownloadNetworkFailure" xml:space="preserve"><value>Соединение с сервером загрузки прервалось или не установлено. Проверьте сеть и повторите попытку.</value></data>
+  <data name="ToolsDownloadChecksumFailure" xml:space="preserve"><value>Не удалось проверить SHA-256 архива. Файлы не запускались; повторите загрузку.</value></data>
+  <data name="ToolsDownloadArchiveFailure" xml:space="preserve"><value>Полученный архив повреждён, неполон или небезопасен. Файлы не запускались; повторите загрузку.</value></data>
+  <data name="ToolsDownloadWriteFailure" xml:space="preserve"><value>Не удалось записать файлы в пользовательский каталог. Проверьте свободное место и права доступа.</value></data>
+  <data name="ToolsDownloadComplete" xml:space="preserve"><value>Загрузка завершена.</value></data>
+  <data name="ToolsDownloadProgressOf" xml:space="preserve"><value>Загружено {0:F1} из {1:F1} МБ</value></data>
+  <data name="ToolsDownloadProgress" xml:space="preserve"><value>Загружено {0:F1} МБ</value></data>
+  <data name="MainPath" xml:space="preserve"><value>Путь:</value></data>
+  <data name="MainAudioFormat" xml:space="preserve"><value>Формат аудио</value></data>
+  <data name="MainColumnLanguage" xml:space="preserve"><value>Язык</value></data>
+  <data name="MainClose" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="MainColumnDetails" xml:space="preserve"><value>Каналы / Разрешение</value></data>
+  <data name="MainColumnBitrate" xml:space="preserve"><value>Битрейт</value></data>
+  <data name="MainSaveLog" xml:space="preserve"><value>Сохранить лог</value></data>
+  <data name="MainSaveFolder" xml:space="preserve"><value>Папка для сохранения</value></data>
+  <data name="MainClear" xml:space="preserve"><value>Очистить</value></data>
+  <data name="MainGroupLanguages" xml:space="preserve"><value>Разбивать по языкам (создать подпапки)</value></data>
+  <data name="MainColumnType" xml:space="preserve"><value>Тип</value></data>
+  <data name="MainSaveMetadata" xml:space="preserve"><value>Сохранять метаданные</value></data>
+  <data name="MainSelectAll" xml:space="preserve"><value>Выбрать все потоки или снять выбор</value></data>
+  <data name="MainColumnCodec" xml:space="preserve"><value>Кодек</value></data>
+  <data name="MainSubtitleFormat" xml:space="preserve"><value>Формат субтитров</value></data>
+  <data name="MainDropReplace" xml:space="preserve"><value>Перетащите другой файл для замены</value></data>
+  <data name="MainVideo" xml:space="preserve"><value>Видео:</value></data>
+  <data name="MainBrowse" xml:space="preserve"><value>Обзор</value></data>
+  <data name="MainFileLoaded" xml:space="preserve"><value>Файл успешно загружен</value></data>
+  <data name="MainAudio" xml:space="preserve"><value>Аудио:</value></data>
+  <data name="MainColumnStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="MainMinimize" xml:space="preserve"><value>Свернуть</value></data>
+  <data name="MainFileInfo" xml:space="preserve"><value>Информация о файле</value></data>
+  <data name="MainOpenFolder" xml:space="preserve"><value>Открыть папку</value></data>
+  <data name="MainChooseFile" xml:space="preserve"><value>Выбрать файл</value></data>
+  <data name="MainSubtitles" xml:space="preserve"><value>Субтитры:</value></data>
+  <data name="MainColumnIndex" xml:space="preserve"><value>Индекс</value></data>
+  <data name="MainFormat" xml:space="preserve"><value>Формат:</value></data>
+  <data name="MainExportSettings" xml:space="preserve"><value>Настройки извлечения</value></data>
+  <data name="MainEventLog" xml:space="preserve"><value>Журнал событий</value></data>
+  <data name="MainSourceFolder" xml:space="preserve"><value>Создавать папку с названием исходного файла</value></data>
+  <data name="MainDuration" xml:space="preserve"><value>Длительность:</value></data>
+  <data name="MainConfigure" xml:space="preserve"><value>Настроить</value></data>
+  <data name="MainVideoFormat" xml:space="preserve"><value>Формат видео</value></data>
+  <data name="MainMaximizeRestore" xml:space="preserve"><value>Развернуть или восстановить</value></data>
+  <data name="MainSize" xml:space="preserve"><value>Размер:</value></data>
+  <data name="MainDropFile" xml:space="preserve"><value>Перетащите сюда видеофайл</value></data>
+  <data name="MainChooseFolder" xml:space="preserve"><value>Выберите папку</value></data>
+  <data name="MainStreamProperties" xml:space="preserve"><value>Свойства потока</value></data>
+  <data name="MainSourceFile" xml:space="preserve"><value>Исходный файл</value></data>
+  <data name="MainClearSelectedFile" xml:space="preserve"><value>Очистить выбранный файл</value></data>
+  <data name="MainFutureAttachments" xml:space="preserve"><value>Извлекать вложения MKV — в будущих версиях</value></data>
+  <data name="MainSupportedFormats" xml:space="preserve"><value>Поддерживаемые форматы: MP4, MKV, MOV, AVI, WebM и другие.</value></data>
+  <data name="MainNoFile" xml:space="preserve"><value>Файл не выбран</value></data>
+  <data name="MainSelectFolderAndTracks" xml:space="preserve"><value>Выберите папку и дорожки.</value></data>
+  <data name="MainTracksHeading" xml:space="preserve"><value>Найденные медиапотоки ({0})</value></data>
+  <data name="MainSelectedCount" xml:space="preserve"><value>Выбрано: {0}</value></data>
+  <data name="MainProcess" xml:space="preserve"><value>Обработать</value></data>
+  <data name="MainExtract" xml:space="preserve"><value>Извлечь</value></data>
+  <data name="MainCheckingDependencies" xml:space="preserve"><value>Проверка зависимостей…</value></data>
+  <data name="MainNeedTools" xml:space="preserve"><value>Нужны FFmpeg и FFprobe</value></data>
+  <data name="MainAnalyzingFile" xml:space="preserve"><value>Анализ файла…</value></data>
+  <data name="MainProcessing" xml:space="preserve"><value>Идёт обработка...</value></data>
+  <data name="MainAnalysisError" xml:space="preserve"><value>Ошибка анализа</value></data>
+  <data name="MainReady" xml:space="preserve"><value>Готов к работе</value></data>
+  <data name="MainChooseOrDropFile" xml:space="preserve"><value>Выберите файл или перетащите его в область слева</value></data>
+  <data name="MainBytesExact" xml:space="preserve"><value>{0:N0} байт</value></data>
+  <data name="MainSelectFileAndTracks" xml:space="preserve"><value>Выберите файл и дорожки.</value></data>
+  <data name="MainStopBeforeFile" xml:space="preserve"><value>Сначала остановите или завершите извлечение.</value></data>
+  <data name="MainInstallBeforeFile" xml:space="preserve"><value>Для выбора файла сначала установите FFmpeg и FFprobe.</value></data>
+  <data name="MainAnalyzing" xml:space="preserve"><value>Анализируется</value></data>
+  <data name="MainDone" xml:space="preserve"><value>Готово</value></data>
+  <data name="MainAnalysisCancelled" xml:space="preserve"><value>Анализ отменён</value></data>
+  <data name="MainFileNotFound" xml:space="preserve"><value>Файл не найден. Выберите другой файл.</value></data>
+  <data name="MainFileAccessDenied" xml:space="preserve"><value>Нет доступа к файлу или FFprobe.</value></data>
+  <data name="MainProbeLaunchFailed" xml:space="preserve"><value>Не удалось запустить FFprobe. Повторите проверку зависимостей.</value></data>
+  <data name="MainFileReadFailed" xml:space="preserve"><value>Не удалось прочитать файл. Проверьте доступ и повторите попытку.</value></data>
+  <data name="MainFileDamaged" xml:space="preserve"><value>Файл может быть повреждён или не поддерживается.</value></data>
+  <data name="MainInvalidOutputFolder" xml:space="preserve"><value>Недопустимый путь к папке сохранения.</value></data>
+  <data name="MainOutputFolderMissingChoose" xml:space="preserve"><value>Папка сохранения не найдена. Выберите другую папку.</value></data>
+  <data name="MainOutputFolderSelected" xml:space="preserve"><value>Папка выбрана. Совпадающие имена получат номер; существующие файлы сохранятся.</value></data>
+  <data name="MainExportRequirements" xml:space="preserve"><value>Выберите доступные дорожки и папку сохранения; проверьте FFmpeg и FFprobe.</value></data>
+  <data name="MainPreparingExport" xml:space="preserve"><value>Подготовка обработки...</value></data>
+  <data name="MainStatusWithTime" xml:space="preserve"><value>{0} Время: {1}</value></data>
+  <data name="MainAwaitingExtraction" xml:space="preserve"><value>Ожидает извлечения.</value></data>
+  <data name="MainGroupedProgress" xml:space="preserve"><value>{0} ({1}–{2} из {3})</value></data>
+  <data name="MainStreamProgress" xml:space="preserve"><value>Поток #{0} ({1} из {2})</value></data>
+  <data name="MainStatusWithTotalTime" xml:space="preserve"><value>{0} Общее время: {1}</value></data>
+  <data name="MainExportComplete" xml:space="preserve"><value>Все выбранные дорожки обработаны.</value></data>
+  <data name="MainExportCancelled" xml:space="preserve"><value>Извлечение остановлено. Готовые файлы сохранены.</value></data>
+  <data name="MainExportPartial" xml:space="preserve"><value>Очередь завершена с ошибками. Готовые файлы сохранены.</value></data>
+  <data name="MainExtractionCancelled" xml:space="preserve"><value>Извлечение отменено.</value></data>
+  <data name="MainExportStartFailed" xml:space="preserve"><value>Не удалось начать извлечение.</value></data>
+  <data name="MainSourceMissing" xml:space="preserve"><value>Исходный файл не найден.</value></data>
+  <data name="MainOutputFolderMissing" xml:space="preserve"><value>Папка сохранения не найдена.</value></data>
+  <data name="MainOutputFolderAccessDenied" xml:space="preserve"><value>Нет доступа к папке сохранения.</value></data>
+  <data name="MainExtractionError" xml:space="preserve"><value>Ошибка извлечения.</value></data>
+  <data name="MainExportErrorAdvice" xml:space="preserve"><value>Ошибка извлечения. Проверьте лог и повторите попытку.</value></data>
+  <data name="MainEmptyStreams" xml:space="preserve"><value>Добавьте файл, чтобы увидеть его потоки.</value></data>
+  <data name="MainToolsCheckFailed" xml:space="preserve"><value>Не удалось проверить утилиты: {0}</value></data>
+  <data name="MainFormatMp4" xml:space="preserve"><value>MP4 — высокая совместимость</value></data>
+  <data name="MainFormatMkv" xml:space="preserve"><value>MKV — гибкий контейнер</value></data>
+  <data name="MainFormatMov" xml:space="preserve"><value>MOV — видео QuickTime</value></data>
+  <data name="MainFormatAvi" xml:space="preserve"><value>AVI — классический контейнер</value></data>
+  <data name="MainFormatWebm" xml:space="preserve"><value>WebM — видео для веба</value></data>
+  <data name="MainFormatMp3" xml:space="preserve"><value>MP3 — компактный звук</value></data>
+  <data name="MainFormatWav" xml:space="preserve"><value>WAV — несжатый звук</value></data>
+  <data name="MainFormatFlac" xml:space="preserve"><value>FLAC — без потерь</value></data>
+  <data name="MainFormatAac" xml:space="preserve"><value>AAC — компактный звук</value></data>
+  <data name="MainFormatAc3" xml:space="preserve"><value>AC3 — многоканальный звук</value></data>
+  <data name="MainFormatOgg" xml:space="preserve"><value>OGG — открытый контейнер</value></data>
+  <data name="MainFormatOpus" xml:space="preserve"><value>Opus — эффективное сжатие</value></data>
+  <data name="MainFormatSrt" xml:space="preserve"><value>SRT — текстовые субтитры</value></data>
+  <data name="MainFormatAss" xml:space="preserve"><value>ASS — стили и оформление</value></data>
+  <data name="MainFormatWebvtt" xml:space="preserve"><value>WebVTT — субтитры для веба</value></data>
+  <data name="MainOriginalSubtitles" xml:space="preserve"><value>{0} — исходный — текстовые субтитры</value></data>
+  <data name="MainOriginalCompressedAudio" xml:space="preserve"><value>{0} — исходный — сжатый звук</value></data>
+  <data name="MainOriginalMultichannelAudio" xml:space="preserve"><value>{0} — исходный — многоканальный звук</value></data>
+  <data name="MainOriginalAudio" xml:space="preserve"><value>{0} — исходный — исходный звук</value></data>
+  <data name="MainOriginalVideo" xml:space="preserve"><value>{0} — исходный — видео; файл .{1}</value></data>
+  <data name="MainOriginalNoTranscode" xml:space="preserve"><value>Исходный — без перекодирования</value></data>
+  <data name="MainFormatsReadFailed" xml:space="preserve"><value>Не удалось прочитать форматы FFmpeg.</value></data>
+  <data name="MainConversionUnavailable" xml:space="preserve"><value>Для выбранного потока конвертация недоступна.</value></data>
+  <data name="MainNoSuitableEncoder" xml:space="preserve"><value>Нет подходящего кодировщика для этого формата.</value></data>
+  <data name="MainCustomFormat" xml:space="preserve"><value>{0} — пользовательская настройка</value></data>
+  <data name="MainPickMediaFile" xml:space="preserve"><value>Выберите медиафайл</value></data>
+  <data name="MainFilePickFailed" xml:space="preserve"><value>Не удалось выбрать файл. Проверьте доступ и повторите попытку.</value></data>
+  <data name="MainDropOneLocalFile" xml:space="preserve"><value>Перетащите один локальный файл.</value></data>
+  <data name="MainDropOpenFailed" xml:space="preserve"><value>Не удалось открыть перетащенный файл.</value></data>
+  <data name="MainPickLocalFile" xml:space="preserve"><value>Выберите локальный файл.</value></data>
+  <data name="MainPickSaveFolder" xml:space="preserve"><value>Выберите папку сохранения</value></data>
+  <data name="MainPickLocalFolder" xml:space="preserve"><value>Выберите локальную папку сохранения.</value></data>
+  <data name="MainFolderPickFailed" xml:space="preserve"><value>Не удалось выбрать папку. Проверьте доступ к ней.</value></data>
+  <data name="MainResultFolderMissing" xml:space="preserve"><value>Папка результатов не найдена. Выберите существующую папку.</value></data>
+  <data name="MainResultFolderOpenFailed" xml:space="preserve"><value>Не удалось открыть папку результатов. Проверьте доступ к ней.</value></data>
+  <data name="MainSizeGiB" xml:space="preserve"><value>{0:0.##} ГиБ</value></data>
+  <data name="MainSizeMiB" xml:space="preserve"><value>{0:0.##} МиБ</value></data>
+  <data name="MainSizeKiB" xml:space="preserve"><value>{0:0.##} КиБ</value></data>
+  <data name="MainSizeBytes" xml:space="preserve"><value>{0} байт</value></data>
+  <data name="MainStreamSummary" xml:space="preserve"><value>{0} ({1})</value></data>
+  <data name="MainTrackOne" xml:space="preserve"><value>дорожка</value></data>
+  <data name="MainTrackFew" xml:space="preserve"><value>дорожки</value></data>
+  <data name="MainTrackMany" xml:space="preserve"><value>дорожек</value></data>
+  <data name="MainBitrateMbps" xml:space="preserve"><value>{0:0.##} Мбит/с</value></data>
+  <data name="MainBitrateKbps" xml:space="preserve"><value>{0:0.##} Кбит/с</value></data>
+  <data name="MainBitrateBps" xml:space="preserve"><value>{0} бит/с</value></data>
+  <data name="MainConversionAfterSetup" xml:space="preserve"><value>Доступна конвертация после настройки.</value></data>
+  <data name="MainUnavailableReason" xml:space="preserve"><value>Недоступно: {0}</value></data>
+  <data name="MainNotSelected" xml:space="preserve"><value>Не выбран</value></data>
+  <data name="MainModeExtract" xml:space="preserve"><value>Извлечение</value></data>
+  <data name="MainModeConvert" xml:space="preserve"><value>Конвертация</value></data>
+  <data name="MainCopyPreview" xml:space="preserve"><value>.{0} · без перекодирования</value></data>
+  <data name="MainCopyFormatUnknown" xml:space="preserve"><value>Для извлечения формат не определён</value></data>
+  <data name="MainConvertingTo" xml:space="preserve"><value>Конвертация в {0} ({1}).</value></data>
+  <data name="MainCopyingTo" xml:space="preserve"><value>Копирование в {0} без перекодирования.</value></data>
+  <data name="MainTypeCover" xml:space="preserve"><value>Обложка</value></data>
+  <data name="MainTypeImage" xml:space="preserve"><value>Изображение</value></data>
+  <data name="MainTypeAnimation" xml:space="preserve"><value>Анимация</value></data>
+  <data name="MainTypeVideo" xml:space="preserve"><value>Видео</value></data>
+  <data name="MainTypeAudio" xml:space="preserve"><value>Аудио</value></data>
+  <data name="MainTypeSubtitle" xml:space="preserve"><value>Субтитры</value></data>
+  <data name="MainTypeAttachment" xml:space="preserve"><value>Вложение</value></data>
+  <data name="MainTypeOther" xml:space="preserve"><value>Другой</value></data>
+  <data name="MainMediaSummary" xml:space="preserve"><value>{0}&#10;{1}&#10;Размер: {2:N0} байт; контейнер: {3}; длительность: {4}; битрейт: {5}&#10;Видео: {6}; изображения: {7}; анимации: {8}; аудио: {9}; субтитры: {10}; неопределённые визуальные: {11}; всего потоков: {12}</value></data>
+  <data name="MainDescriptionResolutionUnknown" xml:space="preserve"><value>разрешение: —</value></data>
+  <data name="MainDescriptionFps" xml:space="preserve"><value>{0:0.##} кадр/с</value></data>
+  <data name="MainDescriptionFpsUnknown" xml:space="preserve"><value>FPS: —</value></data>
+  <data name="MainDescriptionDuration" xml:space="preserve"><value>длительность: {0}</value></data>
+  <data name="MainDescriptionChannels" xml:space="preserve"><value>{0} канал(ов)</value></data>
+  <data name="MainDescriptionChannelsUnknown" xml:space="preserve"><value>каналы: —</value></data>
+  <data name="MainDescriptionSampleRate" xml:space="preserve"><value>{0} Гц</value></data>
+  <data name="MainDescriptionSampleRateUnknown" xml:space="preserve"><value>частота: —</value></data>
+  <data name="MainDescriptionText" xml:space="preserve"><value>текстовые</value></data>
+  <data name="MainDescriptionGraphic" xml:space="preserve"><value>графические</value></data>
+  <data name="MainDescriptionCover" xml:space="preserve"><value>Изображение (обложка)</value></data>
+  <data name="MainDescriptionUnknownVisual" xml:space="preserve"><value>Неопределённый визуальный поток</value></data>
+  <data name="MainDescriptionUnknownType" xml:space="preserve"><value>Неизвестный тип</value></data>
+  <data name="MainChannelOne" xml:space="preserve"><value>канал</value></data>
+  <data name="MainChannelFew" xml:space="preserve"><value>канала</value></data>
+  <data name="MainChannelMany" xml:space="preserve"><value>каналов</value></data>
+  <data name="MainChannelsUnknown" xml:space="preserve"><value>Каналы: —</value></data>
+  <data name="MainSubtitleText" xml:space="preserve"><value>Текстовые</value></data>
+  <data name="MainSubtitleGraphic" xml:space="preserve"><value>Графические</value></data>
+  <data name="MainStatusUnavailable" xml:space="preserve"><value>Недоступен</value></data>
+  <data name="MainStatusExtracting" xml:space="preserve"><value>Извлекается</value></data>
+  <data name="MainStatusConverting" xml:space="preserve"><value>Конвертируется</value></data>
+  <data name="MainStatusExtracted" xml:space="preserve"><value>Извлечён</value></data>
+  <data name="MainStatusConverted" xml:space="preserve"><value>Сконвертирован</value></data>
+  <data name="MainStatusCancelled" xml:space="preserve"><value>Отменено</value></data>
+  <data name="MainStatusConversionAvailable" xml:space="preserve"><value>Доступна конвертация</value></data>
+  <data name="MainStatusAvailable" xml:space="preserve"><value>Доступен</value></data>
+  <data name="MainStatusNeedsSetup" xml:space="preserve"><value>Нужна настройка</value></data>
+  <data name="MainReasonNoStreamIndex" xml:space="preserve"><value>FFprobe не сообщил индекс потока.</value></data>
+  <data name="MainReasonUnknownCodec" xml:space="preserve"><value>Кодек не определён; безопасный формат без перекодирования неизвестен.</value></data>
+  <data name="MainReasonAnimation" xml:space="preserve"><value>Анимации пока только анализируются; извлечение добавим отдельно.</value></data>
+  <data name="MainReasonUnknownVisual" xml:space="preserve"><value>Не удалось надёжно отличить видео от изображения.</value></data>
+  <data name="MainReasonUnknownAttachmentFormat" xml:space="preserve"><value>Формат графического вложения не подтверждён для извлечения без перекодирования.</value></data>
+  <data name="MainReasonStandaloneImage" xml:space="preserve"><value>Это отдельное изображение, а не дорожка медиаконтейнера.</value></data>
+  <data name="MainReasonUnsupportedStreamType" xml:space="preserve"><value>Этот тип потока пока нельзя извлечь без перекодирования.</value></data>
+  <data name="MainReasonUnsupportedCodec" xml:space="preserve"><value>Для кодека {0} нет подтверждённого способа копирования в отдельный файл.</value></data>
+  <data name="MainProgressExtractingTo" xml:space="preserve"><value>Поток #{0}: извлечение в {1}</value></data>
+  <data name="MainProgressConvertingTo" xml:space="preserve"><value>Поток #{0}: конвертация в {1}</value></data>
+  <data name="MainProgressFfmpegPosition" xml:space="preserve"><value>Поток #{0}: позиция FFmpeg {1}</value></data>
+  <data name="MainProgressStream" xml:space="preserve"><value>Поток #{0}</value></data>
+  <data name="MainProgressWithPercent" xml:space="preserve"><value>{0} · {1:0.#}%</value></data>
+  <data name="MainProgressAttachment" xml:space="preserve"><value>Поток #{0}: копирование вложения Matroska, {1:P0}</value></data>
+  <data name="MainResultSaved" xml:space="preserve"><value>Сохранён: {0}; {1}; {2}</value></data>
+  <data name="MainResultCancelledAfter" xml:space="preserve"><value>Обработка отменена через {0}.</value></data>
+  <data name="MainResultCancelled" xml:space="preserve"><value>Обработка отменена.</value></data>
+  <data name="MainResultTimeout" xml:space="preserve"><value>Превышено время ожидания извлечения ({0}).</value></data>
+  <data name="MainResultOutputAccessDenied" xml:space="preserve"><value>Нет доступа к папке или выходному файлу.</value></data>
+  <data name="MainResultWriteFailed" xml:space="preserve"><value>Не удалось записать файл. Проверьте свободное место и права доступа.</value></data>
+  <data name="MainResultFfmpegLaunchFailed" xml:space="preserve"><value>Не удалось запустить FFmpeg. Повторите проверку зависимостей.</value></data>
+  <data name="MainResultUnexpectedFailure" xml:space="preserve"><value>Не удалось извлечь поток. Время: {0}. Проверьте лог и повторите попытку.</value></data>
+  <data name="MainResultNotStartedCancelled" xml:space="preserve"><value>Не запускалось из-за отмены.</value></data>
+  <data name="MainAllTracksExtracted" xml:space="preserve"><value>Все дорожки извлечены.</value></data>
+  <data name="MainProgressSharedPass" xml:space="preserve"><value>Поток #{0}: общий проход FFmpeg</value></data>
+  <data name="MainProgressStreams" xml:space="preserve"><value>Потоки {0}</value></data>
+  <data name="MainResultSaveStreamFailed" xml:space="preserve"><value>Не удалось сохранить поток #{0}. Время: {1}.</value></data>
+  <data name="MainResultExtractionCancelledAfter" xml:space="preserve"><value>Извлечение отменено через {0}.</value></data>
+  <data name="MainResultFfmpegTimeout" xml:space="preserve"><value>Превышено время ожидания FFmpeg ({0}).</value></data>
+  <data name="MainResultSizeGb" xml:space="preserve"><value>{0:0.##} ГБ</value></data>
+  <data name="MainResultSizeMb" xml:space="preserve"><value>{0:0.##} МБ</value></data>
+  <data name="MainResultSizeKb" xml:space="preserve"><value>{0:0.##} КБ</value></data>
+  <data name="MainResultFfmpegExitCode" xml:space="preserve"><value>FFmpeg завершился с кодом {0}.</value></data>
+  <data name="MainResultTechnicalDetail" xml:space="preserve"><value>{0} {1}</value></data>
+  <data name="MainResultEmptyOutput" xml:space="preserve"><value>Не создан непустой файл дорожки.</value></data>
+  <data name="MainResultFailureWithTime" xml:space="preserve"><value>{0} Время: {1}.</value></data>
+  <data name="MainValidationUnsupportedType" xml:space="preserve"><value>Выбранный формат не поддерживает этот тип потока.</value></data>
+  <data name="MainValidationInvalidName" xml:space="preserve"><value>Некорректное имя выходного формата или кодировщика.</value></data>
+  <data name="MainValidationGraphicSubtitle" xml:space="preserve"><value>Графические субтитры нельзя преобразовать в текст без OCR.</value></data>
+  <data name="MainValidationSubtitleEncoder" xml:space="preserve"><value>Выбранный кодировщик не создаёт текстовые субтитры.</value></data>
+  <data name="MainValidationOutOfRange" xml:space="preserve"><value>Параметры конвертации выходят за допустимые пределы.</value></data>
+  <data name="MainValidationWrongTypeParameters" xml:space="preserve"><value>Параметры не соответствуют типу потока.</value></data>
+  <data name="MainValidationUnsupportedOutputFormat" xml:space="preserve"><value>Этот тип потока не поддерживается выходным форматом.</value></data>
+  <data name="MainValidationProbeFileFailed" xml:space="preserve"><value>Кодировщик {0} найден в FFmpeg, но не смог создать пробный файл в формате {1} (код FFmpeg: {2}).</value></data>
+  <data name="MainValidationEncoderTimeout" xml:space="preserve"><value>Проверка кодировщика {0} превысила время ожидания.</value></data>
+  <data name="MainValidationEncoderCheckFailed" xml:space="preserve"><value>Не удалось проверить кодировщик {0} с форматом {1}.</value></data>
+  <data name="ConversionBitrate" xml:space="preserve"><value>Битрейт, Кбит/с</value></data>
+  <data name="ConversionVideoOptions" xml:space="preserve"><value>Параметры видео</value></data>
+  <data name="ConversionWidth" xml:space="preserve"><value>Ширина, пикс.</value></data>
+  <data name="ConversionFindHardware" xml:space="preserve"><value>Найти доступные аппаратные кодировщики</value></data>
+  <data name="ConversionFindCompatible" xml:space="preserve"><value>Найти другие совместимые кодировщики</value></data>
+  <data name="ConversionChannels" xml:space="preserve"><value>Каналы</value></data>
+  <data name="ConversionAutomatic" xml:space="preserve"><value>Автоматически</value></data>
+  <data name="ConversionCancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="ConversionOutputFormat" xml:space="preserve"><value>Выходной контейнер / формат</value></data>
+  <data name="ConversionAudioOptions" xml:space="preserve"><value>Параметры аудио</value></data>
+  <data name="ConversionFrameRate" xml:space="preserve"><value>Частота кадров, кадр/с</value></data>
+  <data name="ConversionWindowTitle" xml:space="preserve"><value>Расширенные настройки конвертации</value></data>
+  <data name="ConversionCrf" xml:space="preserve"><value>Качество / CRF</value></data>
+  <data name="ConversionHeight" xml:space="preserve"><value>Высота, пикс.</value></data>
+  <data name="ConversionApply" xml:space="preserve"><value>Применить</value></data>
+  <data name="ConversionEncoder" xml:space="preserve"><value>Кодировщик</value></data>
+  <data name="ConversionSampleRate" xml:space="preserve"><value>Частота, Гц</value></data>
+  <data name="ConversionQuality" xml:space="preserve"><value>Качество, 0–10</value></data>
+  <data name="ConversionSeparateFilesHint" xml:space="preserve"><value>Каждый поток сохраняется в отдельный файл. Пустые поля означают «Автоматически».</value></data>
+  <data name="ConversionHeadingVideo" xml:space="preserve"><value>Настройки конвертации видео</value></data>
+  <data name="ConversionHeadingAudio" xml:space="preserve"><value>Настройки конвертации аудио</value></data>
+  <data name="ConversionHeadingSubtitles" xml:space="preserve"><value>Настройки конвертации субтитров</value></data>
+  <data name="ConversionCopyEncoderDescription" xml:space="preserve"><value>копирование без перекодирования</value></data>
+  <data name="ConversionCopyNote" xml:space="preserve"><value>Оригинальный поток будет скопирован без перекодирования.</value></data>
+  <data name="ConversionOtherEncodersHint" xml:space="preserve"><value>Другие кодировщики можно проверить для выбранного формата.</value></data>
+  <data name="ConversionCheckingAdditional" xml:space="preserve"><value>Проверка дополнительных кодировщиков…</value></data>
+  <data name="ConversionConfirmedCompatibleCount" xml:space="preserve"><value>Подтверждено совместимых кодировщиков: {0}.</value></data>
+  <data name="ConversionAdditionalCancelled" xml:space="preserve"><value>Проверка кодировщиков отменена.</value></data>
+  <data name="ConversionAdditionalFailed" xml:space="preserve"><value>Не удалось проверить дополнительные кодировщики.</value></data>
+  <data name="ConversionCheckingHardware" xml:space="preserve"><value>Проверка аппаратных кодировщиков…</value></data>
+  <data name="ConversionHardwareSearchFailedDetails" xml:space="preserve"><value>Не удалось завершить проверку аппаратных кодировщиков. Подробности в диагностическом журнале.</value></data>
+  <data name="ConversionHardwareFoundCount" xml:space="preserve"><value>Найдено {0} доступных аппаратных кодировщиков.</value></data>
+  <data name="ConversionHardwareNotFound" xml:space="preserve"><value>Доступные аппаратные кодировщики не найдены.</value></data>
+  <data name="ConversionHardwareCancelled" xml:space="preserve"><value>Проверка аппаратных кодировщиков отменена.</value></data>
+  <data name="ConversionHardwareFailed" xml:space="preserve"><value>Не удалось проверить аппаратные кодировщики.</value></data>
+  <data name="ConversionSelectFormatAndEncoder" xml:space="preserve"><value>Выберите выходной формат и кодировщик.</value></data>
+  <data name="ConversionCheckingCompatibility" xml:space="preserve"><value>Проверяется совместимость кодировщика и выходного формата…</value></data>
+  <data name="ConversionNumbersOrEmpty" xml:space="preserve"><value>Введите числовые значения или оставьте поля пустыми.</value></data>
+  <data name="ConversionNumberTooLarge" xml:space="preserve"><value>Числовое значение слишком велико.</value></data>
+  <data name="ConversionCheckCancelled" xml:space="preserve"><value>Проверка отменена.</value></data>
+  <data name="ConversionCheckParametersFailed" xml:space="preserve"><value>Не удалось проверить параметры. Проверьте доступность FFmpeg.</value></data>
+  <data name="StreamPropertiesTitle" xml:space="preserve"><value>Свойства потока #{0}</value></data>
+  <data name="StreamNotSpecified" xml:space="preserve"><value>Не указан</value></data>
+  <data name="StreamUnknownLanguage" xml:space="preserve"><value>Неизвестный язык</value></data>
+  <data name="StreamSourceIndex" xml:space="preserve"><value>Исходный индекс</value></data>
+  <data name="StreamTitle" xml:space="preserve"><value>Название</value></data>
+  <data name="StreamDuration" xml:space="preserve"><value>Длительность</value></data>
+  <data name="StreamBitRateValue" xml:space="preserve"><value>{0:N0} бит/с</value></data>
+  <data name="StreamResolution" xml:space="preserve"><value>Разрешение</value></data>
+  <data name="StreamResolutionValue" xml:space="preserve"><value>{0} × {1}</value></data>
+  <data name="StreamFrameRate" xml:space="preserve"><value>Частота кадров</value></data>
+  <data name="StreamFrameRateValue" xml:space="preserve"><value>{0:0.###} fps</value></data>
+  <data name="StreamProfile" xml:space="preserve"><value>Профиль</value></data>
+  <data name="StreamPixelFormat" xml:space="preserve"><value>Пиксельный формат</value></data>
+  <data name="StreamSampleRate" xml:space="preserve"><value>Частота дискретизации</value></data>
+  <data name="StreamSampleRateValue" xml:space="preserve"><value>{0:N0} Гц</value></data>
+  <data name="StreamChannelLayout" xml:space="preserve"><value>Расположение каналов</value></data>
+  <data name="StreamFrameCount" xml:space="preserve"><value>Кадров</value></data>
+  <data name="StreamFrameCountValue" xml:space="preserve"><value>{0:N0}</value></data>
+  <data name="StreamImageFormat" xml:space="preserve"><value>Формат изображения</value></data>
+  <data name="StreamTag" xml:space="preserve"><value>Тег: {0}</value></data>
+  <data name="StreamFlag" xml:space="preserve"><value>Флаг: {0}</value></data>
+  <data name="StreamYes" xml:space="preserve"><value>да</value></data>
+  <data name="StreamNo" xml:space="preserve"><value>нет</value></data>
+  <data name="StreamCodecLongName" xml:space="preserve"><value>Полное имя кодека</value></data>
+  <data name="StreamCodecTagString" xml:space="preserve"><value>Идентификатор кодека</value></data>
+  <data name="StreamCodecTag" xml:space="preserve"><value>Тег кодека</value></data>
+  <data name="StreamLevel" xml:space="preserve"><value>Уровень</value></data>
+  <data name="StreamSampleFormat" xml:space="preserve"><value>Формат сэмплов</value></data>
+  <data name="StreamDisplayAspectRatio" xml:space="preserve"><value>Соотношение сторон</value></data>
+  <data name="StreamSampleAspectRatio" xml:space="preserve"><value>Соотношение пикселя</value></data>
+  <data name="StreamColorRange" xml:space="preserve"><value>Диапазон цвета</value></data>
+  <data name="StreamColorSpace" xml:space="preserve"><value>Цветовое пространство</value></data>
+  <data name="StreamColorTransfer" xml:space="preserve"><value>Передаточная характеристика</value></data>
+  <data name="StreamColorPrimaries" xml:space="preserve"><value>Основные цвета</value></data>
+  <data name="DiagnosticPreviewTitle" xml:space="preserve"><value>Диагностический отчёт</value></data>
+  <data name="DiagnosticPreviewSave" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="DiagnosticPreviewSaveTitle" xml:space="preserve"><value>Сохранить диагностический отчёт</value></data>
+  <data name="DiagnosticPreviewSaveFailed" xml:space="preserve"><value>Не удалось сохранить лог. Проверьте доступ к выбранному файлу.</value></data>
+  <data name="DiagnosticPreviewReadFailed" xml:space="preserve"><value>Не удалось прочитать диагностический лог.</value></data>
+  <data name="LogCheckingTool" xml:space="preserve"><value>Проверяется {0}…</value></data>
+  <data name="LogToolUnavailable" xml:space="preserve"><value>{0} не найден или не работает.</value></data>
+  <data name="LogToolReadyVersion" xml:space="preserve"><value>{0} {1} обнаружен. Готов к работе.</value></data>
+  <data name="LogToolReady" xml:space="preserve"><value>{0} обнаружен. Готов к работе.</value></data>
+  <data name="LogAnalysisCompleteCount" xml:space="preserve"><value>Анализ завершён. Обнаружено медиапотоков: {0}</value></data>
+  <data name="LogAnalysisComplete" xml:space="preserve"><value>Анализ завершён.</value></data>
+  <data name="LogAnalysisStarted" xml:space="preserve"><value>Начат анализ файла.</value></data>
+  <data name="LogAnalysisTimeout" xml:space="preserve"><value>Время ожидания FFprobe истекло.</value></data>
+  <data name="LogAnalysisCancelled" xml:space="preserve"><value>Анализ файла отменён.</value></data>
+  <data name="LogAnalysisFailed" xml:space="preserve"><value>Не удалось проанализировать файл.</value></data>
+  <data name="LogPreviewReady" xml:space="preserve"><value>Предпросмотр готов.</value></data>
+  <data name="LogPreviewUnavailable" xml:space="preserve"><value>Не удалось получить изображение предпросмотра.</value></data>
+  <data name="LogPreviewCancelled" xml:space="preserve"><value>Предыдущий предпросмотр отменён.</value></data>
+  <data name="LogProcessingStartedCount" xml:space="preserve"><value>Начата обработка: {0} потоков.</value></data>
+  <data name="LogProcessingStarted" xml:space="preserve"><value>Начата обработка.</value></data>
+  <data name="LogConvertingStreamFormat" xml:space="preserve"><value>Начата конвертация потока #{0} в формате {1}.</value></data>
+  <data name="LogExtractingStreamFormat" xml:space="preserve"><value>Начато извлечение потока #{0} в формате {1}.</value></data>
+  <data name="LogConvertingStream" xml:space="preserve"><value>Начата конвертация потока #{0}.</value></data>
+  <data name="LogExtractingStream" xml:space="preserve"><value>Начато извлечение потока #{0}.</value></data>
+  <data name="LogStreamStarted" xml:space="preserve"><value>Начата обработка потока.</value></data>
+  <data name="LogStreamConverted" xml:space="preserve"><value>Сконвертирован поток #{0}{1}{2}.</value></data>
+  <data name="LogStreamExtracted" xml:space="preserve"><value>Извлечён поток #{0}{1}{2}.</value></data>
+  <data name="LogProcessingComplete" xml:space="preserve"><value>Обработка завершена.</value></data>
+  <data name="LogProcessingCancelled" xml:space="preserve"><value>Обработка остановлена пользователем.</value></data>
+  <data name="LogProcessingErrors" xml:space="preserve"><value>Обработка завершена с ошибками.</value></data>
+  <data name="LogErrorOutputAccess" xml:space="preserve"><value>нет доступа к папке сохранения</value></data>
+  <data name="LogErrorWrite" xml:space="preserve"><value>ошибка записи файла</value></data>
+  <data name="LogErrorFfmpegLaunch" xml:space="preserve"><value>не удалось запустить FFmpeg</value></data>
+  <data name="LogStreamFailed" xml:space="preserve"><value>Не удалось извлечь поток #{0}: {1}.</value></data>
+  <data name="LogStreamConversionFailed" xml:space="preserve"><value>Не удалось конвертировать поток #{0}: {1}.</value></data>
+  <data name="LogStreamCancelled" xml:space="preserve"><value>Обработка потока #{0} отменена.</value></data>
+  <data name="LogStreamTimeout" xml:space="preserve"><value>Время обработки потока #{0} истекло.</value></data>
+  <data name="MainResultAttachmentFailed" xml:space="preserve"><value>Не удалось прочитать вложение Matroska. Подробности в диагностическом отчёте.</value></data>
+  <data name="OutputLanguageUnspecified" xml:space="preserve"><value>язык не указан</value></data>
+  <data name="LogCompatibleFoundCount" xml:space="preserve"><value>Найдено {0} совместимых кодировщиков.</value></data>
+  <data name="LogHardwareSearchStarted" xml:space="preserve"><value>Начат поиск аппаратных кодировщиков.</value></data>
+  <data name="LogCompatibleSearchStarted" xml:space="preserve"><value>Начат поиск совместимых кодировщиков.</value></data>
+  <data name="LogCompatibleNotFound" xml:space="preserve"><value>Совместимые кодировщики не найдены.</value></data>
+  <data name="LogHardwareSearchCancelled" xml:space="preserve"><value>Поиск аппаратных кодировщиков отменён.</value></data>
+  <data name="LogCompatibleSearchCancelled" xml:space="preserve"><value>Поиск совместимых кодировщиков отменён.</value></data>
+  <data name="LogHardwareSearchFailed" xml:space="preserve"><value>Не удалось завершить поиск аппаратных кодировщиков.</value></data>
+  <data name="LogCompatibleSearchFailed" xml:space="preserve"><value>Не удалось завершить поиск совместимых кодировщиков.</value></data>
+  <data name="LogSearchStale" xml:space="preserve"><value>Результат поиска не применён: выходной формат изменён.</value></data>
+  <data name="GuideWindowTitle" xml:space="preserve"><value>Медиасправочник</value></data>
+  <data name="GuideSearchPlaceholder" xml:space="preserve"><value>Поиск по медиасправочнику</value></data>
+  <data name="GuideClearSearch" xml:space="preserve"><value>Очистить</value></data>
+  <data name="GuidePrevious" xml:space="preserve"><value>Назад</value></data>
+  <data name="GuideNext" xml:space="preserve"><value>Далее</value></data>
+  <data name="GuideContents" xml:space="preserve"><value>Содержание</value></data>
+  <data name="GuideSearchResults" xml:space="preserve"><value>Результаты поиска</value></data>
+  <data name="GuideNoResults" xml:space="preserve"><value>Совпадений не найдено</value></data>
+  <data name="GuideArticleCount" xml:space="preserve"><value>{0} статей</value></data>
+  <data name="GuideNavigationUnavailable" xml:space="preserve"><value>Переход недоступен</value></data>
+  <data name="GuideLoadFailed" xml:space="preserve"><value>Не удалось загрузить медиасправочник: {0}</value></data>
+  <data name="GuideRussianOriginalNotice" xml:space="preserve"><value>Перевод медиасправочника для выбранного языка пока недоступен. Показан русский оригинал.</value></data>
+  <data name="ViewNotFound" xml:space="preserve"><value>Представление не найдено: {0}</value></data>
+</root>

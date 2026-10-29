@@ -2,7 +2,7 @@
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:vm="using:TrackExtractor.ViewModels"
  x:Class="TrackExtractor.Views.MainWindow" x:DataType="vm:MainViewModel"
- Title="Track Extractor" Icon="/Assets/Icons/TrackExtractor-256.png" Width="1280" Height="900" MinWidth="1000" MinHeight="700"
+ Title="{DynamicResource Loc_SettingsProductName}" Icon="/Assets/Icons/TrackExtractor-256.png" Width="1280" Height="900" MinWidth="1000" MinHeight="700"
  WindowStartupLocation="CenterScreen" WindowDecorations="None" CanResize="True"
  Background="{DynamicResource AppBackground}" Foreground="{DynamicResource MainTextBrush}" FontFamily="Inter" FontSize="14">
  <Window.Styles>
@@ -55,21 +55,21 @@
    <Grid ColumnDefinitions="Auto,*,Auto" Margin="14,0,4,0">
     <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center" PointerPressed="TitleBar_PointerPressed">
      <Image Source="avares://TrackExtractor/Assets/Icons/TrackExtractor-24.png" Width="23" Height="23" Stretch="Uniform"/>
-     <TextBlock Text="Track Extractor" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/>
+     <TextBlock Text="{DynamicResource Loc_SettingsProductName}" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/>
     </StackPanel>
     <Border Grid.Column="1" Background="Transparent" PointerPressed="TitleBar_PointerPressed"/>
     <StackPanel Grid.Column="2" Orientation="Horizontal">
-     <Button x:Name="SettingsButton" Classes="chrome" Width="46" Height="43" ToolTip.Tip="Настройки" Click="Settings_Click">
+     <Button x:Name="SettingsButton" Classes="chrome" Width="46" Height="43" ToolTip.Tip="{DynamicResource Loc_SettingsTitle}" Click="Settings_Click">
       <TextBlock Text="⚙" FontSize="19" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransform="translate(0px, -2px)"/>
      </Button>
      <Border Width="1" Height="22" Margin="12,0" Background="{DynamicResource LineBrush}" VerticalAlignment="Center"/>
-     <Button Classes="chrome" Width="46" Height="43" Click="Minimize_Click" ToolTip.Tip="Свернуть">
+     <Button Classes="chrome" Width="46" Height="43" Click="Minimize_Click" ToolTip.Tip="{DynamicResource Loc_MainMinimize}">
       <Rectangle Fill="{DynamicResource MainTextBrush}" Width="12" Height="1.5" HorizontalAlignment="Center" VerticalAlignment="Center"/>
      </Button>
-     <Button x:Name="MaximizeButton" Classes="chrome" Width="46" Height="43" Click="Maximize_Click" ToolTip.Tip="Развернуть или восстановить">
+     <Button x:Name="MaximizeButton" Classes="chrome" Width="46" Height="43" Click="Maximize_Click" ToolTip.Tip="{DynamicResource Loc_MainMaximizeRestore}">
       <Path x:Name="WindowStateIcon" Data="M 4,4 L 20,4 L 20,20 L 4,20 Z" Stroke="{DynamicResource MainTextBrush}" StrokeThickness="1.3" Width="12" Height="12" Stretch="Uniform" RenderTransform="translate(0px, -1px)"/>
      </Button>
-     <Button Classes="chrome chrome-surface chrome-close" Width="46" Height="43" Click="Close_Click" ToolTip.Tip="Закрыть">
+     <Button Classes="chrome chrome-surface chrome-close" Width="46" Height="43" Click="Close_Click" ToolTip.Tip="{DynamicResource Loc_MainClose}">
       <Path Data="M 5,5 L 19,19 M 19,5 L 5,19" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.5" Width="12" Height="12" Stretch="Uniform" RenderTransform="translate(0px, -1px)"/>
      </Button>
     </StackPanel>
@@ -82,10 +82,10 @@
       <Border Classes="panel-header" Grid.Row="0"><Grid ColumnDefinitions="*,Auto">
        <StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
         <TextBlock Text="▤" FontSize="20" VerticalAlignment="Center"/>
-        <TextBlock Text="Исходный файл" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        <TextBlock Text="{DynamicResource Loc_MainSourceFile}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
        </StackPanel>
        <Button Grid.Column="1" Classes="chrome chrome-surface chrome-clear" Margin="5" Width="28" Height="28" Padding="0" Content="×" FontSize="18"
-               ToolTip.Tip="Очистить выбранный файл"
+               ToolTip.Tip="{DynamicResource Loc_MainClearSelectedFile}"
                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                IsVisible="{Binding HasSourceOrAnalysis}" IsEnabled="{Binding CanClearFile}" Click="ClearFile_Click"/>
       </Grid></Border>
@@ -96,17 +96,17 @@
          <Path Data="M 4,2 L 19,2 L 26,9 L 26,30 L 4,30 Z M 19,2 L 19,9 L 26,9 M 8,23 L 22,23 M 10,13 L 20,13"
                Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.8" Width="44" Height="47" Stretch="Uniform"
                HorizontalAlignment="Center" Margin="0,0,0,1"/>
-         <TextBlock Text="Перетащите сюда видеофайл" FontSize="18" FontWeight="SemiBold"
+         <TextBlock Text="{DynamicResource Loc_MainDropFile}" FontSize="18" FontWeight="SemiBold"
                     HorizontalAlignment="Center" Margin="8,0,8,1"/>
          <Button Classes="primary" Click="SelectFile_Click" IsEnabled="{Binding CanChooseFile}"
                  Width="176" Height="35" HorizontalAlignment="Center" Margin="0,3">
           <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
            <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z"
                  Stroke="White" StrokeThickness="2" Width="20" Height="17" Stretch="Uniform" VerticalAlignment="Center"/>
-           <TextBlock Text="Выбрать файл" VerticalAlignment="Center"/>
+           <TextBlock Text="{DynamicResource Loc_MainChooseFile}" VerticalAlignment="Center"/>
           </StackPanel>
          </Button>
-         <TextBlock Text="Поддерживаемые форматы: MP4, MKV, MOV, AVI, WebM и другие."
+         <TextBlock Text="{DynamicResource Loc_MainSupportedFormats}"
                     Classes="muted" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="8,1,8,0"/>
          <TextBlock Text="{Binding FileSelectionMessage}" IsVisible="{Binding HasFileSelectionMessage}"
                     Classes="error" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="8,0"/>
@@ -115,7 +115,7 @@
          <Path Data="M 4,2 L 19,2 L 26,9 L 26,30 L 4,30 Z M 19,2 L 19,9 L 26,9 M 8,23 L 22,23 M 10,13 L 20,13"
                Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.8" Width="44" Height="44" Stretch="Uniform"
                HorizontalAlignment="Center"/>
-         <TextBlock Text="Файл успешно загружен" Classes="success" FontWeight="SemiBold"
+         <TextBlock Text="{DynamicResource Loc_MainFileLoaded}" Classes="success" FontWeight="SemiBold"
                     HorizontalAlignment="Center" Margin="4,0"/>
          <TextBlock Text="{Binding MediaFileName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
                     HorizontalAlignment="Center" MaxWidth="580" ToolTip.Tip="{Binding MediaFilePath}" Margin="10,0"/>
@@ -124,11 +124,11 @@
           <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
            <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z"
                  Stroke="White" StrokeThickness="2" Width="20" Height="17" Stretch="Uniform" VerticalAlignment="Center"/>
-           <TextBlock Text="Выбрать файл" VerticalAlignment="Center"/>
+           <TextBlock Text="{DynamicResource Loc_MainChooseFile}" VerticalAlignment="Center"/>
           </StackPanel>
          </Button>
          <Border Height="1" Width="210" Background="{DynamicResource LineBrush}" Margin="0,2"/>
-         <TextBlock Text="Перетащите другой файл для замены" Classes="muted" HorizontalAlignment="Center"/>
+         <TextBlock Text="{DynamicResource Loc_MainDropReplace}" Classes="muted" HorizontalAlignment="Center"/>
          <TextBlock Text="{Binding FileSelectionMessage}" IsVisible="{Binding HasFileSelectionMessage}"
                     Classes="error" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="8,0"/>
         </StackPanel>
@@ -140,7 +140,7 @@
      <Grid RowDefinitions="38,*">
       <Border Classes="panel-header" Grid.Row="0"><StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
        <TextBlock Text="▤" FontSize="20" VerticalAlignment="Center"/>
-       <TextBlock Text="Информация о файле" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+       <TextBlock Text="{DynamicResource Loc_MainFileInfo}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
       </StackPanel></Border>
       <Grid Grid.Row="1" ColumnDefinitions="155,*" ColumnSpacing="10" Margin="10">
        <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1"
@@ -155,19 +155,19 @@
         <TextBlock Text="{Binding MediaFileName}" FontSize="15" FontWeight="SemiBold"
                    TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding MediaFilePath}"/>
         <Grid ColumnDefinitions="118,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="3">
-         <TextBlock Grid.Row="0" Text="Путь:" Classes="muted"/>
+         <TextBlock Grid.Row="0" Text="{DynamicResource Loc_MainPath}" Classes="muted"/>
          <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MediaFilePath}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding MediaFilePath}"/>
-         <TextBlock Grid.Row="1" Text="Размер:" Classes="muted"/>
+         <TextBlock Grid.Row="1" Text="{DynamicResource Loc_MainSize}" Classes="muted"/>
          <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SizeDisplay}" ToolTip.Tip="{Binding SizeExactDisplay}"/>
-         <TextBlock Grid.Row="2" Text="Длительность:" Classes="muted"/>
+         <TextBlock Grid.Row="2" Text="{DynamicResource Loc_MainDuration}" Classes="muted"/>
          <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding DurationDisplay}"/>
-         <TextBlock Grid.Row="3" Text="Формат:" Classes="muted"/>
+         <TextBlock Grid.Row="3" Text="{DynamicResource Loc_MainFormat}" Classes="muted"/>
          <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding ContainerDisplay}" TextTrimming="CharacterEllipsis"/>
-         <TextBlock Grid.Row="4" Text="Видео:" Classes="muted"/>
+         <TextBlock Grid.Row="4" Text="{DynamicResource Loc_MainVideo}" Classes="muted"/>
          <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding VideoCodecDisplay}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding VideoCodecDisplay}"/>
-         <TextBlock Grid.Row="5" Text="Аудио:" Classes="muted"/>
+         <TextBlock Grid.Row="5" Text="{DynamicResource Loc_MainAudio}" Classes="muted"/>
          <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding AudioSummaryDisplay}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding AudioSummaryDisplay}"/>
-         <TextBlock Grid.Row="6" Text="Субтитры:" Classes="muted"/>
+         <TextBlock Grid.Row="6" Text="{DynamicResource Loc_MainSubtitles}" Classes="muted"/>
          <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SubtitleSummaryDisplay}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding SubtitleSummaryDisplay}"/>
         </Grid>
         <ProgressBar IsVisible="{Binding IsAnalyzing}" IsIndeterminate="True" Height="3"/>
@@ -195,7 +195,7 @@
           <Thickness x:Key="TableViewColumnResizerMargin">0,-2,-6,-2</Thickness>
          </TableView.Resources>
          <TableView.ContextMenu>
-          <ContextMenu><MenuItem Header="Свойства потока" Click="Properties_Click"/></ContextMenu>
+          <ContextMenu><MenuItem Header="{DynamicResource Loc_MainStreamProperties}" Click="Properties_Click"/></ContextMenu>
          </TableView.ContextMenu>
          <TableView.Columns>
           <TableViewColumn Width="36" CanUserResize="False" HorizontalContentAlignment="Center">
@@ -203,7 +203,7 @@
             <Button Classes="bulk-select" Classes.all-selected="{Binding AllTracksSelected}"
                     Width="20" Height="20" Padding="0" CornerRadius="10" Content="●"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
-                    ToolTip.Tip="Выбрать все потоки или снять выбор"
+                    ToolTip.Tip="{DynamicResource Loc_MainSelectAll}"
                     IsEnabled="{Binding CanBulkSelect}" Click="ToggleAllTracks_Click"/>
            </TableViewColumn.Header>
            <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
@@ -212,37 +212,37 @@
                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
            </DataTemplate></TableViewColumn.CellTemplate>
           </TableViewColumn>
-          <TableViewColumn Header="Тип" Width="126">
+          <TableViewColumn Header="{DynamicResource Loc_MainColumnType}" Width="126">
            <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
             <TextBlock Text="{Binding TypeDisplay}" ToolTip.Tip="{Binding TypeDisplay}" TextTrimming="CharacterEllipsis" Margin="14,0,0,0"/>
            </DataTemplate></TableViewColumn.CellTemplate>
           </TableViewColumn>
-          <TableViewColumn Header="Индекс" Width="68">
+          <TableViewColumn Header="{DynamicResource Loc_MainColumnIndex}" Width="68">
            <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
             <TextBlock Text="{Binding IndexDisplay}" Margin="14,0,0,0"/>
            </DataTemplate></TableViewColumn.CellTemplate>
           </TableViewColumn>
-          <TableViewColumn Header="Язык" Width="135">
+          <TableViewColumn Header="{DynamicResource Loc_MainColumnLanguage}" Width="135">
            <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
             <TextBlock Text="{Binding LanguageDisplay}" ToolTip.Tip="{Binding LanguageDisplay}" TextTrimming="CharacterEllipsis" Margin="14,0,0,0"/>
            </DataTemplate></TableViewColumn.CellTemplate>
           </TableViewColumn>
-          <TableViewColumn Header="Кодек" Width="135">
+          <TableViewColumn Header="{DynamicResource Loc_MainColumnCodec}" Width="135">
            <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
             <TextBlock Text="{Binding CodecDisplay}" ToolTip.Tip="{Binding CodecDisplay}" TextTrimming="CharacterEllipsis" Margin="14,0,0,0"/>
            </DataTemplate></TableViewColumn.CellTemplate>
           </TableViewColumn>
-          <TableViewColumn Header="Битрейт" Width="112">
+          <TableViewColumn Header="{DynamicResource Loc_MainColumnBitrate}" Width="112">
            <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
             <TextBlock Text="{Binding BitRateDisplay}" ToolTip.Tip="{Binding BitRateDisplay}" TextTrimming="CharacterEllipsis" Margin="14,0,0,0"/>
            </DataTemplate></TableViewColumn.CellTemplate>
           </TableViewColumn>
-          <TableViewColumn Header="Каналы / Разрешение" Width="180">
+          <TableViewColumn Header="{DynamicResource Loc_MainColumnDetails}" Width="180">
            <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
             <TextBlock Text="{Binding DetailsDisplay}" ToolTip.Tip="{Binding DetailsDisplay}" TextTrimming="CharacterEllipsis" Margin="14,0,0,0"/>
            </DataTemplate></TableViewColumn.CellTemplate>
           </TableViewColumn>
-          <TableViewColumn Header="Статус" Width="118">
+          <TableViewColumn Header="{DynamicResource Loc_MainColumnStatus}" Width="118">
            <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
             <TextBlock Text="{Binding StatusLabel}" Foreground="{Binding StatusForeground}"
                        ToolTip.Tip="{Binding Status}" TextTrimming="CharacterEllipsis" Margin="14,0,0,0"/>
@@ -250,7 +250,7 @@
           </TableViewColumn>
          </TableView.Columns>
         </TableView>
-        <TextBlock Text="Добавьте файл, чтобы увидеть его потоки." IsVisible="{Binding HasNoMedia}"
+        <TextBlock Text="{DynamicResource Loc_MainEmptyStreams}" IsVisible="{Binding HasNoMedia}"
                    Classes="muted" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"/>
        </Grid>
       </Grid>
@@ -260,11 +260,11 @@
        <Border Classes="panel-header" Grid.Row="0"><Grid ColumnDefinitions="*,Auto">
         <StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
          <TextBlock Text="▤" FontSize="19" VerticalAlignment="Center"/>
-         <TextBlock Text="Журнал событий" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+         <TextBlock Text="{DynamicResource Loc_MainEventLog}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
         </StackPanel>
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="7" Margin="5" VerticalAlignment="Center">
-         <Button Content="Очистить" Click="ClearLog_Click" FontSize="12" Height="26" Padding="8,2"/>
-         <Button Content="Сохранить лог" Click="SaveLog_Click" FontSize="12" Height="26" Padding="8,2"/>
+         <Button Content="{DynamicResource Loc_MainClear}" Click="ClearLog_Click" FontSize="12" Height="26" Padding="8,2"/>
+         <Button Content="{DynamicResource Loc_MainSaveLog}" Click="SaveLog_Click" FontSize="12" Height="26" Padding="8,2"/>
         </StackPanel>
        </Grid></Border>
        <Border Grid.Row="1" Background="#000000"><ScrollViewer x:Name="LogScroll" VerticalScrollBarVisibility="Auto"
@@ -289,43 +289,43 @@
      <Grid RowDefinitions="38,*">
       <Border Classes="panel-header" Grid.Row="0"><StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
        <TextBlock Text="⚙" FontSize="18" VerticalAlignment="Center"/>
-       <TextBlock Text="Настройки извлечения" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+       <TextBlock Text="{DynamicResource Loc_MainExportSettings}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
       </StackPanel></Border>
       <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" AllowAutoHide="False">
        <StackPanel Margin="14" Spacing="9">
-        <TextBlock Text="Папка для сохранения" FontWeight="SemiBold"/>
+        <TextBlock Text="{DynamicResource Loc_MainSaveFolder}" FontWeight="SemiBold"/>
         <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
-         <TextBox Text="{Binding OutputDirectory}" IsReadOnly="True" PlaceholderText="Выберите папку"
+         <TextBox Text="{Binding OutputDirectory}" IsReadOnly="True" PlaceholderText="{DynamicResource Loc_MainChooseFolder}"
                   ToolTip.Tip="{Binding OutputDirectory}" VerticalContentAlignment="Center"/>
          <Button Grid.Column="1" Click="ChooseFolder_Click" IsEnabled="{Binding CanChooseFolder}">
           <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Center">
            <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z"
                  Stroke="{DynamicResource MainTextBrush}" StrokeThickness="2"
                  Width="17" Height="15" Stretch="Uniform" VerticalAlignment="Center"/>
-           <TextBlock Text="Обзор" VerticalAlignment="Center"/>
+           <TextBlock Text="{DynamicResource Loc_MainBrowse}" VerticalAlignment="Center"/>
           </StackPanel>
          </Button>
         </Grid>
-        <TextBlock Text="Формат видео" FontWeight="SemiBold" Margin="0,8,0,0"/>
+        <TextBlock Text="{DynamicResource Loc_MainVideoFormat}" FontWeight="SemiBold" Margin="0,8,0,0"/>
         <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
          <ComboBox x:Name="VideoFormatBox" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
-         <Button x:Name="VideoConfigureButton" Grid.Column="1" Content="Настроить" Click="ConfigureFormat_Click" Tag="video" IsEnabled="False"/>
+         <Button x:Name="VideoConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="video" IsEnabled="False"/>
         </Grid>
-        <TextBlock Text="Формат аудио" FontWeight="SemiBold"/>
+        <TextBlock Text="{DynamicResource Loc_MainAudioFormat}" FontWeight="SemiBold"/>
         <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
          <ComboBox x:Name="AudioFormatBox" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
-         <Button x:Name="AudioConfigureButton" Grid.Column="1" Content="Настроить" Click="ConfigureFormat_Click" Tag="audio" IsEnabled="False"/>
+         <Button x:Name="AudioConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="audio" IsEnabled="False"/>
         </Grid>
-        <TextBlock Text="Формат субтитров" FontWeight="SemiBold"/>
+        <TextBlock Text="{DynamicResource Loc_MainSubtitleFormat}" FontWeight="SemiBold"/>
         <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
          <ComboBox x:Name="SubtitleFormatBox" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
-         <Button x:Name="SubtitleConfigureButton" Grid.Column="1" Content="Настроить" Click="ConfigureFormat_Click" Tag="subtitle" IsEnabled="False"/>
+         <Button x:Name="SubtitleConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="subtitle" IsEnabled="False"/>
         </Grid>
         <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Margin="0,7"/>
-        <CheckBox Content="Сохранять метаданные" IsChecked="{Binding PreserveMetadata, Mode=TwoWay}"/>
-        <CheckBox Content="Разбивать по языкам (создать подпапки)" IsChecked="{Binding GroupByLanguage, Mode=TwoWay}"/>
-        <CheckBox Content="Создавать папку с названием исходного файла" IsChecked="{Binding CreateSourceFolder, Mode=TwoWay}"/>
-        <CheckBox Content="Извлекать вложения MKV — в будущих версиях" IsEnabled="False"/>
+        <CheckBox Content="{DynamicResource Loc_MainSaveMetadata}" IsChecked="{Binding PreserveMetadata, Mode=TwoWay}"/>
+        <CheckBox Content="{DynamicResource Loc_MainGroupLanguages}" IsChecked="{Binding GroupByLanguage, Mode=TwoWay}"/>
+        <CheckBox Content="{DynamicResource Loc_MainSourceFolder}" IsChecked="{Binding CreateSourceFolder, Mode=TwoWay}"/>
+        <CheckBox Content="{DynamicResource Loc_MainFutureAttachments}" IsEnabled="False"/>
        </StackPanel>
       </ScrollViewer>
      </Grid>
@@ -347,7 +347,7 @@
       <Button Height="37" Width="146" Click="OpenOutputFolder_Click" IsEnabled="{Binding CanOpenOutputDirectory}">
        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
         <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z" Stroke="{DynamicResource MainTextBrush}" StrokeThickness="2" Width="17" Height="15" Stretch="Uniform"/>
-        <TextBlock Text="Открыть папку" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        <TextBlock Text="{DynamicResource Loc_MainOpenFolder}" FontWeight="SemiBold" VerticalAlignment="Center"/>
        </StackPanel>
       </Button>
       <Button Classes="primary" Height="37" Width="120" Click="Extract_Click" IsEnabled="{Binding CanExtract}">
@@ -367,7 +367,7 @@
           </RadialGradientBrush>
          </Ellipse.Fill>
         </Ellipse>
-        <TextBlock Text="Отменить" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        <TextBlock Text="{DynamicResource Loc_InstallerCancel}" FontWeight="SemiBold" VerticalAlignment="Center"/>
        </StackPanel>
       </Button>
      </StackPanel>

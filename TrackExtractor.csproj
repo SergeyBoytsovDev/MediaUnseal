@@ -10,8 +10,10 @@
   <ItemGroup>
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
-    <AvaloniaResource Include="docs\track-extractor-media-guide.md" />
-    <AvaloniaResource Include="docs\media-guide-diagrams.ru.json" />
+    <AvaloniaResource Include="docs\track-extractor-media-guide*.md" />
+    <AvaloniaResource Include="docs\media-guide-diagrams.*.json" />
+    <EmbeddedResource Include="docs\track-extractor-media-guide*.md" WithCulture="false" />
+    <EmbeddedResource Include="docs\media-guide-diagrams.*.json" WithCulture="false" />
     <Compile Remove="Tests/**/*.cs" />
   </ItemGroup>
 

@@ -12,7 +12,6 @@ internal sealed record MediaGuideSection(string Title, IReadOnlyList<MediaGuideA
 
 internal sealed class MediaGuideContent
 {
-    private static readonly Uri ResourceUri = new("avares://TrackExtractor/docs/track-extractor-media-guide.md");
     private static readonly Regex HeadingPattern = new(@"^(##|###) ([^\r\n]+)\r?$", RegexOptions.Multiline | RegexOptions.Compiled);
 
     internal string Source { get; }
@@ -24,9 +23,13 @@ internal sealed class MediaGuideContent
         Sections = sections;
     }
 
-    internal static MediaGuideContent Load()
+    internal static MediaGuideContent Load(string language = LocalizationManager.DefaultLanguage)
     {
-        using var stream = AssetLoader.Open(ResourceUri);
+        if (LanguagePackCatalog.ValidateGuideFiles(language).Count != 0)
+            throw new InvalidDataException($"Недоступен язык медиасправочника: {language}.");
+        var name = language == LocalizationManager.DefaultLanguage
+            ? "track-extractor-media-guide.md" : $"track-extractor-media-guide.{language}.md";
+        using var stream = AssetLoader.Open(new Uri($"avares://TrackExtractor/docs/{name}"));
         using var reader = new StreamReader(stream);
         return Parse(reader.ReadToEnd());
     }

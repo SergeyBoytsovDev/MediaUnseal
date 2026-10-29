@@ -10,6 +10,7 @@ namespace TrackExtractor;
 public partial class App : Application
 {
     internal UiAppearance Appearance { get; } = new();
+    internal LocalizationManager Localization { get; } = new();
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -17,6 +18,7 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        Localization.SetLanguage(Appearance.Preferences.Language);
         Appearance.Apply();
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -29,5 +31,11 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    internal bool ChangeLanguage(string language)
+    {
+        if (!Appearance.SetLanguage(language)) return false;
+        return Localization.SetLanguage(language);
     }
 }

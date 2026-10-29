@@ -11,6 +11,7 @@ namespace TrackExtractor.Services;
 internal sealed class UiPreferences
 {
     public string Theme { get; set; } = UiAppearance.DefaultTheme;
+    public string Language { get; set; } = LocalizationManager.DefaultLanguage;
     public double Width { get; set; } = 1280;
     public double Height { get; set; } = 900;
     public int? X { get; set; }
@@ -45,6 +46,8 @@ internal sealed class UiAppearance
             Preferences = new UiPreferences();
         }
         if (Array.IndexOf(ThemeNames, Preferences.Theme) < 0) Preferences.Theme = DefaultTheme;
+        if (Array.IndexOf(LocalizationManager.AvailableLanguages, Preferences.Language) < 0)
+            Preferences.Language = LocalizationManager.DefaultLanguage;
         if (!double.IsFinite(Preferences.Width) || Preferences.Width is < 960 or > 6000) Preferences.Width = 1280;
         if (!double.IsFinite(Preferences.Height) || Preferences.Height is < 680 or > 4000) Preferences.Height = 900;
         if (Preferences.ColumnWidths is not { Length: 8 }
@@ -60,6 +63,14 @@ internal sealed class UiAppearance
         Preferences.Theme = theme;
         Apply(theme);
         Save();
+    }
+
+    internal bool SetLanguage(string language)
+    {
+        if (Array.IndexOf(LocalizationManager.AvailableLanguages, language) < 0) return false;
+        Preferences.Language = language;
+        Save();
+        return true;
     }
 
     internal void Apply() => Apply(Preferences.Theme);
