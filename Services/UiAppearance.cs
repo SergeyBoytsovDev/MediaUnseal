@@ -18,6 +18,7 @@ internal sealed class UiPreferences
     public int? Y { get; set; }
     public double[] ColumnWidths { get; set; } = [36, 86, 54, 150, 115, 104, 163, 129];
     public string? OutputDirectory { get; set; }
+    public string? LastSourceDirectory { get; set; }
 }
 
 internal sealed class UiAppearance
@@ -74,6 +75,18 @@ internal sealed class UiAppearance
     }
 
     internal void Apply() => Apply(Preferences.Theme);
+
+    internal string? SourcePickerDirectory() => IsExistingAbsoluteDirectory(Preferences.LastSourceDirectory)
+        ? Preferences.LastSourceDirectory : IsExistingAbsoluteDirectory(Preferences.OutputDirectory)
+            ? Preferences.OutputDirectory : null;
+
+    internal void RememberSourceFile(string path)
+    {
+        var directory = Path.GetDirectoryName(Path.GetFullPath(path));
+        if (!IsExistingAbsoluteDirectory(directory)) return;
+        Preferences.LastSourceDirectory = directory;
+        Save();
+    }
 
     internal void Save()
     {

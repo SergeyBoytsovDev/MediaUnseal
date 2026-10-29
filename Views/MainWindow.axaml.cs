@@ -35,7 +35,7 @@ public partial class MainWindow : Window
     private readonly Dictionary<string, FormatChoice> _formatChoices = new();
     private readonly HashSet<ExportTrackViewModel> _previouslySelected = new();
     private sealed record FormatChoice(string Display, ConversionFormat? Format = null,
-        ConversionSettings? Settings = null)
+        ConversionSettings? Settings = null, bool SeparatorBefore = false)
     {
         public override string ToString() => Display;
     }
@@ -109,7 +109,7 @@ public partial class MainWindow : Window
         if (e.PropertyName != "Item[]") return;
         _logViewModel?.RefreshMainLocalization();
         RefreshColumnHeaders();
-        foreach (var kind in new[] { "video", "audio", "subtitle" })
+        foreach (var kind in new[] { "video", "audio", "subtitle", "image", "animation" })
         {
             if (!_formatChoices.TryGetValue(kind, out var choice) || choice.Settings is null) continue;
             _formatChoices[kind] = choice with
@@ -275,7 +275,7 @@ public partial class MainWindow : Window
                 DataContext is MainViewModel selectionModel)
             {
                 var current = selectionModel.ExportTracks.Where(t => t.IsSelected).ToHashSet();
-                foreach (var kind in new[] { "video", "audio" })
+                foreach (var kind in new[] { "video", "audio", "image", "animation" })
                     if (ShouldResetFormat(kind, _previouslySelected, current)) _formatChoices.Remove(kind);
                 _previouslySelected.Clear();
                 _previouslySelected.UnionWith(current);
@@ -287,8 +287,11 @@ public partial class MainWindow : Window
         }
     }
 
-    private static string Kind(ExportTrackViewModel track) => track.Stream.VisualKind == VisualKind.Video
-        ? "video" : track.Stream.CodecType ?? "";
+    private static string Kind(ExportTrackViewModel track) => track.Stream.VisualKind switch
+    {
+        VisualKind.Video => "video", VisualKind.Image => "image",
+        VisualKind.Animation => "animation", _ => track.Stream.CodecType ?? ""
+    };
 
     internal static bool ShouldResetFormat(string kind, IEnumerable<ExportTrackViewModel> previous,
         IEnumerable<ExportTrackViewModel> current) =>
@@ -306,20 +309,24 @@ public partial class MainWindow : Window
     };
 
     private ComboBox? FormatBox(string kind) => kind switch
-    { "video" => VideoFormatBox, "audio" => AudioFormatBox, "subtitle" => SubtitleFormatBox, _ => null };
+    { "video" => VideoFormatBox, "audio" => AudioFormatBox, "subtitle" => SubtitleFormatBox,
+      "image" => ImageFormatBox, "animation" => AnimationFormatBox, _ => null };
     private Button? FormatButton(string kind) => kind switch
     { "video" => VideoConfigureButton, "audio" => AudioConfigureButton,
-      "subtitle" => SubtitleConfigureButton, _ => null };
+      "subtitle" => SubtitleConfigureButton, "image" => ImageConfigureButton,
+      "animation" => AnimationConfigureButton, _ => null };
 
     private void RefreshFormatControls()
     {
         if (VideoFormatBox is null || AudioFormatBox is null || SubtitleFormatBox is null ||
-            VideoConfigureButton is null || AudioConfigureButton is null || SubtitleConfigureButton is null)
+            ImageFormatBox is null || AnimationFormatBox is null || VideoConfigureButton is null ||
+            AudioConfigureButton is null || SubtitleConfigureButton is null ||
+            ImageConfigureButton is null || AnimationConfigureButton is null)
             return;
         _refreshingFormats = true;
         try
         {
-            foreach (var kind in new[] { "video", "audio", "subtitle" })
+            foreach (var kind in new[] { "video", "audio", "subtitle", "image", "animation" })
             {
                 var tracks = (DataContext as MainViewModel)?.ExportTracks
                     .Where(t => t.IsSelected && Kind(t) == kind).ToArray() ?? [];
@@ -330,15 +337,25 @@ public partial class MainWindow : Window
                     ? loc.Format(kind == "subtitle" ? "MainOriginalSubtitles" : kind == "audio"
                         ? codecs[0] switch { "AC3" => "MainOriginalCompressedAudio",
                             "DTS" => "MainOriginalMultichannelAudio", _ => "MainOriginalAudio" }
-                        : "MainOriginalVideo", codecs[0], tracks[0].Decision.Plan?.Extension ?? "?")
+                        : kind == "image" ? "MainOriginalImage" : kind == "animation"
+                        ? "MainOriginalAnimation" : "MainOriginalVideo",
+                        codecs[0], tracks[0].Decision.Plan?.Extension ?? "?")
                     : loc.Get("MainOriginalNoTranscode");
                 var choices = new List<FormatChoice> { new(source) };
                 if (_conversionCatalog is { } catalog)
-                    foreach (var (muxer, labelKey) in PopularFormats[kind])
+                {
+                    var secondaryAdded = false;
+                    foreach (var format in catalog.FormatsFor(kind))
                     {
-                        var format = catalog.FormatsFor(kind).FirstOrDefault(f => f.Muxer == muxer);
-                        if (format is not null) choices.Add(new(loc.Get(labelKey), format));
+                        var labelKey = PopularFormats.GetValueOrDefault(kind)?
+                            .FirstOrDefault(item => item.Muxer == format.Muxer).LabelKey;
+                        var secondary = kind is "video" or "animation" &&
+                            FfmpegConversionCatalog.Category(format) != kind;
+                        choices.Add(new(labelKey is null ? format.Display : loc.Get(labelKey), format,
+                            SeparatorBefore: secondary && !secondaryAdded));
+                        if (secondary) secondaryAdded = true;
                     }
+                }
                 _formatChoices.TryGetValue(kind, out var selected);
                 if (selected is { Format: not null } && !choices.Any(c => c.Format == selected.Format && c.Settings == selected.Settings))
                     choices.Add(selected);
@@ -382,7 +399,8 @@ public partial class MainWindow : Window
     private void Format_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_refreshingFormats || sender is not ComboBox box || box.SelectedItem is not FormatChoice choice) return;
-        var kind = box == VideoFormatBox ? "video" : box == AudioFormatBox ? "audio" : "subtitle";
+        var kind = box == VideoFormatBox ? "video" : box == AudioFormatBox ? "audio"
+            : box == SubtitleFormatBox ? "subtitle" : box == ImageFormatBox ? "image" : "animation";
         _formatChoices[kind] = choice;
         _ = ApplyAllFormatsAsync();
     }
@@ -424,7 +442,7 @@ public partial class MainWindow : Window
                 if (track.Decision.Plan is { } original && original.Muxer == format.Muxer
                     && original.Extension == format.Extension)
                 { track.SetConversion(null); continue; }
-                if (await _conversionCatalog.CheckCopyAsync(media.FullPath, track.Stream.Index!.Value,
+                if (kind != "image" && await _conversionCatalog.CheckCopyAsync(media.FullPath, track.Stream.Index!.Value,
                     format, cancellation.Token))
                 {
                     track.SetCopyOverride(new(track.Stream, format.Extension, format.Muxer, false,
@@ -484,6 +502,13 @@ public partial class MainWindow : Window
         await ApplyAllFormatsAsync();
     }
 
+    private void OutputFormatDivider_Loaded(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Border divider)
+            divider.IsVisible = divider.DataContext is FormatChoice { SeparatorBefore: true }
+                && divider.FindAncestorOfType<ComboBoxItem>() is not null;
+    }
+
     private void Properties_Click(object? sender, RoutedEventArgs e)
     {
         if (StreamsTable.SelectedItem is ExportTrackViewModel track)
@@ -518,9 +543,19 @@ public partial class MainWindow : Window
         }
         try
         {
+            var startDirectory = Appearance?.SourcePickerDirectory();
+            Avalonia.Platform.Storage.IStorageFolder? startFolder = null;
+            if (startDirectory is not null)
+                try { startFolder = await StorageProvider.TryGetFolderFromPathAsync(startDirectory); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException) { }
+            if (startFolder is null && Appearance?.Preferences.OutputDirectory is { } outputDirectory
+                && Directory.Exists(outputDirectory) && outputDirectory != startDirectory)
+                try { startFolder = await StorageProvider.TryGetFolderFromPathAsync(outputDirectory); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException) { }
             var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Title = LocalizationManager.Active.Get("MainPickMediaFile"), AllowMultiple = false
+                Title = LocalizationManager.Active.Get("MainPickMediaFile"), AllowMultiple = false,
+                SuggestedStartLocation = startFolder
             });
             if (files.Count == 1) await AddFileAsync(files[0].Path);
         }
@@ -570,6 +605,14 @@ public partial class MainWindow : Window
         if (DataContext is not MainViewModel viewModel) return;
         if (!uri.IsFile) { viewModel.ReportFileErrorKey("MainPickLocalFile"); return; }
         await viewModel.AnalyzeFileAsync(uri.LocalPath, _shutdown.Token);
+        if (viewModel.SelectedMedia is { } media && string.Equals(media.FullPath,
+            Path.GetFullPath(uri.LocalPath), OperatingSystem.IsWindows()
+                ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+        {
+            Appearance?.RememberSourceFile(media.FullPath);
+            viewModel.Diagnostics.Record(DiagnosticLevel.Info, "File selection",
+                "Last successfully loaded source directory saved in UI preferences.");
+        }
     }
 
     private async void ChooseFolder_Click(object? sender, RoutedEventArgs e)

@@ -524,4 +524,16 @@
   <data name="GuideLoadFailed" xml:space="preserve"><value>Не удалось загрузить медиасправочник: {0}</value></data>
   <data name="GuideRussianOriginalNotice" xml:space="preserve"><value>Перевод медиасправочника для выбранного языка пока недоступен. Показан русский оригинал.</value></data>
   <data name="ViewNotFound" xml:space="preserve"><value>Представление не найдено: {0}</value></data>
+  <data name="MainImageFormat" xml:space="preserve"><value>Формат изображения</value></data>
+  <data name="MainAnimationFormat" xml:space="preserve"><value>Формат анимации</value></data>
+  <data name="MainOriginalImage" xml:space="preserve"><value>{0} — исходный — изображение; файл .{1}</value></data>
+  <data name="MainOriginalAnimation" xml:space="preserve"><value>{0} — исходный — анимация; файл .{1}</value></data>
+  <data name="ConversionHeadingImage" xml:space="preserve"><value>Настройки конвертации изображения</value></data>
+  <data name="ConversionHeadingAnimation" xml:space="preserve"><value>Настройки конвертации анимации</value></data>
+  <data name="ConversionAnimationOutputsHint" xml:space="preserve"><value>Анимацию можно сохранить как анимацию или видео. Вывод одного статичного кадра недоступен.</value></data>
+  <data name="ConversionImageOutputsHint" xml:space="preserve"><value>Изображение можно сохранить только в формате изображения.</value></data>
+  <data name="LogVisualExtractionStarted" xml:space="preserve"><value>Начато извлечение изображения или анимации из потока #{0}, формат {1}.</value></data>
+  <data name="LogVisualConversionStarted" xml:space="preserve"><value>Начата конвертация изображения или анимации из потока #{0}, формат {1}.</value></data>
+  <data name="LogVisualExtractionCompleted" xml:space="preserve"><value>Изображение или анимация из потока #{0} извлечены: {1}, {2}.</value></data>
+  <data name="LogVisualConversionCompleted" xml:space="preserve"><value>Изображение или анимация из потока #{0} конвертированы: {1}, {2}.</value></data>
 </root>

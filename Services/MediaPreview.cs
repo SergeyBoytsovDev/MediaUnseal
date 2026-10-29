@@ -89,6 +89,15 @@ internal static class MediaPreview
                     $"index jumps={navigation.IndexJumps}; elements={navigation.Elements}; " +
                     $"read {navigation.SearchBytesRead} bytes.")); }
         }
+        if (media.Streams.Count == 1 && media.Streams[0] is
+            { VisualKind: VisualKind.Image, Index: >= 0 } still)
+        {
+            if (still.Width is > 12000 || still.Height is > 12000)
+            { report?.Invoke("Standalone image preview skipped: dimensions exceed the limit."); return null; }
+            report?.Invoke($"Standalone image preview: stream #{still.Index}; scaled FFmpeg decoding started.");
+            return (await GrabFrameAsync(media.FullPath, ffmpegPath, still.Index.Value, false,
+                cancellationToken, report)).Image;
+        }
         var video = media.Streams.FirstOrDefault(s => s.VisualKind == VisualKind.Video && s.Index is >= 0);
         if (video?.Index is { } videoIndex)
         {

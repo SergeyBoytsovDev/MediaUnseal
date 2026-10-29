@@ -45,7 +45,7 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
                 : await ProcessRunner(ffprobePath, arguments, deadline.Token).WaitAsync(deadline.Token).ConfigureAwait(false);
             if (result.ExitCode != 0)
                 throw new InvalidDataException($"FFprobe завершился с кодом {result.ExitCode}. Файл может быть повреждён или не поддерживается.");
-            var media = ParseJson(result.Stdout, fullPath, size);
+            var media = ParseJson(result.Stdout, fullPath, size, inspectFileSignature: true);
             diagnostics.Record(DiagnosticLevel.Info, "Analysis",
                 $"Analysis completed in {watch.Elapsed.TotalSeconds:F1} s; streams: {media.Streams.Count}.", fileDetails,
                 userMessageKey: "LogAnalysisCompleteCount", userMessageArgs: [media.Streams.Count], userSuccess: true);
@@ -73,7 +73,7 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
         }
     }
 
-    internal static MediaInfo ParseJson(string json, string path, long size)
+    internal static MediaInfo ParseJson(string json, string path, long size, bool inspectFileSignature = false)
     {
         try
         {
@@ -86,6 +86,9 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
                 throw new InvalidDataException("FFprobe не вернул сведения о файле и потоках.");
             var formatName = ReadString(Property(format, "format_name"));
             var formatDuration = ReadDuration(Property(format, "duration"));
+            var fileImage = inspectFileSignature && formatName?.Split(',').Any(token =>
+                token.Trim() is "image2" or "webp_pipe") == true
+                ? ReadImageSignature(path) : (null, false);
             var streams = new List<MediaStreamInfo>();
             if (streamsJson.ValueKind == JsonValueKind.Array)
             {
@@ -100,7 +103,8 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
                     var streamDuration = ReadDuration(Property(item, "duration"));
                     var frameCount = ReadLong(Property(item, "nb_frames")) ?? ReadLong(Property(item, "nb_read_frames"));
                     if (frameCount <= 0) frameCount = null;
-                    var visual = ClassifyVisual(type, codec, formatName, tags, disposition, frameCount, streamDuration);
+                    var visual = ClassifyVisual(type, codec, formatName, tags, disposition, frameCount, streamDuration,
+                        streamsJson.GetArrayLength() == 1 ? fileImage : (null, false));
                     streams.Add(new MediaStreamInfo(
                         ReadInt(Property(item, "index")), type, codec,
                         ReadString(Property(item, "profile")),
@@ -229,7 +233,8 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
 
     private static (VisualKind Kind, string? ImageFormat, bool IsCoverArt) ClassifyVisual(
         string? type, string? codec, string? formatName, IReadOnlyDictionary<string, string> tags,
-        IReadOnlyDictionary<string, int?> disposition, long? frames, TimeSpan? duration)
+        IReadOnlyDictionary<string, int?> disposition, long? frames, TimeSpan? duration,
+        (string? Format, bool Animated) fileImage)
     {
         var imageFormat = ImageFormat(codec, tags) ?? ImageFormatFromContainer(formatName);
         if (type is not ("video" or "attachment")) return (VisualKind.Unknown, null, false);
@@ -244,7 +249,12 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
                 ? (VisualKind.Image, imageFormat, coverMarker)
                 : (VisualKind.Unknown, imageFormat, false);
         if (attached) return (VisualKind.Image, imageFormat, true);
+        if (fileImage.Animated && fileImage.Format == imageFormat)
+            return (VisualKind.Animation, imageFormat, false);
         if (still) return (VisualKind.Image, imageFormat, coverMarker);
+        if (fileImage.Format is not null && fileImage.Format == imageFormat
+            && (fileImage.Animated || frames is null or 1))
+            return (fileImage.Animated ? VisualKind.Animation : VisualKind.Image, imageFormat, false);
 
         var formats = formatName?.Split(',', StringSplitOptions.TrimEntries) ?? [];
         var animationContainer = formats.Any(f => f is "gif" or "apng" or "gif_pipe" or "apng_pipe" or "webp_pipe");
@@ -273,6 +283,29 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
             return (VisualKind.Unknown, imageFormat, false);
         }
         return (VisualKind.Video, null, false);
+    }
+
+    private static (string? Format, bool Animated) ReadImageSignature(string path)
+    {
+        try
+        {
+            Span<byte> header = stackalloc byte[32];
+            using var input = File.OpenRead(path);
+            var length = input.Read(header);
+            if (length >= 3 && header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF)
+                return ("JPEG", false);
+            if (length >= 8 && header[..8].SequenceEqual(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }))
+                return ("PNG", false);
+            if (length >= 21 && header[..4].SequenceEqual("RIFF"u8)
+                && header.Slice(8, 4).SequenceEqual("WEBP"u8))
+                return ("WebP", header.Slice(12, 4).SequenceEqual("VP8X"u8) && (header[20] & 0x02) != 0);
+            if (length >= 2 && header[..2].SequenceEqual("BM"u8)) return ("BMP", false);
+            if (length >= 4 && (header[..4].SequenceEqual(new byte[] { 73, 73, 42, 0 })
+                || header[..4].SequenceEqual(new byte[] { 77, 77, 0, 42 }))) return ("TIFF", false);
+            if (length >= 4 && header[..4].SequenceEqual("qoif"u8)) return ("QOI", false);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        return (null, false);
     }
 
     private static string? ImageFormat(string? codec, IReadOnlyDictionary<string, string> tags)

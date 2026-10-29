@@ -49,7 +49,7 @@ internal static class MatroskaAttachments
             FileShare.Read, 4096, FileOptions.Asynchronous | FileOptions.RandomAccess);
         if (input.Length != media.Size)
             throw new InvalidDataException("Исходный файл изменился после анализа. Повторите анализ.");
-        var attachments = await ReadAsync(input, cancellationToken, stats).ConfigureAwait(false);
+        var attachments = await ReadForExportAsync(input, cancellationToken, stats).ConfigureAwait(false);
         stats.SearchElapsed = watch.Elapsed;
         if (attachments.Count == 0 && stream.CodecType != "attachment"
             && !stream.Tags.ContainsKey("filename") && !stream.Tags.ContainsKey("mimetype")) return null;
@@ -151,7 +151,18 @@ internal static class MatroskaAttachments
         NavigationStats? stats = null)
     {
         if (!input.CanRead || !input.CanSeek) throw new InvalidDataException("Matroska требует локальный файл с доступом по смещениям.");
-        try { return await new Reader(input, cancellationToken, stats ?? new NavigationStats(), false).ReadAsync().ConfigureAwait(false); }
+        try { return await new Reader(input, cancellationToken, stats ?? new NavigationStats(), false, false).ReadAsync().ConfigureAwait(false); }
+        catch (EndOfStreamException ex) { throw new InvalidDataException("Обрезанная структура EBML/Matroska.", ex); }
+        catch (DecoderFallbackException ex) { throw new InvalidDataException("Повреждённая строка метаданных Matroska.", ex); }
+    }
+
+    // The export path checks the indexed attachment against FFprobe's stream list.
+    // Once that target is validated, scanning later Cluster headers provides no
+    // data needed to copy the selected attachment.
+    private static async Task<IReadOnlyList<Attachment>> ReadForExportAsync(Stream input,
+        CancellationToken cancellationToken, NavigationStats stats)
+    {
+        try { return await new Reader(input, cancellationToken, stats, false, true).ReadAsync().ConfigureAwait(false); }
         catch (EndOfStreamException ex) { throw new InvalidDataException("Обрезанная структура EBML/Matroska.", ex); }
         catch (DecoderFallbackException ex) { throw new InvalidDataException("Повреждённая строка метаданных Matroska.", ex); }
     }
@@ -163,13 +174,13 @@ internal static class MatroskaAttachments
     {
         if (!input.CanRead || !input.CanSeek)
             throw new InvalidDataException("Matroska требует локальный файл с доступом по смещениям.");
-        try { return await new Reader(input, cancellationToken, stats ?? new NavigationStats(), true).ReadAsync().ConfigureAwait(false); }
+        try { return await new Reader(input, cancellationToken, stats ?? new NavigationStats(), true, false).ReadAsync().ConfigureAwait(false); }
         catch (EndOfStreamException ex) { throw new InvalidDataException("Обрезанная структура EBML/Matroska.", ex); }
         catch (DecoderFallbackException ex) { throw new InvalidDataException("Повреждённая строка метаданных Matroska.", ex); }
     }
 
     private sealed class Reader(Stream input, CancellationToken cancellationToken, NavigationStats stats,
-        bool previewOnly)
+        bool previewOnly, bool exportIndexedFast)
     {
         private const uint Segment = 0x18538067, Attachments = 0x1941A469, Cluster = 0x1F43B675;
         private const uint SeekHead = 0x114D9B74, Seek = 0x4DBB, SeekId = 0x53AB, SeekPosition = 0x53AC;
@@ -346,7 +357,7 @@ internal static class MatroskaAttachments
             stats.UsedSeekHead = true;
             _foundAttachments = true;
             await ReadAttachmentsAsync(attachments.End.Value).ConfigureAwait(false);
-            if (previewOnly) return true;
+            if (previewOnly || exportIndexedFast) return true;
             // Keep checking the tail for duplicate Attachments and malformed
             // top-level elements. For the usual late attachment this is short.
             MoveTo(attachments.End.Value);
@@ -357,10 +368,9 @@ internal static class MatroskaAttachments
         private async Task<bool> CheckIndexedPrefixAsync(long from, long target, long end)
         {
             if (target < from) return false;
-            // Cheaply verify the nearby top-level envelope. In particular an
-            // Attachments-like byte sequence inside the first Cluster is not a
-            // valid SeekHead target. Limit work for long files with many Clusters.
-            for (var i = 0; i < 128 && from < target; i++)
+            // Verify the top-level envelope up to the target. An Attachments-like
+            // byte sequence inside any Cluster is not a valid SeekHead target.
+            while (from < target)
             {
                 MoveTo(from);
                 var element = await HeaderAsync(end).ConfigureAwait(false);

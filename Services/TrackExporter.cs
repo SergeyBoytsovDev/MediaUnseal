@@ -55,8 +55,6 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         var codec = stream.Codec?.ToLowerInvariant();
         if (codec is null && stream.CodecType != "attachment")
             return Unavailable("MainReasonUnknownCodec");
-        if (stream.VisualKind == VisualKind.Animation)
-            return Unavailable("MainReasonAnimation");
         if (stream.VisualKind == VisualKind.Unknown && stream.CodecType == "video")
             return Unavailable("MainReasonUnknownVisual");
 
@@ -70,13 +68,25 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     "PNG" => new(new TrackExportPlan(stream, "png", "attachment", false, true), null),
                     _ => Unavailable("MainReasonUnknownAttachmentFormat")
                 };
-            if (media.Streams.Count == 1 && media.Container?.Split(',').Any(format =>
-                    format.Trim().EndsWith("_pipe", StringComparison.Ordinal) || format.Trim() == "image2") == true)
-                return Unavailable("MainReasonStandaloneImage");
             output = codec switch
             {
                 "mjpeg" or "jpeg" => ("jpg", "image2", true),
                 "png" => ("png", "image2", true),
+                "bmp" => ("bmp", "image2", true),
+                "tiff" => ("tiff", "image2", true),
+                "qoi" => ("qoi", "image2", true),
+                "webp" => ("webp", "image2", true),
+                "gif" => ("gif", "image2", true),
+                _ => null
+            };
+        }
+        else if (stream.VisualKind == VisualKind.Animation)
+        {
+            output = codec switch
+            {
+                "gif" => ("gif", "gif", false),
+                "apng" => ("apng", "apng", false),
+                "webp" => ("webp", "webp", false),
                 _ => null
             };
         }
@@ -185,6 +195,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 var plan = selected[i];
                 var ordinal = i;
                 var index = plan.Stream.Index!.Value;
+                var visualOutput = plan.Stream.VisualKind is VisualKind.Image or VisualKind.Animation;
                 var target = ReserveName(media, plan, TargetDirectory(directory, plan, options), reserved);
                 var temp = Path.Combine(stage, $"{index}-{Guid.NewGuid():N}.{plan.Extension}");
                 progress?.Report(new(index, ExportState.Running,
@@ -193,10 +204,13 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 { LocalizedMessage = new(plan.Conversion is null ? "MainProgressExtractingTo" : "MainProgressConvertingTo",
                     index, Path.GetFileName(target)) });
                 diagnostics.Record(DiagnosticLevel.Info, "Export",
-                    $"{(plan.Conversion is null ? "Extraction started" : "Conversion started")}: type {plan.Stream.CodecType}, stream #{index}, " +
+                    $"{(plan.Conversion is null ? "Extraction started" : "Conversion started")}: type " +
+                    $"{(plan.Stream.VisualKind is VisualKind.Image or VisualKind.Animation ? plan.Stream.VisualKind.ToString().ToLowerInvariant() : plan.Stream.CodecType)}, stream #{index}, " +
                     $"codec {plan.Stream.Codec}, format {plan.Muxer}; " +
                     (plan.Conversion is null ? "stream copy without re-encoding." : $"encoder {plan.Conversion.Encoder.Name}."),
-                    userMessageKey: plan.Conversion is null ? "LogExtractingStreamFormat" : "LogConvertingStreamFormat",
+                    userMessageKey: visualOutput
+                        ? plan.Conversion is null ? "LogVisualExtractionStarted" : "LogVisualConversionStarted"
+                        : plan.Conversion is null ? "LogExtractingStreamFormat" : "LogConvertingStreamFormat",
                     userMessageArgs: [index, plan.Muxer]);
                 var trackWatch = Stopwatch.StartNew();
                 int? exitCode = null;
@@ -272,12 +286,37 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     }
                     if (!nativeCompleted)
                     {
-                        var args = BuildArguments(media.FullPath, index, plan, temp, options.PreserveMetadata);
+                        var conversionSource = media.FullPath;
+                        var conversionIndex = index;
+                        string? extractedCover = null;
+                        if (plan.Conversion is not null && MatroskaAttachments.IsCandidate(media, plan.Stream))
+                        {
+                            diagnostics.Record(DiagnosticLevel.Info, "Export",
+                                $"Matroska image conversion: extracting source attachment for stream #{index}.");
+                            extractedCover = Path.Combine(stage, $"cover-{index}-{Guid.NewGuid():N}." +
+                                (plan.Stream.ImageFormat == "PNG" ? "png" : "jpg"));
+                            var found = await MatroskaAttachments.TryExtractAsync(media, plan.Stream,
+                                extractedCover, null, deadline.Token).ConfigureAwait(false);
+                            if (found is null) throw new InvalidDataException(L.Get("MainResultAttachmentFailed"));
+                            conversionSource = extractedCover;
+                            conversionIndex = 0;
+                            diagnostics.Record(DiagnosticLevel.Info, "Export",
+                                $"Matroska image conversion: source attachment found for stream #{index}; " +
+                                $"FileUID {found.Uid}; {found.Size} bytes.");
+                        }
+                        try
+                        {
+                        var args = BuildArguments(conversionSource, conversionIndex, plan, temp, options.PreserveMetadata);
                         exitCode = ProcessRunner is null
                             ? await RunFfmpegAsync(ffmpegPath, args, position, line => lastError = line, deadline.Token).ConfigureAwait(false)
                             : await ProcessRunner(ffmpegPath, args, position, deadline.Token).WaitAsync(deadline.Token).ConfigureAwait(false);
                         if (exitCode != 0) throw new InvalidDataException(L.Format("MainResultFfmpegExitCode", exitCode) +
                             (lastError is null ? "" : " " + lastError));
+                        }
+                        finally
+                        {
+                            if (extractedCover is not null) await DeleteOwnTempAsync(extractedCover).ConfigureAwait(false);
+                        }
                     }
                     if (!File.Exists(temp) || new FileInfo(temp).Length == 0)
                         throw new InvalidDataException(L.Get("MainResultEmptyOutput"));
@@ -295,8 +334,12 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         $"mode {(plan.Conversion is null ? "extraction" : "conversion")}.",
                         $"Elapsed {FormatElapsed(trackWatch.Elapsed)}; size {bytes:N0} bytes; " +
                         $"Output path: {Path.GetFileName(target)}",
-                        userMessageKey: plan.Conversion is null ? "LogStreamExtracted" : "LogStreamConverted",
-                        userMessageArgs: [index, $" ({plan.Muxer})", $", {FormatByteSize(bytes)}"], userSuccess: true);
+                        userMessageKey: visualOutput
+                            ? plan.Conversion is null ? "LogVisualExtractionCompleted" : "LogVisualConversionCompleted"
+                            : plan.Conversion is null ? "LogStreamExtracted" : "LogStreamConverted",
+                        userMessageArgs: visualOutput
+                            ? [index, plan.Muxer, FormatByteSize(bytes)]
+                            : [index, $" ({plan.Muxer})", $", {FormatByteSize(bytes)}"], userSuccess: true);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
@@ -632,6 +675,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             "-stats_period", "0.5", "-progress", "pipe:2", "-i", input,
             "-map", $"0:{index}", "-c", options.Encoder.Name };
         AppendConversionOptions(args, options);
+        if (options.Format.Muxer == "image2") args.AddRange(["-frames:v", "1", "-update", "1"]);
         args.AddRange(["-f", options.Format.Muxer, temp]);
         return args.ToArray();
     }
@@ -658,7 +702,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         var stream = plan.Stream;
         var kind = stream.VisualKind switch
         {
-            VisualKind.Video => "video", VisualKind.Image => "image",
+            VisualKind.Video => "video", VisualKind.Image => "image", VisualKind.Animation => "animation",
             _ when stream.CodecType == "audio" => "audio",
             _ => "subtitle"
         };

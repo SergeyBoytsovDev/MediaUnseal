@@ -50,6 +50,15 @@
   <Style Selector="TableViewColumnHeader"><Setter Property="Padding" Value="6,2"/></Style>
   <Style Selector="TableViewCell"><Setter Property="Padding" Value="0,2"/><Setter Property="VerticalContentAlignment" Value="Center"/></Style>
  </Window.Styles>
+ <Window.Resources>
+  <DataTemplate x:Key="OutputFormatTemplate" x:CompileBindings="False">
+   <StackPanel>
+    <Border Height="1" Margin="0,4,0,5" Background="{DynamicResource LineBrush}"
+            IsVisible="False" Loaded="OutputFormatDivider_Loaded"/>
+    <TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis"/>
+   </StackPanel>
+  </DataTemplate>
+ </Window.Resources>
  <Grid RowDefinitions="44,*,64">
   <Border Grid.Row="0" Background="{DynamicResource HeaderBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1">
    <Grid ColumnDefinitions="Auto,*,Auto" Margin="14,0,4,0">
@@ -308,18 +317,28 @@
         </Grid>
         <TextBlock Text="{DynamicResource Loc_MainVideoFormat}" FontWeight="SemiBold" Margin="0,8,0,0"/>
         <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
-         <ComboBox x:Name="VideoFormatBox" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
+         <ComboBox x:Name="VideoFormatBox" ItemTemplate="{StaticResource OutputFormatTemplate}" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
          <Button x:Name="VideoConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="video" IsEnabled="False"/>
         </Grid>
         <TextBlock Text="{DynamicResource Loc_MainAudioFormat}" FontWeight="SemiBold"/>
         <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
-         <ComboBox x:Name="AudioFormatBox" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
+         <ComboBox x:Name="AudioFormatBox" ItemTemplate="{StaticResource OutputFormatTemplate}" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
          <Button x:Name="AudioConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="audio" IsEnabled="False"/>
         </Grid>
         <TextBlock Text="{DynamicResource Loc_MainSubtitleFormat}" FontWeight="SemiBold"/>
         <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
-         <ComboBox x:Name="SubtitleFormatBox" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
+         <ComboBox x:Name="SubtitleFormatBox" ItemTemplate="{StaticResource OutputFormatTemplate}" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
          <Button x:Name="SubtitleConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="subtitle" IsEnabled="False"/>
+        </Grid>
+        <TextBlock Text="{DynamicResource Loc_MainImageFormat}" FontWeight="SemiBold"/>
+        <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
+         <ComboBox x:Name="ImageFormatBox" ItemTemplate="{StaticResource OutputFormatTemplate}" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch" ToolTip.Tip="{DynamicResource Loc_ConversionImageOutputsHint}"/>
+         <Button x:Name="ImageConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="image" IsEnabled="False"/>
+        </Grid>
+        <TextBlock Text="{DynamicResource Loc_MainAnimationFormat}" FontWeight="SemiBold"/>
+        <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
+         <ComboBox x:Name="AnimationFormatBox" ItemTemplate="{StaticResource OutputFormatTemplate}" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch" ToolTip.Tip="{DynamicResource Loc_ConversionAnimationOutputsHint}"/>
+         <Button x:Name="AnimationConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="animation" IsEnabled="False"/>
         </Grid>
         <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Margin="0,7"/>
         <CheckBox Content="{DynamicResource Loc_MainSaveMetadata}" IsChecked="{Binding PreserveMetadata, Mode=TwoWay}"/>

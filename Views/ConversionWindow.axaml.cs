@@ -27,8 +27,6 @@ public partial class ConversionWindow : Window
     private TrackExportPlan? _copyPlan;
     private string? _encoderNoteKey;
     private object?[] _encoderNoteArguments = [];
-    private string? _validationKey;
-    private object?[] _validationArguments = [];
     private static LocalizationManager L => LocalizationManager.Active;
     private const string CompatibleSearch = "Compatible encoders";
     private const string HardwareSearch = "Hardware encoders";
@@ -63,17 +61,22 @@ public partial class ConversionWindow : Window
         _stream = stream;
         _existing = existing;
         _shutdown = shutdown;
-        _kind = stream.VisualKind == VisualKind.Video ? "video" : stream.CodecType ?? "";
+        _kind = stream.VisualKind switch
+        {
+            VisualKind.Video => "video", VisualKind.Image => "image",
+            VisualKind.Animation => "animation", _ => stream.CodecType ?? ""
+        };
         RefreshHeading();
-        Width = _kind == "subtitle" ? 570 : 620;
-        VideoOptions.IsVisible = _kind == "video";
+        Width = _kind is "subtitle" or "image" ? 570 : 620;
+        VideoOptions.IsVisible = _kind is "video" or "animation";
         AudioOptions.IsVisible = _kind == "audio";
         HardwareButton.IsVisible = _kind == "video";
         Grid.SetColumnSpan(MoreEncodersButton, _kind == "video" ? 1 : 2);
         _copyPlan = copyPlan;
         if (copyPlan is not null)
             _copyFormat = new(copyPlan.Muxer, copyPlan.Extension, L.Get("MainOriginalNoTranscode"),
-                _kind == "video" ? stream.Codec : null, _kind == "audio" ? stream.Codec : null,
+                _kind is "video" or "image" or "animation" ? stream.Codec : null,
+                _kind == "audio" ? stream.Codec : null,
                 _kind == "subtitle" ? stream.Codec : null);
         FormatBox.ItemsSource = _copyFormat is null ? catalog.FormatsFor(_kind) :
             new[] { _copyFormat }.Concat(catalog.FormatsFor(_kind)).ToArray();
@@ -101,9 +104,14 @@ public partial class ConversionWindow : Window
         StreamHeading.Text = L.Get(_kind switch
         {
             "video" => "ConversionHeadingVideo",
+            "image" => "ConversionHeadingImage",
+            "animation" => "ConversionHeadingAnimation",
             "audio" => "ConversionHeadingAudio",
             _ => "ConversionHeadingSubtitles"
         });
+        VisualOutputHint.IsVisible = _kind is "image" or "animation";
+        VisualOutputHint.Text = _kind == "image" ? L.Get("ConversionImageOutputsHint")
+            : _kind == "animation" ? L.Get("ConversionAnimationOutputsHint") : "";
     }
 
     private void SetEncoderNote(string key, params object?[] arguments)
@@ -115,9 +123,13 @@ public partial class ConversionWindow : Window
 
     private void SetValidationMessage(string key, params object?[] arguments)
     {
-        _validationKey = key;
-        _validationArguments = arguments;
-        ValidationMessage.Text = L.Format(key, arguments);
+        SetEncoderNote(key, arguments);
+    }
+
+    private void SetValidationText(string message)
+    {
+        _encoderNoteKey = null;
+        EncoderNote.Text = message;
     }
 
     private void Localization_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -125,7 +137,6 @@ public partial class ConversionWindow : Window
         if (e.PropertyName != "Item[]") return;
         RefreshHeading();
         if (_encoderNoteKey is not null) EncoderNote.Text = L.Format(_encoderNoteKey, _encoderNoteArguments);
-        if (_validationKey is not null) ValidationMessage.Text = L.Format(_validationKey, _validationArguments);
         if (_copyFormat is null || FormatBox.ItemsSource is not System.Collections.IEnumerable source) return;
         var format = FormatBox.SelectedItem;
         var encoder = EncoderBox.SelectedItem;
@@ -147,7 +158,8 @@ public partial class ConversionWindow : Window
         AudioOptions.IsEnabled = !copying;
         if (copying)
         {
-            EncoderBox.ItemsSource = new[] { new ConversionEncoder("copy", _stream?.Codec ?? "copy", _kind,
+            EncoderBox.ItemsSource = new[] { new ConversionEncoder("copy", _stream?.Codec ?? "copy",
+                _kind is "image" or "animation" ? "video" : _kind,
                 L.Get("ConversionCopyEncoderDescription")) };
             EncoderBox.SelectedIndex = 0;
             SetEncoderNote("ConversionCopyNote");
@@ -177,6 +189,18 @@ public partial class ConversionWindow : Window
             || !encoder.IsHardware || divider.FindAncestorOfType<ComboBoxItem>() is null
             || EncoderBox.ItemsSource is not System.Collections.IEnumerable items) return;
         divider.IsVisible = items.Cast<ConversionEncoder>().FirstOrDefault(item => item.IsHardware) == encoder;
+    }
+
+    private void FormatDivider_Loaded(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Border divider || divider.DataContext is not ConversionFormat format
+            || divider.FindAncestorOfType<ComboBoxItem>() is null
+            || FormatBox.ItemsSource is not System.Collections.IEnumerable source) return;
+        var formats = source.Cast<ConversionFormat>().Where(f => !ReferenceEquals(f, _copyFormat)).ToArray();
+        var secondary = _kind is "video" or "animation"
+            && FfmpegConversionCatalog.Category(format) != _kind;
+        divider.IsVisible = secondary && formats.FirstOrDefault(f =>
+            FfmpegConversionCatalog.Category(f) != _kind) == format;
     }
 
     private async void MoreEncoders_Click(object? sender, RoutedEventArgs e)
@@ -246,7 +270,7 @@ public partial class ConversionWindow : Window
 
     private async void Encoder_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (_catalog is null || _kind != "video" || EncoderBox.SelectedItem is not ConversionEncoder encoder) return;
+        if (_catalog is null || _kind is not ("video" or "animation") || EncoderBox.SelectedItem is not ConversionEncoder encoder) return;
         var revision = ++_encoderRevision;
         CrfBox.IsEnabled = false;
         try
@@ -354,21 +378,21 @@ public partial class ConversionWindow : Window
             double? Decimal(ComboBox box) => string.IsNullOrWhiteSpace(box.Text) ? null
                 : double.Parse(box.Text, NumberStyles.Float, CultureInfo.CurrentCulture);
             var options = new ConversionSettings(format, encoder,
-                _kind == "video" && CrfBox.IsEnabled ? Number(CrfBox) : null,
-                _kind == "video" ? Number(VideoBitrateBox) : _kind == "audio" ? Number(AudioBitrateBox) : null,
-                _kind == "video" ? Number(WidthBox) : null,
-                _kind == "video" ? Number(HeightBox) : null,
-                _kind == "video" ? Decimal(FrameRateBox) : null,
+                _kind is "video" or "animation" && CrfBox.IsEnabled ? Number(CrfBox) : null,
+                _kind is "video" or "animation" ? Number(VideoBitrateBox) : _kind == "audio" ? Number(AudioBitrateBox) : null,
+                _kind is "video" or "animation" ? Number(WidthBox) : null,
+                _kind is "video" or "animation" ? Number(HeightBox) : null,
+                _kind is "video" or "animation" ? Decimal(FrameRateBox) : null,
                 _kind == "audio" ? Number(SampleRateBox) : null,
                 _kind == "audio" ? Number(ChannelsBox) : null,
                 _kind == "audio" ? Number(QualityBox) : null);
             if (options.Validate(_stream) is { } error)
-            { _validationKey = null; ValidationMessage.Text = error; return; }
+            { SetValidationText(error); return; }
             SaveButton.IsEnabled = false;
             SetValidationMessage("ConversionCheckingCompatibility");
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(_shutdown, _closed.Token);
             var check = await _catalog.CheckCombinationAsync(format, encoder, linked.Token, options);
-            if (!check.Compatible) { _validationKey = null; ValidationMessage.Text = check.Reason; return; }
+            if (!check.Compatible) { SetValidationText(check.Reason); return; }
             Close(options);
         }
         catch (FormatException) { SetValidationMessage("ConversionNumbersOrEmpty"); }

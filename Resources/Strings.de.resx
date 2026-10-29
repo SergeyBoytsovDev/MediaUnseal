@@ -1575,4 +1575,16 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
   <data name="ViewNotFound" xml:space="preserve">
     <value>Ansicht nicht gefunden: {0}</value>
   </data>
+  <data name="MainImageFormat" xml:space="preserve"><value>Bildformat</value></data>
+  <data name="MainAnimationFormat" xml:space="preserve"><value>Animationsformat</value></data>
+  <data name="MainOriginalImage" xml:space="preserve"><value>{0} — Originalbild ohne Neukodierung; Datei .{1}</value></data>
+  <data name="MainOriginalAnimation" xml:space="preserve"><value>{0} — Originalanimation ohne Neukodierung; Datei .{1}</value></data>
+  <data name="ConversionHeadingImage" xml:space="preserve"><value>Einstellungen für die Bildkonvertierung</value></data>
+  <data name="ConversionHeadingAnimation" xml:space="preserve"><value>Einstellungen für die Animationskonvertierung</value></data>
+  <data name="ConversionAnimationOutputsHint" xml:space="preserve"><value>Animationen können als Animation oder Video gespeichert werden. Die Ausgabe eines einzelnen Standbilds ist nicht verfügbar.</value></data>
+  <data name="ConversionImageOutputsHint" xml:space="preserve"><value>Bilder können nur in Bildformaten gespeichert werden.</value></data>
+  <data name="LogVisualExtractionStarted" xml:space="preserve"><value>Bild oder Animation aus Stream #{0} wird als {1} extrahiert.</value></data>
+  <data name="LogVisualConversionStarted" xml:space="preserve"><value>Bild oder Animation aus Stream #{0} wird als {1} konvertiert.</value></data>
+  <data name="LogVisualExtractionCompleted" xml:space="preserve"><value>Bild oder Animation aus Stream #{0} extrahiert: {1}, {2}.</value></data>
+  <data name="LogVisualConversionCompleted" xml:space="preserve"><value>Bild oder Animation aus Stream #{0} konvertiert: {1}, {2}.</value></data>
 </root>

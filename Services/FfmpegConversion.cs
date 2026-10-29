@@ -19,7 +19,8 @@ public sealed record ConversionFormat(string Muxer, string Extension, string Des
     public string Display => $"{Extension.ToUpperInvariant()} — {Description} ({Muxer})";
     public string? DefaultCodec(string kind) => kind switch
     {
-        "video" => VideoCodec, "audio" => AudioCodec, "subtitle" => SubtitleCodec, _ => null
+        "video" or "image" or "animation" => VideoCodec,
+        "audio" => AudioCodec, "subtitle" => SubtitleCodec, _ => null
     };
 }
 
@@ -44,10 +45,17 @@ public sealed record ConversionSettings(ConversionFormat Format, ConversionEncod
 
     internal string? ValidationKey(MediaStreamInfo stream)
     {
-        var kind = stream.VisualKind == VisualKind.Video ? "video" : stream.CodecType;
-        if (kind is not ("video" or "audio" or "subtitle") || Encoder.Kind != kind
-            || Format.DefaultCodec(kind) is null)
+        var kind = stream.VisualKind switch
+        {
+            VisualKind.Video => "video", VisualKind.Image => "image",
+            VisualKind.Animation => "animation", _ => stream.CodecType
+        };
+        var encoderKind = kind is "video" or "image" or "animation" ? "video" : kind;
+        if (kind is not ("video" or "image" or "animation" or "audio" or "subtitle")
+            || Encoder.Kind != encoderKind || !FfmpegConversionCatalog.SupportsKind(Format, kind))
             return "MainValidationUnsupportedType";
+        if (!FfmpegConversionCatalog.IsEncoderSuitable(Format, Encoder))
+            return "MainValidationUnsupportedOutputFormat";
         if (!Regex.IsMatch(Format.Extension, @"\A[a-zA-Z0-9]{1,10}\z")
             || !Regex.IsMatch(Format.Muxer, @"\A[a-zA-Z0-9_]{1,64}\z")
             || !Regex.IsMatch(Encoder.Name, @"\A[a-zA-Z0-9_\-]{1,64}\z"))
@@ -63,7 +71,9 @@ public sealed record ConversionSettings(ConversionFormat Format, ConversionEncod
             || SampleRate is < 8000 or > 384000
             || Channels is < 1 or > 32 || Quality is < 0 or > 10)
             return "MainValidationOutOfRange";
-        if (kind != "video" && (Crf is not null || Width is not null || Height is not null || FrameRate is not null)
+        if (kind == "image" && BitRateKbps is not null
+            || kind is not ("video" or "animation")
+            && (Crf is not null || Width is not null || Height is not null || FrameRate is not null)
             || kind != "audio" && (SampleRate is not null || Channels is not null || Quality is not null))
             return "MainValidationWrongTypeParameters";
         return null;
@@ -83,18 +93,78 @@ public sealed class FfmpegConversionCatalog
     private FfmpegConversionCatalog(string ffmpeg, List<ConversionFormat> formats, List<ConversionEncoder> encoders)
     { _ffmpeg = ffmpeg; _formats = formats; _encoders = encoders; }
 
-    public IReadOnlyList<ConversionFormat> FormatsFor(string kind) => _formats
-        .Where(f => f.DefaultCodec(kind) is { } codec && _encoders.Any(e => e.Kind == kind && e.Codec == codec
-            && (kind != "subtitle" || e.Name is not ("dvbsub" or "dvdsub" or "xsub"))))
-        .OrderBy(f => f.Muxer switch
+    private static readonly HashSet<string> VideoMuxers = new(StringComparer.Ordinal)
+    { "mp4", "matroska", "mov", "webm", "avi", "mpegts", "mpeg", "nut", "asf", "flv", "ogv", "3gp", "3g2", "mxf" };
+    private static readonly HashSet<string> AnimationMuxers = new(StringComparer.Ordinal)
+    { "gif", "apng", "webp" };
+    private static readonly HashSet<string> AudioMuxers = new(StringComparer.Ordinal)
+    { "mp3", "wav", "flac", "adts", "ac3", "eac3", "dts", "ogg", "opus", "ipod", "aiff", "au", "caf" };
+    private static readonly HashSet<string> SubtitleMuxers = new(StringComparer.Ordinal)
+    { "srt", "ass", "webvtt", "microdvd", "subviewer", "sami", "lrc" };
+    private static readonly HashSet<string> StillImageCodecs = new(StringComparer.Ordinal)
+    { "png", "bmp", "tiff", "sgi", "qoi", "webp", "gif", "apng", "pam", "pbm", "pgm", "ppm", "exr", "jpegxl" };
+    private static readonly HashSet<string> SingleCodecAudioMuxers = new(StringComparer.Ordinal)
+    { "mp3", "flac", "adts", "ac3", "eac3", "dts", "opus" };
+
+    internal static bool IsEncoderSuitable(ConversionFormat format, ConversionEncoder encoder) =>
+        Category(format) switch
         {
-            "mp4" or "matroska" or "mov" or "webm" or "avi" or "mp3" or "adts" or "wav"
-                or "flac" or "ogg" or "opus" or "srt" or "ass" or "webvtt" => 0,
-            _ => 1
-        }).ThenBy(f => f.Extension, StringComparer.OrdinalIgnoreCase).ToArray();
+            "image" or "animation" => encoder.Kind == "video" && encoder.Codec == format.VideoCodec,
+            "video" => encoder.Kind == "video" && !StillImageCodecs.Contains(encoder.Codec)
+                && (format.Muxer != "webm" || encoder.Codec is "vp8" or "vp9" or "av1"),
+            "audio" => encoder.Kind == "audio" && (!SingleCodecAudioMuxers.Contains(format.Muxer)
+                || encoder.Codec == format.AudioCodec),
+            "subtitle" => encoder.Kind == "subtitle" && encoder.Codec == format.SubtitleCodec,
+            _ => false
+        };
+
+    internal static string Category(ConversionFormat format) => format.Muxer == "image2" ? "image"
+        : AnimationMuxers.Contains(format.Muxer) ? "animation"
+        : VideoMuxers.Contains(format.Muxer) ? "video"
+        : AudioMuxers.Contains(format.Muxer) ? "audio"
+        : SubtitleMuxers.Contains(format.Muxer) ? "subtitle" : "other";
+
+    internal static bool SupportsKind(ConversionFormat format, string kind) =>
+        kind switch
+        {
+            "video" or "animation" => Category(format) is "video" or "animation" && format.VideoCodec is not null,
+            "image" => Category(format) == "image" && format.VideoCodec is not null,
+            "audio" => Category(format) == "audio" && format.AudioCodec is not null,
+            "subtitle" => Category(format) == "subtitle" && format.SubtitleCodec is not null,
+            _ => false
+        };
+
+    private static int FormatPriority(string kind, ConversionFormat format)
+    {
+        if (kind == "animation" && Category(format) == "video") kind = "video";
+        else if (kind == "video" && Category(format) == "animation") kind = "animation";
+        string[] preferred = kind switch
+        {
+            "video" => ["mp4", "matroska", "mov", "webm", "avi"],
+            "animation" => ["gif", "apng", "webp"],
+            "image" => ["jpg", "png", "webp", "bmp", "tiff", "qoi", "gif"],
+            "audio" => ["mp3", "wav", "flac", "adts", "ogg", "opus", "ipod"],
+            "subtitle" => ["srt", "ass", "webvtt"],
+            _ => []
+        };
+        var value = kind == "image" ? format.Extension : format.Muxer;
+        var index = Array.IndexOf(preferred, value);
+        return index >= 0 ? index : preferred.Length;
+    }
+
+    public IReadOnlyList<ConversionFormat> FormatsFor(string kind) => _formats
+        .Where(f => SupportsKind(f, kind) && _encoders.Any(e => e.Kind ==
+            (kind is "video" or "image" or "animation" ? "video" : kind)
+            && e.Codec == f.DefaultCodec(kind)
+            && (kind != "subtitle" || e.Name is not ("dvbsub" or "dvdsub" or "xsub"))))
+        .OrderBy(f => kind == "animation" ? Category(f) == "animation" ? 0 : 1
+            : kind == "video" ? Category(f) == "video" ? 0 : 1 : 0)
+        .ThenBy(f => FormatPriority(kind, f))
+        .ThenBy(f => f.Extension, StringComparer.OrdinalIgnoreCase).ToArray();
 
     public IReadOnlyList<ConversionEncoder> EncodersFor(string kind) => _encoders
-        .Where(e => e.Kind == kind && (kind != "subtitle" || e.Name is not ("dvbsub" or "dvdsub" or "xsub")))
+        .Where(e => e.Kind == (kind is "image" or "animation" ? "video" : kind)
+            && (kind != "subtitle" || e.Name is not ("dvbsub" or "dvdsub" or "xsub")))
         .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase).ToArray();
 
     internal IReadOnlyList<ConversionEncoder> ConfirmedHardwareFor(ConversionFormat format) =>
@@ -113,13 +183,15 @@ public sealed class FfmpegConversionCatalog
     internal void RememberConfirmedAdditional(ConversionFormat format, string kind,
         IEnumerable<ConversionEncoder> encoders)
     {
-        if (!_formats.Contains(format) || format.DefaultCodec(kind) is null) return;
+        if (!_formats.Contains(format) || !SupportsKind(format, kind)) return;
         _confirmedAdditional[(format, kind)] = encoders
-            .Where(e => e.Kind == kind && !e.IsHardware && _encoders.Contains(e)).Distinct().ToArray();
+            .Where(e => e.Kind == (kind is "image" or "animation" ? "video" : kind)
+                && !e.IsHardware && _encoders.Contains(e) && IsEncoderSuitable(format, e)).Distinct().ToArray();
     }
 
     public ConversionEncoder? SuggestedEncoder(ConversionFormat format, string kind) =>
-        _encoders.Where(e => e.Kind == kind && e.Codec == format.DefaultCodec(kind))
+        _encoders.Where(e => e.Kind == (kind is "image" or "animation" ? "video" : kind)
+                && e.Codec == format.DefaultCodec(kind))
             .OrderBy(e => e.IsHardware).ThenBy(e => e.Name.StartsWith("lib", StringComparison.Ordinal) ? 0 : 1)
             .FirstOrDefault();
 
@@ -181,7 +253,17 @@ public sealed class FfmpegConversionCatalog
             finally { gate.Release(); }
         }).ToArray();
         var formats = await Task.WhenAll(tasks).ConfigureAwait(false);
-        catalog._formats.AddRange(formats.OfType<ConversionFormat>());
+        catalog._formats.AddRange(formats.OfType<ConversionFormat>().Where(f => f.Muxer != "image2"));
+        if (names.Contains("image2"))
+        {
+            foreach (var (extension, codec) in new[]
+            {
+                ("jpg", "mjpeg"), ("png", "png"), ("bmp", "bmp"), ("tiff", "tiff"),
+                ("qoi", "qoi"), ("webp", "webp"), ("gif", "gif")
+            })
+                if (catalog._encoders.Any(e => e.Kind == "video" && e.Codec == codec))
+                    catalog._formats.Add(new("image2", extension, codec.ToUpperInvariant(), codec, null, null));
+        }
         return catalog;
     }
 
@@ -191,6 +273,7 @@ public sealed class FfmpegConversionCatalog
     {
         if (!_formats.Contains(format) || !_encoders.Contains(encoder)
             || format.DefaultCodec(encoder.Kind) is null
+            || !IsEncoderSuitable(format, encoder)
             || settings is not null && (settings.Format != format || settings.Encoder != encoder))
             return (false, L.Get("MainValidationUnsupportedOutputFormat"), false);
         var directory = Path.Combine(Path.GetTempPath(), "trackextractor-probe-" + Guid.NewGuid().ToString("N"));
@@ -215,13 +298,30 @@ public sealed class FfmpegConversionCatalog
             args.AddRange(input);
             args.AddRange(["-map", "0:0", "-c", encoder.Name]);
             if (settings is not null) TrackExporter.AppendConversionOptions(args, settings);
+            if (format.Muxer == "image2") args.AddRange(["-frames:v", "1", "-update", "1"]);
             args.AddRange(["-f", format.Muxer, output]);
             var result = await RunAsync(args.ToArray(), token).ConfigureAwait(false);
             if (result.ExitCode != 0 && diagnostics is not null)
                 diagnostics($"{encoder.Name}: FFmpeg exit code {result.ExitCode}; {result.Output}");
-            return result.ExitCode == 0 && File.Exists(output) && new FileInfo(output).Length > 0
-                ? (true, "", false) : (false, L.Format("MainValidationProbeFileFailed",
+            if (result.ExitCode != 0 || !File.Exists(output) || new FileInfo(output).Length == 0)
+                return (false, L.Format("MainValidationProbeFileFailed",
                     encoder.Name, format.Extension.ToUpperInvariant(), result.ExitCode), false);
+            if (CommandRunner is null && encoder.Kind is "video" or "audio")
+            {
+                var decoded = await RunAsync(encoder.Kind == "video"
+                    ? ["-hide_banner", "-loglevel", "error", "-nostdin", "-i", output,
+                        "-map", "0:v:0", "-frames:v", "1", "-f", "null", "-"]
+                    : ["-hide_banner", "-loglevel", "error", "-nostdin", "-i", output,
+                        "-map", "0:a:0", "-t", "0.05", "-f", "null", "-"], token).ConfigureAwait(false);
+                if (decoded.ExitCode != 0)
+                {
+                    diagnostics?.Invoke($"{encoder.Name}: output stream could not be decoded; " +
+                        $"FFmpeg exit code {decoded.ExitCode}; {decoded.Output}");
+                    return (false, L.Format("MainValidationProbeFileFailed",
+                        encoder.Name, format.Extension.ToUpperInvariant(), decoded.ExitCode), false);
+                }
+            }
+            return (true, "", false);
         }
         catch (TimeoutException)
         {

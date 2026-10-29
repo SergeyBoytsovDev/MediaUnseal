@@ -16,11 +16,18 @@
  <Grid RowDefinitions="Auto,Auto">
    <StackPanel Margin="18,16" Spacing="8">
     <TextBlock x:Name="StreamHeading" FontSize="18" FontWeight="SemiBold"/>
+    <TextBlock x:Name="VisualOutputHint" Classes="muted" TextWrapping="Wrap" IsVisible="False"/>
     <TextBlock Text="{DynamicResource Loc_ConversionSeparateFilesHint}" Classes="muted" TextWrapping="Wrap"/>
     <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Margin="0,4,0,2"/>
     <TextBlock Text="{DynamicResource Loc_ConversionOutputFormat}" FontWeight="SemiBold"/>
     <ComboBox x:Name="FormatBox" SelectionChanged="Format_SelectionChanged" HorizontalAlignment="Stretch">
-     <ComboBox.ItemTemplate><DataTemplate x:DataType="services:ConversionFormat"><TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis"/></DataTemplate></ComboBox.ItemTemplate>
+     <ComboBox.ItemTemplate><DataTemplate x:DataType="services:ConversionFormat">
+      <StackPanel>
+       <Border Height="1" Margin="0,4,0,5" Background="{DynamicResource LineBrush}"
+               IsVisible="False" Loaded="FormatDivider_Loaded"/>
+       <TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis"/>
+      </StackPanel>
+     </DataTemplate></ComboBox.ItemTemplate>
     </ComboBox>
     <TextBlock Text="{DynamicResource Loc_ConversionEncoder}" FontWeight="SemiBold" Margin="0,3,0,0"/>
     <ComboBox x:Name="EncoderBox" SelectionChanged="Encoder_SelectionChanged" HorizontalAlignment="Stretch">
@@ -77,7 +84,6 @@
       </Grid>
      </StackPanel>
     </Border>
-    <TextBlock x:Name="ValidationMessage" Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap"/>
    </StackPanel>
   <Border Grid.Row="1" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="16,10">

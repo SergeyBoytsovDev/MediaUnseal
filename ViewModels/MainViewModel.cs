@@ -1157,7 +1157,7 @@ public sealed class ExportTrackViewModel : ViewModelBase
     public string Caption { get; }
     public ExportDecision Decision { get; }
     public bool CanConvert => Stream.Index is >= 0 &&
-        (Stream.VisualKind == VisualKind.Video || Stream.CodecType == "audio"
+        (Stream.VisualKind is VisualKind.Video or VisualKind.Image or VisualKind.Animation || Stream.CodecType == "audio"
             || Stream.CodecType == "subtitle" && Stream.SubtitleKind == SubtitleKind.Text);
     public bool IsSupported => Decision.Plan is not null;
     public ConversionSettings? Conversion
@@ -1231,7 +1231,7 @@ public sealed class ExportTrackViewModel : ViewModelBase
     public string IndexDisplay => Stream.Index?.ToString(CultureInfo.InvariantCulture) ?? "—";
     public string TypeDisplay => Stream.VisualKind switch
     {
-        VisualKind.Image => L.Get(Stream.IsCoverArt ? "MainTypeCover" : "MainTypeImage"),
+        VisualKind.Image => L.Get(Stream.IsCoverArt ? "MainDescriptionCover" : "MainTypeImage"),
         VisualKind.Animation => L.Get("MainTypeAnimation"),
         VisualKind.Video => L.Get("MainTypeVideo"),
         _ => Stream.CodecType switch
