@@ -41,6 +41,8 @@
       </DataTemplate>
      </ComboBox.ItemTemplate>
     </ComboBox>
+    <CheckBox x:Name="ForceReencodeBox" Content="{DynamicResource Loc_ConversionForceReencode}"
+              IsVisible="False"/>
     <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,4,0,0">
      <Button x:Name="MoreEncodersButton" Content="{DynamicResource Loc_ConversionFindCompatible}" Click="MoreEncoders_Click"
              HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="13" Padding="8,6" MinHeight="36"/>

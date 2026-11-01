@@ -231,6 +231,7 @@
   <data name="MainInvalidOutputFolder" xml:space="preserve"><value>Недопустимый путь к папке сохранения.</value></data>
   <data name="MainOutputFolderMissingChoose" xml:space="preserve"><value>Папка сохранения не найдена. Выберите другую папку.</value></data>
   <data name="MainOutputFolderSelected" xml:space="preserve"><value>Папка выбрана. Совпадающие имена получат номер; существующие файлы сохранятся.</value></data>
+  <data name="LogOutputFolderChanged" xml:space="preserve"><value>Папка сохранения изменена.</value></data>
   <data name="MainExportRequirements" xml:space="preserve"><value>Выберите доступные дорожки и папку сохранения; проверьте FFmpeg и FFprobe.</value></data>
   <data name="MainPreparingExport" xml:space="preserve"><value>Подготовка обработки...</value></data>
   <data name="MainStatusWithTime" xml:space="preserve"><value>{0} Время: {1}</value></data>
@@ -271,6 +272,9 @@
   <data name="MainOriginalAudio" xml:space="preserve"><value>{0} — исходный — исходный звук</value></data>
   <data name="MainOriginalVideo" xml:space="preserve"><value>{0} — исходный — видео; файл .{1}</value></data>
   <data name="MainOriginalNoTranscode" xml:space="preserve"><value>Исходный — без перекодирования</value></data>
+  <data name="MainSourceFormatOriginal" xml:space="preserve"><value>{0} — Исходный</value></data>
+  <data name="MainOriginalShort" xml:space="preserve"><value>Исходный</value></data>
+  <data name="MainMixedFormatsOriginal" xml:space="preserve"><value>Разные форматы — Исходный</value></data>
   <data name="MainFormatsReadFailed" xml:space="preserve"><value>Не удалось прочитать форматы FFmpeg.</value></data>
   <data name="MainConversionUnavailable" xml:space="preserve"><value>Для выбранного потока конвертация недоступна.</value></data>
   <data name="MainNoSuitableEncoder" xml:space="preserve"><value>Нет подходящего кодировщика для этого формата.</value></data>
@@ -411,6 +415,8 @@
   <data name="ConversionHeadingAudio" xml:space="preserve"><value>Настройки конвертации аудио</value></data>
   <data name="ConversionHeadingSubtitles" xml:space="preserve"><value>Настройки конвертации субтитров</value></data>
   <data name="ConversionCopyEncoderDescription" xml:space="preserve"><value>копирование без перекодирования</value></data>
+  <data name="ConversionOriginalCopyCodec" xml:space="preserve"><value>Исходный (копирование без перекодирования) — {0}</value></data>
+  <data name="ConversionForceReencode" xml:space="preserve"><value>Повторно кодировать даже при совпадении кодека</value></data>
   <data name="ConversionCopyNote" xml:space="preserve"><value>Оригинальный поток будет скопирован без перекодирования.</value></data>
   <data name="ConversionOtherEncodersHint" xml:space="preserve"><value>Другие кодировщики можно проверить для выбранного формата.</value></data>
   <data name="ConversionCheckingAdditional" xml:space="preserve"><value>Проверка дополнительных кодировщиков…</value></data>

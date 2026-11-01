@@ -39,13 +39,30 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
         {
             if (!File.Exists(fullPath)) throw new FileNotFoundException("Файл не найден. Выберите другой файл.", fullPath);
             var size = new FileInfo(fullPath).Length;
-            var arguments = new[] { "-v", "error", "-show_format", "-show_streams", "-of", "json", "-i", fullPath };
+            var heifFile = IsHeifPath(fullPath);
+            var arguments = heifFile
+                ? new[] { "-v", "error", "-show_format", "-show_streams", "-show_stream_groups", "-of", "json", "-i", fullPath }
+                : new[] { "-v", "error", "-show_format", "-show_streams", "-of", "json", "-i", fullPath };
             var result = ProcessRunner is null
                 ? await RunProbeAsync(ffprobePath, arguments, deadline.Token).ConfigureAwait(false)
                 : await ProcessRunner(ffprobePath, arguments, deadline.Token).WaitAsync(deadline.Token).ConfigureAwait(false);
             if (result.ExitCode != 0)
                 throw new InvalidDataException($"FFprobe завершился с кодом {result.ExitCode}. Файл может быть повреждён или не поддерживается.");
             var media = ParseJson(result.Stdout, fullPath, size, inspectFileSignature: true);
+            if (heifFile)
+                diagnostics.Record(DiagnosticLevel.Info, "Analysis",
+                    $"HEIF classification: logical images={media.ImageCount}; " +
+                    $"tile grid={media.Streams.Any(s => s.HeifGroupIndex is not null)}; " +
+                    $"visible streams={media.Streams.Count}.");
+            if (Path.GetExtension(fullPath).Equals(".webp", StringComparison.OrdinalIgnoreCase))
+            {
+                var signature = ReadImageSignature(fullPath);
+                diagnostics.Record(DiagnosticLevel.Info, "Analysis",
+                    $"WebP classification: signature={signature.Format ?? "unrecognized"}; " +
+                    $"header animated={signature.Animated}; " +
+                    $"visual={string.Join(',', media.Streams.Where(s => s.CodecType == "video").Select(s => s.VisualKind))}; " +
+                    $"animation detected={media.AnimationCount > 0}.");
+            }
             diagnostics.Record(DiagnosticLevel.Info, "Analysis",
                 $"Analysis completed in {watch.Elapsed.TotalSeconds:F1} s; streams: {media.Streams.Count}.", fileDetails,
                 userMessageKey: "LogAnalysisCompleteCount", userMessageArgs: [media.Streams.Count], userSuccess: true);
@@ -85,9 +102,10 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
             if (format.ValueKind != JsonValueKind.Object && streamsJson.ValueKind != JsonValueKind.Array)
                 throw new InvalidDataException("FFprobe не вернул сведения о файле и потоках.");
             var formatName = ReadString(Property(format, "format_name"));
+            var formatTags = ReadTags(Property(format, "tags"));
             var formatDuration = ReadDuration(Property(format, "duration"));
-            var fileImage = inspectFileSignature && formatName?.Split(',').Any(token =>
-                token.Trim() is "image2" or "webp_pipe") == true
+            var fileImage = inspectFileSignature && (Path.GetExtension(path).Equals(".webp", StringComparison.OrdinalIgnoreCase)
+                || formatName?.Split(',').Any(token => token.Trim() is "image2" or "webp" or "webp_pipe") == true)
                 ? ReadImageSignature(path) : (null, false);
             var streams = new List<MediaStreamInfo>();
             if (streamsJson.ValueKind == JsonValueKind.Array)
@@ -104,7 +122,9 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
                     var frameCount = ReadLong(Property(item, "nb_frames")) ?? ReadLong(Property(item, "nb_read_frames"));
                     if (frameCount <= 0) frameCount = null;
                     var visual = ClassifyVisual(type, codec, formatName, tags, disposition, frameCount, streamDuration,
-                        streamsJson.GetArrayLength() == 1 ? fileImage : (null, false));
+                        streamsJson.GetArrayLength() == 1 || fileImage.Format == "WebP"
+                            && codec?.Equals("webp", StringComparison.OrdinalIgnoreCase) == true
+                            ? fileImage : (null, false));
                     streams.Add(new MediaStreamInfo(
                         ReadInt(Property(item, "index")), type, codec,
                         ReadString(Property(item, "profile")),
@@ -120,15 +140,91 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
                         ReadExtraProperties(item)));
                 }
             }
+            var recognizedHeif = IsHeifPath(path) && IsHeifContent(formatTags, Property(root, "stream_groups"));
+            if (recognizedHeif)
+            {
+                var image = HeifImage(streams, Property(root, "stream_groups"), path);
+                streams.RemoveAll(stream => stream.CodecType == "video");
+                if (image is not null) streams.Insert(0, image);
+            }
             return new MediaInfo(Path.GetFileName(path), path, size,
-                formatName, formatDuration,
-                ReadLong(Property(format, "bit_rate")), ReadTags(Property(format, "tags")), streams);
+                recognizedHeif ? Path.GetExtension(path)[1..].ToUpperInvariant() : formatName, formatDuration,
+                ReadLong(Property(format, "bit_rate")), formatTags, streams);
         }
         catch (JsonException ex) { throw new InvalidDataException("FFprobe вернул повреждённый JSON.", ex); }
     }
 
     private static JsonElement Property(JsonElement item, string name) =>
         item.ValueKind == JsonValueKind.Object && item.TryGetProperty(name, out var value) ? value : default;
+
+    private static bool IsHeifPath(string path) =>
+        Path.GetExtension(path).Equals(".heic", StringComparison.OrdinalIgnoreCase)
+        || Path.GetExtension(path).Equals(".heif", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsTileGrid(JsonElement group) =>
+        (ReadString(Property(group, "type")) ?? "").Replace(" ", "", StringComparison.Ordinal)
+            .Replace("_", "", StringComparison.Ordinal)
+            .Equals("TileGrid", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsHeifContent(IReadOnlyDictionary<string, string> tags, JsonElement groups)
+    {
+        if (groups.ValueKind == JsonValueKind.Array && groups.EnumerateArray().Any(IsTileGrid)) return true;
+        return tags.TryGetValue("major_brand", out var brand)
+            && brand.Trim().ToLowerInvariant() is "heic" or "heix" or "hevc" or "hevx" or "mif1" or "msf1";
+    }
+
+    private static MediaStreamInfo? HeifImage(IReadOnlyList<MediaStreamInfo> streams,
+        JsonElement groups, string path)
+    {
+        var videos = streams.Where(stream => stream.CodecType == "video" && stream.Index is >= 0).ToArray();
+        if (videos.Length == 0) return null;
+        if (groups.ValueKind == JsonValueKind.Array)
+        {
+            var grids = groups.EnumerateArray().Where(IsTileGrid)
+                .Select(group =>
+                {
+                    var component = Property(group, "components");
+                    var grid = component.ValueKind == JsonValueKind.Array
+                        ? component.EnumerateArray().FirstOrDefault() : default;
+                    var width = ReadInt(Property(grid, "width")) ?? ReadInt(Property(group, "width"));
+                    var height = ReadInt(Property(grid, "height")) ?? ReadInt(Property(group, "height"));
+                    var index = ReadInt(Property(group, "index"));
+                    var members = Property(group, "streams");
+                    var memberIndices = members.ValueKind == JsonValueKind.Array
+                        ? members.EnumerateArray().Select(item => ReadInt(Property(item, "index"))).ToArray()
+                        : [];
+                    var representative = videos.FirstOrDefault(stream => memberIndices.Contains(stream.Index));
+                    var isDefault = ReadInt(Property(Property(group, "disposition"), "default")) == 1;
+                    return (Index: index, Width: width, Height: height, Representative: representative, IsDefault: isDefault);
+                })
+                .OrderByDescending(grid => grid.IsDefault)
+                .ThenByDescending(grid => (long)(grid.Width ?? 0) * (grid.Height ?? 0)).ToArray();
+            if (grids.FirstOrDefault() is { Representative: { } source } chosen)
+                return chosen.Index is >= 0 && chosen.Width is > 0 and <= 32768
+                    && chosen.Height is > 0 and <= 32768
+                    ? source with { Width = chosen.Width, Height = chosen.Height,
+                    FrameRate = null, FrameCount = 1, Duration = null,
+                    VisualKind = VisualKind.Image,
+                    ImageFormat = Path.GetExtension(path).Equals(".heif", StringComparison.OrdinalIgnoreCase)
+                        ? "HEIF" : "HEIC", IsCoverArt = false,
+                    HeifGroupIndex = chosen.Index } : null;
+            if (groups.EnumerateArray().Any(IsTileGrid)) return null;
+        }
+        var primary = videos.Where(stream => stream.Disposition.GetValueOrDefault("tile") != 1)
+            .OrderByDescending(stream => stream.Disposition.GetValueOrDefault("default") == 1)
+            .ThenByDescending(stream => (long)(stream.Width ?? 0) * (stream.Height ?? 0))
+            .FirstOrDefault();
+        return primary is null ? null : primary with
+        {
+            FrameRate = null, FrameCount = 1, Duration = null,
+            VisualKind = VisualKind.Image,
+            ImageFormat = Path.GetExtension(path).Equals(".heif", StringComparison.OrdinalIgnoreCase) ? "HEIF" : "HEIC",
+            IsCoverArt = false
+        };
+    }
+
+    internal static string? HeifGroupMap(MediaStreamInfo stream) =>
+        stream.HeifGroupIndex is >= 0 and var index ? $"[0:g:{index}]" : null;
 
     private static Dictionary<string, string> ReadExtraProperties(JsonElement item)
     {
@@ -249,20 +345,22 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
                 ? (VisualKind.Image, imageFormat, coverMarker)
                 : (VisualKind.Unknown, imageFormat, false);
         if (attached) return (VisualKind.Image, imageFormat, true);
-        if (fileImage.Animated && fileImage.Format == imageFormat)
-            return (VisualKind.Animation, imageFormat, false);
+        if (fileImage.Format == "WebP")
+            return (fileImage.Animated ? VisualKind.Animation : VisualKind.Image, "WebP", false);
         if (still) return (VisualKind.Image, imageFormat, coverMarker);
         if (fileImage.Format is not null && fileImage.Format == imageFormat
             && (fileImage.Animated || frames is null or 1))
             return (fileImage.Animated ? VisualKind.Animation : VisualKind.Image, imageFormat, false);
 
         var formats = formatName?.Split(',', StringSplitOptions.TrimEntries) ?? [];
-        var animationContainer = formats.Any(f => f is "gif" or "apng" or "gif_pipe" or "apng_pipe" or "webp_pipe");
+        var animationContainer = formats.Any(f => f is "gif" or "apng" or "gif_pipe" or "apng_pipe" or "webp" or "webp_pipe");
         if (animationContainer && imageFormat is not null)
             return frames switch
             {
                 > 1 => (VisualKind.Animation, imageFormat, false),
                 1 => (VisualKind.Image, imageFormat, false),
+                _ when codec == "apng" && formats.Any(f => f is "apng" or "apng_pipe")
+                    => (VisualKind.Animation, imageFormat, false),
                 _ => (VisualKind.Unknown, imageFormat, false)
             };
 
@@ -285,7 +383,7 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
         return (VisualKind.Video, null, false);
     }
 
-    private static (string? Format, bool Animated) ReadImageSignature(string path)
+    internal static (string? Format, bool Animated) ReadImageSignature(string path)
     {
         try
         {

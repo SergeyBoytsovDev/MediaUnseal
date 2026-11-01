@@ -14,9 +14,13 @@ using TrackExtractor.Models;
 namespace TrackExtractor.Services;
 
 public sealed record ConversionFormat(string Muxer, string Extension, string Description,
-    string? VideoCodec, string? AudioCodec, string? SubtitleCodec)
+    string? VideoCodec, string? AudioCodec, string? SubtitleCodec, bool Original = false)
 {
-    public string Display => $"{Extension.ToUpperInvariant()} — {Description} ({Muxer})";
+    public string Display => Original
+        ? $"{(Extension.Equals("jpg", StringComparison.OrdinalIgnoreCase) ? "JPEG" :
+            Extension.Equals("webp", StringComparison.OrdinalIgnoreCase) ? "WebP" :
+            Extension.ToUpperInvariant())} — {Description}"
+        : $"{Extension.ToUpperInvariant()} — {Description} ({Muxer})";
     public string? DefaultCodec(string kind) => kind switch
     {
         "video" or "image" or "animation" => VideoCodec,
@@ -26,7 +30,7 @@ public sealed record ConversionFormat(string Muxer, string Extension, string Des
 
 public sealed record ConversionEncoder(string Name, string Codec, string Kind, string Description)
 {
-    public string Display => $"{Name} — {Description}";
+    public string Display => Name == "copy" ? Description : $"{Name} — {Description}";
     public bool IsHardware => Name.EndsWith("_nvenc", StringComparison.Ordinal)
         || Name.EndsWith("_qsv", StringComparison.Ordinal)
         || Name.EndsWith("_amf", StringComparison.Ordinal)
@@ -38,7 +42,8 @@ public sealed record ConversionEncoder(string Name, string Codec, string Kind, s
 
 public sealed record ConversionSettings(ConversionFormat Format, ConversionEncoder Encoder,
     int? Crf = null, int? BitRateKbps = null, int? Width = null, int? Height = null,
-    double? FrameRate = null, int? SampleRate = null, int? Channels = null, int? Quality = null)
+    double? FrameRate = null, int? SampleRate = null, int? Channels = null, int? Quality = null,
+    bool ForceReencode = false)
 {
     private static LocalizationManager L => LocalizationManager.Active;
     public string? Validate(MediaStreamInfo stream) => ValidationKey(stream) is { } key ? L.Get(key) : null;
@@ -162,6 +167,10 @@ public sealed class FfmpegConversionCatalog
         .ThenBy(f => FormatPriority(kind, f))
         .ThenBy(f => f.Extension, StringComparer.OrdinalIgnoreCase).ToArray();
 
+    internal ConversionFormat? FindFormat(string muxer, string extension, string kind) =>
+        _formats.FirstOrDefault(format => format.Muxer == muxer && format.Extension == extension
+            && SupportsKind(format, kind));
+
     public IReadOnlyList<ConversionEncoder> EncodersFor(string kind) => _encoders
         .Where(e => e.Kind == (kind is "image" or "animation" ? "video" : kind)
             && (kind != "subtitle" || e.Name is not ("dvbsub" or "dvdsub" or "xsub")))
@@ -192,7 +201,10 @@ public sealed class FfmpegConversionCatalog
     public ConversionEncoder? SuggestedEncoder(ConversionFormat format, string kind) =>
         _encoders.Where(e => e.Kind == (kind is "image" or "animation" ? "video" : kind)
                 && e.Codec == format.DefaultCodec(kind))
-            .OrderBy(e => e.IsHardware).ThenBy(e => e.Name.StartsWith("lib", StringComparison.Ordinal) ? 0 : 1)
+            .OrderBy(e => e.IsHardware)
+            .ThenBy(e => (format.Muxer is "avi" or "3gp" or "3g2") && e.Name == "mpeg4" ? 0 : 1)
+            .ThenBy(e => e.Name.StartsWith("lib", StringComparison.Ordinal) ? 0 : 1)
+            .ThenBy(e => e.Name, StringComparer.Ordinal)
             .FirstOrDefault();
 
     public bool Contains(ConversionSettings settings) => _formats.Contains(settings.Format) && _encoders.Contains(settings.Encoder);
@@ -209,7 +221,11 @@ public sealed class FfmpegConversionCatalog
             var result = await RunAsync(["-hide_banner", "-loglevel", "error", "-nostdin", "-y",
                 "-i", source, "-map", $"0:{streamIndex}", "-t", "0.1", "-c", "copy",
                 "-f", format.Muxer, output], token).ConfigureAwait(false);
-            return result.ExitCode == 0 && File.Exists(output) && new FileInfo(output).Length > 0;
+            if (result.ExitCode != 0 || !File.Exists(output) || new FileInfo(output).Length == 0) return false;
+            if (Category(format) is not ("video" or "animation")) return true;
+            var decoded = await RunAsync(["-hide_banner", "-loglevel", "error", "-nostdin", "-i", output,
+                "-map", "0:v:0", "-frames:v", "1", "-f", "null", "-"], token).ConfigureAwait(false);
+            return decoded.ExitCode == 0;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception
             or TimeoutException or InvalidDataException) { return false; }
@@ -253,7 +269,10 @@ public sealed class FfmpegConversionCatalog
             finally { gate.Release(); }
         }).ToArray();
         var formats = await Task.WhenAll(tasks).ConfigureAwait(false);
-        catalog._formats.AddRange(formats.OfType<ConversionFormat>().Where(f => f.Muxer != "image2"));
+        catalog._formats.AddRange(formats.OfType<ConversionFormat>().Where(f => f.Muxer != "image2")
+            .Select(f => (f.Muxer is "3gp" or "3g2")
+                && catalog._encoders.Any(e => e.Kind == "video" && e.Name == "mpeg4")
+                    ? f with { VideoCodec = "mpeg4" } : f));
         if (names.Contains("image2"))
         {
             foreach (var (extension, codec) in new[]
@@ -283,9 +302,11 @@ public sealed class FfmpegConversionCatalog
             Directory.CreateDirectory(directory);
             string[] input;
             if (encoder.Kind == "video")
-                input = encoder.IsHardware
-                    ? ["-f", "lavfi", "-i", "testsrc2=size=320x240:rate=30:duration=0.2", "-frames:v", "3"]
-                    : ["-f", "lavfi", "-i", "color=c=black:s=64x64:r=1:d=1", "-frames:v", "1"];
+                input = format.Muxer == "image2"
+                    ? ["-f", "lavfi", "-i", "color=c=black:s=64x64:r=25:d=0.2", "-frames:v", "1"]
+                    : ["-f", "lavfi", "-i", format.Muxer is "3gp" or "3g2"
+                        ? "testsrc2=size=176x144:rate=25:duration=0.2"
+                        : "testsrc2=size=320x240:rate=25:duration=0.2", "-frames:v", "3"];
             else if (encoder.Kind == "audio")
                 input = ["-f", "lavfi", "-i", "sine=frequency=440:sample_rate=48000:duration=0.2", "-t", "0.2"];
             else
@@ -298,6 +319,9 @@ public sealed class FfmpegConversionCatalog
             args.AddRange(input);
             args.AddRange(["-map", "0:0", "-c", encoder.Name]);
             if (settings is not null) TrackExporter.AppendConversionOptions(args, settings);
+            if (encoder.Kind == "video") TrackExporter.AppendVisualOutputOptions(args,
+                settings ?? new ConversionSettings(format, encoder),
+                encoder.Name is "libvpx" or "libvpx-vp9" or "mpeg1video" or "mpeg2video");
             if (format.Muxer == "image2") args.AddRange(["-frames:v", "1", "-update", "1"]);
             args.AddRange(["-f", format.Muxer, output]);
             var result = await RunAsync(args.ToArray(), token).ConfigureAwait(false);

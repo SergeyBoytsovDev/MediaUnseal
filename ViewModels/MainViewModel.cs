@@ -85,6 +85,7 @@ public class MainViewModel : ViewModelBase
     private int _activeAnalyses;
     private TaskCompletionSource? _analysesIdle;
     private string? _outputDirectory;
+    private bool _outputDirectoryInputValid = true;
     private bool _isExporting;
     private string _exportStatus = L.Get("MainSelectFolderAndTracks");
     private Func<string>? _exportStatusFactory = () => L.Get("MainSelectFolderAndTracks");
@@ -299,7 +300,7 @@ public class MainViewModel : ViewModelBase
         }
     }
     public bool CanExtract => IsReady && !IsBusy && !IsAnalyzing && !IsExporting
-        && _formatsValid
+        && _formatsValid && _outputDirectoryInputValid
         && SelectedMedia is not null && OutputDirectory is not null
         && ExportTracks.Any(t => t.IsSelected) && ExportTracks.Where(t => t.IsSelected).All(t => t.Plan is not null);
     internal string? FfmpegExecutable => _ffmpegPath;
@@ -694,7 +695,69 @@ public class MainViewModel : ViewModelBase
         }
         // Keep the trailing separator for drive and filesystem roots.
         OutputDirectory = normalized;
+        SetOutputDirectoryInputValid(true);
         SetLocalizedExportStatus(() => L.Get("MainOutputFolderSelected"));
+    }
+
+    public void SetOutputDirectoryInputValid(bool valid)
+    {
+        if (_outputDirectoryInputValid == valid) return;
+        _outputDirectoryInputValid = valid;
+        OnPropertyChanged(nameof(CanExtract));
+    }
+
+    public bool TrySetUserOutputDirectory(string? path)
+    {
+        if (IsExporting) return false;
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            ReportExportErrorKey("MainInvalidOutputFolder");
+            _tools.Diagnostics.Record(DiagnosticLevel.Warn, "Output folder", "Output folder rejected: empty path.");
+            return false;
+        }
+        string normalized;
+        try
+        {
+            if (OperatingSystem.IsWindows() && path.Length == 2 && path[1] == ':')
+                path += Path.DirectorySeparatorChar;
+            normalized = Path.GetFullPath(path);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            ReportExportErrorKey("MainInvalidOutputFolder");
+            _tools.Diagnostics.Record(DiagnosticLevel.Warn, "Output folder",
+                $"Output folder rejected: invalid path; {ex.GetType().Name}; code {ex.HResult}.");
+            return false;
+        }
+        if (!Directory.Exists(normalized))
+        {
+            ReportExportErrorKey("MainOutputFolderMissingChoose");
+            _tools.Diagnostics.Record(DiagnosticLevel.Warn, "Output folder", "Output folder rejected: directory not found.");
+            return false;
+        }
+        try
+        {
+            var probePath = Path.Combine(normalized, ".trackextractor-" + Guid.NewGuid().ToString("N") + ".tmp");
+            using var probe = new FileStream(probePath, FileMode.CreateNew, FileAccess.Write,
+                FileShare.None, 1, FileOptions.DeleteOnClose);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
+        {
+            ReportExportErrorKey("MainOutputFolderAccessDenied");
+            _tools.Diagnostics.Record(DiagnosticLevel.Warn, "Output folder",
+                $"Output folder rejected: write probe failed; {ex.GetType().Name}; code {ex.HResult}.",
+                userMessageKey: "MainOutputFolderAccessDenied");
+            return false;
+        }
+        var changed = !string.Equals(OutputDirectory, normalized, OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+        OutputDirectory = normalized;
+        SetOutputDirectoryInputValid(true);
+        SetLocalizedExportStatus(() => L.Get("MainOutputFolderSelected"));
+        if (changed)
+            _tools.Diagnostics.Record(DiagnosticLevel.Info, "Output folder", "Output folder changed after write probe.",
+                userMessageKey: "LogOutputFolderChanged", userSuccess: true);
+        return true;
     }
 
     public async Task StartExportAsync(CancellationToken cancellationToken)

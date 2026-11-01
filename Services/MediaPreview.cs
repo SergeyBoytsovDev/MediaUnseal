@@ -18,6 +18,17 @@ internal static class MediaPreview
     internal static async Task<byte[]?> LoadAsync(MediaInfo media, string ffmpegPath,
         CancellationToken cancellationToken, Action<string>? report = null)
     {
+        var heif = media.Streams.FirstOrDefault(s => s.VisualKind == VisualKind.Image
+            && (s.ImageFormat is "HEIC" or "HEIF") && s.Index is >= 0);
+        if (heif is not null)
+        {
+            if (heif.Width is > 12000 || heif.Height is > 12000)
+            { report?.Invoke("HEIF preview skipped: dimensions exceed the limit."); return null; }
+            report?.Invoke($"HEIF preview: " + (heif.HeifGroupIndex is { } group
+                ? $"tile grid group #{group}" : $"stream #{heif.Index}") + "; scaled FFmpeg decoding started.");
+            return (await GrabFrameAsync(media.FullPath, ffmpegPath, heif.Index!.Value, false,
+                cancellationToken, report, MediaAnalyzer.HeifGroupMap(heif))).Image;
+        }
         var search = Stopwatch.StartNew();
         var covers = media.Streams.Where(s => s.ImageFormat is "JPEG" or "PNG"
                 && (s.IsCoverArt || MatroskaAttachments.IsCandidate(media, s)))
@@ -90,7 +101,7 @@ internal static class MediaPreview
                     $"read {navigation.SearchBytesRead} bytes.")); }
         }
         if (media.Streams.Count == 1 && media.Streams[0] is
-            { VisualKind: VisualKind.Image, Index: >= 0 } still)
+            { VisualKind: VisualKind.Image or VisualKind.Animation, Index: >= 0 } still)
         {
             if (still.Width is > 12000 || still.Height is > 12000)
             { report?.Invoke("Standalone image preview skipped: dimensions exceed the limit."); return null; }
@@ -113,8 +124,23 @@ internal static class MediaPreview
 
     private sealed record FrameResult(byte[]? Image, bool TimedOut = false);
 
+    internal static string[] FrameArguments(string source, string output, int index, bool seek,
+        string? groupMap = null)
+    {
+        var args = new List<string> { "-nostdin", "-hide_banner", "-loglevel", "error" };
+        if (seek) args.AddRange(["-ss", "00:00:01"]);
+        args.AddRange(["-i", source]);
+        if (groupMap is not null)
+            args.AddRange(["-filter_complex", $"{groupMap}scale=w='min(360,iw)':h=-2[preview]",
+                "-map", "[preview]"]);
+        else
+            args.AddRange(["-map", $"0:{index}", "-vf", "scale='min(360,iw)':-2"]);
+        args.AddRange(["-frames:v", "1", "-f", "image2", output]);
+        return args.ToArray();
+    }
+
     private static async Task<FrameResult> GrabFrameAsync(string source, string ffmpegPath, int index,
-        bool seek, CancellationToken cancellationToken, Action<string>? report)
+        bool seek, CancellationToken cancellationToken, Action<string>? report, string? mapOverride = null)
     {
         var watch = Stopwatch.StartNew();
         var directory = Path.Combine(Path.GetTempPath(), "TrackExtractor-preview-" + Guid.NewGuid().ToString("N"));
@@ -132,14 +158,8 @@ internal static class MediaPreview
                     RedirectStandardError = true, RedirectStandardInput = true
                 }
             };
-            var args = process.StartInfo.ArgumentList;
-            args.Add("-nostdin"); args.Add("-hide_banner"); args.Add("-loglevel"); args.Add("error");
-            if (seek) { args.Add("-ss"); args.Add("00:00:01"); }
-            args.Add("-i"); args.Add(source);
-            args.Add("-map"); args.Add($"0:{index}");
-            args.Add("-frames:v"); args.Add("1");
-            args.Add("-vf"); args.Add("scale='min(360,iw)':-2");
-            args.Add("-f"); args.Add("image2"); args.Add(output);
+            foreach (var arg in FrameArguments(source, output, index, seek, mapOverride))
+                process.StartInfo.ArgumentList.Add(arg);
             if (!process.Start()) { report?.Invoke("FFmpeg startup: failed."); return new(null); }
             report?.Invoke($"FFmpeg startup: {watch.Elapsed.TotalMilliseconds:0} ms; " +
                 $"stream #{index}, {(seek ? "with seek" : "from start")}.");

@@ -9,8 +9,8 @@
         Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
         FontFamily="Inter" FontSize="14">
  <Window.Styles>
-  <Style Selector="TreeViewItem:selected /template/ ContentPresenter">
-   <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
+  <Style Selector="TreeViewItem:selected">
+   <Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/>
   </Style>
   <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
    <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/>

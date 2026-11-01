@@ -693,6 +693,9 @@
   <data name="MainOutputFolderSelected" xml:space="preserve">
     <value>Ordner ausgewählt. Dateien mit gleichem Namen werden nummeriert; vorhandene Dateien bleiben erhalten.</value>
   </data>
+  <data name="LogOutputFolderChanged" xml:space="preserve">
+    <value>Ausgabeordner geändert.</value>
+  </data>
   <data name="MainExportRequirements" xml:space="preserve">
     <value>Wählen Sie verfügbare Streams und einen Ausgabeordner aus; prüfen Sie FFmpeg und FFprobe.</value>
   </data>
@@ -812,6 +815,15 @@
   </data>
   <data name="MainOriginalNoTranscode" xml:space="preserve">
     <value>Original – ohne Neukodierung</value>
+  </data>
+  <data name="MainSourceFormatOriginal" xml:space="preserve">
+    <value>{0} – Original</value>
+  </data>
+  <data name="MainOriginalShort" xml:space="preserve">
+    <value>Original</value>
+  </data>
+  <data name="MainMixedFormatsOriginal" xml:space="preserve">
+    <value>Verschiedene Formate – Original</value>
   </data>
   <data name="MainFormatsReadFailed" xml:space="preserve">
     <value>FFmpeg-Ausgabeformate konnten nicht gelesen werden.</value>
@@ -1235,6 +1247,12 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
   </data>
   <data name="ConversionCopyEncoderDescription" xml:space="preserve">
     <value>Kopieren ohne Neukodierung</value>
+  </data>
+  <data name="ConversionOriginalCopyCodec" xml:space="preserve">
+    <value>Original (Kopieren ohne Neukodierung) – {0}</value>
+  </data>
+  <data name="ConversionForceReencode" xml:space="preserve">
+    <value>Auch bei gleichem Codec neu kodieren</value>
   </data>
   <data name="ConversionCopyNote" xml:space="preserve">
     <value>Der Originalstream wird ohne Neukodierung kopiert.</value>

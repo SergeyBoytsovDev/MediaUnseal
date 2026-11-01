@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -24,6 +26,7 @@ namespace TrackExtractor.Views;
 public partial class MainWindow : Window
 {
     private readonly CancellationTokenSource _shutdown = new();
+    private int _folderFeedbackVersion;
     private SettingsWindow? _settingsWindow;
     private FfmpegConversionCatalog? _conversionCatalog;
     private string? _conversionCatalogPath;
@@ -330,23 +333,22 @@ public partial class MainWindow : Window
             {
                 var tracks = (DataContext as MainViewModel)?.ExportTracks
                     .Where(t => t.IsSelected && Kind(t) == kind).ToArray() ?? [];
-                var codecs = tracks.Select(t => t.Stream.Codec?.ToUpperInvariant() ?? "?")
-                    .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
                 var loc = LocalizationManager.Active;
-                var source = codecs.Length == 1
-                    ? loc.Format(kind == "subtitle" ? "MainOriginalSubtitles" : kind == "audio"
-                        ? codecs[0] switch { "AC3" => "MainOriginalCompressedAudio",
-                            "DTS" => "MainOriginalMultichannelAudio", _ => "MainOriginalAudio" }
-                        : kind == "image" ? "MainOriginalImage" : kind == "animation"
-                        ? "MainOriginalAnimation" : "MainOriginalVideo",
-                        codecs[0], tracks[0].Decision.Plan?.Extension ?? "?")
-                    : loc.Get("MainOriginalNoTranscode");
+                var sourceFormats = tracks.Select(t => t.Decision.Plan?.Extension)
+                    .Where(extension => extension is not null)
+                    .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                var source = sourceFormats.Length == 1
+                    ? loc.Format("MainSourceFormatOriginal", SourceFormatName(sourceFormats[0]!))
+                    : tracks.Length > 0 ? loc.Get("MainMixedFormatsOriginal")
+                        : loc.Get("MainOriginalNoTranscode");
                 var choices = new List<FormatChoice> { new(source) };
                 if (_conversionCatalog is { } catalog)
                 {
                     var secondaryAdded = false;
                     foreach (var format in catalog.FormatsFor(kind))
                     {
+                        if (IsDuplicateOriginal(tracks, format))
+                            continue;
                         var labelKey = PopularFormats.GetValueOrDefault(kind)?
                             .FirstOrDefault(item => item.Muxer == format.Muxer).LabelKey;
                         var secondary = kind is "video" or "animation" &&
@@ -357,7 +359,14 @@ public partial class MainWindow : Window
                     }
                 }
                 _formatChoices.TryGetValue(kind, out var selected);
-                if (selected is { Format: not null } && !choices.Any(c => c.Format == selected.Format && c.Settings == selected.Settings))
+                if (selected is { Format: not null, Settings: null }
+                    && IsDuplicateOriginal(tracks, selected.Format))
+                {
+                    _formatChoices.Remove(kind);
+                    selected = null;
+                }
+                if (selected is { Format: not null }
+                    && !choices.Any(c => c.Format == selected.Format && c.Settings == selected.Settings))
                     choices.Add(selected);
                 var box = FormatBox(kind)!;
                 box.ItemsSource = choices;
@@ -373,6 +382,16 @@ public partial class MainWindow : Window
         }
         finally { _refreshingFormats = false; }
     }
+
+    private static string SourceFormatName(string extension) => extension.ToLowerInvariant() switch
+    {
+        "jpg" or "jpeg" => "JPEG", "webp" => "WebP", "vtt" => "WebVTT",
+        _ => extension.ToUpperInvariant()
+    };
+
+    internal static bool IsDuplicateOriginal(IReadOnlyList<ExportTrackViewModel> tracks,
+        ConversionFormat format) => tracks.Count > 0 && tracks.All(t => t.Decision.Plan is { } original
+            && original.Muxer == format.Muxer && original.Extension == format.Extension);
 
     private async Task LoadFormatsAsync()
     {
@@ -442,7 +461,8 @@ public partial class MainWindow : Window
                 if (track.Decision.Plan is { } original && original.Muxer == format.Muxer
                     && original.Extension == format.Extension)
                 { track.SetConversion(null); continue; }
-                if (kind != "image" && await _conversionCatalog.CheckCopyAsync(media.FullPath, track.Stream.Index!.Value,
+                if (ShouldTryCopy(kind, format)
+                    && await _conversionCatalog.CheckCopyAsync(media.FullPath, track.Stream.Index!.Value,
                     format, cancellation.Token))
                 {
                     track.SetCopyOverride(new(track.Stream, format.Extension, format.Muxer, false,
@@ -476,6 +496,9 @@ public partial class MainWindow : Window
         }
     }
 
+    internal static bool ShouldTryCopy(string kind, ConversionFormat format) =>
+        kind != "image" && !(kind == "animation" && FfmpegConversionCatalog.Category(format) == "video");
+
     private async void ConfigureFormat_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is not Button { Tag: string kind } || _conversionLoading ||
@@ -485,8 +508,15 @@ public partial class MainWindow : Window
         if (_conversionCatalog is null) await LoadFormatsAsync();
         if (_conversionCatalog is null) return;
         var choice = _formatChoices.GetValueOrDefault(kind);
+        var initialFormat = choice?.Format;
+        if (initialFormat is null && track.Decision.Plan is null)
+        {
+            var sourceExtension = Path.GetExtension(media.FullPath).TrimStart('.');
+            initialFormat = _conversionCatalog.FormatsFor(kind).FirstOrDefault(format =>
+                format.Extension.Equals(sourceExtension, StringComparison.OrdinalIgnoreCase));
+        }
         var dialog = new ConversionWindow(_conversionCatalog, viewModel.Diagnostics, track.Stream, choice?.Settings,
-            _shutdown.Token, choice?.Format, choice?.Format is null ? track.Decision.Plan : null);
+            _shutdown.Token, initialFormat, track.Decision.Plan);
         var settings = await dialog.ShowDialog<ConversionSettings?>(this);
         if (dialog.AppliedCopy && viewModel.SelectedMedia == media)
         {
@@ -615,6 +645,60 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OutputFolder_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (DataContext is MainViewModel viewModel)
+            viewModel.SetOutputDirectoryInputValid(string.Equals(OutputFolderBox.Text,
+                viewModel.OutputDirectory, OperatingSystem.IsWindows()
+                    ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal));
+    }
+
+    private void OutputFolder_KeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter) return;
+        CommitOutputFolder();
+        e.Handled = true;
+    }
+
+    private void OutputFolder_LostFocus(object? sender, RoutedEventArgs e) => CommitOutputFolder();
+
+    private void CommitOutputFolder()
+    {
+        if (DataContext is not MainViewModel viewModel || viewModel.IsExporting) return;
+        if (string.Equals(OutputFolderBox.Text, viewModel.OutputDirectory,
+            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)) return;
+        var accepted = viewModel.TrySetUserOutputDirectory(OutputFolderBox.Text);
+        if (accepted)
+        {
+            if (Appearance is { } appearance && viewModel.OutputDirectory is { } selected)
+            {
+                appearance.Preferences.OutputDirectory = selected;
+                appearance.Save();
+            }
+        }
+        OutputFolderBox.Text = viewModel.OutputDirectory;
+        viewModel.SetOutputDirectoryInputValid(true);
+        FlashOutputFolder(accepted);
+    }
+
+    private void FlashOutputFolder(bool accepted)
+    {
+        var border = OutputFolderFeedbackBorder;
+        var version = ++_folderFeedbackVersion;
+        border.Transitions = null;
+        border.BorderBrush = Application.Current?.Resources[accepted ? "SuccessBrush" : "ErrorBrush"] as IBrush;
+        border.Opacity = 1;
+        DispatcherTimer.RunOnce(() =>
+        {
+            if (version != _folderFeedbackVersion || _shutdown.IsCancellationRequested) return;
+            border.Transitions = new Transitions
+            {
+                new DoubleTransition { Property = Visual.OpacityProperty, Duration = TimeSpan.FromMilliseconds(850) }
+            };
+            border.Opacity = 0;
+        }, TimeSpan.FromMilliseconds(120));
+    }
+
     private async void ChooseFolder_Click(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not MainViewModel viewModel || viewModel.IsExporting) return;
@@ -632,8 +716,9 @@ public partial class MainWindow : Window
                 if (!string.IsNullOrWhiteSpace(path))
                 {
                     var previous = viewModel.OutputDirectory;
-                    viewModel.SetOutputDirectory(path);
-                    if (Appearance is { } appearance && viewModel.OutputDirectory is { } selected
+                    var accepted = viewModel.TrySetUserOutputDirectory(path);
+                    FlashOutputFolder(accepted);
+                    if (accepted && Appearance is { } appearance && viewModel.OutputDirectory is { } selected
                         && !string.Equals(selected, previous, OperatingSystem.IsWindows()
                             ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
                     {

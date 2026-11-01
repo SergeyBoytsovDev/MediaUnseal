@@ -52,8 +52,9 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             return new(null, message.Resolve()) { LocalizedReason = message };
         }
         if (stream.Index is not >= 0) return Unavailable("MainReasonNoStreamIndex");
+        var originalAnimatedWebp = IsStandaloneAnimatedWebp(media, stream);
         var codec = stream.Codec?.ToLowerInvariant();
-        if (codec is null && stream.CodecType != "attachment")
+        if (codec is null && stream.CodecType != "attachment" && !originalAnimatedWebp)
             return Unavailable("MainReasonUnknownCodec");
         if (stream.VisualKind == VisualKind.Unknown && stream.CodecType == "video")
             return Unavailable("MainReasonUnknownVisual");
@@ -82,7 +83,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         }
         else if (stream.VisualKind == VisualKind.Animation)
         {
-            output = codec switch
+            output = originalAnimatedWebp ? ("webp", "webp", false) : codec switch
             {
                 "gif" => ("gif", "gif", false),
                 "apng" => ("apng", "apng", false),
@@ -92,7 +93,14 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         }
         else if (stream.VisualKind == VisualKind.Video)
         {
-            output = codec switch
+            var sourceExtension = Path.GetExtension(media.FullPath).ToLowerInvariant();
+            output = sourceExtension == ".mp4" && media.Container?.Split(',').Contains("mp4") == true
+                && codec is ("h264" or "hevc" or "mpeg4")
+                ? ("mp4", "mp4", false)
+                : sourceExtension == ".mov" && media.Container?.Split(',').Contains("mov") == true
+                    && codec is ("h264" or "hevc" or "mpeg4" or "prores")
+                ? ("mov", "mov", false)
+                : codec switch
             {
                 "h264" or "hevc" or "av1" or "ffv1" => ("mkv", "matroska", false),
                 "vp8" or "vp9" => ("webm", "webm", false),
@@ -136,6 +144,12 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             ? new(new TrackExportPlan(stream, format.Extension, format.Muxer, format.StillImage), null)
             : Unavailable("MainReasonUnsupportedCodec", codec);
     }
+
+    private static bool IsStandaloneAnimatedWebp(MediaInfo media, MediaStreamInfo stream) =>
+        stream.VisualKind == VisualKind.Animation && stream.CodecType == "video"
+        && stream.ImageFormat == "WebP" && stream.Index == 0 && media.Streams.Count == 1
+        && Path.GetExtension(media.FullPath).Equals(".webp", StringComparison.OrdinalIgnoreCase)
+        && MediaAnalyzer.ReadImageSignature(media.FullPath) is ("WebP", true);
 
     public async Task<ExportResult> ExportAsync(MediaInfo media, IReadOnlyList<TrackExportPlan> selected,
         string outputDirectory, string ffmpegPath, IProgress<ExportUpdate>? progress, CancellationToken cancellationToken,
@@ -212,18 +226,25 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         ? plan.Conversion is null ? "LogVisualExtractionStarted" : "LogVisualConversionStarted"
                         : plan.Conversion is null ? "LogExtractingStreamFormat" : "LogConvertingStreamFormat",
                     userMessageArgs: [index, plan.Muxer]);
+                if (plan.Stream.HeifGroupIndex is { } heifGroup)
+                    diagnostics.Record(DiagnosticLevel.Info, "Export",
+                        $"HEIF tile grid group #{heifGroup} selected for FFmpeg image conversion; " +
+                        $"dimensions {plan.Stream.Width}x{plan.Stream.Height}.");
                 var trackWatch = Stopwatch.StartNew();
                 int? exitCode = null;
                 TimeSpan? lastPosition = null;
                 string? lastError = null;
                 var nativeAttachment = plan.Conversion is null && MatroskaAttachments.IsCandidate(media, plan.Stream);
+                var nativeWebp = plan.Conversion is null && !plan.VerifiedCopy
+                    && plan is { Muxer: "webp", Extension: "webp" }
+                    && IsStandaloneAnimatedWebp(media, plan.Stream);
                 var nativeCompleted = false;
                 try
                 {
                     using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                     deadline.CancelAfter(TimeoutPerTrack);
                     var duration = plan.Stream.Duration ?? media.Duration;
-                    if (!nativeAttachment && duration is null or { Ticks: <= 0 })
+                    if (!nativeAttachment && !nativeWebp && duration is null or { Ticks: <= 0 })
                         diagnostics.Record(DiagnosticLevel.Info, "Export",
                             $"Stream #{index}: duration unknown; percentage unavailable.");
                     var lastLoggedBucket = -1;
@@ -251,6 +272,18 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                             L.Format("MainProgressStream", index), overall, ordinal, selected.Count, time, part * 100)
                         { LocalizedMessage = new("MainProgressStream", index) });
                     });
+                    if (nativeWebp)
+                    {
+                        await using var source = new FileStream(media.FullPath, FileMode.Open, FileAccess.Read,
+                            FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
+                        await using var destination = new FileStream(temp, FileMode.CreateNew, FileAccess.Write,
+                            FileShare.None, 81920, FileOptions.Asynchronous);
+                        await source.CopyToAsync(destination, deadline.Token).ConfigureAwait(false);
+                        nativeCompleted = true;
+                        diagnostics.Record(DiagnosticLevel.Info, "Export",
+                            $"Animated WebP stream #{index}: original file bytes copied without re-encoding; " +
+                            $"size {source.Length} bytes.");
+                    }
                     if (nativeAttachment)
                     {
                         var lastCopyBucket = -1;
@@ -416,6 +449,9 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     diagnostics.Record(exitCode == 0 || nativeCompleted ? DiagnosticLevel.Info : DiagnosticLevel.Warn, "Export",
                         nativeAttachment
                             ? $"Matroska attachment reading #{index}: elapsed {FormatElapsed(trackWatch.Elapsed)}; " +
+                                $"result {(nativeCompleted ? "bytes copied" : "incomplete")}."
+                            : nativeWebp
+                            ? $"Animated WebP original copy #{index}: elapsed {FormatElapsed(trackWatch.Elapsed)}; " +
                                 $"result {(nativeCompleted ? "bytes copied" : "incomplete")}."
                             : $"FFmpeg for stream #{index}: elapsed {FormatElapsed(trackWatch.Elapsed)}, " +
                                 $"exit code {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "unknown")}, " +
@@ -652,7 +688,14 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
     internal static string[] BuildArguments(string input, int index, TrackExportPlan plan, string temp,
         bool preserveMetadata = true) =>
         plan.Conversion is { } conversion
-            ? WithMetadata(BuildConversionArguments(input, index, conversion, temp), preserveMetadata)
+            ? WithMetadata(BuildConversionArguments(input, index, conversion, temp,
+                plan.Stream.VisualKind == VisualKind.Animation,
+                plan.Stream.PixelFormat is { } pixelFormat &&
+                    (pixelFormat is "rgba" or "bgra" or "argb" or "abgr" or "pal8"
+                        || pixelFormat.StartsWith("yuva", StringComparison.OrdinalIgnoreCase)
+                        || pixelFormat.StartsWith("gbrap", StringComparison.OrdinalIgnoreCase)
+                        || pixelFormat.StartsWith("ya", StringComparison.OrdinalIgnoreCase)),
+                MediaAnalyzer.HeifGroupMap(plan.Stream)), preserveMetadata)
             : plan.Attachment
             ? ["-hide_banner", "-loglevel", "error", "-nostdin", $"-dump_attachment:{index}", temp, "-i", input]
             : plan.StillImage
@@ -669,15 +712,52 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         return result.ToArray();
     }
 
-    internal static string[] BuildConversionArguments(string input, int index, ConversionSettings options, string temp)
+    internal static string[] BuildConversionArguments(string input, int index, ConversionSettings options, string temp,
+        bool animationInput = false, bool sourceHasAlpha = false, string? mapOverride = null)
     {
         var args = new List<string> { "-hide_banner", "-loglevel", "error", "-nostdin",
             "-stats_period", "0.5", "-progress", "pipe:2", "-i", input,
-            "-map", $"0:{index}", "-c", options.Encoder.Name };
+            "-map", mapOverride ?? $"0:{index}", "-c", options.Encoder.Name };
         AppendConversionOptions(args, options);
+        AppendVisualOutputOptions(args, options, animationInput, sourceHasAlpha);
         if (options.Format.Muxer == "image2") args.AddRange(["-frames:v", "1", "-update", "1"]);
         args.AddRange(["-f", options.Format.Muxer, temp]);
         return args.ToArray();
+    }
+
+    internal static void AppendVisualOutputOptions(List<string> args, ConversionSettings options,
+        bool animationInput = false, bool sourceHasAlpha = false)
+    {
+        if (options.Format.Muxer == "image2" && options.Format.Extension == "tiff")
+            args.AddRange(["-pix_fmt", sourceHasAlpha ? "rgba" : "rgb24"]);
+        if (animationInput && options.Encoder.Name is ("libvpx" or "libvpx-vp9"))
+            args.AddRange(["-pix_fmt", sourceHasAlpha ? "yuva420p" : "yuv420p"]);
+        if (animationInput && options.Encoder.Name == "libvpx")
+            args.AddRange(["-auto-alt-ref", "0"]);
+        if (animationInput && (options.Encoder.Name == "mpeg1video" && options.Format.Muxer == "mpeg"
+            || options.Encoder.Name == "mpeg2video" && options.Format.Muxer == "mxf"))
+            AppendMpegVideoOutputOptions(args, options);
+    }
+
+    internal static void AppendMpegVideoOutputOptions(List<string> args, ConversionSettings options)
+    {
+            args.AddRange(["-pix_fmt", "yuv420p"]);
+            var scaleIndex = args.IndexOf("-vf");
+            if (scaleIndex >= 0) args.RemoveRange(scaleIndex, 2);
+            var width = options.Width?.ToString(CultureInfo.InvariantCulture) ?? "iw";
+            var height = options.Height?.ToString(CultureInfo.InvariantCulture) ?? "ih";
+            args.AddRange(["-vf", $"scale=trunc(({width})/2)*2:trunc(({height})/2)*2"]);
+            var rateIndex = args.IndexOf("-r");
+            if (rateIndex >= 0) args.RemoveRange(rateIndex, 2);
+            var rate = options.FrameRate switch
+            {
+                24 => "24", 25 => "25", 30 => "30", 50 => "50", 60 => "60",
+                var fps when fps is >= 23.97 and <= 23.98 => "24000/1001",
+                var fps when fps is >= 29.96 and <= 29.98 => "30000/1001",
+                var fps when fps is >= 59.93 and <= 59.95 => "60000/1001",
+                _ => "25"
+            };
+            args.AddRange(["-r", rate]);
     }
 
     internal static void AppendConversionOptions(List<string> args, ConversionSettings options)

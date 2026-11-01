@@ -14,7 +14,7 @@ public sealed record MediaStreamInfo(
     string? Language, string? Title, int? Default, int? Forced, SubtitleKind SubtitleKind,
     IReadOnlyDictionary<string, string> Tags, IReadOnlyDictionary<string, int?> Disposition,
     long? FrameCount, VisualKind VisualKind, string? ImageFormat, bool IsCoverArt,
-    IReadOnlyDictionary<string, string>? ExtraProperties = null);
+    IReadOnlyDictionary<string, string>? ExtraProperties = null, int? HeifGroupIndex = null);
 
 public sealed record MediaInfo(
     string Name, string FullPath, long Size, string? Container,

@@ -304,8 +304,14 @@
        <StackPanel Margin="14" Spacing="9">
         <TextBlock Text="{DynamicResource Loc_MainSaveFolder}" FontWeight="SemiBold"/>
         <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
-         <TextBox Text="{Binding OutputDirectory}" IsReadOnly="True" PlaceholderText="{DynamicResource Loc_MainChooseFolder}"
-                  ToolTip.Tip="{Binding OutputDirectory}" VerticalContentAlignment="Center"/>
+         <Grid>
+          <TextBox x:Name="OutputFolderBox" Text="{Binding OutputDirectory, Mode=OneWay}" IsEnabled="{Binding CanChooseFolder}"
+                   KeyDown="OutputFolder_KeyDown" LostFocus="OutputFolder_LostFocus" TextChanged="OutputFolder_TextChanged"
+                   PlaceholderText="{DynamicResource Loc_MainChooseFolder}"
+                   ToolTip.Tip="{Binding OutputDirectory}" VerticalContentAlignment="Center"/>
+          <Border x:Name="OutputFolderFeedbackBorder" BorderThickness="2" CornerRadius="{DynamicResource ControlCorner}"
+                  IsHitTestVisible="False" Opacity="0"/>
+         </Grid>
          <Button Grid.Column="1" Click="ChooseFolder_Click" IsEnabled="{Binding CanChooseFolder}">
           <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Center">
            <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z"

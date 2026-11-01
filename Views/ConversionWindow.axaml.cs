@@ -25,6 +25,8 @@ public partial class ConversionWindow : Window
     private string _kind = "";
     private ConversionFormat? _copyFormat;
     private TrackExportPlan? _copyPlan;
+    private ConversionFormat? _activeFormat;
+    private readonly System.Collections.Generic.Dictionary<ConversionFormat, ConversionEncoder> _encoderSelections = new();
     private string? _encoderNoteKey;
     private object?[] _encoderNoteArguments = [];
     private static LocalizationManager L => LocalizationManager.Active;
@@ -74,12 +76,13 @@ public partial class ConversionWindow : Window
         Grid.SetColumnSpan(MoreEncodersButton, _kind == "video" ? 1 : 2);
         _copyPlan = copyPlan;
         if (copyPlan is not null)
-            _copyFormat = new(copyPlan.Muxer, copyPlan.Extension, L.Get("MainOriginalNoTranscode"),
+            _copyFormat = new(copyPlan.Muxer, copyPlan.Extension, L.Get("MainOriginalShort"),
                 _kind is "video" or "image" or "animation" ? stream.Codec : null,
                 _kind == "audio" ? stream.Codec : null,
-                _kind == "subtitle" ? stream.Codec : null);
+                _kind == "subtitle" ? stream.Codec : null, Original: true);
         FormatBox.ItemsSource = _copyFormat is null ? catalog.FormatsFor(_kind) :
-            new[] { _copyFormat }.Concat(catalog.FormatsFor(_kind)).ToArray();
+            new[] { _copyFormat }.Concat(catalog.FormatsFor(_kind).Where(f =>
+                f.Muxer != copyPlan!.Muxer || f.Extension != copyPlan.Extension)).ToArray();
         if (existing is not null)
         {
             CrfBox.Text = existing.Crf?.ToString(CultureInfo.InvariantCulture);
@@ -92,10 +95,14 @@ public partial class ConversionWindow : Window
             ChannelsBox.Text = existing.Channels?.ToString(CultureInfo.InvariantCulture);
             QualityBox.Text = existing.Quality?.ToString(CultureInfo.InvariantCulture);
         }
-        FormatBox.SelectedItem = existing?.Format ?? initialFormat ?? _copyFormat;
-        if (!ReferenceEquals(FormatBox.SelectedItem, _copyFormat))
-            EncoderBox.SelectedItem = existing?.Encoder ??
-                (FormatBox.SelectedItem is ConversionFormat format ? catalog.SuggestedEncoder(format, _kind) : null);
+        var requestedFormat = existing?.Format ?? initialFormat;
+        FormatBox.SelectedItem = requestedFormat is { } requested && _copyFormat is { } original
+            && requested.Muxer == original.Muxer && requested.Extension == original.Extension
+                ? original : requestedFormat ?? _copyFormat;
+        if (existing is not null && EncoderBox.ItemsSource is System.Collections.IEnumerable items
+            && items.Cast<ConversionEncoder>().Contains(existing.Encoder))
+            EncoderBox.SelectedItem = existing.Encoder;
+        ForceReencodeBox.IsChecked = existing?.ForceReencode == true;
     }
 
     private void RefreshHeading()
@@ -140,47 +147,96 @@ public partial class ConversionWindow : Window
         if (_copyFormat is null || FormatBox.ItemsSource is not System.Collections.IEnumerable source) return;
         var format = FormatBox.SelectedItem;
         var encoder = EncoderBox.SelectedItem;
+        var forceReencode = ForceReencodeBox.IsChecked;
         var oldCopy = _copyFormat;
-        _copyFormat = oldCopy with { Description = L.Get("MainOriginalNoTranscode") };
+        _copyFormat = oldCopy with { Description = L.Get("MainOriginalShort") };
+        if (_encoderSelections.Remove(oldCopy, out var selectedEncoder))
+            _encoderSelections[_copyFormat] = selectedEncoder;
+        if (ReferenceEquals(_activeFormat, oldCopy)) _activeFormat = _copyFormat;
         FormatBox.ItemsSource = new[] { _copyFormat }.Concat(source.Cast<ConversionFormat>().Skip(1)).ToArray();
         FormatBox.SelectedItem = ReferenceEquals(format, oldCopy) ? _copyFormat : format;
-        if (!ReferenceEquals(format, oldCopy) && encoder is not null) EncoderBox.SelectedItem = encoder;
+        if (encoder is not null && EncoderBox.ItemsSource is System.Collections.IEnumerable items
+            && items.Cast<ConversionEncoder>().Contains(encoder)) EncoderBox.SelectedItem = encoder;
+        ForceReencodeBox.IsChecked = forceReencode;
+    }
+
+    private ConversionFormat? EffectiveFormat(ConversionFormat format) =>
+        ReferenceEquals(format, _copyFormat)
+            ? _catalog?.FindFormat(format.Muxer, format.Extension, _kind) : format;
+
+    private ConversionEncoder CopyEncoder()
+    {
+        var codec = _stream?.ImageFormat == "WebP" ? "WebP" : _stream?.Codec?.ToUpperInvariant() ?? "?";
+        if (_stream?.Profile is { Length: > 0 } profile && _stream.ImageFormat != "WebP")
+            codec += " " + profile;
+        return new("copy", _stream?.Codec ?? "copy",
+            _kind is "image" or "animation" ? "video" : _kind,
+            L.Format("ConversionOriginalCopyCodec", codec));
+    }
+
+    private bool IsSourceCodec(ConversionEncoder encoder) =>
+        string.Equals(encoder.Codec, _stream?.Codec, StringComparison.OrdinalIgnoreCase)
+        || _stream?.ImageFormat == "WebP" && encoder.Codec == "webp";
+
+    private bool HasRequestedParameters() => new[] { CrfBox, VideoBitrateBox, AudioBitrateBox,
+        WidthBox, HeightBox, FrameRateBox, QualityBox, SampleRateBox, ChannelsBox }
+        .Any(box => box.IsEnabled && !string.IsNullOrWhiteSpace(box.Text));
+
+    private void RefreshEncoderMode()
+    {
+        var source = ReferenceEquals(FormatBox.SelectedItem, _copyFormat);
+        var encoder = EncoderBox.SelectedItem as ConversionEncoder;
+        var copying = source && encoder?.Name == "copy";
+        VideoOptions.IsEnabled = !copying;
+        AudioOptions.IsEnabled = !copying;
+        ForceReencodeBox.IsVisible = source && encoder is not null && encoder.Name != "copy"
+            && IsSourceCodec(encoder);
+        if (!ForceReencodeBox.IsVisible) ForceReencodeBox.IsChecked = false;
     }
 
     private void Format_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_catalog is null || FormatBox.SelectedItem is not ConversionFormat format) return;
-        var copying = ReferenceEquals(format, _copyFormat);
-        EncoderBox.IsEnabled = !copying;
-        MoreEncodersButton.IsEnabled = !copying;
-        HardwareButton.IsEnabled = !copying;
-        VideoOptions.IsEnabled = !copying;
-        AudioOptions.IsEnabled = !copying;
-        if (copying)
-        {
-            EncoderBox.ItemsSource = new[] { new ConversionEncoder("copy", _stream?.Codec ?? "copy",
-                _kind is "image" or "animation" ? "video" : _kind,
-                L.Get("ConversionCopyEncoderDescription")) };
-            EncoderBox.SelectedIndex = 0;
-            SetEncoderNote("ConversionCopyNote");
-            return;
-        }
-        EncoderBox.ItemsSource = InitialEncoders(_catalog, format, _kind, _existing);
-        EncoderBox.SelectedItem = _catalog.SuggestedEncoder(format, _kind);
-        SetEncoderNote("ConversionOtherEncodersHint");
+        if (_activeFormat is { } previous && EncoderBox.SelectedItem is ConversionEncoder chosen
+            && chosen.Name != "copy") _encoderSelections[previous] = chosen;
+        _activeFormat = format;
+        var source = ReferenceEquals(format, _copyFormat);
+        var target = EffectiveFormat(format);
+        EncoderBox.IsEnabled = true;
+        MoreEncodersButton.IsEnabled = target is not null;
+        HardwareButton.IsEnabled = target is not null;
+        EncoderBox.ItemsSource = (source ? new[] { CopyEncoder() } : Array.Empty<ConversionEncoder>())
+            .Concat(target is null ? [] : InitialEncoders(_catalog, target, _kind, _existing)).ToArray();
+        var available = ((ConversionEncoder[])EncoderBox.ItemsSource).ToArray();
+        EncoderBox.SelectedItem = _encoderSelections.TryGetValue(format, out var selected)
+            && available.Contains(selected) ? selected
+            : _existing is { } existing && existing.Format == target
+                && available.Contains(existing.Encoder) ? existing.Encoder
+            : source ? available[0] : target is null ? null : _catalog.SuggestedEncoder(target, _kind);
+        RefreshEncoderMode();
+        SetEncoderNote(source && EncoderBox.SelectedItem is ConversionEncoder { Name: "copy" }
+            ? "ConversionCopyNote" : "ConversionOtherEncodersHint");
     }
 
     internal static ConversionEncoder[] InitialEncoders(FfmpegConversionCatalog catalog,
         ConversionFormat format, string kind, ConversionSettings? existing)
     {
-        var encoders = catalog.EncodersFor(kind)
-            .Where(e => !e.IsHardware && e.Codec == format.DefaultCodec(kind)).ToList();
-        if (existing?.Format == format && !encoders.Contains(existing.Encoder))
-            encoders.Add(existing.Encoder);
-        encoders.AddRange(catalog.ConfirmedAdditionalFor(format, kind).Where(e => !encoders.Contains(e)));
-        if (kind == "video")
-            encoders.AddRange(catalog.ConfirmedHardwareFor(format).Where(e => !encoders.Contains(e)));
-        return encoders.ToArray();
+        var recommended = catalog.SuggestedEncoder(format, kind);
+        var primary = catalog.EncodersFor(kind)
+            .Where(e => !e.IsHardware && e.Codec == format.DefaultCodec(kind))
+            .OrderBy(e => e.Name, StringComparer.Ordinal).ToArray();
+        var saved = existing?.Format == format && catalog.Contains(existing)
+            && FfmpegConversionCatalog.IsEncoderSuitable(format, existing.Encoder)
+                ? existing.Encoder : null;
+        var additional = catalog.ConfirmedAdditionalFor(format, kind)
+            .Concat(saved is { IsHardware: false } ? [saved] : [])
+            .OrderBy(e => e.Name, StringComparer.Ordinal);
+        System.Collections.Generic.IEnumerable<ConversionEncoder> hardware =
+            (kind == "video" ? catalog.ConfirmedHardwareFor(format) : [])
+            .Concat(saved is { IsHardware: true } ? [saved] : [])
+            .OrderBy(e => e.Name, StringComparer.Ordinal);
+        return (recommended is null ? [] : new[] { recommended })
+            .Concat(primary).Concat(additional).Concat(hardware).Distinct().ToArray();
     }
 
     private void HardwareDivider_Loaded(object? sender, RoutedEventArgs e)
@@ -205,7 +261,8 @@ public partial class ConversionWindow : Window
 
     private async void MoreEncoders_Click(object? sender, RoutedEventArgs e)
     {
-        if (_catalog is null || FormatBox.SelectedItem is not ConversionFormat format) return;
+        if (_catalog is null || FormatBox.SelectedItem is not ConversionFormat selected
+            || EffectiveFormat(selected) is not { } format) return;
         MoreEncodersButton.IsEnabled = false;
         SetEncoderNote("ConversionCheckingAdditional");
         RecordSearch(CompatibleSearch, "Compatible encoder search started.",
@@ -227,18 +284,18 @@ public partial class ConversionWindow : Window
                         ? "Encoder verification could not run." : "Encoder/container combination was rejected.");
             }
             _catalog.RememberConfirmedAdditional(format, _kind, working);
-            if (FormatBox.SelectedItem is not ConversionFormat selectedFormat || selectedFormat != format)
+            if (!ReferenceEquals(FormatBox.SelectedItem, selected))
             {
                 RecordSearch(CompatibleSearch, "Search result not applied: output format changed.",
                     level: DiagnosticLevel.Warn, userMessageKey: "LogSearchStale");
                 return;
             }
             var current = EncoderBox.SelectedItem;
-            var hardware = EncoderBox.ItemsSource is System.Collections.IEnumerable items
-                ? items.Cast<ConversionEncoder>().Where(e => e.IsHardware)
-                : Enumerable.Empty<ConversionEncoder>();
-            EncoderBox.ItemsSource = working.Concat(hardware).Distinct().ToArray();
+            EncoderBox.ItemsSource = (ReferenceEquals(selected, _copyFormat)
+                ? new[] { CopyEncoder() } : Array.Empty<ConversionEncoder>())
+                .Concat(InitialEncoders(_catalog, format, _kind, _existing)).ToArray();
             EncoderBox.SelectedItem = current;
+            RefreshEncoderMode();
             SetEncoderNote("ConversionConfirmedCompatibleCount", working.Count);
             RecordSearch(CompatibleSearch, working.Count == 0
                 ? "No compatible encoders found."
@@ -270,7 +327,11 @@ public partial class ConversionWindow : Window
 
     private async void Encoder_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (_catalog is null || _kind is not ("video" or "animation") || EncoderBox.SelectedItem is not ConversionEncoder encoder) return;
+        if (_catalog is null || EncoderBox.SelectedItem is not ConversionEncoder encoder) return;
+        RefreshEncoderMode();
+        if (encoder.Name == "copy")
+        { SetEncoderNote("ConversionCopyNote"); CrfBox.IsEnabled = false; return; }
+        if (_kind is not ("video" or "animation")) return;
         var revision = ++_encoderRevision;
         CrfBox.IsEnabled = false;
         try
@@ -289,7 +350,8 @@ public partial class ConversionWindow : Window
 
     private async void Hardware_Click(object? sender, RoutedEventArgs e)
     {
-        if (_catalog is null || FormatBox.SelectedItem is not ConversionFormat format) return;
+        if (_catalog is null || FormatBox.SelectedItem is not ConversionFormat selected
+            || EffectiveFormat(selected) is not { } format) return;
         HardwareButton.IsEnabled = false;
         SetEncoderNote("ConversionCheckingHardware");
         RecordSearch(HardwareSearch, "Hardware encoder search started.", $"format {format.Muxer}",
@@ -319,19 +381,19 @@ public partial class ConversionWindow : Window
                             ? "Encoder verification could not run." : "Encoder/container combination was rejected.");
                 }
             }
-            if (!searchFailed) _catalog.RememberConfirmedHardware(format, working);
-            if (FormatBox.SelectedItem is not ConversionFormat selectedFormat || selectedFormat != format)
+            _catalog.RememberConfirmedHardware(format, working);
+            if (!ReferenceEquals(FormatBox.SelectedItem, selected))
             {
                 RecordSearch(HardwareSearch, "Search result not applied: output format changed.",
                     level: DiagnosticLevel.Warn, userMessageKey: "LogSearchStale");
                 return;
             }
             var current = EncoderBox.SelectedItem;
-            var software = EncoderBox.ItemsSource is System.Collections.IEnumerable items
-                ? items.Cast<ConversionEncoder>().Where(e => !e.IsHardware)
-                : Enumerable.Empty<ConversionEncoder>();
-            EncoderBox.ItemsSource = software.Concat(working).Distinct().ToArray();
+            EncoderBox.ItemsSource = (ReferenceEquals(selected, _copyFormat)
+                ? new[] { CopyEncoder() } : Array.Empty<ConversionEncoder>())
+                .Concat(InitialEncoders(_catalog, format, _kind, _existing)).ToArray();
             EncoderBox.SelectedItem = current;
+            RefreshEncoderMode();
             if (searchFailed) SetEncoderNote("ConversionHardwareSearchFailedDetails");
             else if (working.Count > 0) SetEncoderNote("ConversionHardwareFoundCount", working.Count);
             else SetEncoderNote("ConversionHardwareNotFound");
@@ -362,14 +424,19 @@ public partial class ConversionWindow : Window
 
     private async void Save_Click(object? sender, RoutedEventArgs e)
     {
-        if (ReferenceEquals(FormatBox.SelectedItem, _copyFormat) && _copyPlan is not null)
+        var source = ReferenceEquals(FormatBox.SelectedItem, _copyFormat);
+        var selectedEncoder = EncoderBox.SelectedItem as ConversionEncoder;
+        if (source && _copyPlan is not null && selectedEncoder is not null
+            && (selectedEncoder.Name == "copy" || IsSourceCodec(selectedEncoder)
+                && !HasRequestedParameters() && ForceReencodeBox.IsChecked != true))
         {
             AppliedCopy = true;
             Close(null);
             return;
         }
-        if (_catalog is null || _stream is null || FormatBox.SelectedItem is not ConversionFormat format
-            || EncoderBox.SelectedItem is not ConversionEncoder encoder)
+        if (_catalog is null || _stream is null || FormatBox.SelectedItem is not ConversionFormat selected
+            || EffectiveFormat(selected) is not { } format
+            || selectedEncoder is not { } encoder || encoder.Name == "copy")
         { SetValidationMessage("ConversionSelectFormatAndEncoder"); return; }
         try
         {
@@ -385,7 +452,8 @@ public partial class ConversionWindow : Window
                 _kind is "video" or "animation" ? Decimal(FrameRateBox) : null,
                 _kind == "audio" ? Number(SampleRateBox) : null,
                 _kind == "audio" ? Number(ChannelsBox) : null,
-                _kind == "audio" ? Number(QualityBox) : null);
+                _kind == "audio" ? Number(QualityBox) : null,
+                ForceReencodeBox.IsChecked == true);
             if (options.Validate(_stream) is { } error)
             { SetValidationText(error); return; }
             SaveButton.IsEnabled = false;

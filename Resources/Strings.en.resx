@@ -693,6 +693,9 @@
   <data name="MainOutputFolderSelected" xml:space="preserve">
     <value>Folder selected. Files with matching names will be numbered; existing files will be preserved.</value>
   </data>
+  <data name="LogOutputFolderChanged" xml:space="preserve">
+    <value>Output folder changed.</value>
+  </data>
   <data name="MainExportRequirements" xml:space="preserve">
     <value>Select available streams and an output folder; make sure FFmpeg and FFprobe are ready.</value>
   </data>
@@ -812,6 +815,15 @@
   </data>
   <data name="MainOriginalNoTranscode" xml:space="preserve">
     <value>Original — no transcoding</value>
+  </data>
+  <data name="MainSourceFormatOriginal" xml:space="preserve">
+    <value>{0} — Original</value>
+  </data>
+  <data name="MainOriginalShort" xml:space="preserve">
+    <value>Original</value>
+  </data>
+  <data name="MainMixedFormatsOriginal" xml:space="preserve">
+    <value>Mixed formats — Original</value>
   </data>
   <data name="MainFormatsReadFailed" xml:space="preserve">
     <value>Could not read FFmpeg output formats.</value>
@@ -1235,6 +1247,12 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
   </data>
   <data name="ConversionCopyEncoderDescription" xml:space="preserve">
     <value>copy without transcoding</value>
+  </data>
+  <data name="ConversionOriginalCopyCodec" xml:space="preserve">
+    <value>Original (copy without transcoding) — {0}</value>
+  </data>
+  <data name="ConversionForceReencode" xml:space="preserve">
+    <value>Re-encode even when the codec matches</value>
   </data>
   <data name="ConversionCopyNote" xml:space="preserve">
     <value>The original stream will be copied without transcoding.</value>
