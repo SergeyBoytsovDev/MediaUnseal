@@ -272,7 +272,9 @@ public sealed class FfmpegConversionCatalog
         catalog._formats.AddRange(formats.OfType<ConversionFormat>().Where(f => f.Muxer != "image2")
             .Select(f => (f.Muxer is "3gp" or "3g2")
                 && catalog._encoders.Any(e => e.Kind == "video" && e.Name == "mpeg4")
-                    ? f with { VideoCodec = "mpeg4" } : f));
+                    ? f with { VideoCodec = "mpeg4" }
+                    : f.Muxer == "caf" && catalog._encoders.Any(e => e.Name == "alac" && e.Kind == "audio")
+                        ? f with { AudioCodec = "alac" } : f));
         if (names.Contains("image2"))
         {
             foreach (var (extension, codec) in new[]
@@ -318,7 +320,7 @@ public sealed class FfmpegConversionCatalog
             var args = new List<string> { "-hide_banner", "-loglevel", "error", "-nostdin", "-y" };
             args.AddRange(input);
             args.AddRange(["-map", "0:0", "-c", encoder.Name]);
-            if (settings is not null) TrackExporter.AppendConversionOptions(args, settings);
+            TrackExporter.AppendConversionOptions(args, settings ?? new ConversionSettings(format, encoder));
             if (encoder.Kind == "video") TrackExporter.AppendVisualOutputOptions(args,
                 settings ?? new ConversionSettings(format, encoder),
                 encoder.Name is "libvpx" or "libvpx-vp9" or "mpeg1video" or "mpeg2video");

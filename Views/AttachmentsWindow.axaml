@@ -1,0 +1,43 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:TrackExtractor.ViewModels"
+        x:Class="TrackExtractor.Views.AttachmentsWindow"
+        Title="{DynamicResource Loc_AttachmentWindowTitle}" Icon="/Assets/Icons/TrackExtractor-256.png"
+        Width="740" Height="480" MinWidth="500" MinHeight="320" CanResize="True"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
+        FontFamily="Inter" FontSize="14">
+ <Window.Styles>
+  <Style Selector="Button"><Setter Property="Background" Value="{DynamicResource PanelAltBackground}"/><Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/><Setter Property="BorderBrush" Value="{DynamicResource LineBrush}"/></Style>
+  <Style Selector="Button.primary"><Setter Property="Background" Value="{DynamicResource AccentBrush}"/><Setter Property="Foreground" Value="White"/></Style>
+ </Window.Styles>
+ <Grid RowDefinitions="Auto,*,Auto" Margin="16" RowSpacing="10">
+  <TextBlock Text="{DynamicResource Loc_AttachmentWindowTitle}" FontSize="18" FontWeight="SemiBold"/>
+  <Grid Grid.Row="1" RowDefinitions="Auto,*">
+   <Grid ColumnDefinitions="32,2*,*,110,2*" ColumnSpacing="8" Margin="6,0,6,5">
+    <TextBlock Grid.Column="1" Text="{DynamicResource Loc_AttachmentName}" FontWeight="SemiBold"/>
+    <TextBlock Grid.Column="2" Text="{DynamicResource Loc_AttachmentType}" FontWeight="SemiBold"/>
+    <TextBlock Grid.Column="3" Text="{DynamicResource Loc_AttachmentSize}" FontWeight="SemiBold"/>
+    <TextBlock Grid.Column="4" Text="{DynamicResource Loc_AttachmentDescription}" FontWeight="SemiBold"/>
+   </Grid>
+   <ListBox x:Name="FilesList" Grid.Row="1" ScrollViewer.AllowAutoHide="False">
+    <ListBox.ItemTemplate>
+     <DataTemplate x:DataType="vm:AttachmentChoiceViewModel">
+      <Grid ColumnDefinitions="32,2*,*,110,2*" ColumnSpacing="8" MinHeight="31">
+       <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}" VerticalAlignment="Center"/>
+       <TextBlock Grid.Column="1" Text="{Binding Name}" ToolTip.Tip="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+       <TextBlock Grid.Column="2" Text="{Binding TypeDisplay}" ToolTip.Tip="{Binding TypeDisplay}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+       <TextBlock Grid.Column="3" Text="{Binding SizeDisplay}" VerticalAlignment="Center"/>
+       <TextBlock Grid.Column="4" Text="{Binding Description}" ToolTip.Tip="{Binding Description}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+      </Grid>
+     </DataTemplate>
+    </ListBox.ItemTemplate>
+   </ListBox>
+  </Grid>
+  <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+   <TextBlock x:Name="SelectionCount" VerticalAlignment="Center" Foreground="{DynamicResource MutedTextBrush}"/>
+   <Button Grid.Column="1" Content="{DynamicResource Loc_ConversionCancel}" Click="Cancel_Click" MinWidth="100"/>
+   <Button Grid.Column="2" Classes="primary" Content="{DynamicResource Loc_AttachmentApply}" Click="Apply_Click" MinWidth="100"/>
+  </Grid>
+ </Grid>
+</Window>

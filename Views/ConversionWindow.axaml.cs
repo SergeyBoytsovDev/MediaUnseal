@@ -25,6 +25,7 @@ public partial class ConversionWindow : Window
     private string _kind = "";
     private ConversionFormat? _copyFormat;
     private TrackExportPlan? _copyPlan;
+    private string? _sourcePath;
     private ConversionFormat? _activeFormat;
     private readonly System.Collections.Generic.Dictionary<ConversionFormat, ConversionEncoder> _encoderSelections = new();
     private string? _encoderNoteKey;
@@ -33,6 +34,7 @@ public partial class ConversionWindow : Window
     private const string CompatibleSearch = "Compatible encoders";
     private const string HardwareSearch = "Hardware encoders";
     internal bool AppliedCopy { get; private set; }
+    internal ConversionFormat? AppliedCopyFormat { get; private set; }
 
     public ConversionWindow()
     {
@@ -56,7 +58,7 @@ public partial class ConversionWindow : Window
 
     internal ConversionWindow(FfmpegConversionCatalog catalog, DiagnosticLog diagnostics, MediaStreamInfo stream,
         ConversionSettings? existing, CancellationToken shutdown, ConversionFormat? initialFormat = null,
-        TrackExportPlan? copyPlan = null) : this()
+        TrackExportPlan? copyPlan = null, string? sourcePath = null, bool copyRequested = false) : this()
     {
         _catalog = catalog;
         _diagnostics = diagnostics;
@@ -75,6 +77,7 @@ public partial class ConversionWindow : Window
         HardwareButton.IsVisible = _kind == "video";
         Grid.SetColumnSpan(MoreEncodersButton, _kind == "video" ? 1 : 2);
         _copyPlan = copyPlan;
+        _sourcePath = sourcePath;
         if (copyPlan is not null)
             _copyFormat = new(copyPlan.Muxer, copyPlan.Extension, L.Get("MainOriginalShort"),
                 _kind is "video" or "image" or "animation" ? stream.Codec : null,
@@ -102,6 +105,8 @@ public partial class ConversionWindow : Window
         if (existing is not null && EncoderBox.ItemsSource is System.Collections.IEnumerable items
             && items.Cast<ConversionEncoder>().Contains(existing.Encoder))
             EncoderBox.SelectedItem = existing.Encoder;
+        if (copyRequested && EncoderBox.ItemsSource is System.Collections.IEnumerable copyItems)
+            EncoderBox.SelectedItem = copyItems.Cast<ConversionEncoder>().FirstOrDefault(e => e.Name == "copy");
         ForceReencodeBox.IsChecked = existing?.ForceReencode == true;
     }
 
@@ -186,7 +191,7 @@ public partial class ConversionWindow : Window
     {
         var source = ReferenceEquals(FormatBox.SelectedItem, _copyFormat);
         var encoder = EncoderBox.SelectedItem as ConversionEncoder;
-        var copying = source && encoder?.Name == "copy";
+        var copying = encoder?.Name == "copy";
         VideoOptions.IsEnabled = !copying;
         AudioOptions.IsEnabled = !copying;
         ForceReencodeBox.IsVisible = source && encoder is not null && encoder.Name != "copy"
@@ -205,8 +210,7 @@ public partial class ConversionWindow : Window
         EncoderBox.IsEnabled = true;
         MoreEncodersButton.IsEnabled = target is not null;
         HardwareButton.IsEnabled = target is not null;
-        EncoderBox.ItemsSource = (source ? new[] { CopyEncoder() } : Array.Empty<ConversionEncoder>())
-            .Concat(target is null ? [] : InitialEncoders(_catalog, target, _kind, _existing)).ToArray();
+        EncoderBox.ItemsSource = AvailableEncoders(format, target);
         var available = ((ConversionEncoder[])EncoderBox.ItemsSource).ToArray();
         EncoderBox.SelectedItem = _encoderSelections.TryGetValue(format, out var selected)
             && available.Contains(selected) ? selected
@@ -214,7 +218,7 @@ public partial class ConversionWindow : Window
                 && available.Contains(existing.Encoder) ? existing.Encoder
             : source ? available[0] : target is null ? null : _catalog.SuggestedEncoder(target, _kind);
         RefreshEncoderMode();
-        SetEncoderNote(source && EncoderBox.SelectedItem is ConversionEncoder { Name: "copy" }
+        SetEncoderNote(EncoderBox.SelectedItem is ConversionEncoder { Name: "copy" }
             ? "ConversionCopyNote" : "ConversionOtherEncodersHint");
     }
 
@@ -225,6 +229,9 @@ public partial class ConversionWindow : Window
         var primary = catalog.EncodersFor(kind)
             .Where(e => !e.IsHardware && e.Codec == format.DefaultCodec(kind))
             .OrderBy(e => e.Name, StringComparer.Ordinal).ToArray();
+        var cafPcm = kind == "audio" && format.Muxer == "caf"
+            ? catalog.EncodersFor(kind).Where(e => e.Name == "pcm_s16be").ToArray()
+            : [];
         var saved = existing?.Format == format && catalog.Contains(existing)
             && FfmpegConversionCatalog.IsEncoderSuitable(format, existing.Encoder)
                 ? existing.Encoder : null;
@@ -236,7 +243,16 @@ public partial class ConversionWindow : Window
             .Concat(saved is { IsHardware: true } ? [saved] : [])
             .OrderBy(e => e.Name, StringComparer.Ordinal);
         return (recommended is null ? [] : new[] { recommended })
-            .Concat(primary).Concat(additional).Concat(hardware).Distinct().ToArray();
+            .Concat(cafPcm).Concat(primary).Concat(additional).Concat(hardware).Distinct().ToArray();
+    }
+
+    private ConversionEncoder[] AvailableEncoders(ConversionFormat selected, ConversionFormat? target)
+    {
+        var listed = target is null || _catalog is null ? []
+            : InitialEncoders(_catalog, target, _kind, _existing);
+        if (ReferenceEquals(selected, _copyFormat)) return [CopyEncoder(), .. listed];
+        return _kind == "audio" && _sourcePath is not null
+            ? [.. listed, CopyEncoder()] : listed;
     }
 
     private void HardwareDivider_Loaded(object? sender, RoutedEventArgs e)
@@ -291,9 +307,7 @@ public partial class ConversionWindow : Window
                 return;
             }
             var current = EncoderBox.SelectedItem;
-            EncoderBox.ItemsSource = (ReferenceEquals(selected, _copyFormat)
-                ? new[] { CopyEncoder() } : Array.Empty<ConversionEncoder>())
-                .Concat(InitialEncoders(_catalog, format, _kind, _existing)).ToArray();
+            EncoderBox.ItemsSource = AvailableEncoders(selected, format);
             EncoderBox.SelectedItem = current;
             RefreshEncoderMode();
             SetEncoderNote("ConversionConfirmedCompatibleCount", working.Count);
@@ -389,9 +403,7 @@ public partial class ConversionWindow : Window
                 return;
             }
             var current = EncoderBox.SelectedItem;
-            EncoderBox.ItemsSource = (ReferenceEquals(selected, _copyFormat)
-                ? new[] { CopyEncoder() } : Array.Empty<ConversionEncoder>())
-                .Concat(InitialEncoders(_catalog, format, _kind, _existing)).ToArray();
+            EncoderBox.ItemsSource = AvailableEncoders(selected, format);
             EncoderBox.SelectedItem = current;
             RefreshEncoderMode();
             if (searchFailed) SetEncoderNote("ConversionHardwareSearchFailedDetails");
@@ -432,6 +444,23 @@ public partial class ConversionWindow : Window
         {
             AppliedCopy = true;
             Close(null);
+            return;
+        }
+        if (!source && _kind == "audio" && FormatBox.SelectedItem is ConversionFormat copyFormat
+            && selectedEncoder?.Name == "copy" && _catalog is not null && _stream?.Index is { } copyIndex
+            && _sourcePath is not null)
+        {
+            SaveButton.IsEnabled = false;
+            try
+            {
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(_shutdown, _closed.Token);
+                if (!await _catalog.CheckCopyAsync(_sourcePath, copyIndex, copyFormat, linked.Token))
+                { SetValidationMessage("ConversionCopyIncompatible"); return; }
+                AppliedCopyFormat = copyFormat;
+                Close(null);
+            }
+            catch (OperationCanceledException) { SetValidationMessage("ConversionCheckCancelled"); }
+            finally { SaveButton.IsEnabled = true; }
             return;
         }
         if (_catalog is null || _stream is null || FormatBox.SelectedItem is not ConversionFormat selected

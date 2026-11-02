@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -26,6 +27,9 @@ public class MainViewModel : ViewModelBase
     public ObservableCollection<UserLogEntry> UserEvents { get; } = new();
     public ObservableCollection<string> StreamSummaries { get; } = new();
     public ObservableCollection<ExportTrackViewModel> ExportTracks { get; } = new();
+    public IReadOnlyList<AttachmentFile> AttachmentFiles { get; private set; } = [];
+    private IReadOnlyDictionary<int, ulong> _attachmentStreamUids = new Dictionary<int, ulong>();
+    private bool _syncingAttachmentSelection;
 
     public MainViewModel() : this(new FfmpegTools()) { }
 
@@ -302,7 +306,8 @@ public class MainViewModel : ViewModelBase
     public bool CanExtract => IsReady && !IsBusy && !IsAnalyzing && !IsExporting
         && _formatsValid && _outputDirectoryInputValid
         && SelectedMedia is not null && OutputDirectory is not null
-        && ExportTracks.Any(t => t.IsSelected) && ExportTracks.Where(t => t.IsSelected).All(t => t.Plan is not null);
+        && ExportTracks.Any(t => t.IsSelected) && ExportTracks.Where(t => t.IsSelected)
+            .All(t => t.IsAttachmentGroup || t.Plan is not null);
     internal string? FfmpegExecutable => _ffmpegPath;
     internal DiagnosticLog Diagnostics => _tools.Diagnostics;
     private bool _preserveMetadata = true;
@@ -335,7 +340,8 @@ public class MainViewModel : ViewModelBase
     public bool HasMedia => SelectedMedia is not null;
     public bool HasNoMedia => !HasMedia;
     public string TrackHeading => L.Format("MainTracksHeading", ExportTracks.Count);
-    public string SelectedCountDisplay => L.Format("MainSelectedCount", ExportTracks.Count(t => t.IsSelected && t.Plan is not null));
+    public string SelectedCountDisplay => L.Format("MainSelectedCount",
+        ExportTracks.Count(t => t.IsSelected && (t.IsAttachmentGroup || t.Plan is not null)));
     public string ExportActionLabel => ExportTracks.Any(t => t.IsSelected && t.Conversion is not null)
         ? L.Get("MainProcess") : L.Get("MainExtract");
     public string FooterStatus => L.Get(IsBusy ? "MainCheckingDependencies" : !IsReady
@@ -476,6 +482,8 @@ public class MainViewModel : ViewModelBase
         SelectedMedia = null;
         StreamSummaries.Clear();
         ExportTracks.Clear();
+        AttachmentFiles = [];
+        _attachmentStreamUids = new Dictionary<int, ulong>();
         MediaSummary = "";
         _analysisFailed = false;
         SetAnalysisStatus("MainNoFile");
@@ -542,6 +550,8 @@ public class MainViewModel : ViewModelBase
         SelectedMedia = null;
         StreamSummaries.Clear();
         ExportTracks.Clear();
+        AttachmentFiles = [];
+        _attachmentStreamUids = new Dictionary<int, ulong>();
         OnPropertyChanged(nameof(CanExtract));
         OnPropertyChanged(nameof(TrackHeading));
         OnPropertyChanged(nameof(SelectedCountDisplay));
@@ -554,10 +564,46 @@ public class MainViewModel : ViewModelBase
         {
             var media = await Task.Run(() => _analyzer.AnalyzeAsync(path, _ffprobePath, operation.Token), operation.Token);
             if (generation != _analysisGeneration) return;
+            if (MatroskaAttachments.IsMatroska(media))
+            {
+                var attachmentWatch = Stopwatch.StartNew();
+                try
+                {
+                    var probeReportsAttachments = MatroskaAttachments.ProbeReportsAttachments(media);
+                    var navigation = new MatroskaAttachments.NavigationStats();
+                    var entries = probeReportsAttachments
+                        ? await Task.Run(() => MatroskaAttachments.ReadFileAsync(media, operation.Token, navigation), operation.Token)
+                        : [];
+                    if (generation != _analysisGeneration) return;
+                    AttachmentFiles = entries.Select(a => new AttachmentFile(a.Uid, a.Name, a.Mime, a.Size,
+                        a.Description)).ToArray();
+                    _attachmentStreamUids = MatroskaAttachments.MatchStreamUids(media, entries);
+                    if (_attachmentStreamUids.Count > 0)
+                        media = media with { Streams = media.Streams.Select(stream =>
+                            stream.Index is { } index && _attachmentStreamUids.TryGetValue(index, out var uid)
+                                ? stream with { AttachmentUid = uid } : stream).ToArray() };
+                    _tools.Diagnostics.Record(DiagnosticLevel.Info, "Analysis",
+                        $"Matroska attachment search: {attachmentWatch.Elapsed.TotalMilliseconds:0.0} ms; " +
+                        $"FFprobe candidates={probeReportsAttachments}; SeekHead={navigation.UsedSeekHead}; " +
+                        $"elements={navigation.Elements}; read={navigation.SearchBytesRead} bytes; " +
+                        $"found={entries.Count}; matched streams={_attachmentStreamUids.Count}.",
+                        userMessageKey: entries.Count > 0 ? "LogAttachmentsFound" : null,
+                        userMessageArgs: entries.Count > 0 ? [entries.Count] : null);
+                }
+                catch (OperationCanceledException) { throw; }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
+                {
+                    _tools.Diagnostics.Record(DiagnosticLevel.Warn, "Analysis",
+                        $"Matroska attachment search failed after {attachmentWatch.Elapsed.TotalMilliseconds:0.0} ms: " +
+                        $"{ex.GetType().Name}; HResult={ex.HResult}.",
+                        userMessageKey: "LogAttachmentsReadFailed");
+                }
+            }
             SelectedMedia = media;
             MediaSummary = FormatMediaSummary(media);
             foreach (var stream in media.Streams)
             {
+                if (stream.CodecType == "attachment" && !stream.IsCoverArt) continue;
                 var description = Describe(stream);
                 StreamSummaries.Add(description);
                 var track = new ExportTrackViewModel(stream, description, TrackExporter.Decide(media, stream));
@@ -565,6 +611,14 @@ public class MainViewModel : ViewModelBase
                 {
                     if (args.PropertyName is nameof(ExportTrackViewModel.IsSelected) or nameof(ExportTrackViewModel.Conversion))
                     {
+                        if (args.PropertyName == nameof(ExportTrackViewModel.IsSelected)
+                            && !_syncingAttachmentSelection && track.Stream.Index is { } streamIndex
+                            && _attachmentStreamUids.TryGetValue(streamIndex, out var uid))
+                        {
+                            _syncingAttachmentSelection = true;
+                            try { AttachmentRow?.SetAttachmentSelected(uid, track.IsSelected); }
+                            finally { _syncingAttachmentSelection = false; }
+                        }
                         OnPropertyChanged(nameof(CanExtract));
                         OnPropertyChanged(nameof(SelectedCountDisplay));
                         OnPropertyChanged(nameof(AllTracksSelected));
@@ -574,6 +628,30 @@ public class MainViewModel : ViewModelBase
                     }
                 };
                 ExportTracks.Add(track);
+            }
+            if (AttachmentFiles.Count > 0)
+            {
+                var group = ExportTrackViewModel.ForAttachments(AttachmentFiles);
+                group.PropertyChanged += (_, args) =>
+                {
+                    if (args.PropertyName != nameof(ExportTrackViewModel.IsSelected)) return;
+                    if (!_syncingAttachmentSelection)
+                    {
+                        _syncingAttachmentSelection = true;
+                        try
+                        {
+                            foreach (var track in ExportTracks.Where(t => !t.IsAttachmentGroup
+                                && t.Stream.Index is { } index && _attachmentStreamUids.ContainsKey(index)))
+                                track.IsSelected = group.SelectedAttachmentUids.Contains(
+                                    _attachmentStreamUids[track.Stream.Index!.Value]);
+                        }
+                        finally { _syncingAttachmentSelection = false; }
+                    }
+                    OnPropertyChanged(nameof(CanExtract));
+                    OnPropertyChanged(nameof(SelectedCountDisplay));
+                    OnPropertyChanged(nameof(AllTracksSelected));
+                };
+                ExportTracks.Add(group);
             }
             OnPropertyChanged(nameof(CanExtract));
             OnPropertyChanged(nameof(TrackHeading));
@@ -760,17 +838,40 @@ public class MainViewModel : ViewModelBase
         return true;
     }
 
-    public async Task StartExportAsync(CancellationToken cancellationToken)
+    public ExportTrackViewModel? AttachmentRow => ExportTracks.FirstOrDefault(t => t.IsAttachmentGroup);
+
+    public void SetAttachmentSelection(IEnumerable<ulong> uids) => AttachmentRow?.SetAttachmentSelection(uids);
+
+    public async Task StartExportAsync(CancellationToken cancellationToken,
+        IReadOnlyCollection<ulong>? onlyAttachments = null)
     {
         if (IsExporting) return;
-        if (!CanExtract || SelectedMedia is null || OutputDirectory is null || _ffmpegPath is null)
+        if ((onlyAttachments is null ? !CanExtract : !IsReady || IsBusy || IsAnalyzing
+                || AttachmentFiles.Count == 0 || onlyAttachments.Count == 0)
+            || SelectedMedia is null || OutputDirectory is null || _ffmpegPath is null)
         {
             SetLocalizedExportStatus(() => L.Get("MainExportRequirements"));
             return;
         }
         var media = SelectedMedia;
-        var selected = ExportTracks.Where(t => t.IsSelected && t.Plan is not null).ToArray();
-        var plans = selected.Select(t => t.Plan!).ToArray();
+        var selected = onlyAttachments is null
+            ? ExportTracks.Where(t => t.IsSelected && !t.IsAttachmentGroup && t.Plan is not null).ToArray()
+            : [];
+        var chosenUids = onlyAttachments ?? AttachmentRow?.SelectedAttachmentUids ?? [];
+        if (onlyAttachments is not null)
+            _tools.Diagnostics.Record(DiagnosticLevel.Info, "Export",
+                $"Extract all Matroska attachments: {chosenUids.Count} selected.",
+                userMessageKey: "LogAttachmentsExportAll", userMessageArgs: [chosenUids.Count]);
+        var alreadySelected = selected.Where(t => t.Conversion is null && t.Stream.Index is { } index
+                && _attachmentStreamUids.ContainsKey(index))
+            .Select(t => _attachmentStreamUids[t.Stream.Index!.Value]).ToHashSet();
+        var plans = selected.Select(t => t.Plan!).Concat(AttachmentFiles.Where(file => chosenUids.Contains(file.Uid)
+                && !alreadySelected.Contains(file.Uid)).Select((file, ordinal) =>
+            new TrackExportPlan(new MediaStreamInfo(-1 - ordinal, "attachment_group", null, null,
+                null, null, null, null, null, null, null, null, null, null, null, null, null,
+                SubtitleKind.Unknown, new Dictionary<string, string>(), new Dictionary<string, int?>(),
+                null, VisualKind.Unknown, null, false), "bin", "attachment", false, true,
+                AttachmentFile: file))).ToArray();
         using var operation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _exportOperation = operation;
         _exportIdle = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -797,19 +898,21 @@ public class MainViewModel : ViewModelBase
             var updates = new Progress<ExportUpdate>(update =>
             {
                 if (_exportOperation != operation || !IsExporting) return;
-                var track = selected.FirstOrDefault(t => t.Stream.Index == update.StreamIndex);
+                var track = selected.FirstOrDefault(t => t.Stream.Index == update.StreamIndex)
+                    ?? (update.StreamIndex < 0 ? AttachmentRow : null);
                 track?.SetResult(update.State, update.Message, null, update.LocalizedMessage);
                 ExportProgressIndeterminate = update.OverallPercent is null && ExportProgress == 0;
                 if (update.OverallPercent is { } value) ExportProgress = Math.Max(ExportProgress, value);
                 var ordinal = Math.Clamp(update.Processed + (update.State == ExportState.Completed ? 0 : 1), 1, update.Total);
                 _exportActiveMessage = update.State == ExportState.Running
-                    ? (update.GroupCount > 1
+                    ? (update.StreamIndex < 0 ? update.Message : update.GroupCount > 1
                         ? L.Format("MainGroupedProgress", update.Message, ordinal, Math.Min(update.Total, ordinal + update.GroupCount - 1), update.Total)
                         : L.Format("MainStreamProgress", update.StreamIndex, ordinal, update.Total)) +
                         (update.CurrentPercent is { } percent ? $" · {percent:0.#}%" : "")
                     : update.Message;
                 _exportActiveToken = update.State == ExportState.Running
-                    ? update.GroupCount > 1
+                    ? update.StreamIndex < 0 ? update.LocalizedMessage
+                        : update.GroupCount > 1
                         ? new LocalizedMessage("MainGroupedProgress", (object?)update.LocalizedMessage ?? update.Message,
                             ordinal, Math.Min(update.Total, ordinal + update.GroupCount - 1), update.Total)
                         : new LocalizedMessage("MainStreamProgress", update.StreamIndex, ordinal, update.Total)
@@ -824,8 +927,9 @@ public class MainViewModel : ViewModelBase
                 _ffmpegPath, updates, operation.Token, options), operation.Token);
             _exportOperation = null;
             foreach (var trackResult in result.Tracks)
-                selected.First(t => t.Stream.Index == trackResult.StreamIndex)
-                    .SetResult(trackResult.State, trackResult.Message, trackResult.OutputPath, trackResult.LocalizedMessage);
+                (selected.FirstOrDefault(t => t.Stream.Index == trackResult.StreamIndex)
+                    ?? (trackResult.StreamIndex < 0 ? AttachmentRow : null))
+                    ?.SetResult(trackResult.State, trackResult.Message, trackResult.OutputPath, trackResult.LocalizedMessage);
             ExportProgressIndeterminate = false;
             ExportProgress = result.Success ? 100 : Math.Max(ExportProgress, Math.Min(99,
                 result.Tracks.Count(t => t.State is ExportState.Completed or ExportState.Failed) * 100.0 / plans.Length));
@@ -1207,6 +1311,58 @@ public sealed class ExportTrackViewModel : ViewModelBase
         _status = _statusFactory();
     }
 
+    private IReadOnlyList<AttachmentFile> _attachmentFiles = [];
+    private readonly HashSet<ulong> _selectedAttachmentUids = new();
+    public bool IsAttachmentGroup => _attachmentFiles.Count > 0;
+    public IReadOnlyCollection<ulong> SelectedAttachmentUids => _selectedAttachmentUids;
+    public bool AllAttachmentsSelected => IsAttachmentGroup
+        && _selectedAttachmentUids.Count == _attachmentFiles.Count;
+    public bool PartAttachmentsSelected => _selectedAttachmentUids.Count > 0 && !AllAttachmentsSelected;
+    public string AttachmentStateGlyph => _selectedAttachmentUids.Count == 0 ? "○"
+        : _selectedAttachmentUids.Count == _attachmentFiles.Count ? "●" : "◐";
+    public static ExportTrackViewModel ForAttachments(IReadOnlyList<AttachmentFile> files)
+    {
+        var row = new ExportTrackViewModel(new MediaStreamInfo(null, "attachment_group", null, null,
+            null, null, null, null, null, null, null, null, null, null, null, null, null,
+            SubtitleKind.Unknown, new Dictionary<string, string>(), new Dictionary<string, int?>(),
+            null, VisualKind.Unknown, null, false), "", new ExportDecision(null, null));
+        row._attachmentFiles = files;
+        row.SetLocalizedStatus(() => L.Format("MainAttachmentCount", files.Count));
+        return row;
+    }
+
+    public void ToggleAttachments() => SetAttachmentSelection(
+        _selectedAttachmentUids.Count == _attachmentFiles.Count ? [] : _attachmentFiles.Select(f => f.Uid));
+
+    public void SetAttachmentSelected(ulong uid, bool selected)
+    {
+        if (!IsAttachmentGroup || _locked || !_attachmentFiles.Any(f => f.Uid == uid)) return;
+        if (selected ? _selectedAttachmentUids.Add(uid) : _selectedAttachmentUids.Remove(uid))
+            NotifyAttachmentSelection();
+    }
+
+    public void SetAttachmentSelection(IEnumerable<ulong> uids)
+    {
+        if (!IsAttachmentGroup || _locked) return;
+        var allowed = _attachmentFiles.Select(f => f.Uid).ToHashSet();
+        var next = uids.Where(allowed.Contains).ToHashSet();
+        if (_selectedAttachmentUids.SetEquals(next)) return;
+        _selectedAttachmentUids.Clear();
+        _selectedAttachmentUids.UnionWith(next);
+        NotifyAttachmentSelection();
+    }
+
+    private void NotifyAttachmentSelection()
+    {
+        _isSelected = _selectedAttachmentUids.Count > 0;
+        OnPropertyChanged(nameof(IsSelected));
+        OnPropertyChanged(nameof(AttachmentStateGlyph));
+        OnPropertyChanged(nameof(AllAttachmentsSelected));
+        OnPropertyChanged(nameof(PartAttachmentsSelected));
+        OnPropertyChanged(nameof(StatusLabel));
+        OnPropertyChanged(nameof(Status));
+    }
+
     private bool _isSelected;
     private bool _locked;
     private ExportState _state = ExportState.Pending;
@@ -1235,7 +1391,7 @@ public sealed class ExportTrackViewModel : ViewModelBase
             OnPropertyChanged(nameof(StatusLabel));
         }
     }
-    public TrackExportPlan? Plan => Conversion is { } options
+    public TrackExportPlan? Plan => IsAttachmentGroup ? null : Conversion is { } options
         ? new(Stream, options.Format.Extension, options.Format.Muxer, false, false, options)
         : _copyOverride ?? Decision.Plan;
     public string ModeDisplay => L.Get(Conversion is null ? "MainModeExtract" : "MainModeConvert");
@@ -1290,9 +1446,9 @@ public sealed class ExportTrackViewModel : ViewModelBase
         SetConfigurationError(L.Get(key));
         _statusFactory = () => L.Get(key);
     }
-    public bool CanSelect => (IsSupported || CanConvert) && !_locked;
+    public bool CanSelect => (IsAttachmentGroup || IsSupported || CanConvert) && !_locked;
     public string IndexDisplay => Stream.Index?.ToString(CultureInfo.InvariantCulture) ?? "—";
-    public string TypeDisplay => Stream.VisualKind switch
+    public string TypeDisplay => IsAttachmentGroup ? L.Get("MainAttachments") : Stream.VisualKind switch
     {
         VisualKind.Image => L.Get(Stream.IsCoverArt ? "MainDescriptionCover" : "MainTypeImage"),
         VisualKind.Animation => L.Get("MainTypeAnimation"),
@@ -1338,6 +1494,7 @@ public sealed class ExportTrackViewModel : ViewModelBase
         get => _isSelected;
         set
         {
+            if (IsAttachmentGroup) { SetAttachmentSelection(value ? _attachmentFiles.Select(f => f.Uid) : []); return; }
             if (CanSelect && SetProperty(ref _isSelected, value))
             {
                 OnPropertyChanged(nameof(StatusLabel));
@@ -1352,7 +1509,9 @@ public sealed class ExportTrackViewModel : ViewModelBase
         _statusFactory = factory;
         Status = factory();
     }
-    public string StatusLabel => !IsSupported && !CanConvert ? L.Get("MainStatusUnavailable") : State switch
+    public string StatusLabel => IsAttachmentGroup
+        ? L.Format("MainAttachmentCount", _attachmentFiles.Count) : !IsSupported && !CanConvert && !IsAttachmentGroup
+        ? L.Get("MainStatusUnavailable") : State switch
     {
         ExportState.Running => L.Get(Conversion is null ? "MainStatusExtracting" : "MainStatusConverting"),
         ExportState.Completed => L.Get(Conversion is null ? "MainStatusExtracted" : "MainStatusConverted"),
@@ -1371,16 +1530,18 @@ public sealed class ExportTrackViewModel : ViewModelBase
         OnPropertyChanged(nameof(DetailsDisplay));
         OnPropertyChanged(nameof(BitRateDisplay));
         OnPropertyChanged(nameof(StatusLabel));
+        OnPropertyChanged(nameof(AttachmentStateGlyph));
         OnPropertyChanged(nameof(ModeDisplay));
         OnPropertyChanged(nameof(OutputPreview));
     }
-    public IBrush StatusBadgeBackground => !IsSupported && !CanConvert ? MutedBackground : State switch
+    public IBrush StatusBadgeBackground => !IsSupported && !CanConvert && !IsAttachmentGroup ? MutedBackground : State switch
     {
         ExportState.Running => RunningBackground,
         ExportState.Failed or ExportState.Cancelled => ErrorBackground,
         _ => ReadyBackground
     };
-    public IBrush StatusForeground => !IsSupported && !CanConvert ? new SolidColorBrush(Color.Parse("#F0989D")) : State switch
+    public IBrush StatusForeground => !IsSupported && !CanConvert && !IsAttachmentGroup
+        ? new SolidColorBrush(Color.Parse("#F0989D")) : State switch
     {
         ExportState.Failed or ExportState.Cancelled => new SolidColorBrush(Color.Parse("#F0989D")),
         ExportState.Running => new SolidColorBrush(Color.Parse("#82BAFF")),

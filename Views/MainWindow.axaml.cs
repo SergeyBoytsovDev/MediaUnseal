@@ -38,7 +38,7 @@ public partial class MainWindow : Window
     private readonly Dictionary<string, FormatChoice> _formatChoices = new();
     private readonly HashSet<ExportTrackViewModel> _previouslySelected = new();
     private sealed record FormatChoice(string Display, ConversionFormat? Format = null,
-        ConversionSettings? Settings = null, bool SeparatorBefore = false)
+        ConversionSettings? Settings = null, bool SeparatorBefore = false, bool CopyRequested = false)
     {
         public override string ToString() => Display;
     }
@@ -73,6 +73,8 @@ public partial class MainWindow : Window
             };
         }
         RefreshColumnHeaders();
+        StreamsTable.AddHandler(InputElement.PointerPressedEvent, StreamsTable_PointerPressed,
+            RoutingStrategies.Tunnel, handledEventsToo: true);
         Opened += MainWindow_Opened;
         LocalizationManager.Active.PropertyChanged += Localization_PropertyChanged;
         Closing += MainWindow_Closing;
@@ -255,9 +257,54 @@ public partial class MainWindow : Window
 
     private void StreamsTable_PointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (!e.GetCurrentPoint(StreamsTable).Properties.IsRightButtonPressed) return;
-        if (e.Source is Avalonia.Visual visual && visual.FindAncestorOfType<TableViewRow>() is { } row)
-            StreamsTable.SelectedItem = row.DataContext;
+        if (e.Source is not Avalonia.Visual visual
+            || (visual as TableViewRow ?? visual.FindAncestorOfType<TableViewRow>())?.DataContext
+                is not ExportTrackViewModel track) return;
+        var point = e.GetCurrentPoint(StreamsTable).Properties;
+        if (point.IsRightButtonPressed)
+            SelectStreamContext(track);
+        else if (point.IsLeftButtonPressed && e.ClickCount >= 2 && e.ClickCount % 2 == 0)
+        {
+            ToggleRowSelection(track);
+            e.Handled = true;
+        }
+    }
+
+    internal void SelectStreamContext(ExportTrackViewModel track)
+    {
+        StreamsTable.SelectedItem = track;
+        PropertiesMenuItem.IsVisible = !track.IsAttachmentGroup;
+        ViewAttachmentsMenuItem.IsVisible = track.IsAttachmentGroup;
+        ExtractAllAttachmentsMenuItem.IsVisible = track.IsAttachmentGroup;
+    }
+
+    internal static void ToggleRowSelection(ExportTrackViewModel track)
+    {
+        if (track.IsAttachmentGroup) track.ToggleAttachments();
+        else track.IsSelected = !track.IsSelected;
+    }
+
+    private void ToggleAttachment_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button { DataContext: ExportTrackViewModel track }) track.ToggleAttachments();
+    }
+
+    private async void ViewAttachments_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel { AttachmentFiles: { Count: > 0 } } viewModel) return;
+        var media = viewModel.SelectedMedia;
+        var dialog = new AttachmentsWindow(viewModel.AttachmentFiles,
+            viewModel.AttachmentRow?.SelectedAttachmentUids ?? []);
+        var selection = await dialog.ShowDialog<HashSet<ulong>?>(this);
+        if (selection is not null && ReferenceEquals(viewModel.SelectedMedia, media))
+            viewModel.SetAttachmentSelection(selection);
+    }
+
+    private async void ExtractAllAttachments_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel { AttachmentFiles: { Count: > 0 } } viewModel)
+            await viewModel.StartExportAsync(_shutdown.Token,
+                viewModel.AttachmentFiles.Select(file => file.Uid).ToArray());
     }
 
     private void StreamsTable_SelectionChanged(object? sender, SelectionChangedEventArgs e) { }
@@ -461,7 +508,16 @@ public partial class MainWindow : Window
                 if (track.Decision.Plan is { } original && original.Muxer == format.Muxer
                     && original.Extension == format.Extension)
                 { track.SetConversion(null); continue; }
-                if (ShouldTryCopy(kind, format)
+                if (choice.CopyRequested)
+                {
+                    if (await _conversionCatalog.CheckCopyAsync(media.FullPath, track.Stream.Index!.Value,
+                        format, cancellation.Token))
+                        track.SetCopyOverride(new(track.Stream, format.Extension, format.Muxer, false,
+                            VerifiedCopy: true));
+                    else { track.SetConfigurationErrorKey("ConversionCopyIncompatible"); valid = false; }
+                    continue;
+                }
+                if (ShouldTryCopy(kind, format, track.Stream.Codec)
                     && await _conversionCatalog.CheckCopyAsync(media.FullPath, track.Stream.Index!.Value,
                     format, cancellation.Token))
                 {
@@ -496,8 +552,11 @@ public partial class MainWindow : Window
         }
     }
 
-    internal static bool ShouldTryCopy(string kind, ConversionFormat format) =>
-        kind != "image" && !(kind == "animation" && FfmpegConversionCatalog.Category(format) == "video");
+    internal static bool ShouldTryCopy(string kind, ConversionFormat format, string? sourceCodec = null) =>
+        kind != "image" && format.Muxer != "caf"
+            && (kind != "audio"
+                || string.Equals(sourceCodec, format.AudioCodec, StringComparison.OrdinalIgnoreCase))
+            && !(kind == "animation" && FfmpegConversionCatalog.Category(format) == "video");
 
     private async void ConfigureFormat_Click(object? sender, RoutedEventArgs e)
     {
@@ -516,11 +575,19 @@ public partial class MainWindow : Window
                 format.Extension.Equals(sourceExtension, StringComparison.OrdinalIgnoreCase));
         }
         var dialog = new ConversionWindow(_conversionCatalog, viewModel.Diagnostics, track.Stream, choice?.Settings,
-            _shutdown.Token, initialFormat, track.Decision.Plan);
+            _shutdown.Token, initialFormat, track.Decision.Plan, media.FullPath, choice?.CopyRequested == true);
         var settings = await dialog.ShowDialog<ConversionSettings?>(this);
         if (dialog.AppliedCopy && viewModel.SelectedMedia == media)
         {
             _formatChoices[kind] = new FormatChoice(LocalizationManager.Active.Get("MainOriginalNoTranscode"));
+            RefreshFormatControls();
+            await ApplyAllFormatsAsync();
+            return;
+        }
+        if (dialog.AppliedCopyFormat is { } copiedFormat && viewModel.SelectedMedia == media)
+        {
+            _formatChoices[kind] = new(LocalizationManager.Active.Format("MainCustomFormat",
+                copiedFormat.Extension.ToUpperInvariant()), copiedFormat, CopyRequested: true);
             RefreshFormatControls();
             await ApplyAllFormatsAsync();
             return;
@@ -541,7 +608,7 @@ public partial class MainWindow : Window
 
     private void Properties_Click(object? sender, RoutedEventArgs e)
     {
-        if (StreamsTable.SelectedItem is ExportTrackViewModel track)
+        if (StreamsTable.SelectedItem is ExportTrackViewModel { IsAttachmentGroup: false } track)
             StreamPropertiesWindow.Show(this, track.Stream);
     }
 

@@ -14,7 +14,49 @@ namespace TrackExtractor.Services;
 // EBML sizes, never searched for byte signatures. FFprobe indexes are not FileUIDs.
 internal static class MatroskaAttachments
 {
-    internal sealed record Attachment(ulong Uid, string Name, string Mime, long Offset, long Size);
+    internal sealed record Attachment(ulong Uid, string Name, string Mime, long Offset, long Size,
+        string? Description = null);
+
+    internal static bool IsMatroska(MediaInfo media) =>
+        media.Container?.Split(',', StringSplitOptions.TrimEntries).Contains("matroska") == true;
+
+    internal static bool ProbeReportsAttachments(MediaInfo media) => media.Streams.Any(stream =>
+        stream.CodecType == "attachment" || stream.Disposition.GetValueOrDefault("attached_pic") == 1
+        || stream.Tags.ContainsKey("filename") && stream.Tags.ContainsKey("mimetype"));
+
+    internal static async Task<IReadOnlyList<Attachment>> ReadFileAsync(MediaInfo media,
+        CancellationToken cancellationToken, NavigationStats? stats = null)
+    {
+        if (!IsMatroska(media)) return [];
+        await using var input = new FileStream(media.FullPath, FileMode.Open, FileAccess.Read,
+            FileShare.Read, 4096, FileOptions.Asynchronous | FileOptions.RandomAccess);
+        if (input.Length != media.Size)
+            throw new InvalidDataException("Исходный файл изменился после анализа.");
+        return await ReadForExportAsync(input, cancellationToken, stats ?? new NavigationStats()).ConfigureAwait(false);
+    }
+
+    // FFprobe exposes AttachedFile streams in file order. Validate the entire sequence
+    // before assigning a FileUID; a filename alone is not an attachment identity.
+    internal static IReadOnlyDictionary<int, ulong> MatchStreamUids(MediaInfo media,
+        IReadOnlyList<Attachment> attachments)
+    {
+        var streams = media.Streams.Where(s => s.CodecType == "attachment"
+            || s.CodecType == "video" && s.Disposition.GetValueOrDefault("attached_pic") == 1)
+            .OrderBy(s => s.Index).ToArray();
+        if (streams.Length != attachments.Count || streams.Any(s => s.Index is null or < 0)
+            || streams.Select(s => s.Index).Distinct().Count() != streams.Length)
+            return new Dictionary<int, ulong>();
+        var matches = new Dictionary<int, ulong>();
+        for (var i = 0; i < streams.Length; i++)
+        {
+            if (streams[i].Tags.GetValueOrDefault("filename") != attachments[i].Name
+                || !string.Equals(streams[i].Tags.GetValueOrDefault("mimetype"), attachments[i].Mime,
+                    StringComparison.OrdinalIgnoreCase))
+                return new Dictionary<int, ulong>();
+            matches.Add(streams[i].Index!.Value, attachments[i].Uid);
+        }
+        return matches;
+    }
     internal sealed class NavigationStats
     {
         public bool UsedSeekHead { get; internal set; }
@@ -91,7 +133,9 @@ internal static class MatroskaAttachments
         var probeMatches = media.Streams.Count(s => IsCandidate(media, s)
             && s.Tags.GetValueOrDefault("filename") == name
             && string.Equals(s.Tags.GetValueOrDefault("mimetype"), mime, StringComparison.OrdinalIgnoreCase));
-        if (matches.Length != 1 || probeMatches != 1)
+        if (stream.AttachmentUid is { } uid)
+            matches = matches.Where(a => a.Uid == uid).ToArray();
+        if (matches.Length != 1 || stream.AttachmentUid is null && probeMatches != 1)
             throw new InvalidDataException(matches.Length == 0
                 ? "Выбранное вложение не найдено в Matroska. Повторите анализ; извлечение через FFmpeg не запускалось."
                 : "Неоднозначное сопоставление вложения: одинаковые имя и MIME. Извлечение остановлено.");
@@ -145,6 +189,24 @@ internal static class MatroskaAttachments
                 lastReported = fraction;
             }
         }
+    }
+
+    internal static async Task CopySelectedAsync(MediaInfo media, AttachmentFile expected, string destination,
+        IProgress<double>? progress, CancellationToken cancellationToken)
+    {
+        await using var input = new FileStream(media.FullPath, FileMode.Open, FileAccess.Read,
+            FileShare.Read, 4096, FileOptions.Asynchronous | FileOptions.RandomAccess);
+        if (input.Length != media.Size) throw new InvalidDataException("Исходный файл изменился после анализа.");
+        var entries = await ReadForExportAsync(input, cancellationToken, new NavigationStats()).ConfigureAwait(false);
+        var actual = entries.SingleOrDefault(a => a.Uid == expected.Uid);
+        if (actual is null || actual.Name != expected.Name || actual.Mime != expected.Mime
+            || actual.Size != expected.Size)
+            throw new InvalidDataException("Выбранное вложение изменилось после анализа.");
+        await using var output = new FileStream(destination, FileMode.CreateNew, FileAccess.Write,
+            FileShare.None, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        await CopyAsync(input, output, actual, progress, cancellationToken).ConfigureAwait(false);
+        await output.FlushAsync(cancellationToken).ConfigureAwait(false);
+        if (input.Length != media.Size) throw new InvalidDataException("Исходный файл изменился во время извлечения.");
     }
 
     internal static async Task<IReadOnlyList<Attachment>> ReadAsync(Stream input, CancellationToken cancellationToken,
@@ -445,7 +507,7 @@ internal static class MatroskaAttachments
 
         private async Task<Attachment> ReadFileAsync(long end)
         {
-            string? name = null, mime = null;
+            string? name = null, mime = null, description = null;
             ulong? uid = null;
             long? data = null, size = null;
             var fields = new HashSet<uint>();
@@ -459,6 +521,7 @@ internal static class MatroskaAttachments
                 switch (field.Id)
                 {
                     case 0x466E: name = await TextAsync(field, true).ConfigureAwait(false); break;
+                    case 0x467E: description = await TextAsync(field, true).ConfigureAwait(false); break;
                     case 0x4660: mime = await TextAsync(field, false).ConfigureAwait(false); break;
                     case 0x46AE: uid = await UIntAsync(field).ConfigureAwait(false); break;
                     case 0x465C: data = field.Data; size = field.End - field.Data; break;
@@ -469,7 +532,7 @@ internal static class MatroskaAttachments
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(mime) || uid is null or 0 || data is null || size is null or <= 0)
                 throw Bad("Неполные метаданные вложения");
             if (!_uids.Add(uid.Value)) throw Bad("Повтор FileUID вложения");
-            return new(uid.Value, name, mime, data.Value, size.Value);
+            return new(uid.Value, name, mime, data.Value, size.Value, description);
         }
 
         private async Task<Element> HeaderAsync(long parentEnd)

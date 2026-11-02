@@ -18,6 +18,7 @@
   <Style Selector="Button:disabled"><Setter Property="Opacity" Value="0.48"/></Style>
   <Style Selector="Button.primary"><Setter Property="Background" Value="{DynamicResource AccentBrush}"/><Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/><Setter Property="Foreground" Value="White"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
   <Style Selector="Button.bulk-select.all-selected"><Setter Property="Background" Value="{DynamicResource AccentBrush}"/><Setter Property="Foreground" Value="White"/></Style>
+  <Style Selector="Button.bulk-select.partial-selected"><Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/></Style>
   <Style Selector="Button.chrome"><Setter Property="Background" Value="Transparent"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Padding" Value="0"/><Setter Property="CornerRadius" Value="0"/><Setter Property="HorizontalContentAlignment" Value="Center"/><Setter Property="VerticalContentAlignment" Value="Center"/></Style>
   <Style Selector="Button.chrome:pointerover"><Setter Property="Background" Value="{DynamicResource PanelBackground}"/></Style>
   <Style Selector="Button.chrome-clear"><Setter Property="Foreground" Value="{DynamicResource ErrorBrush}"/></Style>
@@ -198,13 +199,17 @@
         <TableView x:Name="StreamsTable" ItemsSource="{Binding ExportTracks}"
                    CanUserResizeColumns="True" SelectionMode="Single"
                    SelectionChanged="StreamsTable_SelectionChanged"
-                   PointerPressed="StreamsTable_PointerPressed" ScrollViewer.AllowAutoHide="False">
+                   ScrollViewer.AllowAutoHide="False">
          <TableView.Resources>
           <Thickness x:Key="TableViewRowPadding">0,2,0,2</Thickness>
           <Thickness x:Key="TableViewColumnResizerMargin">0,-2,-6,-2</Thickness>
          </TableView.Resources>
          <TableView.ContextMenu>
-          <ContextMenu><MenuItem Header="{DynamicResource Loc_MainStreamProperties}" Click="Properties_Click"/></ContextMenu>
+          <ContextMenu>
+           <MenuItem x:Name="PropertiesMenuItem" Header="{DynamicResource Loc_MainStreamProperties}" Click="Properties_Click"/>
+           <MenuItem x:Name="ViewAttachmentsMenuItem" Header="{DynamicResource Loc_AttachmentView}" Click="ViewAttachments_Click" IsVisible="False"/>
+           <MenuItem x:Name="ExtractAllAttachmentsMenuItem" Header="{DynamicResource Loc_AttachmentExtractAll}" Click="ExtractAllAttachments_Click" IsVisible="False"/>
+          </ContextMenu>
          </TableView.ContextMenu>
          <TableView.Columns>
           <TableViewColumn Width="36" CanUserResize="False" HorizontalContentAlignment="Center">
@@ -216,9 +221,17 @@
                     IsEnabled="{Binding CanBulkSelect}" Click="ToggleAllTracks_Click"/>
            </TableViewColumn.Header>
            <TableViewColumn.CellTemplate><DataTemplate x:DataType="vm:ExportTrackViewModel">
-            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" IsEnabled="{Binding CanSelect}"
-                      Width="20" Padding="0"
-                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Grid>
+             <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" IsEnabled="{Binding CanSelect}"
+                       IsVisible="{Binding !IsAttachmentGroup}" Width="20" Padding="0"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+             <Button Classes="bulk-select" Classes.all-selected="{Binding AllAttachmentsSelected}"
+                     Classes.partial-selected="{Binding PartAttachmentsSelected}"
+                     Width="20" Height="20" Padding="0" CornerRadius="10"
+                     IsVisible="{Binding IsAttachmentGroup}" IsEnabled="{Binding CanSelect}"
+                     Content="{Binding AttachmentStateGlyph}" Click="ToggleAttachment_Click"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>
            </DataTemplate></TableViewColumn.CellTemplate>
           </TableViewColumn>
           <TableViewColumn Header="{DynamicResource Loc_MainColumnType}" Width="126">
@@ -350,7 +363,6 @@
         <CheckBox Content="{DynamicResource Loc_MainSaveMetadata}" IsChecked="{Binding PreserveMetadata, Mode=TwoWay}"/>
         <CheckBox Content="{DynamicResource Loc_MainGroupLanguages}" IsChecked="{Binding GroupByLanguage, Mode=TwoWay}"/>
         <CheckBox Content="{DynamicResource Loc_MainSourceFolder}" IsChecked="{Binding CreateSourceFolder, Mode=TwoWay}"/>
-        <CheckBox Content="{DynamicResource Loc_MainFutureAttachments}" IsEnabled="False"/>
        </StackPanel>
       </ScrollViewer>
      </Grid>

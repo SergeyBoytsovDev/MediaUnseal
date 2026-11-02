@@ -15,7 +15,8 @@ namespace TrackExtractor.Services;
 public enum ExportState { Pending, Running, Completed, Failed, Cancelled }
 
 public sealed record TrackExportPlan(MediaStreamInfo Stream, string Extension, string Muxer,
-    bool StillImage, bool Attachment = false, ConversionSettings? Conversion = null, bool VerifiedCopy = false);
+    bool StillImage, bool Attachment = false, ConversionSettings? Conversion = null, bool VerifiedCopy = false,
+    AttachmentFile? AttachmentFile = null);
 public sealed record ExportDecision(TrackExportPlan? Plan, string? Reason)
 {
     internal LocalizedMessage? LocalizedReason { get; init; }
@@ -112,7 +113,23 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         }
         else if (stream.CodecType == "audio")
         {
-            output = codec switch
+            // A standalone audio file keeps its actual container as the original format.
+            // The codec mapping below remains the extraction fallback for streams in other files.
+            var sourceExtension = Path.GetExtension(media.FullPath).ToLowerInvariant();
+            var sourceContainers = media.Container?.Split(',') ?? [];
+            bool HasContainer(string name) => sourceContainers.Contains(name, StringComparer.OrdinalIgnoreCase);
+            output = sourceExtension switch
+            {
+                ".caf" when HasContainer("caf") => ("caf", "caf", false),
+                ".m4v" when HasContainer("m4a") => ("m4v", "ipod", false),
+                ".m4a" when HasContainer("m4a") => ("m4a", "ipod", false),
+                ".ogg" when HasContainer("ogg") => ("ogg", "ogg", false),
+                ".aif" when HasContainer("aiff") => ("aif", "aiff", false),
+                ".au" when HasContainer("au") => ("au", "au", false),
+                ".wav" when HasContainer("wav") => ("wav", "wav", false),
+                _ => null
+            };
+            output ??= codec switch
             {
                 "aac" => ("aac", "adts", false),
                 "mp3" => ("mp3", "mp3", false),
@@ -160,10 +177,21 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         if (TimeoutPerTrack <= TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(TimeoutPerTrack));
         if (!Directory.Exists(outputDirectory)) throw new DirectoryNotFoundException("Выбранная папка сохранения не найдена.");
         if (!File.Exists(media.FullPath)) throw new FileNotFoundException("Исходный файл больше не найден.", media.FullPath);
-        if (selected.Any(p => p.Stream.Index is not >= 0 || !media.Streams.Contains(p.Stream)) ||
+        if (selected.Any(p => p.AttachmentFile is null
+                ? p.Stream.Index is not >= 0 || !media.Streams.Contains(p.Stream)
+                : !MatroskaAttachments.IsMatroska(media) || p.Stream.Index is not < 0
+                    || p.Conversion is not null || !p.Attachment || p.Muxer != "attachment"
+                    || p.AttachmentFile.Uid == 0 || p.AttachmentFile.Size <= 0
+                    || string.IsNullOrWhiteSpace(p.AttachmentFile.Name)
+                    || string.IsNullOrWhiteSpace(p.AttachmentFile.Mime)
+                    || !System.Text.RegularExpressions.Regex.IsMatch(p.Extension, @"\A[a-zA-Z0-9]{1,10}\z")) ||
             selected.Select(p => p.Stream.Index).Distinct().Count() != selected.Count)
             throw new ArgumentException("Выбор потоков устарел или содержит повторения.", nameof(selected));
-        if (selected.Any(p => p.Conversion is { } conversion
+        if (selected.Where(p => p.AttachmentFile is not null)
+            .Select(p => p.AttachmentFile!.Uid).Distinct().Count()
+            != selected.Count(p => p.AttachmentFile is not null))
+            throw new ArgumentException("Выбор вложений содержит повторения.", nameof(selected));
+        if (selected.Any(p => p.AttachmentFile is not null ? false : p.Conversion is { } conversion
             ? conversion.Validate(p.Stream) is not null || p.Extension != conversion.Format.Extension
                 || p.Muxer != conversion.Format.Muxer || p.Attachment || p.StillImage
             : p.VerifiedCopy ? p.StillImage || p.Attachment ||
@@ -212,20 +240,26 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 var visualOutput = plan.Stream.VisualKind is VisualKind.Image or VisualKind.Animation;
                 var target = ReserveName(media, plan, TargetDirectory(directory, plan, options), reserved);
                 var temp = Path.Combine(stage, $"{index}-{Guid.NewGuid():N}.{plan.Extension}");
+                var attachmentLabel = plan.AttachmentFile is { } namedAttachment
+                    ? SafeAttachmentName(namedAttachment.Name) : null;
                 progress?.Report(new(index, ExportState.Running,
-                    L.Format(plan.Conversion is null ? "MainProgressExtractingTo" : "MainProgressConvertingTo",
-                        index, Path.GetFileName(target)), null, i, selected.Count)
-                { LocalizedMessage = new(plan.Conversion is null ? "MainProgressExtractingTo" : "MainProgressConvertingTo",
-                    index, Path.GetFileName(target)) });
+                    attachmentLabel is null
+                        ? L.Format(plan.Conversion is null ? "MainProgressExtractingTo" : "MainProgressConvertingTo",
+                            index, Path.GetFileName(target))
+                        : L.Format("MainProgressListedAttachment", attachmentLabel), null, i, selected.Count)
+                { LocalizedMessage = attachmentLabel is null
+                    ? new(plan.Conversion is null ? "MainProgressExtractingTo" : "MainProgressConvertingTo",
+                        index, Path.GetFileName(target))
+                    : new("MainProgressListedAttachment", attachmentLabel) });
                 diagnostics.Record(DiagnosticLevel.Info, "Export",
                     $"{(plan.Conversion is null ? "Extraction started" : "Conversion started")}: type " +
                     $"{(plan.Stream.VisualKind is VisualKind.Image or VisualKind.Animation ? plan.Stream.VisualKind.ToString().ToLowerInvariant() : plan.Stream.CodecType)}, stream #{index}, " +
                     $"codec {plan.Stream.Codec}, format {plan.Muxer}; " +
                     (plan.Conversion is null ? "stream copy without re-encoding." : $"encoder {plan.Conversion.Encoder.Name}."),
-                    userMessageKey: visualOutput
+                    userMessageKey: attachmentLabel is not null ? "LogAttachmentStarted" : visualOutput
                         ? plan.Conversion is null ? "LogVisualExtractionStarted" : "LogVisualConversionStarted"
                         : plan.Conversion is null ? "LogExtractingStreamFormat" : "LogConvertingStreamFormat",
-                    userMessageArgs: [index, plan.Muxer]);
+                    userMessageArgs: attachmentLabel is not null ? [attachmentLabel] : [index, plan.Muxer]);
                 if (plan.Stream.HeifGroupIndex is { } heifGroup)
                     diagnostics.Record(DiagnosticLevel.Info, "Export",
                         $"HEIF tile grid group #{heifGroup} selected for FFmpeg image conversion; " +
@@ -234,7 +268,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 int? exitCode = null;
                 TimeSpan? lastPosition = null;
                 string? lastError = null;
-                var nativeAttachment = plan.Conversion is null && MatroskaAttachments.IsCandidate(media, plan.Stream);
+                var nativeAttachment = plan.AttachmentFile is not null
+                    || plan.Conversion is null && MatroskaAttachments.IsCandidate(media, plan.Stream);
                 var nativeWebp = plan.Conversion is null && !plan.VerifiedCopy
                     && plan is { Muxer: "webp", Extension: "webp" }
                     && IsStandaloneAnimatedWebp(media, plan.Stream);
@@ -290,10 +325,13 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         var copyProgress = new InlineProgress<double>(part =>
                         {
                             progress?.Report(new(index, ExportState.Running,
-                                L.Format("MainProgressAttachment", index, part),
+                                attachmentLabel is null ? L.Format("MainProgressAttachment", index, part)
+                                    : L.Format("MainProgressListedAttachmentPercent", attachmentLabel, part),
                                 Math.Min(99, (ordinal + part) * 100 / selected.Count), ordinal, selected.Count,
-                                CurrentPercent: part * 100)
-                            { LocalizedMessage = new("MainProgressAttachment", index, part) });
+                                CurrentPercent: attachmentLabel is null ? part * 100 : null)
+                            { LocalizedMessage = attachmentLabel is null
+                                ? new("MainProgressAttachment", index, part)
+                                : new("MainProgressListedAttachmentPercent", attachmentLabel, part) });
                             var bucket = (int)(part * 10);
                             if (bucket > lastCopyBucket)
                             {
@@ -302,7 +340,9 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                                     $"Matroska attachment #{index}: copied {part:P0} of attachment.");
                             }
                         });
-                        var attachment = await MatroskaAttachments.TryExtractAsync(media, plan.Stream, temp,
+                        var attachment = plan.AttachmentFile is { } file
+                            ? await CopyListedAttachmentAsync(media, file, temp, copyProgress, deadline.Token)
+                            : await MatroskaAttachments.TryExtractAsync(media, plan.Stream, temp,
                             copyProgress, deadline.Token, stats => diagnostics.Record(DiagnosticLevel.Info, "Export",
                                 $"Matroska #{index}: SeekHead={stats.UsedSeekHead}; index jumps={stats.IndexJumps}; " +
                                 $"position changes={stats.PositionChanges}; elements={stats.Elements}; " +
@@ -367,10 +407,10 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         $"mode {(plan.Conversion is null ? "extraction" : "conversion")}.",
                         $"Elapsed {FormatElapsed(trackWatch.Elapsed)}; size {bytes:N0} bytes; " +
                         $"Output path: {Path.GetFileName(target)}",
-                        userMessageKey: visualOutput
+                        userMessageKey: attachmentLabel is not null ? "LogAttachmentCompleted" : visualOutput
                             ? plan.Conversion is null ? "LogVisualExtractionCompleted" : "LogVisualConversionCompleted"
                             : plan.Conversion is null ? "LogStreamExtracted" : "LogStreamConverted",
-                        userMessageArgs: visualOutput
+                        userMessageArgs: attachmentLabel is not null ? [attachmentLabel, FormatByteSize(bytes)] : visualOutput
                             ? [index, plan.Muxer, FormatByteSize(bytes)]
                             : [index, $" ({plan.Muxer})", $", {FormatByteSize(bytes)}"], userSuccess: true);
                 }
@@ -426,11 +466,13 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     { LocalizedMessage = reasonMessage });
                     diagnostics.Record(DiagnosticLevel.Error, "Export",
                         $"Stream #{index} failed: " +
-                        (nativeAttachment && ex is InvalidDataException ? ex.Message : ex.GetType().Name) + "; " +
+                        (nativeAttachment && plan.AttachmentFile is null && ex is InvalidDataException
+                            ? ex.Message : ex.GetType().Name) + "; " +
                         (nativeAttachment ? "Matroska reading; " : $"FFmpeg exit code {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "unknown")}; ") +
                         $"elapsed {FormatElapsed(trackWatch.Elapsed)}.",
-                        userMessageKey: plan.Conversion is null ? "LogStreamFailed" : "LogStreamConversionFailed",
-                        userMessageArgs: [index, message]);
+                        userMessageKey: attachmentLabel is not null ? "LogAttachmentFailed"
+                            : plan.Conversion is null ? "LogStreamFailed" : "LogStreamConversionFailed",
+                        userMessageArgs: attachmentLabel is not null ? [attachmentLabel, message] : [index, message]);
                 }
                 catch (Exception ex)
                 {
@@ -441,8 +483,11 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     progress?.Report(new ExportUpdate(index, ExportState.Failed, L.Get("MainExtractionError"), null, i + 1, selected.Count)
                     { LocalizedMessage = new("MainExtractionError") });
                     diagnostics.Record(DiagnosticLevel.Error, "Export", $"Unexpected error in stream #{index}: {ex.GetType().Name}.",
-                        userMessageKey: plan.Conversion is null ? "LogStreamFailed" : "LogStreamConversionFailed",
-                        userMessageArgs: [index, L.Get("MainExtractionError")]);
+                        userMessageKey: attachmentLabel is not null ? "LogAttachmentFailed"
+                            : plan.Conversion is null ? "LogStreamFailed" : "LogStreamConversionFailed",
+                        userMessageArgs: attachmentLabel is not null
+                            ? [attachmentLabel, L.Get("MainExtractionError")]
+                            : [index, L.Get("MainExtractionError")]);
                 }
                 finally
                 {
@@ -662,6 +707,15 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
     private static LocalizedMessage SavedMessage(string path, TimeSpan elapsed, long bytes) =>
         new("MainResultSaved", Path.GetFileName(path), FormatElapsed(elapsed), ByteSizeMessage(bytes));
 
+    private static async Task<MatroskaAttachments.Attachment> CopyListedAttachmentAsync(
+        MediaInfo media, AttachmentFile file, string destination, IProgress<double>? progress,
+        CancellationToken cancellationToken)
+    {
+        await MatroskaAttachments.CopySelectedAsync(media, file, destination, progress, cancellationToken)
+            .ConfigureAwait(false);
+        return new(file.Uid, file.Name, file.Mime, 0, file.Size, file.Description);
+    }
+
     private static LocalizedMessage ByteSizeMessage(long bytes) => bytes switch
     {
         >= 1L << 30 => new("MainResultSizeGb", bytes / (double)(1L << 30)),
@@ -763,6 +817,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
     internal static void AppendConversionOptions(List<string> args, ConversionSettings options)
     {
         var kind = options.Encoder.Kind;
+        if (options.Encoder.Name == "dca") args.AddRange(["-strict", "-2"]);
         if (options.Crf is { } crf) args.AddRange(["-crf", crf.ToString(CultureInfo.InvariantCulture)]);
         if (options.BitRateKbps is { } bitrate)
             args.AddRange([kind == "video" ? "-b:v" : "-b:a", bitrate.ToString(CultureInfo.InvariantCulture) + "k"]);
@@ -779,6 +834,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
 
     internal static string BuildFileName(MediaInfo media, TrackExportPlan plan)
     {
+        if (plan.AttachmentFile is { } attachment)
+            return SafeAttachmentName(attachment.Name);
         var stream = plan.Stream;
         var kind = stream.VisualKind switch
         {
@@ -809,6 +866,18 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         if (name.Length > 100) name = name[..100].TrimEnd(' ', '.');
         if (name is "CON" or "PRN" or "AUX" or "NUL") name = "_" + name;
         return name.Length == 0 ? "media" : name;
+    }
+
+    private static string SafeAttachmentName(string name)
+    {
+        var leaf = name.Replace('\\', '/').Split('/').LastOrDefault() ?? "";
+        var safe = Sanitize(leaf);
+        if (safe.Length > 120) safe = safe[..120].TrimEnd(' ', '.');
+        var stem = Path.GetFileNameWithoutExtension(safe).ToUpperInvariant();
+        if (stem is "CON" or "PRN" or "AUX" or "NUL"
+            || System.Text.RegularExpressions.Regex.IsMatch(stem, @"\A(?:COM|LPT)[1-9]\z"))
+            safe = "_" + safe;
+        return safe.Length == 0 ? "attachment" : safe;
     }
 
     private static string TargetDirectory(string root, TrackExportPlan plan, ExportOptions options)

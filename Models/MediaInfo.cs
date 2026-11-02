@@ -7,6 +7,8 @@ namespace TrackExtractor.Models;
 public enum SubtitleKind { Unknown, Text, Graphic }
 public enum VisualKind { Unknown, Video, Image, Animation }
 
+public sealed record AttachmentFile(ulong Uid, string Name, string Mime, long Size, string? Description);
+
 public sealed record MediaStreamInfo(
     int? Index, string? CodecType, string? Codec, string? Profile,
     int? Width, int? Height, double? FrameRate, long? BitRate, string? PixelFormat,
@@ -14,7 +16,8 @@ public sealed record MediaStreamInfo(
     string? Language, string? Title, int? Default, int? Forced, SubtitleKind SubtitleKind,
     IReadOnlyDictionary<string, string> Tags, IReadOnlyDictionary<string, int?> Disposition,
     long? FrameCount, VisualKind VisualKind, string? ImageFormat, bool IsCoverArt,
-    IReadOnlyDictionary<string, string>? ExtraProperties = null, int? HeifGroupIndex = null);
+    IReadOnlyDictionary<string, string>? ExtraProperties = null, int? HeifGroupIndex = null,
+    ulong? AttachmentUid = null);
 
 public sealed record MediaInfo(
     string Name, string FullPath, long Size, string? Container,

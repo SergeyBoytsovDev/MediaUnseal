@@ -418,6 +418,7 @@
   <data name="ConversionOriginalCopyCodec" xml:space="preserve"><value>Исходный (копирование без перекодирования) — {0}</value></data>
   <data name="ConversionForceReencode" xml:space="preserve"><value>Повторно кодировать даже при совпадении кодека</value></data>
   <data name="ConversionCopyNote" xml:space="preserve"><value>Оригинальный поток будет скопирован без перекодирования.</value></data>
+  <data name="ConversionCopyIncompatible" xml:space="preserve"><value>Исходный кодек нельзя скопировать в выбранный контейнер.</value></data>
   <data name="ConversionOtherEncodersHint" xml:space="preserve"><value>Другие кодировщики можно проверить для выбранного формата.</value></data>
   <data name="ConversionCheckingAdditional" xml:space="preserve"><value>Проверка дополнительных кодировщиков…</value></data>
   <data name="ConversionConfirmedCompatibleCount" xml:space="preserve"><value>Подтверждено совместимых кодировщиков: {0}.</value></data>
@@ -542,4 +543,23 @@
   <data name="LogVisualConversionStarted" xml:space="preserve"><value>Начата конвертация изображения или анимации из потока #{0}, формат {1}.</value></data>
   <data name="LogVisualExtractionCompleted" xml:space="preserve"><value>Изображение или анимация из потока #{0} извлечены: {1}, {2}.</value></data>
   <data name="LogVisualConversionCompleted" xml:space="preserve"><value>Изображение или анимация из потока #{0} конвертированы: {1}, {2}.</value></data>
+  <data name="MainAttachments" xml:space="preserve"><value>Вложения</value></data>
+  <data name="MainAttachmentCount" xml:space="preserve"><value>Найдено: {0}</value></data>
+  <data name="AttachmentView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="AttachmentExtractAll" xml:space="preserve"><value>Извлечь все</value></data>
+  <data name="AttachmentWindowTitle" xml:space="preserve"><value>Вложения MKV</value></data>
+  <data name="AttachmentName" xml:space="preserve"><value>Имя</value></data>
+  <data name="AttachmentType" xml:space="preserve"><value>Тип / MIME</value></data>
+  <data name="AttachmentSize" xml:space="preserve"><value>Размер</value></data>
+  <data name="AttachmentDescription" xml:space="preserve"><value>Описание</value></data>
+  <data name="AttachmentApply" xml:space="preserve"><value>Применить</value></data>
+  <data name="AttachmentSelectedCount" xml:space="preserve"><value>Выбрано: {0} из {1}</value></data>
+  <data name="LogAttachmentsFound" xml:space="preserve"><value>Найдено вложений MKV: {0}.</value></data>
+  <data name="LogAttachmentsExportAll" xml:space="preserve"><value>Начато извлечение всех вложений MKV: {0}.</value></data>
+  <data name="MainProgressListedAttachment" xml:space="preserve"><value>Извлечение вложения {0}</value></data>
+  <data name="MainProgressListedAttachmentPercent" xml:space="preserve"><value>Вложение {0}: {1:P0}</value></data>
+  <data name="LogAttachmentStarted" xml:space="preserve"><value>Начато извлечение вложения {0}.</value></data>
+  <data name="LogAttachmentCompleted" xml:space="preserve"><value>Вложение {0} извлечено: {1}.</value></data>
+  <data name="LogAttachmentFailed" xml:space="preserve"><value>Не удалось извлечь вложение {0}: {1}.</value></data>
+  <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>Не удалось прочитать список вложений MKV.</value></data>
 </root>

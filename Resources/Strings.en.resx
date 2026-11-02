@@ -1167,6 +1167,7 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
   <data name="MainValidationWrongTypeParameters" xml:space="preserve">
     <value>These parameters do not apply to this stream type.</value>
   </data>
+  <data name="ConversionCopyIncompatible" xml:space="preserve"><value>The source codec cannot be copied into the selected container.</value></data>
   <data name="MainValidationUnsupportedOutputFormat" xml:space="preserve">
     <value>The output format does not support this stream type.</value>
   </data>
@@ -1605,4 +1606,23 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
   <data name="LogVisualConversionStarted" xml:space="preserve"><value>Converting image or animation from stream #{0} as {1}.</value></data>
   <data name="LogVisualExtractionCompleted" xml:space="preserve"><value>Image or animation extracted from stream #{0}: {1}, {2}.</value></data>
   <data name="LogVisualConversionCompleted" xml:space="preserve"><value>Image or animation converted from stream #{0}: {1}, {2}.</value></data>
+  <data name="MainAttachments" xml:space="preserve"><value>Attachments</value></data>
+  <data name="MainAttachmentCount" xml:space="preserve"><value>Found: {0}</value></data>
+  <data name="AttachmentView" xml:space="preserve"><value>View</value></data>
+  <data name="AttachmentExtractAll" xml:space="preserve"><value>Extract all</value></data>
+  <data name="AttachmentWindowTitle" xml:space="preserve"><value>MKV attachments</value></data>
+  <data name="AttachmentName" xml:space="preserve"><value>Name</value></data>
+  <data name="AttachmentType" xml:space="preserve"><value>Type / MIME</value></data>
+  <data name="AttachmentSize" xml:space="preserve"><value>Size</value></data>
+  <data name="AttachmentDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="AttachmentApply" xml:space="preserve"><value>Apply</value></data>
+  <data name="AttachmentSelectedCount" xml:space="preserve"><value>Selected: {0} of {1}</value></data>
+  <data name="LogAttachmentsFound" xml:space="preserve"><value>MKV attachments found: {0}.</value></data>
+  <data name="LogAttachmentsExportAll" xml:space="preserve"><value>Extracting all MKV attachments: {0}.</value></data>
+  <data name="MainProgressListedAttachment" xml:space="preserve"><value>Extracting attachment {0}</value></data>
+  <data name="MainProgressListedAttachmentPercent" xml:space="preserve"><value>Attachment {0}: {1:P0}</value></data>
+  <data name="LogAttachmentStarted" xml:space="preserve"><value>Extracting attachment {0}.</value></data>
+  <data name="LogAttachmentCompleted" xml:space="preserve"><value>Attachment {0} extracted: {1}.</value></data>
+  <data name="LogAttachmentFailed" xml:space="preserve"><value>Could not extract attachment {0}: {1}.</value></data>
+  <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>Could not read the MKV attachment list.</value></data>
 </root>
