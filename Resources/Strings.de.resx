@@ -1167,6 +1167,8 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
   <data name="MainValidationWrongTypeParameters" xml:space="preserve">
     <value>Diese Parameter gelten nicht für diesen Stream-Typ.</value>
   </data>
+  <data name="ConversionOriginalTextStream" xml:space="preserve"><value>LRC-Textstream</value></data>
+  <data name="ConversionSourceEncoder" xml:space="preserve"><value>{0} — Original</value></data>
   <data name="ConversionCopyIncompatible" xml:space="preserve"><value>Der ursprüngliche Codec kann nicht in den gewählten Container kopiert werden.</value></data>
   <data name="MainValidationUnsupportedOutputFormat" xml:space="preserve">
     <value>Das Ausgabeformat unterstützt diesen Stream-Typ nicht.</value>
@@ -1253,7 +1255,7 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
     <value>Original (Kopieren ohne Neukodierung) – {0}</value>
   </data>
   <data name="ConversionForceReencode" xml:space="preserve">
-    <value>Auch bei gleichem Codec neu kodieren</value>
+    <value>Kodierung erzwingen</value>
   </data>
   <data name="ConversionCopyNote" xml:space="preserve">
     <value>Der Originalstream wird ohne Neukodierung kopiert.</value>
@@ -1625,4 +1627,7 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
   <data name="LogAttachmentCompleted" xml:space="preserve"><value>Anhang {0} extrahiert: {1}.</value></data>
   <data name="LogAttachmentFailed" xml:space="preserve"><value>Anhang {0} konnte nicht extrahiert werden: {1}.</value></data>
   <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>Die MKV-Anhangsliste konnte nicht gelesen werden.</value></data>
+  <data name="LogAviH264Copy" xml:space="preserve"><value>Video ohne Neukodierung extrahiert. Der H.264-Bitstrom wurde für den AVI-Container angepasst.</value></data>
+  <data name="LogMxfUnofficialCopy" xml:space="preserve"><value>Video ohne Neukodierung extrahiert. Eine nicht standardmäßige Bildrate erforderte zusätzliche FFmpeg-Kompatibilitätsoptionen. Die Wiedergabe kann in einigen Anwendungen eingeschränkt sein.</value></data>
+  <data name="LogSpecialCopyFailed" xml:space="preserve"><value>Das Video konnte nicht ohne Neukodierung extrahiert werden. Wählen Sie einen kompatiblen Kodierer für die Konvertierung: {0}</value></data>
 </root>

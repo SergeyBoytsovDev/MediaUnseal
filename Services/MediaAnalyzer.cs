@@ -229,7 +229,7 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
     private static Dictionary<string, string> ReadExtraProperties(JsonElement item)
     {
         var extra = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var key in new[] { "codec_long_name", "codec_tag_string", "codec_tag", "level",
+        foreach (var key in new[] { "avg_frame_rate", "r_frame_rate", "codec_long_name", "codec_tag_string", "codec_tag", "level",
             "sample_fmt", "bits_per_sample", "bits_per_raw_sample", "display_aspect_ratio",
             "sample_aspect_ratio", "field_order", "color_range", "color_space", "color_transfer",
             "color_primaries", "chroma_location", "start_time" })

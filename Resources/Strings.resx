@@ -416,7 +416,9 @@
   <data name="ConversionHeadingSubtitles" xml:space="preserve"><value>Настройки конвертации субтитров</value></data>
   <data name="ConversionCopyEncoderDescription" xml:space="preserve"><value>копирование без перекодирования</value></data>
   <data name="ConversionOriginalCopyCodec" xml:space="preserve"><value>Исходный (копирование без перекодирования) — {0}</value></data>
-  <data name="ConversionForceReencode" xml:space="preserve"><value>Повторно кодировать даже при совпадении кодека</value></data>
+  <data name="ConversionOriginalTextStream" xml:space="preserve"><value>текстовый поток LRC</value></data>
+  <data name="ConversionSourceEncoder" xml:space="preserve"><value>{0} — исходный</value></data>
+  <data name="ConversionForceReencode" xml:space="preserve"><value>Кодировать принудительно</value></data>
   <data name="ConversionCopyNote" xml:space="preserve"><value>Оригинальный поток будет скопирован без перекодирования.</value></data>
   <data name="ConversionCopyIncompatible" xml:space="preserve"><value>Исходный кодек нельзя скопировать в выбранный контейнер.</value></data>
   <data name="ConversionOtherEncodersHint" xml:space="preserve"><value>Другие кодировщики можно проверить для выбранного формата.</value></data>
@@ -562,4 +564,7 @@
   <data name="LogAttachmentCompleted" xml:space="preserve"><value>Вложение {0} извлечено: {1}.</value></data>
   <data name="LogAttachmentFailed" xml:space="preserve"><value>Не удалось извлечь вложение {0}: {1}.</value></data>
   <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>Не удалось прочитать список вложений MKV.</value></data>
+  <data name="LogAviH264Copy" xml:space="preserve"><value>Видео извлечено без перекодирования. Выполнена адаптация битового потока H.264 для контейнера AVI.</value></data>
+  <data name="LogMxfUnofficialCopy" xml:space="preserve"><value>Видео извлечено без перекодирования. Использована нестандартная частота кадров с дополнительными параметрами совместимости FFmpeg. Воспроизведение в некоторых программах может быть ограничено.</value></data>
+  <data name="LogSpecialCopyFailed" xml:space="preserve"><value>Не удалось извлечь видео без перекодирования. Выберите совместимый кодировщик для перекодирования: {0}</value></data>
 </root>

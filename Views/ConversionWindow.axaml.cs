@@ -25,6 +25,7 @@ public partial class ConversionWindow : Window
     private string _kind = "";
     private ConversionFormat? _copyFormat;
     private TrackExportPlan? _copyPlan;
+    private ConversionEncoder? _sourceEncoder;
     private string? _sourcePath;
     private ConversionFormat? _activeFormat;
     private readonly System.Collections.Generic.Dictionary<ConversionFormat, ConversionEncoder> _encoderSelections = new();
@@ -33,6 +34,23 @@ public partial class ConversionWindow : Window
     private static LocalizationManager L => LocalizationManager.Active;
     private const string CompatibleSearch = "Compatible encoders";
     private const string HardwareSearch = "Hardware encoders";
+    private static readonly System.Collections.Generic.Dictionary<string, string[]> StandardVideoEncoders = new(StringComparer.Ordinal)
+    {
+        ["matroska"] = ["libx264", "h264_mf", "libx265", "libsvtav1", "libvpx-vp9", "mpeg4"],
+        ["mp4"] = ["libx264", "h264_mf", "libx265", "libsvtav1", "mpeg4"],
+        ["mov"] = ["libx264", "h264_mf", "libx265", "mpeg4", "prores_ks", "mjpeg"],
+        ["webm"] = ["libvpx-vp9", "libvpx", "libsvtav1"],
+        ["avi"] = ["mpeg4", "mjpeg", "libx264", "h264_mf"],
+        ["mpegts"] = ["libx264", "h264_mf", "libx265", "mpeg2video"],
+        ["mpeg"] = ["mpeg1video", "mpeg2video"],
+        ["mxf"] = ["mpeg2video", "libx264", "prores_ks", "dnxhd"],
+        ["flv"] = ["libx264", "flv1"],
+        ["asf"] = ["msmpeg4", "wmv1", "wmv2"],
+        ["ogv"] = ["libtheora", "libvpx"],
+        ["3gp"] = ["libx264", "mpeg4", "h263"],
+        ["3g2"] = ["libx264", "mpeg4", "h263"],
+        ["nut"] = ["libx264", "libx265", "mpeg4", "ffv1", "rawvideo"]
+    };
     internal bool AppliedCopy { get; private set; }
     internal ConversionFormat? AppliedCopyFormat { get; private set; }
 
@@ -83,6 +101,13 @@ public partial class ConversionWindow : Window
                 _kind is "video" or "image" or "animation" ? stream.Codec : null,
                 _kind == "audio" ? stream.Codec : null,
                 _kind == "subtitle" ? stream.Codec : null, Original: true);
+        if (_copyFormat is not null)
+            _sourceEncoder = catalog.EncodersFor(_kind).Where(IsSourceCodec)
+                .Where(e => _kind != "video" || StandardVideoEncoders.TryGetValue(copyPlan!.Muxer, out var names)
+                    && names.Contains(e.Name))
+                .OrderBy(e => e.Name == stream.Codec ? 0 : 1)
+                .ThenBy(e => e.IsHardware).ThenBy(e => e.Name.StartsWith("lib", StringComparison.Ordinal) ? 0 : 1)
+                .ThenBy(e => e.Name, StringComparer.Ordinal).FirstOrDefault();
         FormatBox.ItemsSource = _copyFormat is null ? catalog.FormatsFor(_kind) :
             new[] { _copyFormat }.Concat(catalog.FormatsFor(_kind).Where(f =>
                 f.Muxer != copyPlan!.Muxer || f.Extension != copyPlan.Extension)).ToArray();
@@ -171,7 +196,9 @@ public partial class ConversionWindow : Window
 
     private ConversionEncoder CopyEncoder()
     {
-        var codec = _stream?.ImageFormat == "WebP" ? "WebP" : _stream?.Codec?.ToUpperInvariant() ?? "?";
+        var codec = _copyFormat?.Muxer == "lrc" && _stream?.Codec == "text"
+            ? L.Get("ConversionOriginalTextStream")
+            : _stream?.ImageFormat == "WebP" ? "WebP" : _stream?.Codec?.ToUpperInvariant() ?? "?";
         if (_stream?.Profile is { Length: > 0 } profile && _stream.ImageFormat != "WebP")
             codec += " " + profile;
         return new("copy", _stream?.Codec ?? "copy",
@@ -181,6 +208,8 @@ public partial class ConversionWindow : Window
 
     private bool IsSourceCodec(ConversionEncoder encoder) =>
         string.Equals(encoder.Codec, _stream?.Codec, StringComparison.OrdinalIgnoreCase)
+        || _stream?.Codec == "ssa" && encoder.Codec == "ass"
+        || _stream?.Codec == "srt" && encoder.Codec == "subrip"
         || _stream?.ImageFormat == "WebP" && encoder.Codec == "webp";
 
     private bool HasRequestedParameters() => new[] { CrfBox, VideoBitrateBox, AudioBitrateBox,
@@ -194,8 +223,9 @@ public partial class ConversionWindow : Window
         var copying = encoder?.Name == "copy";
         VideoOptions.IsEnabled = !copying;
         AudioOptions.IsEnabled = !copying;
-        ForceReencodeBox.IsVisible = source && encoder is not null && encoder.Name != "copy"
-            && IsSourceCodec(encoder);
+        ForceReencodeBox.IsVisible = encoder is not null && encoder.Name != "copy"
+            && (_kind == "video" && IsSourceCodec(encoder)
+                || source && encoder == _sourceEncoder);
         if (!ForceReencodeBox.IsVisible) ForceReencodeBox.IsChecked = false;
     }
 
@@ -208,23 +238,39 @@ public partial class ConversionWindow : Window
         var source = ReferenceEquals(format, _copyFormat);
         var target = EffectiveFormat(format);
         EncoderBox.IsEnabled = true;
-        MoreEncodersButton.IsEnabled = target is not null;
+        MoreEncodersButton.IsEnabled = target is not null && !(source && _kind == "subtitle");
         HardwareButton.IsEnabled = target is not null;
         EncoderBox.ItemsSource = AvailableEncoders(format, target);
         var available = ((ConversionEncoder[])EncoderBox.ItemsSource).ToArray();
+        var suggested = target is null ? null : _catalog.SuggestedEncoder(target, _kind);
         EncoderBox.SelectedItem = _encoderSelections.TryGetValue(format, out var selected)
             && available.Contains(selected) ? selected
             : _existing is { } existing && existing.Format == target
                 && available.Contains(existing.Encoder) ? existing.Encoder
-            : source ? available[0] : target is null ? null : _catalog.SuggestedEncoder(target, _kind);
+            : source ? available[0] : _kind == "video" ? available.FirstOrDefault()
+            : suggested is not null && available.Contains(suggested)
+                ? suggested : available.FirstOrDefault();
         RefreshEncoderMode();
-        SetEncoderNote(EncoderBox.SelectedItem is ConversionEncoder { Name: "copy" }
+        SetEncoderNote(EncoderBox.SelectedItem is ConversionEncoder selectedEncoder
+            && (selectedEncoder.Name == "copy" || source && selectedEncoder == _sourceEncoder)
             ? "ConversionCopyNote" : "ConversionOtherEncodersHint");
     }
 
     internal static ConversionEncoder[] InitialEncoders(FfmpegConversionCatalog catalog,
         ConversionFormat format, string kind, ConversionSettings? existing)
     {
+        if (kind == "video" && StandardVideoEncoders.TryGetValue(format.Muxer, out var standard))
+        {
+            var installed = catalog.EncodersFor(kind);
+            var defaults = standard.Select(name => installed.FirstOrDefault(e => e.Name == name))
+                .OfType<ConversionEncoder>();
+            var savedVideo = existing?.Format == format && catalog.Contains(existing)
+                && FfmpegConversionCatalog.IsEncoderSuitable(format, existing.Encoder)
+                    ? existing.Encoder : null;
+            return defaults.Concat(catalog.ConfirmedAdditionalFor(format, kind))
+                .Concat(catalog.ConfirmedHardwareFor(format))
+                .Concat(savedVideo is null ? [] : [savedVideo]).Distinct().ToArray();
+        }
         var recommended = catalog.SuggestedEncoder(format, kind);
         var primary = catalog.EncodersFor(kind)
             .Where(e => !e.IsHardware && e.Codec == format.DefaultCodec(kind))
@@ -234,8 +280,10 @@ public partial class ConversionWindow : Window
             : [];
         var saved = existing?.Format == format && catalog.Contains(existing)
             && FfmpegConversionCatalog.IsEncoderSuitable(format, existing.Encoder)
+            && (kind != "subtitle" || catalog.EncodersFor(kind).Contains(existing.Encoder))
                 ? existing.Encoder : null;
         var additional = catalog.ConfirmedAdditionalFor(format, kind)
+            .Where(e => kind != "subtitle" || catalog.EncodersFor(kind).Contains(e))
             .Concat(saved is { IsHardware: false } ? [saved] : [])
             .OrderBy(e => e.Name, StringComparer.Ordinal);
         System.Collections.Generic.IEnumerable<ConversionEncoder> hardware =
@@ -250,9 +298,36 @@ public partial class ConversionWindow : Window
     {
         var listed = target is null || _catalog is null ? []
             : InitialEncoders(_catalog, target, _kind, _existing);
-        if (ReferenceEquals(selected, _copyFormat)) return [CopyEncoder(), .. listed];
+        if (_kind == "video" && target is not null)
+            listed = PrioritizeVideoEncoders(listed, target, _stream?.Codec);
+        if (ReferenceEquals(selected, _copyFormat))
+        {
+            var original = _sourceEncoder ?? CopyEncoder();
+            return _kind == "subtitle" ? [original] : [original, .. listed.Where(e => e != original)];
+        }
         return _kind == "audio" && _sourcePath is not null
             ? [.. listed, CopyEncoder()] : listed;
+    }
+
+    internal static ConversionEncoder[] PrioritizeVideoEncoders(ConversionEncoder[] listed,
+        ConversionFormat format, string? sourceCodec)
+    {
+        if (sourceCodec is null || !StandardVideoEncoders.TryGetValue(format.Muxer, out var standard)
+            || !listed.Any(e => standard.Contains(e.Name)
+                && string.Equals(e.Codec, sourceCodec, StringComparison.OrdinalIgnoreCase)))
+            return listed;
+        return listed.Where(e => standard.Contains(e.Name)
+                && string.Equals(e.Codec, sourceCodec, StringComparison.OrdinalIgnoreCase))
+            .Concat(listed.Where(e => !standard.Contains(e.Name)
+                || !string.Equals(e.Codec, sourceCodec, StringComparison.OrdinalIgnoreCase)))
+            .Distinct().ToArray();
+    }
+
+    private void EncoderLabel_Loaded(object? sender, RoutedEventArgs e)
+    {
+        if (sender is TextBlock { DataContext: ConversionEncoder encoder } label)
+            label.Text = encoder == _sourceEncoder && ReferenceEquals(FormatBox.SelectedItem, _copyFormat)
+                ? L.Format("ConversionSourceEncoder", encoder.Display) : encoder.Display;
     }
 
     private void HardwareDivider_Loaded(object? sender, RoutedEventArgs e)
@@ -330,7 +405,12 @@ public partial class ConversionWindow : Window
             RecordSearch(CompatibleSearch, "Compatible encoder search failed.",
                 ex.Message, DiagnosticLevel.Error, "LogCompatibleSearchFailed");
         }
-        finally { MoreEncodersButton.IsEnabled = true; }
+        finally
+        {
+            MoreEncodersButton.IsEnabled = FormatBox.SelectedItem is ConversionFormat current
+                && EffectiveFormat(current) is not null
+                && !(ReferenceEquals(current, _copyFormat) && _kind == "subtitle");
+        }
     }
 
     private void RecordSearch(string operation, string message, string? details = null,
@@ -343,8 +423,10 @@ public partial class ConversionWindow : Window
     {
         if (_catalog is null || EncoderBox.SelectedItem is not ConversionEncoder encoder) return;
         RefreshEncoderMode();
-        if (encoder.Name == "copy")
+        if (encoder.Name == "copy" || ReferenceEquals(FormatBox.SelectedItem, _copyFormat)
+            && encoder == _sourceEncoder)
         { SetEncoderNote("ConversionCopyNote"); CrfBox.IsEnabled = false; return; }
+        SetEncoderNote("ConversionOtherEncodersHint");
         if (_kind is not ("video" or "animation")) return;
         var revision = ++_encoderRevision;
         CrfBox.IsEnabled = false;
@@ -439,7 +521,7 @@ public partial class ConversionWindow : Window
         var source = ReferenceEquals(FormatBox.SelectedItem, _copyFormat);
         var selectedEncoder = EncoderBox.SelectedItem as ConversionEncoder;
         if (source && _copyPlan is not null && selectedEncoder is not null
-            && (selectedEncoder.Name == "copy" || IsSourceCodec(selectedEncoder)
+            && (selectedEncoder.Name == "copy" || selectedEncoder == _sourceEncoder
                 && !HasRequestedParameters() && ForceReencodeBox.IsChecked != true))
         {
             AppliedCopy = true;

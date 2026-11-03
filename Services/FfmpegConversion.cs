@@ -174,6 +174,12 @@ public sealed class FfmpegConversionCatalog
     public IReadOnlyList<ConversionEncoder> EncodersFor(string kind) => _encoders
         .Where(e => e.Kind == (kind is "image" or "animation" ? "video" : kind)
             && (kind != "subtitle" || e.Name is not ("dvbsub" or "dvdsub" or "xsub")))
+        .Where(e => kind != "subtitle" || e.Name switch
+        {
+            "subrip" => !_encoders.Any(candidate => candidate.Name == "srt" && candidate.Kind == "subtitle"),
+            "ssa" => !_encoders.Any(candidate => candidate.Name == "ass" && candidate.Kind == "subtitle"),
+            _ => true
+        })
         .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase).ToArray();
 
     internal IReadOnlyList<ConversionEncoder> ConfirmedHardwareFor(ConversionFormat format) =>
@@ -199,8 +205,7 @@ public sealed class FfmpegConversionCatalog
     }
 
     public ConversionEncoder? SuggestedEncoder(ConversionFormat format, string kind) =>
-        _encoders.Where(e => e.Kind == (kind is "image" or "animation" ? "video" : kind)
-                && e.Codec == format.DefaultCodec(kind))
+        EncodersFor(kind).Where(e => e.Codec == format.DefaultCodec(kind))
             .OrderBy(e => e.IsHardware)
             .ThenBy(e => (format.Muxer is "avi" or "3gp" or "3g2") && e.Name == "mpeg4" ? 0 : 1)
             .ThenBy(e => e.Name.StartsWith("lib", StringComparison.Ordinal) ? 0 : 1)
@@ -210,7 +215,7 @@ public sealed class FfmpegConversionCatalog
     public bool Contains(ConversionSettings settings) => _formats.Contains(settings.Format) && _encoders.Contains(settings.Encoder);
 
     public async Task<bool> CheckCopyAsync(string source, int streamIndex, ConversionFormat format,
-        CancellationToken token)
+        CancellationToken token, MediaStreamInfo? stream = null)
     {
         if (!_formats.Contains(format) || streamIndex < 0) return false;
         var directory = Path.Combine(Path.GetTempPath(), "trackextractor-copy-" + Guid.NewGuid().ToString("N"));
@@ -218,9 +223,11 @@ public sealed class FfmpegConversionCatalog
         try
         {
             Directory.CreateDirectory(directory);
+            var copyOptions = stream is null ? Array.Empty<string>() : TrackExporter.CopyVideoOptions(
+                new(stream, format.Extension, format.Muxer, false));
             var result = await RunAsync(["-hide_banner", "-loglevel", "error", "-nostdin", "-y",
                 "-i", source, "-map", $"0:{streamIndex}", "-t", "0.1", "-c", "copy",
-                "-f", format.Muxer, output], token).ConfigureAwait(false);
+                ..copyOptions, "-f", format.Muxer, output], token).ConfigureAwait(false);
             if (result.ExitCode != 0 || !File.Exists(output) || new FileInfo(output).Length == 0) return false;
             if (Category(format) is not ("video" or "animation")) return true;
             var decoded = await RunAsync(["-hide_banner", "-loglevel", "error", "-nostdin", "-i", output,

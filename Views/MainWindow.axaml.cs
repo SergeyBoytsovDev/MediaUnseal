@@ -501,6 +501,18 @@ public partial class MainWindow : Window
                 {
                     if (settings.ValidationKey(track.Stream) is { } reasonKey)
                     { track.SetConfigurationErrorKey(reasonKey); valid = false; continue; }
+                    if (kind == "video" && CanCopyVideoSettings(settings, track.Stream)
+                        && await _conversionCatalog.CheckCopyAsync(media.FullPath, track.Stream.Index!.Value,
+                            settings.Format, cancellation.Token, track.Stream))
+                    {
+                        if (track.Decision.Plan is { } source
+                            && source.Muxer == settings.Format.Muxer
+                            && source.Extension == settings.Format.Extension)
+                            track.SetConversion(null);
+                        else track.SetCopyOverride(new(track.Stream, settings.Format.Extension,
+                            settings.Format.Muxer, false, VerifiedCopy: true));
+                        continue;
+                    }
                     track.SetConversion(settings);
                     continue;
                 }
@@ -511,21 +523,27 @@ public partial class MainWindow : Window
                 if (choice.CopyRequested)
                 {
                     if (await _conversionCatalog.CheckCopyAsync(media.FullPath, track.Stream.Index!.Value,
-                        format, cancellation.Token))
+                        format, cancellation.Token, track.Stream))
                         track.SetCopyOverride(new(track.Stream, format.Extension, format.Muxer, false,
                             VerifiedCopy: true));
                     else { track.SetConfigurationErrorKey("ConversionCopyIncompatible"); valid = false; }
                     continue;
                 }
+                var encoder = kind == "video"
+                    ? ConversionWindow.PrioritizeVideoEncoders(
+                        ConversionWindow.InitialEncoders(_conversionCatalog, format, kind, null),
+                        format, track.Stream.Codec).FirstOrDefault()
+                    : _conversionCatalog.SuggestedEncoder(format, kind);
                 if (ShouldTryCopy(kind, format, track.Stream.Codec)
+                    && (kind != "video" || encoder is not null
+                        && string.Equals(track.Stream.Codec, encoder.Codec, StringComparison.OrdinalIgnoreCase))
                     && await _conversionCatalog.CheckCopyAsync(media.FullPath, track.Stream.Index!.Value,
-                    format, cancellation.Token))
+                    format, cancellation.Token, track.Stream))
                 {
                     track.SetCopyOverride(new(track.Stream, format.Extension, format.Muxer, false,
                         VerifiedCopy: true));
                     continue;
                 }
-                var encoder = _conversionCatalog.SuggestedEncoder(format, kind);
                 if (encoder is null)
                 { track.SetConfigurationErrorKey("MainNoSuitableEncoder"); valid = false; continue; }
                 var check = await _conversionCatalog.CheckCombinationAsync(format, encoder, cancellation.Token);
@@ -557,6 +575,13 @@ public partial class MainWindow : Window
             && (kind != "audio"
                 || string.Equals(sourceCodec, format.AudioCodec, StringComparison.OrdinalIgnoreCase))
             && !(kind == "animation" && FfmpegConversionCatalog.Category(format) == "video");
+
+    internal static bool CanCopyVideoSettings(ConversionSettings settings, MediaStreamInfo stream) =>
+        stream.VisualKind == VisualKind.Video && !settings.ForceReencode
+        && settings.Crf is null && settings.BitRateKbps is null
+        && settings.Width is null && settings.Height is null && settings.FrameRate is null
+        && settings.SampleRate is null && settings.Channels is null && settings.Quality is null
+        && string.Equals(stream.Codec, settings.Encoder.Codec, StringComparison.OrdinalIgnoreCase);
 
     private async void ConfigureFormat_Click(object? sender, RoutedEventArgs e)
     {

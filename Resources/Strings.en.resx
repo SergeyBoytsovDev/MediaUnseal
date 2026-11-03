@@ -1167,6 +1167,8 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
   <data name="MainValidationWrongTypeParameters" xml:space="preserve">
     <value>These parameters do not apply to this stream type.</value>
   </data>
+  <data name="ConversionOriginalTextStream" xml:space="preserve"><value>LRC text stream</value></data>
+  <data name="ConversionSourceEncoder" xml:space="preserve"><value>{0} — original</value></data>
   <data name="ConversionCopyIncompatible" xml:space="preserve"><value>The source codec cannot be copied into the selected container.</value></data>
   <data name="MainValidationUnsupportedOutputFormat" xml:space="preserve">
     <value>The output format does not support this stream type.</value>
@@ -1253,7 +1255,7 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
     <value>Original (copy without transcoding) — {0}</value>
   </data>
   <data name="ConversionForceReencode" xml:space="preserve">
-    <value>Re-encode even when the codec matches</value>
+    <value>Force encoding</value>
   </data>
   <data name="ConversionCopyNote" xml:space="preserve">
     <value>The original stream will be copied without transcoding.</value>
@@ -1625,4 +1627,7 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
   <data name="LogAttachmentCompleted" xml:space="preserve"><value>Attachment {0} extracted: {1}.</value></data>
   <data name="LogAttachmentFailed" xml:space="preserve"><value>Could not extract attachment {0}: {1}.</value></data>
   <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>Could not read the MKV attachment list.</value></data>
+  <data name="LogAviH264Copy" xml:space="preserve"><value>Video extracted without re-encoding. The H.264 bitstream was adapted for the AVI container.</value></data>
+  <data name="LogMxfUnofficialCopy" xml:space="preserve"><value>Video extracted without re-encoding. A nonstandard frame rate required additional FFmpeg compatibility options. Playback may be limited in some applications.</value></data>
+  <data name="LogSpecialCopyFailed" xml:space="preserve"><value>Video could not be extracted without re-encoding. Choose a compatible encoder for conversion: {0}</value></data>
 </root>
