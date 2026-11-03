@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
@@ -26,9 +27,28 @@ public partial class DependencyPanel : UserControl
         _viewModel = viewModel;
         _cancellationToken = cancellationToken;
         DataContext = viewModel;
+        AttachedToVisualTree += (_, _) =>
+        {
+            _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            UpdateRetryPosition();
+        };
+        DetachedFromVisualTree += (_, _) => _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
     }
 
-    internal void SetShowContinue(bool value) => ContinueArea.IsVisible = value;
+    internal void SetShowContinue(bool value)
+    {
+        ContinueArea.IsVisible = value;
+        UpdateRetryPosition();
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(MainViewModel.IsReady) or nameof(MainViewModel.NeedsTools))
+            UpdateRetryPosition();
+    }
+
+    private void UpdateRetryPosition() => Grid.SetColumn(RetryButton,
+        _viewModel.NeedsTools || ContinueArea.IsVisible ? 1 : 0);
 
     private void Cancel_Click(object? sender, RoutedEventArgs e) => _viewModel.CancelOperation();
 

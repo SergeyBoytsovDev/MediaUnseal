@@ -163,7 +163,8 @@ public class MainViewModel : ViewModelBase
     public bool FFprobeMissing => _ffprobeState == DependencyState.Missing;
     public bool FFprobeError => _ffprobeState == DependencyState.Error;
     public bool InstallFailed { get => _installFailed; private set { if (SetProperty(ref _installFailed, value)) OnPropertyChanged(nameof(InstallButtonText)); } }
-    public string InstallButtonText => L.Get(InstallFailed ? "InstallerRetryInstall" : OperatingSystem.IsWindows()
+    public string InstallButtonText => L.Get(_tools.RequiredRepair != FfmpegTools.RepairSource.None
+        ? "InstallerRepairFfmpeg" : InstallFailed ? "InstallerRetryInstall" : OperatingSystem.IsWindows()
         ? "InstallerInstallComponents" : "InstallerInstallationMethod");
     public string FallbackNotice { get => _fallbackNoticeKey is { } key ? L.Get(key) : _fallbackNotice; private set { _fallbackNoticeKey = null; if (SetProperty(ref _fallbackNotice, value)) { OnPropertyChanged(nameof(HasFallbackNotice)); OnPropertyChanged(nameof(InstallerNotice)); } } }
     public bool HasFallbackNotice => !string.IsNullOrEmpty(FallbackNotice);
@@ -215,6 +216,9 @@ public class MainViewModel : ViewModelBase
     {
         get
         {
+            if (!IsReady && _tools.RequiredRepair != FfmpegTools.RepairSource.None)
+                return L.Get(_tools.RequiredRepair == FfmpegTools.RepairSource.WinGet
+                    ? "ToolsWingetRepairNeeded" : "ToolsLocalRepairNeeded");
             if (IsReady || HasFallbackNotice) return InstallerMessage;
             var method = OperatingSystem.IsWindows() ? _tools.WinGetAvailable switch
             {
@@ -1113,7 +1117,12 @@ public class MainViewModel : ViewModelBase
             SetLocalizedMessage("InstallerAutoInstallUnavailable");
             return;
         }
-        var useDirectDownload = directDownload ?? _tools.OfferDirectDownload;
+        var useDirectDownload = _tools.RequiredRepair switch
+        {
+            FfmpegTools.RepairSource.Local => true,
+            FfmpegTools.RepairSource.WinGet => false,
+            _ => directDownload ?? _tools.OfferDirectDownload
+        };
         if (useDirectDownload && !_tools.CanDirectDownload)
         {
             SetLocalizedMessage("InstallerDirectDownloadWindowsOnly");
@@ -1226,6 +1235,7 @@ public class MainViewModel : ViewModelBase
         SetDependencyStatus(status.FFprobe, ffmpeg: false);
         UpdateKnownBuildSource(status.FFmpeg, status.FFprobe);
         IsReady = status.IsReady;
+        OnPropertyChanged(nameof(InstallButtonText));
         _ffmpegPath = status.IsReady ? status.FFmpeg.Path : null;
         _ffprobePath = status.IsReady ? status.FFprobe.Path : null;
         if (!status.IsReady) { CancelAnalysis(); CancelExport(); }
@@ -1235,8 +1245,14 @@ public class MainViewModel : ViewModelBase
             : L.Get("InstallerToolsRequired");
         if (_tools.SettingsErrorMessage is { } settingsError) SetLocalizedMessage(settingsError);
         else if (_tools.SettingsError is { } error) Message = error;
-        else SetLocalizedMessage(IsReady ? "InstallerBothReady" : "InstallerMissingPrompt");
-        if (!IsReady && (FFmpegError || FFprobeError) && _tools.SettingsError is null)
+        else SetLocalizedMessage(IsReady ? "InstallerBothReady" : _tools.RequiredRepair switch
+        {
+            FfmpegTools.RepairSource.WinGet => "ToolsWingetRepairNeeded",
+            FfmpegTools.RepairSource.Local => "ToolsLocalRepairNeeded",
+            _ => "InstallerMissingPrompt"
+        });
+        if (!IsReady && _tools.RequiredRepair == FfmpegTools.RepairSource.None
+            && (FFmpegError || FFprobeError) && _tools.SettingsError is null)
             OverrideInstallerNotice("InstallerToolCheckFailed");
     }
 

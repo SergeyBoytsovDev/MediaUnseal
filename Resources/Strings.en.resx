@@ -1641,4 +1641,12 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
   <data name="LogVideoCopyHeadersError" xml:space="preserve"><value>Could not extract video to {0}: video stream headers are missing or damaged. See the Diagnostic Report.</value></data>
   <data name="LogVideoCopyBitstreamError" xml:space="preserve"><value>Could not extract video to {0}: the video bitstream is invalid. See the Diagnostic Report and consider conversion.</value></data>
   <data name="LogVideoCopyUnknownError" xml:space="preserve"><value>Could not extract video to {0}. The cause is unknown; see the Diagnostic Report. Consider choosing an encoder for conversion.</value></data>
+  <data name="InstallerRepairFfmpeg" xml:space="preserve"><value>Repair FFmpeg</value></data>
+  <data name="ToolsWingetRepairNeeded" xml:space="preserve"><value>FFmpeg is registered in Windows, but required files are missing or unavailable. Reinstallation is required to repair it.</value></data>
+  <data name="ToolsWingetRepairStarted" xml:space="preserve"><value>Repairing FFmpeg through WinGet.</value></data>
+  <data name="ToolsWingetRepairComplete" xml:space="preserve"><value>FFmpeg was repaired and verified.</value></data>
+  <data name="ToolsWingetRepairFailed" xml:space="preserve"><value>WinGet could not repair FFmpeg. See the Diagnostic Report for details.</value></data>
+  <data name="ToolsLocalRepairNeeded" xml:space="preserve"><value>The managed FFmpeg copy is damaged. Download it again to repair it.</value></data>
+  <data name="ToolsLocalRepairStarted" xml:space="preserve"><value>Repairing the managed FFmpeg copy.</value></data>
+  <data name="ToolsLocalRepairComplete" xml:space="preserve"><value>The managed FFmpeg copy was repaired and verified.</value></data>
 </root>

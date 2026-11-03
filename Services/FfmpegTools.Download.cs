@@ -30,6 +30,7 @@ public sealed partial class FfmpegTools
             return new(true, L.Get("ToolsAlreadyDownloaded"))
             { LocalizedMessage = new("ToolsAlreadyDownloaded") };
         var priorPaths = _savedPaths;
+        var repairingLocal = RequiredRepair == RepairSource.Local;
 
         var toolsRoot = Path.Combine(_dataDirectory, "tools");
         var work = Path.Combine(toolsRoot, ".download-" + Guid.NewGuid().ToString("N"));
@@ -43,7 +44,7 @@ public sealed partial class FfmpegTools
         {
             token.ThrowIfCancellationRequested();
             Log("Fallback installation from gyan.dev started.", operation: "Download",
-                userMessageKey: "InstallerPreparingDirectDownload");
+                userMessageKey: repairingLocal ? "ToolsLocalRepairStarted" : "InstallerPreparingDirectDownload");
             EnsureNoLinks(toolsRoot);
             Directory.CreateDirectory(work);
             using var http = _httpHandler is null
@@ -106,17 +107,18 @@ public sealed partial class FfmpegTools
                 throw new InvalidDataException($"Установленные утилиты не прошли проверку: {ffmpegStatus.Details}; {ffprobeStatus.Details}");
 
             var existing = await CheckCoreAsync(token, saveRecoveredPaths: false);
-            await SavePathsAsync(new(
+            await SavePathsAsync(repairingLocal ? new(ffmpeg, ffprobe) : new(
                 await WorkingSavedPathAsync("ffmpeg", priorPaths.FFmpeg, existing.FFmpeg.IsReady ? existing.FFmpeg.Path! : ffmpeg, token),
                 await WorkingSavedPathAsync("ffprobe", priorPaths.FFprobe, existing.FFprobe.IsReady ? existing.FFprobe.Path! : ffprobe, token)), token);
             committed = true;
             OfferDirectDownload = false;
+            RequiredRepair = RepairSource.None;
             Log("FFmpeg and FFprobe verified, installed, and paths saved.",
-                userMessageKey: "ToolsDownloadedReady");
+                userMessageKey: repairingLocal ? "ToolsLocalRepairComplete" : "ToolsDownloadedReady");
             progress?.Report(new InstallProgress(L.Get("ToolsVerifiedReady"), 100)
             { LocalizedMessage = new("ToolsVerifiedReady") });
-            return new(true, L.Get("ToolsDownloadedReady"))
-            { LocalizedMessage = new("ToolsDownloadedReady") };
+            var successKey = repairingLocal ? "ToolsLocalRepairComplete" : "ToolsDownloadedReady";
+            return new(true, L.Get(successKey)) { LocalizedMessage = new(successKey) };
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

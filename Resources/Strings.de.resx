@@ -1641,4 +1641,12 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
   <data name="LogVideoCopyHeadersError" xml:space="preserve"><value>Video konnte nicht nach {0} extrahiert werden: Header des Videostroms fehlen oder sind beschädigt. Einzelheiten stehen im Diagnostic Report.</value></data>
   <data name="LogVideoCopyBitstreamError" xml:space="preserve"><value>Video konnte nicht nach {0} extrahiert werden: Der Videobitstrom ist ungültig. Einzelheiten stehen im Diagnostic Report; versuchen Sie eine Konvertierung.</value></data>
   <data name="LogVideoCopyUnknownError" xml:space="preserve"><value>Video konnte nicht nach {0} extrahiert werden. Die Ursache ist unbekannt; Einzelheiten stehen im Diagnostic Report. Wählen Sie gegebenenfalls einen Kodierer für die Konvertierung.</value></data>
+  <data name="InstallerRepairFfmpeg" xml:space="preserve"><value>FFmpeg reparieren</value></data>
+  <data name="ToolsWingetRepairNeeded" xml:space="preserve"><value>FFmpeg ist in Windows registriert, aber erforderliche Dateien fehlen oder sind nicht verfügbar. Zur Reparatur ist eine Neuinstallation erforderlich.</value></data>
+  <data name="ToolsWingetRepairStarted" xml:space="preserve"><value>Die Reparatur von FFmpeg über WinGet wurde gestartet.</value></data>
+  <data name="ToolsWingetRepairComplete" xml:space="preserve"><value>FFmpeg wurde repariert und geprüft.</value></data>
+  <data name="ToolsWingetRepairFailed" xml:space="preserve"><value>FFmpeg konnte über WinGet nicht repariert werden. Einzelheiten stehen im Diagnostic Report.</value></data>
+  <data name="ToolsLocalRepairNeeded" xml:space="preserve"><value>Die lokale FFmpeg-Kopie ist beschädigt. Zur Reparatur muss sie erneut heruntergeladen werden.</value></data>
+  <data name="ToolsLocalRepairStarted" xml:space="preserve"><value>Die Reparatur der lokalen FFmpeg-Kopie wurde gestartet.</value></data>
+  <data name="ToolsLocalRepairComplete" xml:space="preserve"><value>Die lokale FFmpeg-Kopie wurde repariert und geprüft.</value></data>
 </root>

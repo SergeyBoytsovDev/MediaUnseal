@@ -578,4 +578,12 @@
   <data name="LogVideoCopyHeadersError" xml:space="preserve"><value>Не удалось извлечь видео в {0}: отсутствуют или повреждены заголовки видеопотока. Подробности см. в Diagnostic Report.</value></data>
   <data name="LogVideoCopyBitstreamError" xml:space="preserve"><value>Не удалось извлечь видео в {0}: ошибка структуры видеопотока. Подробности см. в Diagnostic Report; попробуйте перекодирование.</value></data>
   <data name="LogVideoCopyUnknownError" xml:space="preserve"><value>Не удалось извлечь видео в {0}. Причина не определена; подробности см. в Diagnostic Report. Попробуйте выбрать кодировщик для перекодирования.</value></data>
+  <data name="InstallerRepairFfmpeg" xml:space="preserve"><value>Исправить FFmpeg</value></data>
+  <data name="ToolsWingetRepairNeeded" xml:space="preserve"><value>FFmpeg зарегистрирован в Windows, но необходимые файлы отсутствуют или недоступны. Для восстановления требуется переустановка.</value></data>
+  <data name="ToolsWingetRepairStarted" xml:space="preserve"><value>Начато восстановление FFmpeg через WinGet.</value></data>
+  <data name="ToolsWingetRepairComplete" xml:space="preserve"><value>FFmpeg восстановлен и проверен.</value></data>
+  <data name="ToolsWingetRepairFailed" xml:space="preserve"><value>Не удалось восстановить FFmpeg через WinGet. Подробности см. в Diagnostic Report.</value></data>
+  <data name="ToolsLocalRepairNeeded" xml:space="preserve"><value>Локальная копия FFmpeg повреждена. Для восстановления требуется повторная загрузка.</value></data>
+  <data name="ToolsLocalRepairStarted" xml:space="preserve"><value>Начато восстановление локальной копии FFmpeg.</value></data>
+  <data name="ToolsLocalRepairComplete" xml:space="preserve"><value>Локальная копия FFmpeg восстановлена и проверена.</value></data>
 </root>

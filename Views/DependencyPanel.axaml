@@ -47,23 +47,23 @@
    </Grid>
   </StackPanel>
   <StackPanel Spacing="8">
-   <StackPanel Orientation="Horizontal" Spacing="8">
-    <Button Classes="primary" Click="Install_Click" IsEnabled="{Binding CanAutoInstall}" IsVisible="{Binding NeedsTools}" Width="222" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+   <Grid ColumnDefinitions="222,222" ColumnSpacing="8">
+    <Button Grid.Column="0" Classes="primary" Click="Install_Click" IsEnabled="{Binding CanAutoInstall}" IsVisible="{Binding NeedsTools}" Width="222" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
      <StackPanel Orientation="Horizontal" Spacing="6">
       <Path Data="M 12,2 L 12,16 M 7,11 L 12,16 L 17,11 M 3,18 L 3,22 L 21,22 L 21,18" Stroke="White" StrokeThickness="2" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center"/>
       <TextBlock Text="{Binding InstallButtonText}" VerticalAlignment="Center" FontWeight="SemiBold" TextWrapping="NoWrap"/>
      </StackPanel>
     </Button>
-    <StackPanel x:Name="ContinueArea" IsVisible="False" IsHitTestVisible="{Binding IsReady}">
+    <StackPanel Grid.Column="0" x:Name="ContinueArea" IsVisible="False" IsHitTestVisible="{Binding IsReady}">
      <Button Classes="primary" Content="{DynamicResource Loc_InstallerContinue}" Click="Continue_Click" IsEnabled="{Binding CanAct}" IsVisible="{Binding IsReady}" Width="222" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
     </StackPanel>
-    <Button Click="Retry_Click" IsEnabled="{Binding CanAct}" Width="222" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+    <Button x:Name="RetryButton" Grid.Column="1" Click="Retry_Click" IsEnabled="{Binding CanAct}" Width="222" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
      <StackPanel Orientation="Horizontal" Spacing="7">
       <Path Data="M 20,7 L 20,2 L 15,2 M 20,2 C 17,0 13,0 10,1 C 5,3 3,7 3,11 M 4,17 L 4,22 L 9,22 M 4,22 C 7,24 11,24 14,23 C 19,21 21,17 21,13" Stroke="{DynamicResource MainTextBrush}" StrokeThickness="1.7" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center"/>
       <TextBlock Text="{DynamicResource Loc_InstallerRetry}" VerticalAlignment="Center" FontWeight="SemiBold"/>
      </StackPanel>
     </Button>
-   </StackPanel>
+   </Grid>
    <Grid ColumnDefinitions="222,222" ColumnSpacing="8" IsVisible="{Binding NeedsTools}">
     <Button Grid.Column="0" Click="SelectFFmpeg_Click" IsEnabled="{Binding CanAct}" Width="222" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
      <StackPanel Orientation="Horizontal" Spacing="7">

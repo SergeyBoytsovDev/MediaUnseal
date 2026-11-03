@@ -35,6 +35,8 @@ public sealed record InstallProgress(string Message, double? Percent = null)
 
 public sealed partial class FfmpegTools
 {
+    public enum RepairSource { None, WinGet, Local }
+    public RepairSource RequiredRepair { get; private set; }
     private static LocalizationManager L => LocalizationManager.Active;
     private readonly string _settingsPath;
     private readonly string _appDirectory;
@@ -98,7 +100,61 @@ public sealed partial class FfmpegTools
     internal LocalizedMessage? LastInstallOptionMessage { get; private set; }
 
     public async Task<ToolsStatus> CheckAsync(CancellationToken cancellationToken)
-        => await CheckCoreAsync(cancellationToken, saveRecoveredPaths: true);
+    {
+        var priorPaths = _savedPaths;
+        var status = await CheckCoreAsync(cancellationToken, saveRecoveredPaths: true);
+        RequiredRepair = RepairSource.None;
+        if (status.IsReady || !OperatingSystem.IsWindows()) return status;
+        var ownRoot = Path.Combine(_dataDirectory, "tools");
+        bool hasManagedCopy;
+        try { hasManagedCopy = Directory.Exists(ownRoot)
+            && Directory.EnumerateDirectories(ownRoot, "ffmpeg-*", SearchOption.TopDirectoryOnly).Any(); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { hasManagedCopy = false; }
+        var managedPath = new[] { priorPaths.FFmpeg, priorPaths.FFprobe }.Any(path => path is not null
+            && path.StartsWith(ownRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+        if (hasManagedCopy && managedPath)
+        {
+            RequiredRepair = RepairSource.Local;
+            Log("Managed FFmpeg installation is incomplete or cannot start.", DiagnosticLevel.Warn,
+                "Verification", "ToolsLocalRepairNeeded");
+            return status;
+        }
+        var winget = await FindWorkingCommandAsync("winget", cancellationToken);
+        if (winget is null)
+        {
+            if (hasManagedCopy) MarkLocalRepair();
+            return status;
+        }
+        try
+        {
+            Log("Command: winget list --id Gyan.FFmpeg --exact --source winget --disable-interactivity --accept-source-agreements",
+                operation: "WinGet");
+            var listed = await RunAsync(winget, ["list", "--id", "Gyan.FFmpeg", "--exact", "--source", "winget",
+                "--disable-interactivity", "--accept-source-agreements"], TimeSpan.FromSeconds(20), cancellationToken);
+            Log($"WinGet package registration check: exit {listed.ExitCode}; {listed.Stdout}; {listed.Stderr}",
+                listed.ExitCode == 0 ? DiagnosticLevel.Info : DiagnosticLevel.Warn, "WinGet");
+            if (listed.ExitCode == 0 && listed.Stdout.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+                .Any(line => line.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                    .Any(column => column.Equals("Gyan.FFmpeg", StringComparison.OrdinalIgnoreCase))))
+            {
+                RequiredRepair = RepairSource.WinGet;
+                Log("Registered Gyan.FFmpeg package has missing or unusable executables.", DiagnosticLevel.Warn,
+                    "WinGet", "ToolsWingetRepairNeeded");
+            }
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex) when (ex is TimeoutException or IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        { Log($"WinGet registration check failed: {ex.GetType().Name}: {ex.Message}", DiagnosticLevel.Warn, "WinGet"); }
+        if (RequiredRepair == RepairSource.None && hasManagedCopy) MarkLocalRepair();
+        return status;
+
+        void MarkLocalRepair()
+        {
+            RequiredRepair = RepairSource.Local;
+            Log("Managed FFmpeg installation is incomplete or cannot start.", DiagnosticLevel.Warn,
+                "Verification", "ToolsLocalRepairNeeded");
+        }
+    }
 
     private async Task<ToolsStatus> CheckCoreAsync(CancellationToken cancellationToken, bool saveRecoveredPaths)
     {
@@ -255,6 +311,12 @@ public sealed partial class FfmpegTools
 
     public async Task<string> GetInstallOptionAsync(CancellationToken cancellationToken)
     {
+        if (RequiredRepair != RepairSource.None)
+        {
+            var key = RequiredRepair == RepairSource.WinGet ? "ToolsWingetRepairNeeded" : "ToolsLocalRepairNeeded";
+            LastInstallOptionMessage = new(key);
+            return L.Get(key);
+        }
         if (OperatingSystem.IsWindows())
         {
             var winget = await CheckCommandAsync("winget", cancellationToken);
@@ -322,15 +384,34 @@ public sealed partial class FfmpegTools
         var wingetPath = await FindWorkingCommandAsync("winget", cancellationToken);
         WinGetAvailable = wingetPath is not null;
         if (wingetPath is null)
-            return WindowsFailure(L.Get("ToolsWingetUnavailable"), new("ToolsWingetUnavailable"));
+            return RequiredRepair == RepairSource.WinGet ? WindowsRepairFailure("ToolsWingetRepairFailed")
+                : WindowsFailure(L.Get("ToolsWingetUnavailable"), new("ToolsWingetUnavailable"));
 
         try
         {
+            var repairing = RequiredRepair == RepairSource.WinGet;
+            if (repairing)
+            {
+                Log("Gyan.FFmpeg repair started: uninstall registered package before reinstalling.",
+                    operation: "WinGet", userMessageKey: "ToolsWingetRepairStarted");
+                Log("Command: winget uninstall --id Gyan.FFmpeg --exact --source winget --disable-interactivity --accept-source-agreements",
+                    operation: "WinGet");
+                var removed = await RunAsync(wingetPath, ["uninstall", "--id", "Gyan.FFmpeg", "--exact",
+                    "--source", "winget", "--disable-interactivity", "--accept-source-agreements"],
+                    TimeSpan.FromMinutes(10), cancellationToken);
+                Log($"WinGet uninstall completed: exit {removed.ExitCode}; {removed.Stdout}; {removed.Stderr}",
+                    removed.ExitCode == 0 ? DiagnosticLevel.Info : DiagnosticLevel.Error, "WinGet");
+                if (removed.ExitCode != 0) return WindowsRepairFailure("ToolsWingetRepairFailed");
+            }
             Log("Gyan.FFmpeg installation via WinGet started.", operation: "WinGet",
                 userMessageKey: "InstallerInstallingWithWinget");
+            Log("Command: winget install --id Gyan.FFmpeg --exact --source winget --scope user --accept-package-agreements --accept-source-agreements --disable-interactivity",
+                operation: "WinGet");
             var result = await RunAsync(wingetPath, ["install", "--id", "Gyan.FFmpeg", "--exact",
                 "--source", "winget", "--scope", "user", "--accept-package-agreements", "--accept-source-agreements", "--disable-interactivity"],
                 TimeSpan.FromMinutes(10), cancellationToken);
+            Log($"WinGet install completed: exit {result.ExitCode}; {result.Stdout}; {result.Stderr}",
+                result.ExitCode == 0 ? DiagnosticLevel.Info : DiagnosticLevel.Error, "WinGet");
             var status = await CheckCoreAsync(cancellationToken, saveRecoveredPaths: false);
             if (status.IsReady)
             {
@@ -338,11 +419,13 @@ public sealed partial class FfmpegTools
                     await WorkingSavedPathAsync("ffmpeg", priorPaths.FFmpeg, status.FFmpeg.Path!, cancellationToken),
                     await WorkingSavedPathAsync("ffprobe", priorPaths.FFprobe, status.FFprobe.Path!, cancellationToken)), cancellationToken);
                 OfferDirectDownload = false;
+                RequiredRepair = RepairSource.None;
                 Log("FFmpeg and FFprobe verified and ready after WinGet installation.", operation: "WinGet",
-                    userMessageKey: "ToolsVerifiedReady");
-                return new(true, L.Get("ToolsVerifiedReady"))
-                { LocalizedMessage = new("ToolsVerifiedReady") };
+                    userMessageKey: repairing ? "ToolsWingetRepairComplete" : "ToolsVerifiedReady");
+                var successKey = repairing ? "ToolsWingetRepairComplete" : "ToolsVerifiedReady";
+                return new(true, L.Get(successKey)) { LocalizedMessage = new(successKey) };
             }
+            if (repairing) return WindowsRepairFailure("ToolsWingetRepairFailed");
             return WindowsFailure(result.ExitCode != 0
                 ? L.Format("ToolsWingetExitFailure", result.ExitCode)
                 : L.Get("ToolsWingetMissingAfterInstall"),
@@ -356,12 +439,22 @@ public sealed partial class FfmpegTools
         }
         catch (TimeoutException)
         {
-            return WindowsFailure(L.Get("ToolsWingetTimeout"), new("ToolsWingetTimeout"));
+            return RequiredRepair == RepairSource.WinGet ? WindowsRepairFailure("ToolsWingetRepairFailed")
+                : WindowsFailure(L.Get("ToolsWingetTimeout"), new("ToolsWingetTimeout"));
         }
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or IOException or UnauthorizedAccessException)
         {
-            return WindowsFailure(L.Get("ToolsWingetInstallFailed"), new("ToolsWingetInstallFailed"));
+            Log($"WinGet operation failed: {ex.GetType().Name}: {ex.Message}", DiagnosticLevel.Error, "WinGet");
+            return RequiredRepair == RepairSource.WinGet ? WindowsRepairFailure("ToolsWingetRepairFailed")
+                : WindowsFailure(L.Get("ToolsWingetInstallFailed"), new("ToolsWingetInstallFailed"));
         }
+    }
+
+    private InstallResult WindowsRepairFailure(string key)
+    {
+        OfferDirectDownload = false;
+        Log("Gyan.FFmpeg repair did not restore both executables.", DiagnosticLevel.Error, "WinGet", key);
+        return new(false, L.Get(key)) { LocalizedMessage = new(key) };
     }
 
     private InstallResult WindowsFailure(string message, LocalizedMessage reason)
