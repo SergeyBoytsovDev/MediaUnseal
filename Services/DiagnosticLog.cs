@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -13,7 +14,10 @@ public sealed record DiagnosticEvent(DateTimeOffset Time, DiagnosticLevel Level,
 
 public sealed class DiagnosticLog
 {
-    private const long MaxFileBytes = 512 * 1024;
+    internal const long MaxFileBytes = 10L * 1024 * 1024;
+    internal const long MaxTotalBytes = 100L * 1024 * 1024;
+    internal static readonly TimeSpan Retention = TimeSpan.FromDays(14);
+    private const string CurrentFile = "diagnostic.txt";
     private readonly string _directory;
     private readonly object _gate = new();
     public event Action<DiagnosticEvent>? EventRecorded;
@@ -32,13 +36,16 @@ public sealed class DiagnosticLog
             lock (_gate)
             {
                 Directory.CreateDirectory(_directory);
-                var current = Path.Combine(_directory, "diagnostic.log");
+                Prune();
+                var current = Path.Combine(_directory, CurrentFile);
                 if (File.Exists(current) && new FileInfo(current).Length + Encoding.UTF8.GetByteCount(line) > MaxFileBytes)
                 {
-                    var previous = Path.Combine(_directory, "diagnostic.1.log");
-                    File.Move(current, previous, overwrite: true);
+                    var previous = Path.Combine(_directory,
+                        $"diagnostic-{DateTime.UtcNow:yyyyMMddTHHmmssfff}-{Guid.NewGuid():N}.txt");
+                    File.Move(current, previous);
                 }
                 File.AppendAllText(current, line, Encoding.UTF8);
+                Prune();
             }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
@@ -48,13 +55,44 @@ public sealed class DiagnosticLog
     {
         lock (_gate)
         {
+            Prune();
             var text = new StringBuilder();
-            foreach (var name in new[] { "diagnostic.1.log", "diagnostic.log" })
+            foreach (var file in ManagedFiles().OrderBy(file => file.Name == CurrentFile ? DateTime.MaxValue
+                : file.LastWriteTimeUtc).ThenBy(file => file.Name, StringComparer.Ordinal))
             {
-                var path = Path.Combine(_directory, name);
-                if (File.Exists(path)) text.Append(File.ReadAllText(path));
+                text.Append(File.ReadAllText(file.FullName));
             }
             return RedactPersonalPaths(text.ToString());
+        }
+    }
+
+    public void Clear()
+    {
+        lock (_gate)
+            foreach (var file in ManagedFiles()) file.Delete();
+    }
+
+    private FileInfo[] ManagedFiles()
+    {
+        if (!Directory.Exists(_directory)) return [];
+        return new DirectoryInfo(_directory).EnumerateFiles("diagnostic*", SearchOption.TopDirectoryOnly)
+            .Where(file => file.Name is CurrentFile or "diagnostic.log" or "diagnostic.1.log"
+                || Regex.IsMatch(file.Name, @"\Adiagnostic-\d{8}T\d{9}-[0-9a-f]{32}\.txt\z"))
+            .ToArray();
+    }
+
+    private void Prune()
+    {
+        var files = ManagedFiles();
+        var cutoff = DateTime.UtcNow - Retention;
+        foreach (var file in files.Where(file => file.LastWriteTimeUtc < cutoff)) file.Delete();
+        files = ManagedFiles();
+        var total = files.Sum(file => file.Length);
+        foreach (var file in files.OrderBy(file => file.LastWriteTimeUtc).ThenBy(file => file.Name, StringComparer.Ordinal))
+        {
+            if (total <= MaxTotalBytes) break;
+            total -= file.Length;
+            file.Delete();
         }
     }
 

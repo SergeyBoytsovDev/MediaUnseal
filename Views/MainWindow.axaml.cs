@@ -886,50 +886,8 @@ public partial class MainWindow : Window
         try
         {
             var report = await Task.Run(viewModel.DiagnosticReport);
-            var preview = new Window { Title = LocalizationManager.Active.Get("DiagnosticPreviewTitle"), Width = 760, Height = 540,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner };
-            var panel = new DockPanel { Margin = new Avalonia.Thickness(12) };
-            var save = new Button { Content = LocalizationManager.Active.Get("DiagnosticPreviewSave"), HorizontalAlignment = HorizontalAlignment.Right };
-            void RefreshPreviewLanguage(object? source, PropertyChangedEventArgs args)
-            {
-                if (args.PropertyName != "Item[]") return;
-                preview.Title = LocalizationManager.Active.Get("DiagnosticPreviewTitle");
-                save.Content = LocalizationManager.Active.Get("DiagnosticPreviewSave");
-            }
-            LocalizationManager.Active.PropertyChanged += RefreshPreviewLanguage;
-            preview.Closed += (_, _) => LocalizationManager.Active.PropertyChanged -= RefreshPreviewLanguage;
-            DockPanel.SetDock(save, Dock.Bottom);
-            panel.Children.Add(save);
-            panel.Children.Add(new ScrollViewer
-            {
-                HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
-                VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
-                Content = new TextBox { Text = report, IsReadOnly = true,
-                    AcceptsReturn = true, TextWrapping = Avalonia.Media.TextWrapping.NoWrap }
-            });
-            preview.Content = panel;
-            save.Click += async (_, _) =>
-            {
-                try
-                {
-                    var file = await preview.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-                    {
-                        Title = LocalizationManager.Active.Get("DiagnosticPreviewSaveTitle"),
-                        SuggestedFileName = "TrackExtractor-diagnostic.txt"
-                    });
-                    if (file is null) return;
-                    await using var stream = await file.OpenWriteAsync();
-                    stream.SetLength(0);
-                    await using var writer = new StreamWriter(stream);
-                    await writer.WriteAsync(report);
-                    preview.Close();
-                }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)
-                {
-                    viewModel.ReportError(LocalizationManager.Active.Get("DiagnosticPreviewSaveFailed"));
-                }
-            };
-            preview.Show(this);
+            var rows = await Task.Run(() => DiagnosticReportPresentation.Parse(report));
+            new DiagnosticReportWindow(rows, viewModel.Diagnostics, viewModel.ReportError).Show(this);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

@@ -1649,4 +1649,9 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
   <data name="ToolsLocalRepairNeeded" xml:space="preserve"><value>Die lokale FFmpeg-Kopie ist beschädigt. Zur Reparatur muss sie erneut heruntergeladen werden.</value></data>
   <data name="ToolsLocalRepairStarted" xml:space="preserve"><value>Die Reparatur der lokalen FFmpeg-Kopie wurde gestartet.</value></data>
   <data name="ToolsLocalRepairComplete" xml:space="preserve"><value>Die lokale FFmpeg-Kopie wurde repariert und geprüft.</value></data>
+  <data name="DiagnosticPreviewClear" xml:space="preserve"><value>Leeren</value></data>
+  <data name="DiagnosticPreviewClearFailed" xml:space="preserve"><value>Das Diagnoseprotokoll konnte nicht geleert werden.</value></data>
+  <data name="DiagnosticEventsCount" xml:space="preserve"><value>Ereignisse: {0}</value></data>
+  <data name="DiagnosticWarningsCount" xml:space="preserve"><value>Warnungen: {0}</value></data>
+  <data name="DiagnosticErrorsCount" xml:space="preserve"><value>Fehler: {0}</value></data>
 </root>

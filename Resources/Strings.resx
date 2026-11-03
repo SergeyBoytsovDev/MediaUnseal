@@ -586,4 +586,9 @@
   <data name="ToolsLocalRepairNeeded" xml:space="preserve"><value>Локальная копия FFmpeg повреждена. Для восстановления требуется повторная загрузка.</value></data>
   <data name="ToolsLocalRepairStarted" xml:space="preserve"><value>Начато восстановление локальной копии FFmpeg.</value></data>
   <data name="ToolsLocalRepairComplete" xml:space="preserve"><value>Локальная копия FFmpeg восстановлена и проверена.</value></data>
+  <data name="DiagnosticPreviewClear" xml:space="preserve"><value>Очистить</value></data>
+  <data name="DiagnosticPreviewClearFailed" xml:space="preserve"><value>Не удалось очистить диагностический журнал.</value></data>
+  <data name="DiagnosticEventsCount" xml:space="preserve"><value>Событий: {0}</value></data>
+  <data name="DiagnosticWarningsCount" xml:space="preserve"><value>Предупреждений: {0}</value></data>
+  <data name="DiagnosticErrorsCount" xml:space="preserve"><value>Ошибок: {0}</value></data>
 </root>

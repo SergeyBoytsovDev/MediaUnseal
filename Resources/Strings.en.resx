@@ -1649,4 +1649,9 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
   <data name="ToolsLocalRepairNeeded" xml:space="preserve"><value>The managed FFmpeg copy is damaged. Download it again to repair it.</value></data>
   <data name="ToolsLocalRepairStarted" xml:space="preserve"><value>Repairing the managed FFmpeg copy.</value></data>
   <data name="ToolsLocalRepairComplete" xml:space="preserve"><value>The managed FFmpeg copy was repaired and verified.</value></data>
+  <data name="DiagnosticPreviewClear" xml:space="preserve"><value>Clear</value></data>
+  <data name="DiagnosticPreviewClearFailed" xml:space="preserve"><value>Could not clear the diagnostic log.</value></data>
+  <data name="DiagnosticEventsCount" xml:space="preserve"><value>Events: {0}</value></data>
+  <data name="DiagnosticWarningsCount" xml:space="preserve"><value>Warnings: {0}</value></data>
+  <data name="DiagnosticErrorsCount" xml:space="preserve"><value>Errors: {0}</value></data>
 </root>
