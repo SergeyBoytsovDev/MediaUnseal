@@ -187,7 +187,7 @@
     </Border>
    </Grid>
    <Grid Grid.Row="1" ColumnDefinitions="2.15*,0.92*" ColumnSpacing="8">
-    <Grid Grid.Column="0" RowDefinitions="1.45*,1*" RowSpacing="8">
+    <Grid Grid.Column="0" RowDefinitions="1.545*,0.905*" RowSpacing="8">
      <Border Grid.Row="0" Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelCorner}">
       <Grid RowDefinitions="38,*">
        <Border Classes="panel-header" Grid.Row="0"><StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
@@ -293,13 +293,14 @@
                      HorizontalScrollBarVisibility="Disabled" AllowAutoHide="False">
         <ItemsControl ItemsSource="{Binding UserEvents}">
          <ItemsControl.ItemTemplate><DataTemplate x:DataType="vm:UserLogEntry">
-          <Grid ColumnDefinitions="21,75,*" MinHeight="26" Margin="9,0,5,0">
+          <Grid ColumnDefinitions="21,75,*" MinHeight="26" Margin="9,2,5,5">
            <TextBlock Grid.Column="0" Text="●" Width="21" TextAlignment="Center"
                       Classes.success="{Binding IsSuccess}" Classes.warning="{Binding IsWarning}"
                       Classes.error="{Binding IsError}"/>
            <TextBlock Grid.Column="1" Text="{Binding Time}" Classes="muted"/>
-           <TextBlock Grid.Column="2" Text="{Binding Message}" TextWrapping="Wrap"
-                      Classes.error="{Binding IsError}" Classes.warning="{Binding IsWarning}"/>
+           <TextBlock Grid.Column="2" Text="{Binding Message}" TextWrapping="Wrap" LineHeight="20"
+                      Classes.success="{Binding IsSuccess}" Classes.error="{Binding IsError}"
+                      Classes.warning="{Binding IsWarning}"/>
           </Grid>
          </DataTemplate></ItemsControl.ItemTemplate>
         </ItemsControl>

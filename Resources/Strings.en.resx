@@ -819,6 +819,7 @@
   <data name="MainSourceFormatOriginal" xml:space="preserve">
     <value>{0} — Original</value>
   </data>
+  <data name="MainSourceCustomFormat" xml:space="preserve"><value>{0} — Original — custom setting</value></data>
   <data name="MainOriginalShort" xml:space="preserve">
     <value>Original</value>
   </data>
@@ -1432,7 +1433,7 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
     <value>Checking {0}…</value>
   </data>
   <data name="LogToolUnavailable" xml:space="preserve">
-    <value>{0} was not found or is not working.</value>
+    <value>{0} was not found or is not working. Check its path or install it in Settings.</value>
   </data>
   <data name="LogToolReadyVersion" xml:space="preserve">
     <value>{0} {1} found and ready.</value>
@@ -1450,10 +1451,10 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
     <value>File analysis started.</value>
   </data>
   <data name="LogAnalysisTimeout" xml:space="preserve">
-    <value>FFprobe timed out.</value>
+    <value>FFprobe did not respond in time. Analyze the file again.</value>
   </data>
   <data name="LogAnalysisCancelled" xml:space="preserve">
-    <value>File analysis cancelled.</value>
+    <value>File analysis was cancelled. Reopen the file if needed.</value>
   </data>
   <data name="LogAnalysisFailed" xml:space="preserve">
     <value>Could not analyze the file.</value>
@@ -1498,7 +1499,7 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
     <value>Processing complete.</value>
   </data>
   <data name="LogProcessingCancelled" xml:space="preserve">
-    <value>Processing stopped by the user.</value>
+    <value>Processing stopped. You can process unfinished streams again.</value>
   </data>
   <data name="LogProcessingErrors" xml:space="preserve">
     <value>Processing finished with errors.</value>
@@ -1519,7 +1520,7 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
     <value>Could not convert stream #{0}: {1}.</value>
   </data>
   <data name="LogStreamCancelled" xml:space="preserve">
-    <value>Processing of stream #{0} cancelled.</value>
+    <value>Processing of stream #{0} was cancelled. Start it again if needed.</value>
   </data>
   <data name="LogStreamTimeout" xml:space="preserve">
     <value>Processing of stream #{0} timed out.</value>
@@ -1543,10 +1544,10 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
     <value>No compatible encoders were found.</value>
   </data>
   <data name="LogHardwareSearchCancelled" xml:space="preserve">
-    <value>Hardware encoder search cancelled.</value>
+    <value>Hardware encoder search was cancelled. Run it again if needed.</value>
   </data>
   <data name="LogCompatibleSearchCancelled" xml:space="preserve">
-    <value>Compatible encoder search cancelled.</value>
+    <value>Compatible encoder search was cancelled. Run it again if needed.</value>
   </data>
   <data name="LogHardwareSearchFailed" xml:space="preserve">
     <value>Could not complete the hardware encoder search.</value>
@@ -1555,7 +1556,7 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
     <value>Could not complete the compatible encoder search.</value>
   </data>
   <data name="LogSearchStale" xml:space="preserve">
-    <value>Search results were not applied because the output format changed.</value>
+    <value>The output format changed, so the search results were not applied. Search again for the new format.</value>
   </data>
   <data name="GuideWindowTitle" xml:space="preserve">
     <value>Media guide</value>
@@ -1626,8 +1627,18 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
   <data name="LogAttachmentStarted" xml:space="preserve"><value>Extracting attachment {0}.</value></data>
   <data name="LogAttachmentCompleted" xml:space="preserve"><value>Attachment {0} extracted: {1}.</value></data>
   <data name="LogAttachmentFailed" xml:space="preserve"><value>Could not extract attachment {0}: {1}.</value></data>
-  <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>Could not read the MKV attachment list.</value></data>
-  <data name="LogAviH264Copy" xml:space="preserve"><value>Video extracted without re-encoding. The H.264 bitstream was adapted for the AVI container.</value></data>
-  <data name="LogMxfUnofficialCopy" xml:space="preserve"><value>Video extracted without re-encoding. A nonstandard frame rate required additional FFmpeg compatibility options. Playback may be limited in some applications.</value></data>
+  <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>Could not read the MKV attachment list. Other streams remain available; check and reopen the file if needed.</value></data>
+  <data name="LogOutputFolderAccessDenied" xml:space="preserve"><value>The output folder is not writable. Choose another folder where you can save files.</value></data>
+  <data name="LogAviH264Copy" xml:space="preserve"><value>AVI compatibility: the video bitstream was adapted without re-encoding. Playback may be limited in some applications. For better compatibility, choose a suitable video encoder for conversion.</value></data>
+  <data name="LogMxfUnofficialCopy" xml:space="preserve"><value>MXF compatibility: FFmpeg's unofficial mode preserved the source frame rate. Playback may be limited in some applications. For better compatibility, convert the video to a standard MXF frame rate.</value></data>
   <data name="LogSpecialCopyFailed" xml:space="preserve"><value>Video could not be extracted without re-encoding. Choose a compatible encoder for conversion: {0}</value></data>
+  <data name="LogVideoCopyCodecError" xml:space="preserve"><value>Could not extract video to {0}: the container does not support this video codec. Choose a compatible encoder for conversion.</value></data>
+  <data name="LogVideoCopyProfileError" xml:space="preserve"><value>Could not extract video to {0}: this codec profile is unsupported. Choose a compatible encoder or profile for conversion.</value></data>
+  <data name="LogVideoCopyFrameRateError" xml:space="preserve"><value>Could not extract video to {0}: the source frame rate is unsupported. Choose a compatible format or encoder for conversion.</value></data>
+  <data name="LogVideoCopyResolutionError" xml:space="preserve"><value>Could not extract video to {0}: the resolution is unsupported. Choose a compatible format or adjust conversion settings.</value></data>
+  <data name="LogVideoCopyPixelFormatError" xml:space="preserve"><value>Could not extract video to {0}: the pixel format is unsupported. Choose a compatible encoder for conversion.</value></data>
+  <data name="LogVideoCopyTimestampsError" xml:space="preserve"><value>Could not extract video to {0}: the timestamps are invalid. See the Diagnostic Report and consider conversion.</value></data>
+  <data name="LogVideoCopyHeadersError" xml:space="preserve"><value>Could not extract video to {0}: video stream headers are missing or damaged. See the Diagnostic Report.</value></data>
+  <data name="LogVideoCopyBitstreamError" xml:space="preserve"><value>Could not extract video to {0}: the video bitstream is invalid. See the Diagnostic Report and consider conversion.</value></data>
+  <data name="LogVideoCopyUnknownError" xml:space="preserve"><value>Could not extract video to {0}. The cause is unknown; see the Diagnostic Report. Consider choosing an encoder for conversion.</value></data>
 </root>

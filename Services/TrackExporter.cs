@@ -95,13 +95,25 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         else if (stream.VisualKind == VisualKind.Video)
         {
             var sourceExtension = Path.GetExtension(media.FullPath).ToLowerInvariant();
-            output = sourceExtension == ".mp4" && media.Container?.Split(',').Contains("mp4") == true
-                && codec is ("h264" or "hevc" or "mpeg4")
-                ? ("mp4", "mp4", false)
-                : sourceExtension == ".mov" && media.Container?.Split(',').Contains("mov") == true
-                    && codec is ("h264" or "hevc" or "mpeg4" or "prores")
-                ? ("mov", "mov", false)
-                : codec switch
+            output = (sourceExtension, VideoContainerDisplay.Format(media)) switch
+            {
+                (".mkv", "MKV") => ("mkv", "matroska", false),
+                (".mp4", "MP4") => ("mp4", "mp4", false),
+                (".mov", "MOV") => ("mov", "mov", false),
+                (".webm", "WEBM") => ("webm", "webm", false),
+                (".avi", "AVI") => ("avi", "avi", false),
+                (".ts", "TS") => ("ts", "mpegts", false),
+                (".mpg" or ".mpeg", "MPG") => ("mpg", "mpeg", false),
+                (".mxf", "MXF") => ("mxf", "mxf", false),
+                (".flv", "FLV") => ("flv", "flv", false),
+                (".asf", "ASF") => ("asf", "asf", false),
+                (".ogv", "OGV") => ("ogv", "ogv", false),
+                (".3gp", "3GP") => ("3gp", "3gp", false),
+                (".3g2", "3G2") => ("3g2", "3g2", false),
+                (".nut", "NUT") => ("nut", "nut", false),
+                _ => null
+            };
+            output ??= codec switch
             {
                 "h264" or "hevc" or "av1" or "ffv1" => ("mkv", "matroska", false),
                 "vp8" or "vp9" => ("webm", "webm", false),
@@ -222,6 +234,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         var createdStage = false;
         var groupFallbackUntil = -1;
         var operationWatch = Stopwatch.StartNew();
+        string? videoCopyFfmpegVersion = null;
         diagnostics.Record(DiagnosticLevel.Info, "Export",
             $"Started {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}; streams: {selected.Count}.",
             userMessageKey: "LogProcessingStartedCount", userMessageArgs: [selected.Count]);
@@ -236,7 +249,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             {
                 if (cancellationToken.IsCancellationRequested) { cancelled = true; break; }
                 var group = selected.Skip(i).TakeWhile(p => p.Conversion is null && !p.StillImage && !p.Attachment
-                    && CopyVideoOptions(p).Length == 0).ToArray();
+                    && p.Stream.VisualKind != VisualKind.Video).ToArray();
                 if (i > groupFallbackUntil && group.Length > 1)
                 {
                     var grouped = await TryExportGroupAsync(media, group, directory, stage, ffmpegPath,
@@ -248,9 +261,10 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     // cannot hide successful results from the others.
                 }
                 var plan = selected[i];
-                var specialCopyOptions = CopyVideoOptions(plan);
-                var specialCopyKey = specialCopyOptions.Contains("h264_mp4toannexb") ? "LogAviH264Copy"
-                    : specialCopyOptions.Contains("unofficial") ? "LogMxfUnofficialCopy" : null;
+                var videoCopy = plan.Conversion is null && plan.Stream.VisualKind == VisualKind.Video
+                    ? VideoCopyCompatibility.Plan(plan.Stream, plan.Muxer) : null;
+                var specialCopyOptions = videoCopy?.Options ?? [];
+                var specialCopyKey = videoCopy?.SuccessMessageKey;
                 var ordinal = i;
                 var index = plan.Stream.Index!.Value;
                 var visualOutput = plan.Stream.VisualKind is VisualKind.Image or VisualKind.Animation;
@@ -397,42 +411,48 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         try
                         {
                         var args = BuildArguments(conversionSource, conversionIndex, plan, temp, options.PreserveMetadata);
-                        if (specialCopyKey is not null)
+                        if (videoCopy is not null)
                         {
+                            videoCopyFfmpegVersion ??= await ReadFfmpegVersionAsync(ffmpegPath, deadline.Token);
                             var rate = plan.Stream.ExtraProperties?.GetValueOrDefault("avg_frame_rate")
                                 ?? plan.Stream.ExtraProperties?.GetValueOrDefault("r_frame_rate")
                                 ?? plan.Stream.FrameRate?.ToString("R", CultureInfo.InvariantCulture) ?? "unknown";
                             diagnostics.Record(DiagnosticLevel.Info, "Export",
                                 $"Video stream copy #{index}: source container {media.Container ?? "unknown"}; target {plan.Muxer}; " +
                                 $"codec {plan.Stream.Codec ?? "unknown"}; profile {plan.Stream.Profile ?? "unknown"}; " +
-                                $"resolution {plan.Stream.Width}x{plan.Stream.Height}; fps {rate}; mode copy; " +
+                                $"resolution {plan.Stream.Width}x{plan.Stream.Height}; pixel format {plan.Stream.PixelFormat ?? "unknown"}; " +
+                                $"fps {rate}; time base {plan.Stream.ExtraProperties?.GetValueOrDefault("time_base") ?? "unknown"}; " +
+                                $"mode copy; preliminary compatibility: {videoCopy.Outcome} ({videoCopy.Basis}); " +
                                 $"options {string.Join(' ', specialCopyOptions)}; bitstream filter " +
                                 $"{(specialCopyOptions.Contains("h264_mp4toannexb") ? "h264_mp4toannexb" : "none")}; " +
-                                $"FFmpeg version {await ReadFfmpegVersionAsync(ffmpegPath, deadline.Token)}.",
+                                $"FFmpeg version {videoCopyFfmpegVersion}.",
                                 "Command: " + Path.GetFileName(ffmpegPath) + " " + string.Join(' ', args.Select(arg => arg == conversionSource ? "[source]"
                                     : arg == temp ? "[output]" : arg)));
                         }
                         exitCode = ProcessRunner is null
                             ? await RunFfmpegAsync(ffmpegPath, args, position, line =>
                             {
-                                lastError = line;
-                                if (specialCopyKey is not null)
+                                lastError = line.Length > 300 ? line[..300] : line;
+                                if (videoCopy is not null)
                                 {
-                                    if (ffmpegErrors.Count == 12) ffmpegErrors.Dequeue();
+                                    if (ffmpegErrors.Count == 64) ffmpegErrors.Dequeue();
                                     ffmpegErrors.Enqueue(line);
+                                    var sanitized = DiagnosticLog.RedactPersonalPaths(line
+                                        .Replace(conversionSource, "[source]", StringComparison.OrdinalIgnoreCase)
+                                        .Replace(temp, "[output]", StringComparison.OrdinalIgnoreCase));
+                                    for (var offset = 0; offset < sanitized.Length; offset += 900)
+                                        diagnostics.Record(DiagnosticLevel.Info, "Export", "FFmpeg output: " +
+                                            sanitized.Substring(offset, Math.Min(900, sanitized.Length - offset)));
                                 }
                             }, deadline.Token).ConfigureAwait(false)
                             : await ProcessRunner(ffmpegPath, args, position, deadline.Token).WaitAsync(deadline.Token).ConfigureAwait(false);
-                        if (specialCopyKey is not null)
+                        if (videoCopy is not null)
                         {
+                            videoCopy = VideoCopyCompatibility.Complete(videoCopy, exitCode.Value, ffmpegErrors);
                             diagnostics.Record(exitCode == 0 ? DiagnosticLevel.Info : DiagnosticLevel.Error, "Export",
-                                $"Video stream copy #{index}: FFmpeg result {(exitCode == 0 ? "success" : "failure")}; " +
-                                $"exit code {exitCode}.");
-                            foreach (var line in ffmpegErrors)
-                                diagnostics.Record(exitCode == 0 ? DiagnosticLevel.Info : DiagnosticLevel.Error,
-                                    "Export", "FFmpeg output: " + DiagnosticLog.RedactPersonalPaths(
-                                        line.Replace(conversionSource, "[source]", StringComparison.OrdinalIgnoreCase)
-                                            .Replace(temp, "[output]", StringComparison.OrdinalIgnoreCase)));
+                                $"Video stream copy #{index}: FFmpeg process exit code {exitCode}; " +
+                                $"compatibility assessment {videoCopy.Outcome}; cause {videoCopy.Error}; " +
+                                $"output validation pending; basis {videoCopy.Basis}.");
                         }
                         if (exitCode != 0) throw new InvalidDataException(L.Format("MainResultFfmpegExitCode", exitCode) +
                             (lastError is null ? "" : " " + lastError));
@@ -443,7 +463,16 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         }
                     }
                     if (!File.Exists(temp) || new FileInfo(temp).Length == 0)
+                    {
+                        if (videoCopy is not null)
+                        {
+                            videoCopy = videoCopy with { Outcome = VideoCopyOutcome.Error,
+                                Error = VideoCopyError.Unknown };
+                            diagnostics.Record(DiagnosticLevel.Error, "Export",
+                                $"Video stream copy #{index}: output missing or empty after FFmpeg process.");
+                        }
                         throw new InvalidDataException(L.Get("MainResultEmptyOutput"));
+                    }
                     target = MoveWithoutOverwrite(temp, target, reserved);
                     var bytes = new FileInfo(target).Length;
                     var result = new TrackExportResult(index, ExportState.Completed,
@@ -454,7 +483,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     progress?.Report(new(index, result.State, result.Message,
                         Math.Min(99.0, (i + 1) * 100.0 / selected.Count), i + 1, selected.Count)
                     { LocalizedMessage = result.LocalizedMessage });
-                    diagnostics.Record(specialCopyKey == "LogMxfUnofficialCopy" ? DiagnosticLevel.Warn : DiagnosticLevel.Info,
+                    diagnostics.Record(videoCopy?.Outcome == VideoCopyOutcome.Adapted ? DiagnosticLevel.Warn : DiagnosticLevel.Info,
                         "Export", $"Completed stream #{index}; container {plan.Muxer}; " +
                         $"mode {(plan.Conversion is null ? "extraction" : "conversion")}.",
                         $"Elapsed {FormatElapsed(trackWatch.Elapsed)}; size {bytes:N0} bytes; " +
@@ -494,6 +523,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 {
                     LocalizedMessage? reasonMessage = ex switch
                     {
+                        _ when videoCopy is { Outcome: VideoCopyOutcome.Error } =>
+                            new(videoCopy.ErrorMessageKey, plan.Muxer.ToUpperInvariant()),
                         InvalidDataException when nativeAttachment => new("MainResultAttachmentFailed"),
                         InvalidDataException when exitCode is { } code and not 0 =>
                             lastError is null ? new("MainResultFfmpegExitCode", code)
@@ -505,6 +536,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     };
                     var message = ex switch
                     {
+                        _ when videoCopy is { Outcome: VideoCopyOutcome.Error } =>
+                            L.Format(videoCopy.ErrorMessageKey, plan.Muxer.ToUpperInvariant()),
                         InvalidDataException when nativeAttachment => L.Get("MainResultAttachmentFailed"),
                         InvalidDataException => ex.Message,
                         UnauthorizedAccessException => L.Get("MainResultOutputAccessDenied"),
@@ -522,9 +555,10 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                             ? ex.Message : ex.GetType().Name) + "; " +
                         (nativeAttachment ? "Matroska reading; " : $"FFmpeg exit code {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "unknown")}; ") +
                         $"elapsed {FormatElapsed(trackWatch.Elapsed)}.",
-                        userMessageKey: specialCopyKey is not null ? "LogSpecialCopyFailed" : attachmentLabel is not null ? "LogAttachmentFailed"
+                        userMessageKey: videoCopy is { Outcome: VideoCopyOutcome.Error }
+                            ? videoCopy.ErrorMessageKey : attachmentLabel is not null ? "LogAttachmentFailed"
                             : plan.Conversion is null ? "LogStreamFailed" : "LogStreamConversionFailed",
-                        userMessageArgs: specialCopyKey is not null ? [message]
+                        userMessageArgs: videoCopy is { Outcome: VideoCopyOutcome.Error } ? [plan.Muxer.ToUpperInvariant()]
                             : attachmentLabel is not null ? [attachmentLabel, message] : [index, message]);
                 }
                 catch (Exception ex)
@@ -809,25 +843,14 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             ? WithMetadata(["-hide_banner", "-loglevel", "error", "-nostdin", "-stats_period", "0.5", "-progress", "pipe:2",
                 "-i", input, "-map", $"0:{index}", "-c", "copy", "-frames:v", "1", "-update", "1",
                 "-f", plan.Muxer, temp], preserveMetadata)
-            : WithMetadata(["-hide_banner", "-loglevel", "error", "-nostdin", "-stats_period", "0.5", "-progress", "pipe:2",
+            : WithMetadata(["-hide_banner", "-loglevel", plan.Stream.VisualKind == VisualKind.Video ? "warning" : "error",
+                "-nostdin", "-stats_period", "0.5", "-progress", "pipe:2",
                 "-i", input, "-map", $"0:{index}", "-c", "copy", ..CopyVideoOptions(plan), "-f", plan.Muxer, temp], preserveMetadata);
 
     internal static string[] CopyVideoOptions(TrackExportPlan plan)
     {
         if (plan.Conversion is not null || plan.Stream.CodecType != "video") return [];
-        if (plan.Muxer == "avi" && plan.Stream.Codec == "h264")
-            return ["-bsf:v", "h264_mp4toannexb"];
-        if (plan.Muxer == "mxf" && !IsStandardMxfRate(plan.Stream))
-            return ["-strict", "unofficial"];
-        return [];
-    }
-
-    private static bool IsStandardMxfRate(MediaStreamInfo stream)
-    {
-        var rate = stream.FrameRate;
-        if (rate is null or <= 0) return true;
-        return new[] { 24d, 25d, 30d, 50d, 60d, 24000d / 1001, 30000d / 1001, 60000d / 1001 }
-            .Any(standard => Math.Abs(rate.Value - standard) < 0.0001);
+        return VideoCopyCompatibility.Plan(plan.Stream, plan.Muxer).Options;
     }
 
     private static string[] WithMetadata(string[] args, bool preserve)
@@ -1131,11 +1154,12 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         && !value.StartsWith("speed=", StringComparison.Ordinal)
                         && !value.StartsWith("bitrate=", StringComparison.Ordinal)
                         && !value.StartsWith("total_size=", StringComparison.Ordinal))
-                        onError(value.Length > 300 ? value[..300] : value);
+                        onError(value);
                     line.Clear();
                 }
                 else if (line.Length < 4096) line.Append(buffer[i]);
             }
+        if (line.Length > 0) onError(line.ToString());
     }
 
     private sealed class InlineProgress<T>(Action<T> action) : IProgress<T>

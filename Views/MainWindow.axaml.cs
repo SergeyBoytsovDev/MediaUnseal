@@ -114,15 +114,6 @@ public partial class MainWindow : Window
         if (e.PropertyName != "Item[]") return;
         _logViewModel?.RefreshMainLocalization();
         RefreshColumnHeaders();
-        foreach (var kind in new[] { "video", "audio", "subtitle", "image", "animation" })
-        {
-            if (!_formatChoices.TryGetValue(kind, out var choice) || choice.Settings is null) continue;
-            _formatChoices[kind] = choice with
-            {
-                Display = LocalizationManager.Active.Format("MainCustomFormat",
-                    choice.Settings.Format.Extension.ToUpperInvariant())
-            };
-        }
         RefreshFormatControls();
     }
 
@@ -349,8 +340,8 @@ public partial class MainWindow : Window
 
     private static readonly Dictionary<string, (string Muxer, string LabelKey)[]> PopularFormats = new()
     {
-        ["video"] = [("mp4", "MainFormatMp4"), ("matroska", "MainFormatMkv"),
-            ("mov", "MainFormatMov"), ("avi", "MainFormatAvi"), ("webm", "MainFormatWebm")],
+        ["video"] = [("matroska", "MainFormatMkv"), ("mp4", "MainFormatMp4"),
+            ("mov", "MainFormatMov"), ("webm", "MainFormatWebm"), ("avi", "MainFormatAvi")],
         ["audio"] = [("mp3", "MainFormatMp3"), ("wav", "MainFormatWav"),
             ("flac", "MainFormatFlac"), ("adts", "MainFormatAac"),
             ("ac3", "MainFormatAc3"), ("ogg", "MainFormatOgg"), ("opus", "MainFormatOpus")],
@@ -388,7 +379,17 @@ public partial class MainWindow : Window
                     ? loc.Format("MainSourceFormatOriginal", SourceFormatName(sourceFormats[0]!))
                     : tracks.Length > 0 ? loc.Get("MainMixedFormatsOriginal")
                         : loc.Get("MainOriginalNoTranscode");
-                var choices = new List<FormatChoice> { new(source) };
+                _formatChoices.TryGetValue(kind, out var selected);
+                var customOriginal = selected is { Format: not null, Settings: not null }
+                    && IsDuplicateOriginal(tracks, selected.Format);
+                if (selected is { Format: not null, Settings: not null })
+                {
+                    selected = selected with { Display = customOriginal
+                        ? loc.Format("MainSourceCustomFormat", SourceFormatName(selected.Format.Extension))
+                        : loc.Format("MainCustomFormat", selected.Format.Extension.ToUpperInvariant()) };
+                    _formatChoices[kind] = selected;
+                }
+                var choices = new List<FormatChoice> { customOriginal ? selected! : new(source) };
                 if (_conversionCatalog is { } catalog)
                 {
                     var secondaryAdded = false;
@@ -400,12 +401,13 @@ public partial class MainWindow : Window
                             .FirstOrDefault(item => item.Muxer == format.Muxer).LabelKey;
                         var secondary = kind is "video" or "animation" &&
                             FfmpegConversionCatalog.Category(format) != kind;
-                        choices.Add(new(labelKey is null ? format.Display : loc.Get(labelKey), format,
-                            SeparatorBefore: secondary && !secondaryAdded));
+                        choices.Add(selected is { Settings: not null } && selected.Format == format
+                            ? selected with { SeparatorBefore = secondary && !secondaryAdded }
+                            : new(labelKey is null ? format.Display : loc.Get(labelKey), format,
+                                SeparatorBefore: secondary && !secondaryAdded));
                         if (secondary) secondaryAdded = true;
                     }
                 }
-                _formatChoices.TryGetValue(kind, out var selected);
                 if (selected is { Format: not null, Settings: null }
                     && IsDuplicateOriginal(tracks, selected.Format))
                 {
@@ -613,6 +615,13 @@ public partial class MainWindow : Window
         {
             _formatChoices[kind] = new(LocalizationManager.Active.Format("MainCustomFormat",
                 copiedFormat.Extension.ToUpperInvariant()), copiedFormat, CopyRequested: true);
+            RefreshFormatControls();
+            await ApplyAllFormatsAsync();
+            return;
+        }
+        if (dialog.AppliedDefaultFormat is { } defaultFormat && viewModel.SelectedMedia == media)
+        {
+            _formatChoices[kind] = new(defaultFormat.Display, defaultFormat);
             RefreshFormatControls();
             await ApplyAllFormatsAsync();
             return;

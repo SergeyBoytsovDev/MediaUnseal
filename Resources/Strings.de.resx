@@ -819,6 +819,7 @@
   <data name="MainSourceFormatOriginal" xml:space="preserve">
     <value>{0} – Original</value>
   </data>
+  <data name="MainSourceCustomFormat" xml:space="preserve"><value>{0} – Original – benutzerdefinierte Einstellung</value></data>
   <data name="MainOriginalShort" xml:space="preserve">
     <value>Original</value>
   </data>
@@ -1432,7 +1433,7 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
     <value>{0} wird geprüft…</value>
   </data>
   <data name="LogToolUnavailable" xml:space="preserve">
-    <value>{0} wurde nicht gefunden oder funktioniert nicht.</value>
+    <value>{0} wurde nicht gefunden oder funktioniert nicht. Prüfen Sie den Pfad oder installieren Sie das Programm in den Einstellungen.</value>
   </data>
   <data name="LogToolReadyVersion" xml:space="preserve">
     <value>{0} {1} gefunden und einsatzbereit.</value>
@@ -1450,10 +1451,10 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
     <value>Dateianalyse gestartet.</value>
   </data>
   <data name="LogAnalysisTimeout" xml:space="preserve">
-    <value>Zeitüberschreitung bei FFprobe.</value>
+    <value>FFprobe hat nicht rechtzeitig geantwortet. Analysieren Sie die Datei erneut.</value>
   </data>
   <data name="LogAnalysisCancelled" xml:space="preserve">
-    <value>Dateianalyse abgebrochen.</value>
+    <value>Die Dateianalyse wurde abgebrochen. Öffnen Sie die Datei bei Bedarf erneut.</value>
   </data>
   <data name="LogAnalysisFailed" xml:space="preserve">
     <value>Die Datei konnte nicht analysiert werden.</value>
@@ -1498,7 +1499,7 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
     <value>Verarbeitung abgeschlossen.</value>
   </data>
   <data name="LogProcessingCancelled" xml:space="preserve">
-    <value>Verarbeitung vom Benutzer gestoppt.</value>
+    <value>Die Verarbeitung wurde gestoppt. Unfertige Streams können erneut verarbeitet werden.</value>
   </data>
   <data name="LogProcessingErrors" xml:space="preserve">
     <value>Verarbeitung mit Fehlern abgeschlossen.</value>
@@ -1519,7 +1520,7 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
     <value>Stream #{0} konnte nicht konvertiert werden: {1}.</value>
   </data>
   <data name="LogStreamCancelled" xml:space="preserve">
-    <value>Verarbeitung von Stream #{0} abgebrochen.</value>
+    <value>Die Verarbeitung von Stream #{0} wurde abgebrochen. Starten Sie sie bei Bedarf erneut.</value>
   </data>
   <data name="LogStreamTimeout" xml:space="preserve">
     <value>Zeitüberschreitung bei der Verarbeitung von Stream #{0}.</value>
@@ -1543,10 +1544,10 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
     <value>Keine kompatiblen Encoder gefunden.</value>
   </data>
   <data name="LogHardwareSearchCancelled" xml:space="preserve">
-    <value>Suche nach Hardware-Encodern abgebrochen.</value>
+    <value>Die Suche nach Hardware-Encodern wurde abgebrochen. Starten Sie sie bei Bedarf erneut.</value>
   </data>
   <data name="LogCompatibleSearchCancelled" xml:space="preserve">
-    <value>Suche nach kompatiblen Encodern abgebrochen.</value>
+    <value>Die Suche nach kompatiblen Encodern wurde abgebrochen. Starten Sie sie bei Bedarf erneut.</value>
   </data>
   <data name="LogHardwareSearchFailed" xml:space="preserve">
     <value>Die Suche nach Hardware-Encodern konnte nicht abgeschlossen werden.</value>
@@ -1555,7 +1556,7 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
     <value>Die Suche nach kompatiblen Encodern konnte nicht abgeschlossen werden.</value>
   </data>
   <data name="LogSearchStale" xml:space="preserve">
-    <value>Suchergebnisse wurden nicht übernommen, da sich das Ausgabeformat geändert hat.</value>
+    <value>Das Ausgabeformat hat sich geändert; deshalb wurden die Suchergebnisse nicht übernommen. Suchen Sie erneut für das neue Format.</value>
   </data>
   <data name="GuideWindowTitle" xml:space="preserve">
     <value>Medienhandbuch</value>
@@ -1626,8 +1627,18 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
   <data name="LogAttachmentStarted" xml:space="preserve"><value>Anhang {0} wird extrahiert.</value></data>
   <data name="LogAttachmentCompleted" xml:space="preserve"><value>Anhang {0} extrahiert: {1}.</value></data>
   <data name="LogAttachmentFailed" xml:space="preserve"><value>Anhang {0} konnte nicht extrahiert werden: {1}.</value></data>
-  <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>Die MKV-Anhangsliste konnte nicht gelesen werden.</value></data>
-  <data name="LogAviH264Copy" xml:space="preserve"><value>Video ohne Neukodierung extrahiert. Der H.264-Bitstrom wurde für den AVI-Container angepasst.</value></data>
-  <data name="LogMxfUnofficialCopy" xml:space="preserve"><value>Video ohne Neukodierung extrahiert. Eine nicht standardmäßige Bildrate erforderte zusätzliche FFmpeg-Kompatibilitätsoptionen. Die Wiedergabe kann in einigen Anwendungen eingeschränkt sein.</value></data>
+  <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>Die MKV-Anhangsliste konnte nicht gelesen werden. Andere Streams bleiben verfügbar; prüfen und öffnen Sie die Datei bei Bedarf erneut.</value></data>
+  <data name="LogOutputFolderAccessDenied" xml:space="preserve"><value>In den Ausgabeordner kann nicht geschrieben werden. Wählen Sie einen anderen Ordner mit Schreibzugriff.</value></data>
+  <data name="LogAviH264Copy" xml:space="preserve"><value>AVI-Kompatibilität: Der Videobitstrom wurde ohne Neukodierung angepasst. Die Wiedergabe kann in einigen Programmen eingeschränkt sein. Wählen Sie für bessere Kompatibilität einen geeigneten Videokodierer zur Konvertierung.</value></data>
+  <data name="LogMxfUnofficialCopy" xml:space="preserve"><value>MXF-Kompatibilität: Der inoffizielle FFmpeg-Modus bewahrte die ursprüngliche Bildrate. Die Wiedergabe kann in einigen Programmen eingeschränkt sein. Konvertieren Sie das Video für bessere Kompatibilität auf eine standardmäßige MXF-Bildrate.</value></data>
   <data name="LogSpecialCopyFailed" xml:space="preserve"><value>Das Video konnte nicht ohne Neukodierung extrahiert werden. Wählen Sie einen kompatiblen Kodierer für die Konvertierung: {0}</value></data>
+  <data name="LogVideoCopyCodecError" xml:space="preserve"><value>Video konnte nicht nach {0} extrahiert werden: Der Container unterstützt diesen Videocodec nicht. Wählen Sie einen kompatiblen Kodierer für die Konvertierung.</value></data>
+  <data name="LogVideoCopyProfileError" xml:space="preserve"><value>Video konnte nicht nach {0} extrahiert werden: Dieses Codec-Profil wird nicht unterstützt. Wählen Sie einen kompatiblen Kodierer oder ein anderes Profil für die Konvertierung.</value></data>
+  <data name="LogVideoCopyFrameRateError" xml:space="preserve"><value>Video konnte nicht nach {0} extrahiert werden: Die ursprüngliche Bildrate wird nicht unterstützt. Wählen Sie ein kompatibles Format oder einen Kodierer für die Konvertierung.</value></data>
+  <data name="LogVideoCopyResolutionError" xml:space="preserve"><value>Video konnte nicht nach {0} extrahiert werden: Die Auflösung wird nicht unterstützt. Wählen Sie ein kompatibles Format oder passen Sie die Konvertierung an.</value></data>
+  <data name="LogVideoCopyPixelFormatError" xml:space="preserve"><value>Video konnte nicht nach {0} extrahiert werden: Das Pixelformat wird nicht unterstützt. Wählen Sie einen kompatiblen Kodierer für die Konvertierung.</value></data>
+  <data name="LogVideoCopyTimestampsError" xml:space="preserve"><value>Video konnte nicht nach {0} extrahiert werden: Die Zeitstempel sind ungültig. Einzelheiten stehen im Diagnostic Report; versuchen Sie eine Konvertierung.</value></data>
+  <data name="LogVideoCopyHeadersError" xml:space="preserve"><value>Video konnte nicht nach {0} extrahiert werden: Header des Videostroms fehlen oder sind beschädigt. Einzelheiten stehen im Diagnostic Report.</value></data>
+  <data name="LogVideoCopyBitstreamError" xml:space="preserve"><value>Video konnte nicht nach {0} extrahiert werden: Der Videobitstrom ist ungültig. Einzelheiten stehen im Diagnostic Report; versuchen Sie eine Konvertierung.</value></data>
+  <data name="LogVideoCopyUnknownError" xml:space="preserve"><value>Video konnte nicht nach {0} extrahiert werden. Die Ursache ist unbekannt; Einzelheiten stehen im Diagnostic Report. Wählen Sie gegebenenfalls einen Kodierer für die Konvertierung.</value></data>
 </root>

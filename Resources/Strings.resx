@@ -273,6 +273,7 @@
   <data name="MainOriginalVideo" xml:space="preserve"><value>{0} — исходный — видео; файл .{1}</value></data>
   <data name="MainOriginalNoTranscode" xml:space="preserve"><value>Исходный — без перекодирования</value></data>
   <data name="MainSourceFormatOriginal" xml:space="preserve"><value>{0} — Исходный</value></data>
+  <data name="MainSourceCustomFormat" xml:space="preserve"><value>{0} — Исходный — пользовательская настройка</value></data>
   <data name="MainOriginalShort" xml:space="preserve"><value>Исходный</value></data>
   <data name="MainMixedFormatsOriginal" xml:space="preserve"><value>Разные форматы — Исходный</value></data>
   <data name="MainFormatsReadFailed" xml:space="preserve"><value>Не удалось прочитать форматы FFmpeg.</value></data>
@@ -478,14 +479,14 @@
   <data name="DiagnosticPreviewSaveFailed" xml:space="preserve"><value>Не удалось сохранить лог. Проверьте доступ к выбранному файлу.</value></data>
   <data name="DiagnosticPreviewReadFailed" xml:space="preserve"><value>Не удалось прочитать диагностический лог.</value></data>
   <data name="LogCheckingTool" xml:space="preserve"><value>Проверяется {0}…</value></data>
-  <data name="LogToolUnavailable" xml:space="preserve"><value>{0} не найден или не работает.</value></data>
+  <data name="LogToolUnavailable" xml:space="preserve"><value>{0} не найден или не работает. Проверьте путь к утилите или установите её через настройки.</value></data>
   <data name="LogToolReadyVersion" xml:space="preserve"><value>{0} {1} обнаружен. Готов к работе.</value></data>
   <data name="LogToolReady" xml:space="preserve"><value>{0} обнаружен. Готов к работе.</value></data>
   <data name="LogAnalysisCompleteCount" xml:space="preserve"><value>Анализ завершён. Обнаружено медиапотоков: {0}</value></data>
   <data name="LogAnalysisComplete" xml:space="preserve"><value>Анализ завершён.</value></data>
   <data name="LogAnalysisStarted" xml:space="preserve"><value>Начат анализ файла.</value></data>
-  <data name="LogAnalysisTimeout" xml:space="preserve"><value>Время ожидания FFprobe истекло.</value></data>
-  <data name="LogAnalysisCancelled" xml:space="preserve"><value>Анализ файла отменён.</value></data>
+  <data name="LogAnalysisTimeout" xml:space="preserve"><value>FFprobe не ответил вовремя. Повторите анализ файла.</value></data>
+  <data name="LogAnalysisCancelled" xml:space="preserve"><value>Анализ файла отменён. При необходимости откройте его повторно.</value></data>
   <data name="LogAnalysisFailed" xml:space="preserve"><value>Не удалось проанализировать файл.</value></data>
   <data name="LogPreviewReady" xml:space="preserve"><value>Предпросмотр готов.</value></data>
   <data name="LogPreviewUnavailable" xml:space="preserve"><value>Не удалось получить изображение предпросмотра.</value></data>
@@ -500,14 +501,14 @@
   <data name="LogStreamConverted" xml:space="preserve"><value>Сконвертирован поток #{0}{1}{2}.</value></data>
   <data name="LogStreamExtracted" xml:space="preserve"><value>Извлечён поток #{0}{1}{2}.</value></data>
   <data name="LogProcessingComplete" xml:space="preserve"><value>Обработка завершена.</value></data>
-  <data name="LogProcessingCancelled" xml:space="preserve"><value>Обработка остановлена пользователем.</value></data>
+  <data name="LogProcessingCancelled" xml:space="preserve"><value>Обработка остановлена. Незавершённые потоки можно обработать повторно.</value></data>
   <data name="LogProcessingErrors" xml:space="preserve"><value>Обработка завершена с ошибками.</value></data>
   <data name="LogErrorOutputAccess" xml:space="preserve"><value>нет доступа к папке сохранения</value></data>
   <data name="LogErrorWrite" xml:space="preserve"><value>ошибка записи файла</value></data>
   <data name="LogErrorFfmpegLaunch" xml:space="preserve"><value>не удалось запустить FFmpeg</value></data>
   <data name="LogStreamFailed" xml:space="preserve"><value>Не удалось извлечь поток #{0}: {1}.</value></data>
   <data name="LogStreamConversionFailed" xml:space="preserve"><value>Не удалось конвертировать поток #{0}: {1}.</value></data>
-  <data name="LogStreamCancelled" xml:space="preserve"><value>Обработка потока #{0} отменена.</value></data>
+  <data name="LogStreamCancelled" xml:space="preserve"><value>Обработка потока #{0} отменена. При необходимости запустите её повторно.</value></data>
   <data name="LogStreamTimeout" xml:space="preserve"><value>Время обработки потока #{0} истекло.</value></data>
   <data name="MainResultAttachmentFailed" xml:space="preserve"><value>Не удалось прочитать вложение Matroska. Подробности в диагностическом отчёте.</value></data>
   <data name="OutputLanguageUnspecified" xml:space="preserve"><value>язык не указан</value></data>
@@ -515,11 +516,11 @@
   <data name="LogHardwareSearchStarted" xml:space="preserve"><value>Начат поиск аппаратных кодировщиков.</value></data>
   <data name="LogCompatibleSearchStarted" xml:space="preserve"><value>Начат поиск совместимых кодировщиков.</value></data>
   <data name="LogCompatibleNotFound" xml:space="preserve"><value>Совместимые кодировщики не найдены.</value></data>
-  <data name="LogHardwareSearchCancelled" xml:space="preserve"><value>Поиск аппаратных кодировщиков отменён.</value></data>
-  <data name="LogCompatibleSearchCancelled" xml:space="preserve"><value>Поиск совместимых кодировщиков отменён.</value></data>
+  <data name="LogHardwareSearchCancelled" xml:space="preserve"><value>Поиск аппаратных кодировщиков отменён. При необходимости запустите его повторно.</value></data>
+  <data name="LogCompatibleSearchCancelled" xml:space="preserve"><value>Поиск совместимых кодировщиков отменён. При необходимости запустите его повторно.</value></data>
   <data name="LogHardwareSearchFailed" xml:space="preserve"><value>Не удалось завершить поиск аппаратных кодировщиков.</value></data>
   <data name="LogCompatibleSearchFailed" xml:space="preserve"><value>Не удалось завершить поиск совместимых кодировщиков.</value></data>
-  <data name="LogSearchStale" xml:space="preserve"><value>Результат поиска не применён: выходной формат изменён.</value></data>
+  <data name="LogSearchStale" xml:space="preserve"><value>Выходной формат изменился, поэтому результаты поиска не применены. Повторите поиск для нового формата.</value></data>
   <data name="GuideWindowTitle" xml:space="preserve"><value>Медиасправочник</value></data>
   <data name="GuideSearchPlaceholder" xml:space="preserve"><value>Поиск по медиасправочнику</value></data>
   <data name="GuideClearSearch" xml:space="preserve"><value>Очистить</value></data>
@@ -563,8 +564,18 @@
   <data name="LogAttachmentStarted" xml:space="preserve"><value>Начато извлечение вложения {0}.</value></data>
   <data name="LogAttachmentCompleted" xml:space="preserve"><value>Вложение {0} извлечено: {1}.</value></data>
   <data name="LogAttachmentFailed" xml:space="preserve"><value>Не удалось извлечь вложение {0}: {1}.</value></data>
-  <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>Не удалось прочитать список вложений MKV.</value></data>
-  <data name="LogAviH264Copy" xml:space="preserve"><value>Видео извлечено без перекодирования. Выполнена адаптация битового потока H.264 для контейнера AVI.</value></data>
-  <data name="LogMxfUnofficialCopy" xml:space="preserve"><value>Видео извлечено без перекодирования. Использована нестандартная частота кадров с дополнительными параметрами совместимости FFmpeg. Воспроизведение в некоторых программах может быть ограничено.</value></data>
+  <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>Не удалось прочитать список вложений MKV. Остальные потоки доступны; при необходимости проверьте файл и откройте его повторно.</value></data>
+  <data name="LogOutputFolderAccessDenied" xml:space="preserve"><value>Нет доступа на запись в папку сохранения. Выберите другую папку с правом записи.</value></data>
+  <data name="LogAviH264Copy" xml:space="preserve"><value>Совместимость AVI: видеопоток адаптирован без перекодирования. Воспроизведение в некоторых программах может быть ограничено. Для лучшей совместимости выберите подходящий видеокодек для перекодирования.</value></data>
+  <data name="LogMxfUnofficialCopy" xml:space="preserve"><value>Совместимость MXF: для сохранения исходной частоты кадров применён нестандартный режим FFmpeg. Воспроизведение в некоторых программах может быть ограничено. Для лучшей совместимости перекодируйте видео со стандартной для MXF частотой кадров.</value></data>
   <data name="LogSpecialCopyFailed" xml:space="preserve"><value>Не удалось извлечь видео без перекодирования. Выберите совместимый кодировщик для перекодирования: {0}</value></data>
+  <data name="LogVideoCopyCodecError" xml:space="preserve"><value>Не удалось извлечь видео в {0}: видеокодек не поддерживается контейнером. Выберите совместимый кодировщик для перекодирования.</value></data>
+  <data name="LogVideoCopyProfileError" xml:space="preserve"><value>Не удалось извлечь видео в {0}: профиль видеокодека не поддерживается. Выберите совместимый кодировщик или профиль для перекодирования.</value></data>
+  <data name="LogVideoCopyFrameRateError" xml:space="preserve"><value>Не удалось извлечь видео в {0}: контейнер не поддерживает исходную частоту кадров. Выберите совместимый формат или кодировщик для перекодирования.</value></data>
+  <data name="LogVideoCopyResolutionError" xml:space="preserve"><value>Не удалось извлечь видео в {0}: разрешение не поддерживается. Выберите совместимый формат или настройте перекодирование.</value></data>
+  <data name="LogVideoCopyPixelFormatError" xml:space="preserve"><value>Не удалось извлечь видео в {0}: формат цвета не поддерживается. Выберите совместимый кодировщик для перекодирования.</value></data>
+  <data name="LogVideoCopyTimestampsError" xml:space="preserve"><value>Не удалось извлечь видео в {0}: ошибка временных меток. Подробности см. в Diagnostic Report; попробуйте перекодирование.</value></data>
+  <data name="LogVideoCopyHeadersError" xml:space="preserve"><value>Не удалось извлечь видео в {0}: отсутствуют или повреждены заголовки видеопотока. Подробности см. в Diagnostic Report.</value></data>
+  <data name="LogVideoCopyBitstreamError" xml:space="preserve"><value>Не удалось извлечь видео в {0}: ошибка структуры видеопотока. Подробности см. в Diagnostic Report; попробуйте перекодирование.</value></data>
+  <data name="LogVideoCopyUnknownError" xml:space="preserve"><value>Не удалось извлечь видео в {0}. Причина не определена; подробности см. в Diagnostic Report. Попробуйте выбрать кодировщик для перекодирования.</value></data>
 </root>

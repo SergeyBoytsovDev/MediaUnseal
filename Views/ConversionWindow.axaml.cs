@@ -53,6 +53,7 @@ public partial class ConversionWindow : Window
     };
     internal bool AppliedCopy { get; private set; }
     internal ConversionFormat? AppliedCopyFormat { get; private set; }
+    internal ConversionFormat? AppliedDefaultFormat { get; private set; }
 
     public ConversionWindow()
     {
@@ -212,9 +213,24 @@ public partial class ConversionWindow : Window
         || _stream?.Codec == "srt" && encoder.Codec == "subrip"
         || _stream?.ImageFormat == "WebP" && encoder.Codec == "webp";
 
-    private bool HasRequestedParameters() => new[] { CrfBox, VideoBitrateBox, AudioBitrateBox,
-        WidthBox, HeightBox, FrameRateBox, QualityBox, SampleRateBox, ChannelsBox }
-        .Any(box => box.IsEnabled && !string.IsNullOrWhiteSpace(box.Text));
+    private bool HasRequestedParameters() => (_kind switch
+    {
+        "video" or "animation" => new[] { CrfBox, VideoBitrateBox, WidthBox, HeightBox, FrameRateBox },
+        "audio" => [AudioBitrateBox, QualityBox, SampleRateBox, ChannelsBox],
+        _ => []
+    }).Any(box => box.IsEnabled && !string.IsNullOrWhiteSpace(box.Text));
+
+    private bool IsDefaultNonSourceSelection(ConversionFormat selected, ConversionFormat format,
+        ConversionEncoder encoder, ConversionSettings options)
+    {
+        if (ReferenceEquals(selected, _copyFormat) || options.ForceReencode || HasRequestedParameters()
+            || _catalog is null) return false;
+        var available = AvailableEncoders(selected, format);
+        var suggested = _catalog.SuggestedEncoder(format, _kind);
+        var automatic = _kind == "video" ? available.FirstOrDefault()
+            : suggested is not null && available.Contains(suggested) ? suggested : available.FirstOrDefault();
+        return encoder == automatic;
+    }
 
     private void RefreshEncoderMode()
     {
@@ -567,6 +583,12 @@ public partial class ConversionWindow : Window
                 ForceReencodeBox.IsChecked == true);
             if (options.Validate(_stream) is { } error)
             { SetValidationText(error); return; }
+            if (IsDefaultNonSourceSelection(selected, format, encoder, options))
+            {
+                AppliedDefaultFormat = format;
+                Close(null);
+                return;
+            }
             SaveButton.IsEnabled = false;
             SetValidationMessage("ConversionCheckingCompatibility");
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(_shutdown, _closed.Token);

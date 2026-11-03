@@ -145,7 +145,8 @@ public sealed class FfmpegConversionCatalog
         else if (kind == "video" && Category(format) == "animation") kind = "animation";
         string[] preferred = kind switch
         {
-            "video" => ["mp4", "matroska", "mov", "webm", "avi"],
+            "video" => ["matroska", "mp4", "mov", "webm", "avi", "mpegts", "mpeg",
+                "mxf", "flv", "asf", "ogv", "3gp", "3g2", "nut"],
             "animation" => ["gif", "apng", "webp"],
             "image" => ["jpg", "png", "webp", "bmp", "tiff", "qoi", "gif"],
             "audio" => ["mp3", "wav", "flac", "adts", "ogg", "opus", "ipod"],
@@ -218,6 +219,9 @@ public sealed class FfmpegConversionCatalog
         CancellationToken token, MediaStreamInfo? stream = null)
     {
         if (!_formats.Contains(format) || streamIndex < 0) return false;
+        // Video copy is decided from existing FFprobe metadata; the actual muxer checks
+        // compatibility during export. Do not create and decode a disposable video file.
+        if (stream?.VisualKind == VisualKind.Video) return true;
         var directory = Path.Combine(Path.GetTempPath(), "trackextractor-copy-" + Guid.NewGuid().ToString("N"));
         var output = Path.Combine(directory, "output." + format.Extension);
         try

@@ -350,7 +350,7 @@ public class MainViewModel : ViewModelBase
         ? "MainAnalysisError" : "MainReady");
     public string MediaFileName => SelectedMedia?.Name ?? L.Get("MainNoFile");
     public string MediaFilePath => SelectedMedia?.FullPath ?? L.Get("MainChooseOrDropFile");
-    public string ContainerDisplay => SelectedMedia?.Container ?? "—";
+    public string ContainerDisplay => SelectedMedia is { } media ? VideoContainerDisplay.Format(media) : "—";
     public string DurationDisplay => SelectedMedia is { } media ? FormatDuration(media.Duration) : "—";
     public string SizeDisplay => SelectedMedia is { } media ? FormatByteSize(media.Size) : "—";
     public string SizeExactDisplay => SelectedMedia is { } media ? L.Format("MainBytesExact", media.Size) : "—";
@@ -824,7 +824,7 @@ public class MainViewModel : ViewModelBase
             ReportExportErrorKey("MainOutputFolderAccessDenied");
             _tools.Diagnostics.Record(DiagnosticLevel.Warn, "Output folder",
                 $"Output folder rejected: write probe failed; {ex.GetType().Name}; code {ex.HResult}.",
-                userMessageKey: "MainOutputFolderAccessDenied");
+                userMessageKey: "LogOutputFolderAccessDenied");
             return false;
         }
         var changed = !string.Equals(OutputDirectory, normalized, OperatingSystem.IsWindows()
