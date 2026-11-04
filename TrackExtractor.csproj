@@ -14,6 +14,8 @@
     <AvaloniaResource Include="docs\media-guide-diagrams.*.json" />
     <EmbeddedResource Include="docs\track-extractor-media-guide*.md" WithCulture="false" />
     <EmbeddedResource Include="docs\media-guide-diagrams.*.json" WithCulture="false" />
+    <EmbeddedResource Update="Resources\Strings.ru.resx" WithCulture="false"
+                      LogicalName="TrackExtractor.Resources.Strings.resources" />
     <Compile Remove="Tests/**/*.cs" />
   </ItemGroup>
 

@@ -317,7 +317,7 @@
       <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" AllowAutoHide="False">
        <StackPanel Margin="14" Spacing="9">
         <TextBlock Text="{DynamicResource Loc_MainSaveFolder}" FontWeight="SemiBold"/>
-        <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
+        <Grid ColumnDefinitions="*,148" ColumnSpacing="6">
          <Grid>
           <TextBox x:Name="OutputFolderBox" Text="{Binding OutputDirectory, Mode=OneWay}" IsEnabled="{Binding CanChooseFolder}"
                    KeyDown="OutputFolder_KeyDown" LostFocus="OutputFolder_LostFocus" TextChanged="OutputFolder_TextChanged"
@@ -326,7 +326,8 @@
           <Border x:Name="OutputFolderFeedbackBorder" BorderThickness="2" CornerRadius="{DynamicResource ControlCorner}"
                   IsHitTestVisible="False" Opacity="0"/>
          </Grid>
-         <Button Grid.Column="1" Click="ChooseFolder_Click" IsEnabled="{Binding CanChooseFolder}">
+         <Button x:Name="OutputBrowseButton" Grid.Column="1" Click="ChooseFolder_Click"
+                 IsEnabled="{Binding CanChooseFolder}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
           <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Center">
            <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z"
                  Stroke="{DynamicResource MainTextBrush}" StrokeThickness="2"
@@ -336,29 +337,29 @@
          </Button>
         </Grid>
         <TextBlock Text="{DynamicResource Loc_MainVideoFormat}" FontWeight="SemiBold" Margin="0,8,0,0"/>
-        <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
+        <Grid ColumnDefinitions="*,130" ColumnSpacing="6">
          <ComboBox x:Name="VideoFormatBox" ItemTemplate="{StaticResource OutputFormatTemplate}" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
-         <Button x:Name="VideoConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="video" IsEnabled="False"/>
+         <Button x:Name="VideoConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="video" IsEnabled="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
         </Grid>
         <TextBlock Text="{DynamicResource Loc_MainAudioFormat}" FontWeight="SemiBold"/>
-        <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
+        <Grid ColumnDefinitions="*,130" ColumnSpacing="6">
          <ComboBox x:Name="AudioFormatBox" ItemTemplate="{StaticResource OutputFormatTemplate}" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
-         <Button x:Name="AudioConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="audio" IsEnabled="False"/>
+         <Button x:Name="AudioConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="audio" IsEnabled="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
         </Grid>
         <TextBlock Text="{DynamicResource Loc_MainSubtitleFormat}" FontWeight="SemiBold"/>
-        <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
+        <Grid ColumnDefinitions="*,130" ColumnSpacing="6">
          <ComboBox x:Name="SubtitleFormatBox" ItemTemplate="{StaticResource OutputFormatTemplate}" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch"/>
-         <Button x:Name="SubtitleConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="subtitle" IsEnabled="False"/>
+         <Button x:Name="SubtitleConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="subtitle" IsEnabled="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
         </Grid>
         <TextBlock Text="{DynamicResource Loc_MainImageFormat}" FontWeight="SemiBold"/>
-        <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
+        <Grid ColumnDefinitions="*,130" ColumnSpacing="6">
          <ComboBox x:Name="ImageFormatBox" ItemTemplate="{StaticResource OutputFormatTemplate}" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch" ToolTip.Tip="{DynamicResource Loc_ConversionImageOutputsHint}"/>
-         <Button x:Name="ImageConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="image" IsEnabled="False"/>
+         <Button x:Name="ImageConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="image" IsEnabled="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
         </Grid>
         <TextBlock Text="{DynamicResource Loc_MainAnimationFormat}" FontWeight="SemiBold"/>
-        <Grid ColumnDefinitions="*,94" ColumnSpacing="6">
+        <Grid ColumnDefinitions="*,130" ColumnSpacing="6">
          <ComboBox x:Name="AnimationFormatBox" ItemTemplate="{StaticResource OutputFormatTemplate}" SelectionChanged="Format_SelectionChanged" IsEnabled="False" HorizontalAlignment="Stretch" ToolTip.Tip="{DynamicResource Loc_ConversionAnimationOutputsHint}"/>
-         <Button x:Name="AnimationConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="animation" IsEnabled="False"/>
+         <Button x:Name="AnimationConfigureButton" Grid.Column="1" Content="{DynamicResource Loc_MainConfigure}" Click="ConfigureFormat_Click" Tag="animation" IsEnabled="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
         </Grid>
         <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Margin="0,7"/>
         <CheckBox Content="{DynamicResource Loc_MainSaveMetadata}" IsChecked="{Binding PreserveMetadata, Mode=TwoWay}"/>

@@ -1,0 +1,1704 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="LanguageSection" xml:space="preserve">
+    <value>インターフェースの言語</value>
+  </data>
+  <data name="RussianName" xml:space="preserve">
+    <value>ロシア語</value>
+  </data>
+  <data name="UnknownLanguageFolder" xml:space="preserve">
+    <value>言語未指定</value>
+  </data>
+  <data name="VersionFormat" xml:space="preserve">
+    <value>バージョン：{0}</value>
+  </data>
+  <data name="VersionUnspecified" xml:space="preserve">
+    <value>未指定</value>
+  </data>
+  <data name="SettingsSections" xml:space="preserve">
+    <value>セクション</value>
+  </data>
+  <data name="SettingsInstaller" xml:space="preserve">
+    <value>FFmpeg インストーラー</value>
+  </data>
+  <data name="SettingsAppearance" xml:space="preserve">
+    <value>外観</value>
+  </data>
+  <data name="SettingsKnowledgeBase" xml:space="preserve">
+    <value>メディア形式ガイド</value>
+  </data>
+  <data name="SettingsAbout" xml:space="preserve">
+    <value>このアプリについて</value>
+  </data>
+  <data name="SettingsThemeLabel" xml:space="preserve">
+    <value>インターフェースのテーマ</value>
+  </data>
+  <data name="SettingsThemeStudioDark" xml:space="preserve">
+    <value>Studio Dark</value>
+  </data>
+  <data name="SettingsThemeStudioDarkDescription" xml:space="preserve">
+    <value>高コントラストのスタジオスタイル</value>
+  </data>
+  <data name="SettingsThemeResolve" xml:space="preserve">
+    <value>Resolve Workspace</value>
+  </data>
+  <data name="SettingsThemeResolveDescription" xml:space="preserve">
+    <value>コンパクトな制作ワークスペース</value>
+  </data>
+  <data name="SettingsThemeAdobe" xml:space="preserve">
+    <value>Adobe Clean Pro</value>
+  </data>
+  <data name="SettingsThemeAdobeDescription" xml:space="preserve">
+    <value>すっきりした文字組みと余白</value>
+  </data>
+  <data name="SettingsThemeIndustrial" xml:space="preserve">
+    <value>Industrial Utility</value>
+  </data>
+  <data name="SettingsThemeIndustrialDescription" xml:space="preserve">
+    <value>機能性を重視したテーマ</value>
+  </data>
+  <data name="SettingsThemeHybrid" xml:space="preserve">
+    <value>Hybrid Modern Panel</value>
+  </data>
+  <data name="SettingsThemeHybridDescription" xml:space="preserve">
+    <value>柔らかなパネルと寒色系のアクセント</value>
+  </data>
+  <data name="LanguageEnglishName" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="LanguageEnglishDescription" xml:space="preserve">
+    <value>英語</value>
+  </data>
+  <data name="LanguageGermanName" xml:space="preserve">
+    <value>Deutsch</value>
+  </data>
+  <data name="LanguageGermanDescription" xml:space="preserve">
+    <value>ドイツ語</value>
+  </data>
+  <data name="LanguageFrenchName" xml:space="preserve">
+    <value>Français</value>
+  </data>
+  <data name="LanguageFrenchDescription" xml:space="preserve">
+    <value>フランス語</value>
+  </data>
+  <data name="LanguageSpanishName" xml:space="preserve">
+    <value>Español</value>
+  </data>
+  <data name="LanguageSpanishDescription" xml:space="preserve">
+    <value>スペイン語</value>
+  </data>
+  <data name="LanguagePortugueseName" xml:space="preserve">
+    <value>Português</value>
+  </data>
+  <data name="LanguagePortugueseDescription" xml:space="preserve">
+    <value>ポルトガル語</value>
+  </data>
+  <data name="LanguageItalianName" xml:space="preserve">
+    <value>Italiano</value>
+  </data>
+  <data name="LanguageItalianDescription" xml:space="preserve">
+    <value>イタリア語</value>
+  </data>
+  <data name="LanguageChineseName" xml:space="preserve">
+    <value>中文（简体）</value>
+  </data>
+  <data name="LanguageChineseDescription" xml:space="preserve">
+    <value>中国語（簡体字）</value>
+  </data>
+  <data name="LanguageJapaneseName" xml:space="preserve">
+    <value>日本語</value>
+  </data>
+  <data name="LanguageJapaneseDescription" xml:space="preserve">
+    <value>日本語</value>
+  </data>
+  <data name="LanguageKoreanName" xml:space="preserve">
+    <value>한국어</value>
+  </data>
+  <data name="LanguageKoreanDescription" xml:space="preserve">
+    <value>韓国語</value>
+  </data>
+  <data name="SettingsGuideTitle" xml:space="preserve">
+    <value>メディア形式ガイド</value>
+  </data>
+  <data name="SettingsGuideDescription1" xml:space="preserve">
+    <value>メディア形式ガイドでは、コンテナー、映像・音声コーデック、字幕形式、画像形式について説明します。</value>
+  </data>
+  <data name="SettingsGuideDescription2" xml:space="preserve">
+    <value>各形式の用途や組み合わせ方、メディアストリームの抽出・変換での使い方を確認できます。</value>
+  </data>
+  <data name="SettingsOpenGuide" xml:space="preserve">
+    <value>メディア形式ガイドを開く</value>
+  </data>
+  <data name="SettingsProductName" xml:space="preserve">
+    <value>Track Extractor</value>
+  </data>
+  <data name="SettingsDevelopmentBadge" xml:space="preserve">
+    <value>開発中</value>
+  </data>
+  <data name="SettingsAboutSummary" xml:space="preserve">
+    <value>メディアファイルを解析し、映像、音声、字幕、画像、添付ファイルを抽出・変換します。</value>
+  </data>
+  <data name="SettingsCheckUpdates" xml:space="preserve">
+    <value>更新を確認</value>
+  </data>
+  <data name="SettingsGeneralInformation" xml:space="preserve">
+    <value>基本情報</value>
+  </data>
+  <data name="SettingsDeveloper" xml:space="preserve">
+    <value>開発者</value>
+  </data>
+  <data name="SettingsDeveloperName" xml:space="preserve"><value>Sergey Boitcov</value></data>
+  <data name="SettingsPlatformsLabel" xml:space="preserve"><value>対応プラットフォーム</value></data>
+  <data name="SettingsPlatforms" xml:space="preserve">
+    <value>Windows、Linux、macOS</value>
+  </data>
+  <data name="SettingsTechnologyLabel" xml:space="preserve"><value>使用技術</value></data>
+  <data name="SettingsTechnology" xml:space="preserve">
+    <value>.NET {0}、Avalonia UI {1}</value>
+  </data>
+  <data name="SettingsMediaComponents" xml:space="preserve">
+    <value>システムコンポーネント</value>
+  </data>
+  <data name="SettingsFfmpegRights" xml:space="preserve">
+    <value>FFmpeg と FFprobe の権利は各権利者に帰属します。利用条件は、使用するビルドのライセンスによって異なります。</value>
+  </data>
+  <data name="SettingsUpdateCurrent" xml:space="preserve"><value>最新バージョンを使用しています</value></data>
+  <data name="SettingsUpdateAvailable" xml:space="preserve"><value>バージョン 1.0.1 が利用できます</value></data>
+  <data name="SettingsInstallUpdate" xml:space="preserve"><value>更新をインストール</value></data>
+  <data name="SettingsLicenses" xml:space="preserve"><value>ライセンス</value></data>
+  <data name="SettingsFfmpegLicense" xml:space="preserve"><value>条件はビルドによって異なります</value></data>
+  <data name="SettingsOpenLicense" xml:space="preserve"><value>ライセンスを開く</value></data>
+  <data name="SettingsReportBug" xml:space="preserve"><value>不具合を報告</value></data>
+  <data name="SettingsEmailLabel" xml:space="preserve"><value>メール</value></data>
+  <data name="SettingsTelegramLabel" xml:space="preserve"><value>Telegram チャンネル</value></data>
+  <data name="SettingsAboutFooter" xml:space="preserve"><value>© {0} · {1} {2}</value></data>
+  <data name="SettingsSupportDeveloper" xml:space="preserve"><value>開発者を支援</value></data>
+  <data name="SettingsOpenLinkFailed" xml:space="preserve"><value>システムのアプリでリンクを開けませんでした。</value></data>
+  <data name="SupportDescription" xml:space="preserve"><value>{0} は独立したプロジェクトです。役に立った場合は、任意の寄付で開発を支援できます。</value></data>
+  <data name="SupportCrypto" xml:space="preserve"><value>暗号資産</value></data>
+  <data name="SupportCryptoDescription" xml:space="preserve"><value>ウォレットアドレスと QR コード</value></data>
+  <data name="SupportCryptoNetwork" xml:space="preserve"><value>USDT · TRON ネットワーク（TRC20）</value></data>
+  <data name="SupportCopyAddress" xml:space="preserve"><value>アドレスをコピー</value></data>
+  <data name="SupportAddressCopied" xml:space="preserve"><value>アドレスをコピーしました。</value></data>
+  <data name="SupportSbp" xml:space="preserve"><value>即時決済システム</value></data>
+  <data name="SupportSbpDescription" xml:space="preserve"><value>支払い情報と QR コード</value></data>
+  <data name="SupportSbpInstruction" xml:space="preserve"><value>銀行アプリで QR コードを読み取るか、電話番号を使用してください。</value></data>
+  <data name="SupportSbpBank" xml:space="preserve"><value>Sberbank</value></data>
+  <data name="SupportCopyDetails" xml:space="preserve"><value>番号をコピー</value></data>
+  <data name="SupportDetailsCopied" xml:space="preserve"><value>番号をコピーしました。</value></data>
+  <data name="SupportCopyFailed" xml:space="preserve"><value>支払い情報をコピーできませんでした。</value></data>
+  <data name="SettingsThirdParty" xml:space="preserve">
+    <value>サードパーティ製コンポーネントとライセンス</value>
+  </data>
+  <data name="SettingsAvalonia" xml:space="preserve">
+    <value>Avalonia UI はアプリのユーザーインターフェースを提供します。</value>
+  </data>
+  <data name="SettingsMvvm" xml:space="preserve">
+    <value>CommunityToolkit.Mvvm は MVVM をサポートします。</value>
+  </data>
+  <data name="SettingsExternalTools" xml:space="preserve">
+    <value>FFmpeg と FFprobe は、メディアファイルの処理と解析に使用する外部ツールです。</value>
+  </data>
+  <data name="SettingsMatroskaTitle" xml:space="preserve">
+    <value>内蔵 Matroska（MKV）添付ファイルモジュール</value>
+  </data>
+  <data name="SettingsMatroskaDescription" xml:space="preserve">
+    <value>C# モジュールは、Matroska/EBML 構造と SeekHead インデックスを使用して、埋め込み JPEG/PNG 画像を検出・読み取り・抽出します。添付データを直接コピーする場合、FFmpeg は使用しません。</value>
+  </data>
+  <data name="SettingsLicensePending" xml:space="preserve">
+    <value>ライセンス情報はリリース前に追加されます</value>
+  </data>
+  <data name="InstallerRequirement" xml:space="preserve">
+    <value>メディアファイルを扱うには FFmpeg と FFprobe が必要です</value>
+  </data>
+  <data name="InstallerFfmpegRole" xml:space="preserve">
+    <value>メディア処理</value>
+  </data>
+  <data name="InstallerFfprobeRole" xml:space="preserve">
+    <value>メディア解析</value>
+  </data>
+  <data name="InstallerAllReady" xml:space="preserve">
+    <value>すべてのコンポーネントが準備できました</value>
+  </data>
+  <data name="InstallerCancel" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="InstallerContinue" xml:space="preserve">
+    <value>続行</value>
+  </data>
+  <data name="InstallerRetry" xml:space="preserve">
+    <value>再確認</value>
+  </data>
+  <data name="InstallerSelectFfmpeg" xml:space="preserve">
+    <value>FFmpeg を指定</value>
+  </data>
+  <data name="InstallerSelectFfprobe" xml:space="preserve">
+    <value>FFprobe を指定</value>
+  </data>
+  <data name="InstallerFilePickerUnavailable" xml:space="preserve">
+    <value>ファイル選択ダイアログを開けませんでした。再試行してください。</value>
+  </data>
+  <data name="InstallerSelectExecutableFormat" xml:space="preserve">
+    <value>{0} の実行ファイルを選択</value>
+  </data>
+  <data name="InstallerSelectLocalExecutable" xml:space="preserve">
+    <value>ローカルの実行ファイルを選択してください。</value>
+  </data>
+  <data name="InstallerSelectFileFailed" xml:space="preserve">
+    <value>ファイルを選択できませんでした。アクセス権を確認して再試行してください。</value>
+  </data>
+  <data name="InstallerOperationCancelled" xml:space="preserve">
+    <value>操作をキャンセルしました。再確認または再インストールできます。</value>
+  </data>
+  <data name="InstallerOperationFailed" xml:space="preserve">
+    <value>操作を完了できませんでした。再試行するか、パスを手動で指定してください。</value>
+  </data>
+  <data name="InstallerRetryInstall" xml:space="preserve">
+    <value>インストールを再試行</value>
+  </data>
+  <data name="InstallerInstallComponents" xml:space="preserve">
+    <value>コンポーネントをインストール</value>
+  </data>
+  <data name="InstallerInstallationMethod" xml:space="preserve">
+    <value>インストール方法</value>
+  </data>
+  <data name="InstallerManualFileMissing" xml:space="preserve">
+    <value>ファイルが見つかりません。既存の実行ファイルを選択してください。</value>
+  </data>
+  <data name="InstallerToolCheckFailed" xml:space="preserve">
+    <value>ツールの確認に失敗しました。再確認するか、別のパスを選択してください。</value>
+  </data>
+  <data name="InstallerWingetSourcesUnavailable" xml:space="preserve">
+    <value>WinGet は利用できますが、パッケージソースが応答しませんでした。</value>
+  </data>
+  <data name="InstallerWingetFallbackAvailable" xml:space="preserve">
+    <value>WinGet は利用できますが、ソースが応答しませんでした。代替手段として gyan.dev を利用できます。</value>
+  </data>
+  <data name="InstallerWingetAvailable" xml:space="preserve">
+    <value>WinGet を利用できます。</value>
+  </data>
+  <data name="InstallerWingetUnavailableManual" xml:space="preserve">
+    <value>WinGet を利用できません。パスを手動で指定してください。</value>
+  </data>
+  <data name="InstallerWingetAndSourceUnavailable" xml:space="preserve">
+    <value>WinGet を利用できず、gyan.dev も応答しませんでした。</value>
+  </data>
+  <data name="InstallerWingetUnavailableFallback" xml:space="preserve">
+    <value>WinGet を利用できません。代替手段として gyan.dev からインストールできます。</value>
+  </data>
+  <data name="InstallerNoticeWithMethod" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="InstallerCheckError" xml:space="preserve">
+    <value>確認に失敗しました。</value>
+  </data>
+  <data name="InstallerAutoInstallUnavailable" xml:space="preserve">
+    <value>このプラットフォームでは自動インストールを利用できません。案内されたコマンドを使用するか、パスを手動で指定してください。</value>
+  </data>
+  <data name="InstallerDirectDownloadWindowsOnly" xml:space="preserve">
+    <value>直接ダウンロードに対応しているのは Windows 10/11 x64 のみです。</value>
+  </data>
+  <data name="InstallerPreparingDirectDownload" xml:space="preserve">
+    <value>gyan.dev からのダウンロードを準備しています…</value>
+  </data>
+  <data name="InstallerInstallingWithWinget" xml:space="preserve">
+    <value>WinGet でインストールしています…</value>
+  </data>
+  <data name="InstallerDirectFallbackNoWinget" xml:space="preserve">
+    <value>WinGet を利用できません。代わりに FFmpeg を直接ダウンロードします。</value>
+  </data>
+  <data name="InstallerDirectFallbackFailedWinget" xml:space="preserve">
+    <value>WinGet でのインストールに失敗しました。代わりに FFmpeg を直接ダウンロードします。</value>
+  </data>
+  <data name="InstallerDirectDownloadLocation" xml:space="preserve">
+    <value>gyan.dev からダウンロードしたファイルはユーザーデータフォルダーにインストールされます。PATH は変更されません。</value>
+  </data>
+  <data name="InstallerCheckingAfterInstall" xml:space="preserve">
+    <value>インストール後のコンポーネントを確認しています…</value>
+  </data>
+  <data name="InstallerVerificationFailed" xml:space="preserve">
+    <value>インストール後の確認で、両方のツールの動作を確認できませんでした。再確認するか、パスを手動で指定してください。</value>
+  </data>
+  <data name="InstallerInstallCancelled" xml:space="preserve">
+    <value>インストールをキャンセルしました。再試行できます。</value>
+  </data>
+  <data name="InstallerCheckingTools" xml:space="preserve">
+    <value>ツールを確認しています…</value>
+  </data>
+  <data name="InstallerBuildSourceBoth" xml:space="preserve">
+    <value>FFmpeg と FFprobe のバイナリの入手元：gyan.dev</value>
+  </data>
+  <data name="InstallerBuildSourceFfmpeg" xml:space="preserve">
+    <value>FFmpeg バイナリの入手元：gyan.dev</value>
+  </data>
+  <data name="InstallerBuildSourceFfprobe" xml:space="preserve">
+    <value>FFprobe バイナリの入手元：gyan.dev</value>
+  </data>
+  <data name="InstallerReadyVersions" xml:space="preserve">
+    <value>準備完了。FFmpeg {0}、FFprobe {1}。</value>
+  </data>
+  <data name="InstallerToolsRequired" xml:space="preserve">
+    <value>メディアファイルを扱うには FFmpeg と FFprobe が必要です。</value>
+  </data>
+  <data name="InstallerBothReady" xml:space="preserve">
+    <value>両方のツールを使用できます。</value>
+  </data>
+  <data name="InstallerMissingPrompt" xml:space="preserve">
+    <value>不足しているツールをインストールするか、パスを指定してください。</value>
+  </data>
+  <data name="InstallerFoundVersion" xml:space="preserve">
+    <value>検出済み · {0}</value>
+  </data>
+  <data name="InstallerNotFound" xml:space="preserve">
+    <value>見つかりません</value>
+  </data>
+  <data name="InstallerError" xml:space="preserve">
+    <value>エラー</value>
+  </data>
+  <data name="InstallerCheckingBrief" xml:space="preserve">
+    <value>確認中…</value>
+  </data>
+  <data name="ToolsSavedPathsReadFailed" xml:space="preserve">
+    <value>保存済みのパスを読み取れませんでした。ユーザー設定ファイルを確認してください。</value>
+  </data>
+  <data name="ToolsFileNotFound" xml:space="preserve">
+    <value>ファイルが見つかりません。</value>
+  </data>
+  <data name="ToolsFileNotFoundPath" xml:space="preserve">
+    <value>ファイルが見つかりません：{0}</value>
+  </data>
+  <data name="ToolsRecoveredPathsSaveFailed" xml:space="preserve">
+    <value>動作するツールが見つかりましたが、パスを保存できませんでした。ユーザー設定へのアクセス権を確認してください。</value>
+  </data>
+  <data name="ToolsManualPathSaveFailed" xml:space="preserve">
+    <value>ツールは動作していますが、パスを保存できませんでした。ユーザー設定へのアクセス権を確認してください。</value>
+  </data>
+  <data name="ToolsWingetOption" xml:space="preserve">
+    <value>WinGet で Gyan.FFmpeg パッケージをインストールできます。</value>
+  </data>
+  <data name="ToolsWingetSourceFallback" xml:space="preserve">
+    <value>WinGet のソースが応答しませんでした。代わりに gyan.dev からダウンロードできます。</value>
+  </data>
+  <data name="ToolsNoWingetFallback" xml:space="preserve">
+    <value>WinGet を利用できません。代わりに gyan.dev からダウンロードできます。</value>
+  </data>
+  <data name="ToolsInstallSourcesUnavailable" xml:space="preserve">
+    <value>インストール元に接続できませんでした。インターネット接続を確認して再試行してください</value>
+  </data>
+  <data name="ToolsMacBrewOption" xml:space="preserve">
+    <value>ターミナルで brew install ffmpeg を実行し、「再確認」を選択してください。このアプリは Homebrew を実行せず、macOS 用バイナリの直接ダウンロードにも対応していません。代わりに https://ffmpeg.org/download.html を参照してパスを手動で指定できます。</value>
+  </data>
+  <data name="ToolsMacNoBrewOption" xml:space="preserve">
+    <value>Homebrew が見つかりません。https://brew.sh からインストールして brew install ffmpeg を実行するか、パスを手動で指定してください。macOS 用バイナリの自動ダウンロードには対応していません。</value>
+  </data>
+  <data name="ToolsLinuxManagerOption" xml:space="preserve">
+    <value>ターミナルで {0} を実行し、「再確認」を選択してください。パッケージの有無はディストリビューションのリポジトリによって異なります。利用できない場合は https://ffmpeg.org/download.html を参照するか、パスを手動で指定してください。Linux 共通の直接ダウンロードはありません。</value>
+  </data>
+  <data name="ToolsLinuxNoManagerOption" xml:space="preserve">
+    <value>対応するパッケージマネージャーが見つかりません。https://ffmpeg.org/download.html でディストリビューションとアーキテクチャに適したパッケージを選択し、パスを手動で指定してください。Linux 共通の直接ダウンロードはありません。</value>
+  </data>
+  <data name="ToolsManualInstallOption" xml:space="preserve">
+    <value>FFmpeg を手動でインストールし、「再確認」を選択してください。</value>
+  </data>
+  <data name="ToolsAlreadyInstalled" xml:space="preserve">
+    <value>FFmpeg と FFprobe はすでに使用可能で、正常に動作しています。再インストールは不要です。</value>
+  </data>
+  <data name="ToolsWingetUnavailable" xml:space="preserve">
+    <value>WinGet を利用できません。</value>
+  </data>
+  <data name="ToolsVerifiedReady" xml:space="preserve">
+    <value>FFmpeg と FFprobe の動作を確認しました。使用できます。</value>
+  </data>
+  <data name="ToolsWingetExitFailure" xml:space="preserve">
+    <value>WinGet は FFmpeg をインストールできませんでした（終了コード {0}）。</value>
+  </data>
+  <data name="ToolsWingetMissingAfterInstall" xml:space="preserve">
+    <value>WinGet は終了しましたが、両方の正常なツールが見つかりませんでした。アプリを再起動してから再確認できます。</value>
+  </data>
+  <data name="ToolsWingetTimeout" xml:space="preserve">
+    <value>WinGet がタイムアウトしました。再確認してください。</value>
+  </data>
+  <data name="ToolsWingetInstallFailed" xml:space="preserve">
+    <value>WinGet によるインストールを完了できませんでした。アクセス権を確認するか、代替手段を試してください。</value>
+  </data>
+  <data name="ToolsDirectDownloadAdvice" xml:space="preserve">
+    <value> ユーザーデータフォルダーに gyan.dev からダウンロードする代替手段があります。PATH は変更されません。</value>
+  </data>
+  <data name="ToolsFailureWithAdvice" xml:space="preserve">
+    <value>{0}{1}</value>
+  </data>
+  <data name="ToolsManualArchitectureAdvice" xml:space="preserve">
+    <value> 直接ダウンロードに対応しているのは Windows 10/11 x64 のみです。このアーキテクチャに対応したツールを手動で指定してください：https://ffmpeg.org/download.html。</value>
+  </data>
+  <data name="ToolsExecutableExitFailure" xml:space="preserve">
+    <value>{0}：実行に失敗しました（終了コード {1}）。</value>
+  </data>
+  <data name="ToolsWrongExecutable" xml:space="preserve">
+    <value>{0}：実行ファイルが正しくありません。-version の応答から想定したツールを識別できません。</value>
+  </data>
+  <data name="ToolsVersionTimeout" xml:space="preserve">
+    <value>{0}：5 秒以内に応答がありませんでした。</value>
+  </data>
+  <data name="ToolsLaunchFailed" xml:space="preserve">
+    <value>{0}：起動できませんでした。ファイルのアクセス権と互換性を確認してください。</value>
+  </data>
+  <data name="ToolsDirectDownloadWindowsOnly" xml:space="preserve">
+    <value>直接ダウンロードを利用できるのは Windows 10/11 x64 のみです。対応するツールを手動で指定してください。</value>
+  </data>
+  <data name="ToolsAlreadyDownloaded" xml:space="preserve">
+    <value>FFmpeg と FFprobe はすでに使用可能で、正常に動作しています。再ダウンロードは不要です。</value>
+  </data>
+  <data name="ToolsDownloadingChecksum" xml:space="preserve">
+    <value>gyan.dev からチェックサムをダウンロードしています…</value>
+  </data>
+  <data name="ToolsDownloadingArchive" xml:space="preserve">
+    <value>gyan.dev から FFmpeg と FFprobe をダウンロードしています…</value>
+  </data>
+  <data name="ToolsCheckingChecksum" xml:space="preserve">
+    <value>SHA-256 チェックサムを検証しています…</value>
+  </data>
+  <data name="ToolsExtractingArchive" xml:space="preserve">
+    <value>アーカイブを安全に展開しています…</value>
+  </data>
+  <data name="ToolsCheckingDownloadedExecutables" xml:space="preserve">
+    <value>インストールした FFmpeg と FFprobe の実行ファイルを確認しています…</value>
+  </data>
+  <data name="ToolsDownloadedReady" xml:space="preserve">
+    <value>FFmpeg と FFprobe はユーザーデータフォルダーにインストールされ、Track Extractor から使用できます。PATH に追加されていないため、ターミナルでは短いコマンド名で実行できません。</value>
+  </data>
+  <data name="ToolsDownloadTimeout" xml:space="preserve">
+    <value>ダウンロードまたはインストールが 20 分を超えてタイムアウトしました。接続を確認して再試行してください。</value>
+  </data>
+  <data name="ToolsDownloadHttpFailure" xml:space="preserve">
+    <value>ダウンロードサーバーは現在利用できません（HTTP {0}）。時間をおいて再試行してください。</value>
+  </data>
+  <data name="ToolsDownloadNetworkFailure" xml:space="preserve">
+    <value>ダウンロードサーバーに接続できないか、接続が切断されました。接続を確認して再試行してください。</value>
+  </data>
+  <data name="ToolsDownloadChecksumFailure" xml:space="preserve">
+    <value>アーカイブの SHA-256 チェックサムを検証できませんでした。ダウンロードしたファイルは実行していません。再ダウンロードしてください。</value>
+  </data>
+  <data name="ToolsDownloadArchiveFailure" xml:space="preserve">
+    <value>ダウンロードしたアーカイブが破損、不完全、または安全ではありません。ダウンロードしたファイルは実行していません。再ダウンロードしてください。</value>
+  </data>
+  <data name="ToolsDownloadWriteFailure" xml:space="preserve">
+    <value>ユーザーデータフォルダーに書き込めませんでした。空き容量とアクセス権を確認してください。</value>
+  </data>
+  <data name="ToolsDownloadComplete" xml:space="preserve">
+    <value>ダウンロード完了。</value>
+  </data>
+  <data name="ToolsDownloadProgressOf" xml:space="preserve">
+    <value>{1:F1} MB 中 {0:F1} MB をダウンロード</value>
+  </data>
+  <data name="ToolsDownloadProgress" xml:space="preserve">
+    <value>{0:F1} MB をダウンロード</value>
+  </data>
+  <data name="MainPath" xml:space="preserve">
+    <value>パス：</value>
+  </data>
+  <data name="MainAudioFormat" xml:space="preserve">
+    <value>音声形式</value>
+  </data>
+  <data name="MainColumnLanguage" xml:space="preserve">
+    <value>言語</value>
+  </data>
+  <data name="MainClose" xml:space="preserve">
+    <value>閉じる</value>
+  </data>
+  <data name="MainColumnDetails" xml:space="preserve">
+    <value>チャンネル / 解像度</value>
+  </data>
+  <data name="MainColumnBitrate" xml:space="preserve">
+    <value>ビットレート</value>
+  </data>
+  <data name="MainSaveLog" xml:space="preserve">
+    <value>ログを保存</value>
+  </data>
+  <data name="MainSaveFolder" xml:space="preserve">
+    <value>出力フォルダー</value>
+  </data>
+  <data name="MainClear" xml:space="preserve">
+    <value>クリア</value>
+  </data>
+  <data name="MainGroupLanguages" xml:space="preserve">
+    <value>言語別に分類（サブフォルダーを作成）</value>
+  </data>
+  <data name="MainColumnType" xml:space="preserve">
+    <value>種類</value>
+  </data>
+  <data name="MainSaveMetadata" xml:space="preserve">
+    <value>メタデータを保持</value>
+  </data>
+  <data name="MainSelectAll" xml:space="preserve">
+    <value>すべてのストリームを選択／選択解除</value>
+  </data>
+  <data name="MainColumnCodec" xml:space="preserve">
+    <value>コーデック</value>
+  </data>
+  <data name="MainSubtitleFormat" xml:space="preserve">
+    <value>字幕形式</value>
+  </data>
+  <data name="MainDropReplace" xml:space="preserve">
+    <value>別のファイルをここにドロップすると置き換えられます</value>
+  </data>
+  <data name="MainVideo" xml:space="preserve">
+    <value>映像：</value>
+  </data>
+  <data name="MainBrowse" xml:space="preserve">
+    <value>参照</value>
+  </data>
+  <data name="MainFileLoaded" xml:space="preserve">
+    <value>ファイルを読み込みました</value>
+  </data>
+  <data name="MainAudio" xml:space="preserve">
+    <value>音声：</value>
+  </data>
+  <data name="MainColumnStatus" xml:space="preserve">
+    <value>状態</value>
+  </data>
+  <data name="MainMinimize" xml:space="preserve">
+    <value>最小化</value>
+  </data>
+  <data name="MainFileInfo" xml:space="preserve">
+    <value>ファイル情報</value>
+  </data>
+  <data name="MainOpenFolder" xml:space="preserve">
+    <value>フォルダーを開く</value>
+  </data>
+  <data name="MainChooseFile" xml:space="preserve">
+    <value>ファイルを選択</value>
+  </data>
+  <data name="MainSubtitles" xml:space="preserve">
+    <value>字幕：</value>
+  </data>
+  <data name="MainColumnIndex" xml:space="preserve">
+    <value>インデックス</value>
+  </data>
+  <data name="MainFormat" xml:space="preserve">
+    <value>形式：</value>
+  </data>
+  <data name="MainExportSettings" xml:space="preserve">
+    <value>エクスポート設定</value>
+  </data>
+  <data name="MainEventLog" xml:space="preserve">
+    <value>イベントログ</value>
+  </data>
+  <data name="MainSourceFolder" xml:space="preserve">
+    <value>元ファイル名のフォルダーを作成</value>
+  </data>
+  <data name="MainDuration" xml:space="preserve">
+    <value>長さ：</value>
+  </data>
+  <data name="MainConfigure" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="MainVideoFormat" xml:space="preserve">
+    <value>映像形式</value>
+  </data>
+  <data name="MainMaximizeRestore" xml:space="preserve">
+    <value>最大化／元に戻す</value>
+  </data>
+  <data name="MainSize" xml:space="preserve">
+    <value>サイズ：</value>
+  </data>
+  <data name="MainDropFile" xml:space="preserve">
+    <value>ここに動画ファイルをドロップ</value>
+  </data>
+  <data name="MainChooseFolder" xml:space="preserve">
+    <value>フォルダーを選択</value>
+  </data>
+  <data name="MainStreamProperties" xml:space="preserve">
+    <value>プロパティ</value>
+  </data>
+  <data name="MainSourceFile" xml:space="preserve">
+    <value>元ファイル</value>
+  </data>
+  <data name="MainClearSelectedFile" xml:space="preserve">
+    <value>選択したファイルをクリア</value>
+  </data>
+  <data name="MainFutureAttachments" xml:space="preserve">
+    <value>MKV 添付ファイルの抽出 — 今後のバージョンで対応予定</value>
+  </data>
+  <data name="MainSupportedFormats" xml:space="preserve">
+    <value>対応形式：MP4、MKV、MOV、AVI、WebM など。</value>
+  </data>
+  <data name="MainNoFile" xml:space="preserve">
+    <value>ファイルが選択されていません</value>
+  </data>
+  <data name="MainSelectFolderAndTracks" xml:space="preserve">
+    <value>出力フォルダーとストリームを選択してください。</value>
+  </data>
+  <data name="MainTracksHeading" xml:space="preserve">
+    <value>検出されたメディアストリーム（{0}）</value>
+  </data>
+  <data name="MainSelectedCount" xml:space="preserve">
+    <value>選択済み：{0}</value>
+  </data>
+  <data name="MainProcess" xml:space="preserve">
+    <value>処理</value>
+  </data>
+  <data name="MainExtract" xml:space="preserve">
+    <value>抽出</value>
+  </data>
+  <data name="MainCheckingDependencies" xml:space="preserve">
+    <value>依存関係を確認しています…</value>
+  </data>
+  <data name="MainNeedTools" xml:space="preserve">
+    <value>FFmpeg と FFprobe が必要です</value>
+  </data>
+  <data name="MainAnalyzingFile" xml:space="preserve">
+    <value>ファイルを解析しています…</value>
+  </data>
+  <data name="MainProcessing" xml:space="preserve">
+    <value>処理しています…</value>
+  </data>
+  <data name="MainAnalysisError" xml:space="preserve">
+    <value>解析に失敗しました</value>
+  </data>
+  <data name="MainReady" xml:space="preserve">
+    <value>準備完了</value>
+  </data>
+  <data name="MainChooseOrDropFile" xml:space="preserve">
+    <value>ファイルを選択するか、左側の領域にドロップしてください</value>
+  </data>
+  <data name="MainBytesExact" xml:space="preserve">
+    <value>{0:N0} バイト</value>
+  </data>
+  <data name="MainSelectFileAndTracks" xml:space="preserve">
+    <value>ファイルとストリームを選択してください。</value>
+  </data>
+  <data name="MainStopBeforeFile" xml:space="preserve">
+    <value>実行中の抽出を停止または完了してください。</value>
+  </data>
+  <data name="MainInstallBeforeFile" xml:space="preserve">
+    <value>ファイルを選択する前に FFmpeg と FFprobe をインストールしてください。</value>
+  </data>
+  <data name="MainAnalyzing" xml:space="preserve">
+    <value>解析中</value>
+  </data>
+  <data name="MainDone" xml:space="preserve">
+    <value>完了</value>
+  </data>
+  <data name="MainAnalysisCancelled" xml:space="preserve">
+    <value>解析をキャンセルしました</value>
+  </data>
+  <data name="MainFileNotFound" xml:space="preserve">
+    <value>ファイルが見つかりません。別のファイルを選択してください。</value>
+  </data>
+  <data name="MainFileAccessDenied" xml:space="preserve">
+    <value>ファイルまたは FFprobe へのアクセスが拒否されました。</value>
+  </data>
+  <data name="MainProbeLaunchFailed" xml:space="preserve">
+    <value>FFprobe を起動できませんでした。依存関係を再確認してください。</value>
+  </data>
+  <data name="MainFileReadFailed" xml:space="preserve">
+    <value>ファイルを読み取れませんでした。アクセス権を確認して再試行してください。</value>
+  </data>
+  <data name="MainFileDamaged" xml:space="preserve">
+    <value>ファイルが破損しているか、対応していない可能性があります。</value>
+  </data>
+  <data name="MainInvalidOutputFolder" xml:space="preserve">
+    <value>出力フォルダーのパスが無効です。</value>
+  </data>
+  <data name="MainOutputFolderMissingChoose" xml:space="preserve">
+    <value>出力フォルダーが見つかりません。別のフォルダーを選択してください。</value>
+  </data>
+  <data name="MainOutputFolderSelected" xml:space="preserve">
+    <value>フォルダーを選択しました。同名のファイルには番号が付けられ、既存のファイルは保持されます。</value>
+  </data>
+  <data name="LogOutputFolderChanged" xml:space="preserve">
+    <value>出力フォルダーを変更しました。</value>
+  </data>
+  <data name="MainExportRequirements" xml:space="preserve">
+    <value>利用可能なストリームと出力フォルダーを選び、FFmpeg と FFprobe が使用可能であることを確認してください。</value>
+  </data>
+  <data name="MainPreparingExport" xml:space="preserve">
+    <value>処理を準備しています…</value>
+  </data>
+  <data name="MainStatusWithTime" xml:space="preserve">
+    <value>{0} 経過時間：{1}</value>
+  </data>
+  <data name="MainAwaitingExtraction" xml:space="preserve">
+    <value>抽出待ちです。</value>
+  </data>
+  <data name="MainGroupedProgress" xml:space="preserve">
+    <value>{0}（{3} 件中 {1}～{2} 件）</value>
+  </data>
+  <data name="MainStreamProgress" xml:space="preserve">
+    <value>ストリーム #{0}（{2} 件中 {1} 件）</value>
+  </data>
+  <data name="MainStatusWithTotalTime" xml:space="preserve">
+    <value>{0} 合計時間：{1}</value>
+  </data>
+  <data name="MainExportComplete" xml:space="preserve">
+    <value>選択したすべてのストリームの処理が完了しました。</value>
+  </data>
+  <data name="MainExportCancelled" xml:space="preserve">
+    <value>抽出を停止しました。完了したファイルは保持されています。</value>
+  </data>
+  <data name="MainExportPartial" xml:space="preserve">
+    <value>処理はエラーを伴って終了しました。完了したファイルは保持されています。</value>
+  </data>
+  <data name="MainExtractionCancelled" xml:space="preserve">
+    <value>抽出をキャンセルしました。</value>
+  </data>
+  <data name="MainExportStartFailed" xml:space="preserve">
+    <value>抽出を開始できませんでした。</value>
+  </data>
+  <data name="MainSourceMissing" xml:space="preserve">
+    <value>元ファイルが見つかりません。</value>
+  </data>
+  <data name="MainOutputFolderMissing" xml:space="preserve">
+    <value>出力フォルダーが見つかりません。</value>
+  </data>
+  <data name="MainOutputFolderAccessDenied" xml:space="preserve">
+    <value>出力フォルダーへのアクセスが拒否されました。</value>
+  </data>
+  <data name="MainExtractionError" xml:space="preserve">
+    <value>抽出に失敗しました。</value>
+  </data>
+  <data name="MainExportErrorAdvice" xml:space="preserve">
+    <value>抽出に失敗しました。ログを確認して再試行してください。</value>
+  </data>
+  <data name="MainEmptyStreams" xml:space="preserve">
+    <value>ファイルを追加するとストリームが表示されます。</value>
+  </data>
+  <data name="MainToolsCheckFailed" xml:space="preserve">
+    <value>ツールを確認できませんでした：{0}</value>
+  </data>
+  <data name="MainFormatMp4" xml:space="preserve">
+    <value>MP4 — 幅広い互換性</value>
+  </data>
+  <data name="MainFormatMkv" xml:space="preserve">
+    <value>MKV — 柔軟なコンテナー</value>
+  </data>
+  <data name="MainFormatMov" xml:space="preserve">
+    <value>MOV — QuickTime 動画</value>
+  </data>
+  <data name="MainFormatAvi" xml:space="preserve">
+    <value>AVI — 従来のコンテナー</value>
+  </data>
+  <data name="MainFormatWebm" xml:space="preserve">
+    <value>WebM — Web 向け動画</value>
+  </data>
+  <data name="MainFormatMp3" xml:space="preserve">
+    <value>MP3 — 高圧縮音声</value>
+  </data>
+  <data name="MainFormatWav" xml:space="preserve">
+    <value>WAV — 非圧縮音声</value>
+  </data>
+  <data name="MainFormatFlac" xml:space="preserve">
+    <value>FLAC — 可逆圧縮音声</value>
+  </data>
+  <data name="MainFormatAac" xml:space="preserve">
+    <value>AAC — 高圧縮音声</value>
+  </data>
+  <data name="MainFormatAc3" xml:space="preserve">
+    <value>AC3 — マルチチャンネル音声</value>
+  </data>
+  <data name="MainFormatOgg" xml:space="preserve">
+    <value>OGG — オープンコンテナー</value>
+  </data>
+  <data name="MainFormatOpus" xml:space="preserve">
+    <value>Opus — 高効率圧縮</value>
+  </data>
+  <data name="MainFormatSrt" xml:space="preserve">
+    <value>SRT — テキスト字幕</value>
+  </data>
+  <data name="MainFormatAss" xml:space="preserve">
+    <value>ASS — スタイル付き字幕</value>
+  </data>
+  <data name="MainFormatWebvtt" xml:space="preserve">
+    <value>WebVTT — Web 向け字幕</value>
+  </data>
+  <data name="MainOriginalSubtitles" xml:space="preserve">
+    <value>{0} — 元のテキスト字幕</value>
+  </data>
+  <data name="MainOriginalCompressedAudio" xml:space="preserve">
+    <value>{0} — 元の圧縮音声</value>
+  </data>
+  <data name="MainOriginalMultichannelAudio" xml:space="preserve">
+    <value>{0} — 元のマルチチャンネル音声</value>
+  </data>
+  <data name="MainOriginalAudio" xml:space="preserve">
+    <value>{0} — 元の音声</value>
+  </data>
+  <data name="MainOriginalVideo" xml:space="preserve">
+    <value>{0} — 元の映像；.{1} ファイル</value>
+  </data>
+  <data name="MainOriginalNoTranscode" xml:space="preserve">
+    <value>元の形式 — 再エンコードなし</value>
+  </data>
+  <data name="MainSourceFormatOriginal" xml:space="preserve">
+    <value>{0} — 元の形式</value>
+  </data>
+  <data name="MainSourceCustomFormat" xml:space="preserve"><value>{0} — 元の形式 — カスタム設定</value></data>
+  <data name="MainOriginalShort" xml:space="preserve">
+    <value>元の形式</value>
+  </data>
+  <data name="MainMixedFormatsOriginal" xml:space="preserve">
+    <value>混在形式 — 元の形式</value>
+  </data>
+  <data name="MainFormatsReadFailed" xml:space="preserve">
+    <value>FFmpeg の出力形式を読み取れませんでした。</value>
+  </data>
+  <data name="MainConversionUnavailable" xml:space="preserve">
+    <value>選択したストリームは変換できません。</value>
+  </data>
+  <data name="MainNoSuitableEncoder" xml:space="preserve">
+    <value>この形式に適したエンコーダーがありません。</value>
+  </data>
+  <data name="MainCustomFormat" xml:space="preserve">
+    <value>{0} — カスタム設定</value>
+  </data>
+  <data name="MainPickMediaFile" xml:space="preserve">
+    <value>メディアファイルを選択</value>
+  </data>
+  <data name="MainFilePickFailed" xml:space="preserve">
+    <value>ファイルを選択できませんでした。アクセス権を確認して再試行してください。</value>
+  </data>
+  <data name="MainDropOneLocalFile" xml:space="preserve">
+    <value>ローカルファイルを 1 つだけドロップしてください。</value>
+  </data>
+  <data name="MainDropOpenFailed" xml:space="preserve">
+    <value>ドロップしたファイルを開けませんでした。</value>
+  </data>
+  <data name="MainPickLocalFile" xml:space="preserve">
+    <value>ローカルファイルを選択してください。</value>
+  </data>
+  <data name="MainPickSaveFolder" xml:space="preserve">
+    <value>出力フォルダーを選択</value>
+  </data>
+  <data name="MainPickLocalFolder" xml:space="preserve">
+    <value>ローカルの出力フォルダーを選択してください。</value>
+  </data>
+  <data name="MainFolderPickFailed" xml:space="preserve">
+    <value>フォルダーを選択できませんでした。アクセス権を確認してください。</value>
+  </data>
+  <data name="MainResultFolderMissing" xml:space="preserve">
+    <value>結果フォルダーが見つかりません。既存のフォルダーを選択してください。</value>
+  </data>
+  <data name="MainResultFolderOpenFailed" xml:space="preserve">
+    <value>結果フォルダーを開けませんでした。アクセス権を確認してください。</value>
+  </data>
+  <data name="MainSizeGiB" xml:space="preserve">
+    <value>{0:0.##} GiB</value>
+  </data>
+  <data name="MainSizeMiB" xml:space="preserve">
+    <value>{0:0.##} MiB</value>
+  </data>
+  <data name="MainSizeKiB" xml:space="preserve">
+    <value>{0:0.##} KiB</value>
+  </data>
+  <data name="MainSizeBytes" xml:space="preserve">
+    <value>{0} バイト</value>
+  </data>
+  <data name="MainStreamSummary" xml:space="preserve">
+    <value>{0}（{1}）</value>
+  </data>
+  <data name="MainTrackOne" xml:space="preserve">
+    <value>ストリーム</value>
+  </data>
+  <data name="MainTrackFew" xml:space="preserve">
+    <value>ストリーム</value>
+  </data>
+  <data name="MainTrackMany" xml:space="preserve">
+    <value>ストリーム</value>
+  </data>
+  <data name="MainBitrateMbps" xml:space="preserve">
+    <value>{0:0.##} Mbps</value>
+  </data>
+  <data name="MainBitrateKbps" xml:space="preserve">
+    <value>{0:0.##} kbps</value>
+  </data>
+  <data name="MainBitrateBps" xml:space="preserve">
+    <value>{0} bps</value>
+  </data>
+  <data name="MainConversionAfterSetup" xml:space="preserve">
+    <value>設定後に変換できます。</value>
+  </data>
+  <data name="MainUnavailableReason" xml:space="preserve">
+    <value>使用できません：{0}</value>
+  </data>
+  <data name="MainNotSelected" xml:space="preserve">
+    <value>未選択</value>
+  </data>
+  <data name="MainModeExtract" xml:space="preserve">
+    <value>抽出</value>
+  </data>
+  <data name="MainModeConvert" xml:space="preserve">
+    <value>変換</value>
+  </data>
+  <data name="MainCopyPreview" xml:space="preserve">
+    <value>.{0} · ストリームコピー</value>
+  </data>
+  <data name="MainCopyFormatUnknown" xml:space="preserve">
+    <value>利用可能な抽出形式がありません</value>
+  </data>
+  <data name="MainConvertingTo" xml:space="preserve">
+    <value>{0}（{1}）に変換します。</value>
+  </data>
+  <data name="MainCopyingTo" xml:space="preserve">
+    <value>再エンコードせずに {0} にコピーします。</value>
+  </data>
+  <data name="MainTypeCover" xml:space="preserve">
+    <value>カバーアート</value>
+  </data>
+  <data name="MainTypeImage" xml:space="preserve">
+    <value>画像</value>
+  </data>
+  <data name="MainTypeAnimation" xml:space="preserve">
+    <value>アニメーション</value>
+  </data>
+  <data name="MainTypeVideo" xml:space="preserve">
+    <value>映像</value>
+  </data>
+  <data name="MainTypeAudio" xml:space="preserve">
+    <value>音声</value>
+  </data>
+  <data name="MainTypeSubtitle" xml:space="preserve">
+    <value>字幕</value>
+  </data>
+  <data name="MainTypeAttachment" xml:space="preserve">
+    <value>添付ファイル</value>
+  </data>
+  <data name="MainTypeOther" xml:space="preserve">
+    <value>その他</value>
+  </data>
+  <data name="MainMediaSummary" xml:space="preserve">
+    <value>{0}
+{1}
+サイズ：{2:N0} バイト；コンテナー：{3}；長さ：{4}；ビットレート：{5}
+映像：{6}；画像：{7}；アニメーション：{8}；音声：{9}；字幕：{10}；不明な映像ストリーム：{11}；ストリーム総数：{12}</value>
+  </data>
+  <data name="MainDescriptionResolutionUnknown" xml:space="preserve">
+    <value>解像度：—</value>
+  </data>
+  <data name="MainDescriptionFps" xml:space="preserve">
+    <value>{0:0.##} fps</value>
+  </data>
+  <data name="MainDescriptionFpsUnknown" xml:space="preserve">
+    <value>FPS：—</value>
+  </data>
+  <data name="MainDescriptionDuration" xml:space="preserve">
+    <value>長さ：{0}</value>
+  </data>
+  <data name="MainDescriptionChannels" xml:space="preserve">
+    <value>{0} チャンネル音声</value>
+  </data>
+  <data name="MainDescriptionChannelsUnknown" xml:space="preserve">
+    <value>チャンネル：—</value>
+  </data>
+  <data name="MainDescriptionSampleRate" xml:space="preserve">
+    <value>{0} Hz</value>
+  </data>
+  <data name="MainDescriptionSampleRateUnknown" xml:space="preserve">
+    <value>サンプリング周波数：—</value>
+  </data>
+  <data name="MainDescriptionText" xml:space="preserve">
+    <value>テキスト</value>
+  </data>
+  <data name="MainDescriptionGraphic" xml:space="preserve">
+    <value>ビットマップ</value>
+  </data>
+  <data name="MainDescriptionCover" xml:space="preserve">
+    <value>画像（カバーアート）</value>
+  </data>
+  <data name="MainDescriptionUnknownVisual" xml:space="preserve">
+    <value>不明な映像ストリーム</value>
+  </data>
+  <data name="MainDescriptionUnknownType" xml:space="preserve">
+    <value>不明な種類</value>
+  </data>
+  <data name="MainChannelOne" xml:space="preserve">
+    <value>チャンネル</value>
+  </data>
+  <data name="MainChannelFew" xml:space="preserve">
+    <value>チャンネル</value>
+  </data>
+  <data name="MainChannelMany" xml:space="preserve">
+    <value>チャンネル</value>
+  </data>
+  <data name="MainChannelsUnknown" xml:space="preserve">
+    <value>チャンネル：—</value>
+  </data>
+  <data name="MainSubtitleText" xml:space="preserve">
+    <value>テキスト</value>
+  </data>
+  <data name="MainSubtitleGraphic" xml:space="preserve">
+    <value>ビットマップ</value>
+  </data>
+  <data name="MainStatusUnavailable" xml:space="preserve">
+    <value>利用不可</value>
+  </data>
+  <data name="MainStatusExtracting" xml:space="preserve">
+    <value>抽出中</value>
+  </data>
+  <data name="MainStatusConverting" xml:space="preserve">
+    <value>変換中</value>
+  </data>
+  <data name="MainStatusExtracted" xml:space="preserve">
+    <value>抽出済み</value>
+  </data>
+  <data name="MainStatusConverted" xml:space="preserve">
+    <value>変換済み</value>
+  </data>
+  <data name="MainStatusCancelled" xml:space="preserve">
+    <value>キャンセル済み</value>
+  </data>
+  <data name="MainStatusConversionAvailable" xml:space="preserve">
+    <value>変換可能</value>
+  </data>
+  <data name="MainStatusAvailable" xml:space="preserve">
+    <value>利用可能</value>
+  </data>
+  <data name="MainStatusNeedsSetup" xml:space="preserve">
+    <value>設定が必要</value>
+  </data>
+  <data name="MainReasonNoStreamIndex" xml:space="preserve">
+    <value>FFprobe がストリームのインデックスを返しませんでした。</value>
+  </data>
+  <data name="MainReasonUnknownCodec" xml:space="preserve">
+    <value>コーデックが不明なため、安全にストリームコピーできる形式を判断できません。</value>
+  </data>
+  <data name="MainReasonAnimation" xml:space="preserve">
+    <value>現在、アニメーションは解析のみ可能です。抽出機能は別途追加されます。</value>
+  </data>
+  <data name="MainReasonUnknownVisual" xml:space="preserve">
+    <value>映像と静止画像を確実に判別できませんでした。</value>
+  </data>
+  <data name="MainReasonUnknownAttachmentFormat" xml:space="preserve">
+    <value>添付画像の形式がストリームコピーによる抽出に対応しているか確認できませんでした。</value>
+  </data>
+  <data name="MainReasonStandaloneImage" xml:space="preserve">
+    <value>これは独立した画像ファイルであり、メディアコンテナー内のストリームではありません。</value>
+  </data>
+  <data name="MainReasonUnsupportedStreamType" xml:space="preserve">
+    <value>この種類のストリームは現在、再エンコードなしでは抽出できません。</value>
+  </data>
+  <data name="MainReasonUnsupportedCodec" xml:space="preserve">
+    <value>コーデック {0} を別ファイルにコピーするための確認済みの方法がありません。</value>
+  </data>
+  <data name="MainProgressExtractingTo" xml:space="preserve">
+    <value>ストリーム #{0}：{1} に抽出中</value>
+  </data>
+  <data name="MainProgressConvertingTo" xml:space="preserve">
+    <value>ストリーム #{0}：{1} に変換中</value>
+  </data>
+  <data name="MainProgressFfmpegPosition" xml:space="preserve">
+    <value>ストリーム #{0}：FFmpeg の処理位置 {1}</value>
+  </data>
+  <data name="MainProgressStream" xml:space="preserve">
+    <value>ストリーム #{0}</value>
+  </data>
+  <data name="MainProgressWithPercent" xml:space="preserve">
+    <value>{0} · {1:0.#}%</value>
+  </data>
+  <data name="MainProgressAttachment" xml:space="preserve">
+    <value>ストリーム #{0}：Matroska 添付ファイルをコピー中、{1:P0}</value>
+  </data>
+  <data name="MainResultSaved" xml:space="preserve">
+    <value>保存済み：{0}；{1}；{2}</value>
+  </data>
+  <data name="MainResultCancelledAfter" xml:space="preserve">
+    <value>{0} 後に処理がキャンセルされました。</value>
+  </data>
+  <data name="MainResultCancelled" xml:space="preserve">
+    <value>処理がキャンセルされました。</value>
+  </data>
+  <data name="MainResultTimeout" xml:space="preserve">
+    <value>抽出が {0} 後にタイムアウトしました。</value>
+  </data>
+  <data name="MainResultOutputAccessDenied" xml:space="preserve">
+    <value>出力フォルダーまたはファイルへのアクセスが拒否されました。</value>
+  </data>
+  <data name="MainResultWriteFailed" xml:space="preserve">
+    <value>ファイルを書き込めませんでした。空き容量とアクセス権を確認してください。</value>
+  </data>
+  <data name="MainResultFfmpegLaunchFailed" xml:space="preserve">
+    <value>FFmpeg を起動できませんでした。依存関係を再確認してください。</value>
+  </data>
+  <data name="MainResultUnexpectedFailure" xml:space="preserve">
+    <value>ストリームを抽出できませんでした。経過時間：{0}。ログを確認して再試行してください。</value>
+  </data>
+  <data name="MainResultNotStartedCancelled" xml:space="preserve">
+    <value>操作がキャンセルされたため開始されませんでした。</value>
+  </data>
+  <data name="MainAllTracksExtracted" xml:space="preserve">
+    <value>すべてのストリームが抽出されました。</value>
+  </data>
+  <data name="MainProgressSharedPass" xml:space="preserve">
+    <value>ストリーム #{0}：FFmpeg の共有処理</value>
+  </data>
+  <data name="MainProgressStreams" xml:space="preserve">
+    <value>ストリーム {0}</value>
+  </data>
+  <data name="MainResultSaveStreamFailed" xml:space="preserve">
+    <value>ストリーム #{0} を保存できませんでした。経過時間：{1}。</value>
+  </data>
+  <data name="MainResultExtractionCancelledAfter" xml:space="preserve">
+    <value>{0} 後に抽出がキャンセルされました。</value>
+  </data>
+  <data name="MainResultFfmpegTimeout" xml:space="preserve">
+    <value>FFmpeg が {0} 後にタイムアウトしました。</value>
+  </data>
+  <data name="MainResultSizeGb" xml:space="preserve">
+    <value>{0:0.##} GB</value>
+  </data>
+  <data name="MainResultSizeMb" xml:space="preserve">
+    <value>{0:0.##} MB</value>
+  </data>
+  <data name="MainResultSizeKb" xml:space="preserve">
+    <value>{0:0.##} KB</value>
+  </data>
+  <data name="MainResultFfmpegExitCode" xml:space="preserve">
+    <value>FFmpeg が終了コード {0} で終了しました。</value>
+  </data>
+  <data name="MainResultTechnicalDetail" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="MainResultEmptyOutput" xml:space="preserve">
+    <value>内容のあるストリームファイルは作成されませんでした。</value>
+  </data>
+  <data name="MainResultFailureWithTime" xml:space="preserve">
+    <value>{0} 経過時間：{1}。</value>
+  </data>
+  <data name="MainValidationUnsupportedType" xml:space="preserve">
+    <value>選択した形式は、この種類のストリームに対応していません。</value>
+  </data>
+  <data name="MainValidationInvalidName" xml:space="preserve">
+    <value>出力形式またはエンコーダー名が無効です。</value>
+  </data>
+  <data name="MainValidationGraphicSubtitle" xml:space="preserve">
+    <value>ビットマップ字幕をテキストに変換するには OCR が必要です。</value>
+  </data>
+  <data name="MainValidationSubtitleEncoder" xml:space="preserve">
+    <value>選択したエンコーダーではテキスト字幕を生成できません。</value>
+  </data>
+  <data name="MainValidationOutOfRange" xml:space="preserve">
+    <value>変換パラメーターが許容範囲外です。</value>
+  </data>
+  <data name="MainValidationWrongTypeParameters" xml:space="preserve">
+    <value>これらのパラメーターは、この種類のストリームには適用されません。</value>
+  </data>
+  <data name="ConversionOriginalTextStream" xml:space="preserve"><value>LRC テキストストリーム</value></data>
+  <data name="ConversionSourceEncoder" xml:space="preserve"><value>{0} — 元の形式</value></data>
+  <data name="ConversionCopyIncompatible" xml:space="preserve"><value>元のコーデックを選択したコンテナーにコピーできません。</value></data>
+  <data name="MainValidationUnsupportedOutputFormat" xml:space="preserve">
+    <value>出力形式は、この種類のストリームに対応していません。</value>
+  </data>
+  <data name="MainValidationProbeFileFailed" xml:space="preserve">
+    <value>エンコーダー {0} は FFmpeg の一覧にありますが、{1} 形式のテストファイルを作成できませんでした（FFmpeg の終了コード：{2}）。</value>
+  </data>
+  <data name="MainValidationEncoderTimeout" xml:space="preserve">
+    <value>エンコーダー {0} の確認がタイムアウトしました。</value>
+  </data>
+  <data name="MainValidationEncoderCheckFailed" xml:space="preserve">
+    <value>形式 {1} でエンコーダー {0} を確認できませんでした。</value>
+  </data>
+  <data name="ConversionBitrate" xml:space="preserve">
+    <value>ビットレート（kbps）</value>
+  </data>
+  <data name="ConversionVideoOptions" xml:space="preserve">
+    <value>映像パラメーター</value>
+  </data>
+  <data name="ConversionWidth" xml:space="preserve">
+    <value>幅（px）</value>
+  </data>
+  <data name="ConversionFindHardware" xml:space="preserve">
+    <value>ハードウェアエンコーダー</value>
+  </data>
+  <data name="ConversionFindCompatible" xml:space="preserve">
+    <value>他のエンコーダーを検索</value>
+  </data>
+  <data name="ConversionChannels" xml:space="preserve">
+    <value>チャンネル</value>
+  </data>
+  <data name="ConversionAutomatic" xml:space="preserve">
+    <value>自動</value>
+  </data>
+  <data name="ConversionCancel" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="ConversionOutputFormat" xml:space="preserve">
+    <value>出力コンテナー / 形式</value>
+  </data>
+  <data name="ConversionAudioOptions" xml:space="preserve">
+    <value>音声パラメーター</value>
+  </data>
+  <data name="ConversionFrameRate" xml:space="preserve">
+    <value>フレームレート（fps）</value>
+  </data>
+  <data name="ConversionWindowTitle" xml:space="preserve">
+    <value>詳細な変換設定</value>
+  </data>
+  <data name="ConversionCrf" xml:space="preserve">
+    <value>品質 / CRF</value>
+  </data>
+  <data name="ConversionHeight" xml:space="preserve">
+    <value>高さ（px）</value>
+  </data>
+  <data name="ConversionApply" xml:space="preserve">
+    <value>適用</value>
+  </data>
+  <data name="ConversionEncoder" xml:space="preserve">
+    <value>エンコーダー</value>
+  </data>
+  <data name="ConversionSampleRate" xml:space="preserve">
+    <value>サンプリング周波数（Hz）</value>
+  </data>
+  <data name="ConversionQuality" xml:space="preserve">
+    <value>品質（0～10）</value>
+  </data>
+  <data name="ConversionSeparateFilesHint" xml:space="preserve">
+    <value>各ストリームは個別のファイルに保存されます。空欄にすると「自動」が使用されます。</value>
+  </data>
+  <data name="ConversionHeadingVideo" xml:space="preserve">
+    <value>映像の変換設定</value>
+  </data>
+  <data name="ConversionHeadingAudio" xml:space="preserve">
+    <value>音声の変換設定</value>
+  </data>
+  <data name="ConversionHeadingSubtitles" xml:space="preserve">
+    <value>字幕の変換設定</value>
+  </data>
+  <data name="ConversionCopyEncoderDescription" xml:space="preserve">
+    <value>再エンコードせずにコピー</value>
+  </data>
+  <data name="ConversionOriginalCopyCodec" xml:space="preserve">
+    <value>元の形式（再エンコードせずにコピー）— {0}</value>
+  </data>
+  <data name="ConversionForceReencode" xml:space="preserve">
+    <value>再エンコードを強制</value>
+  </data>
+  <data name="ConversionCopyNote" xml:space="preserve">
+    <value>元のストリームを再エンコードせずにコピーします。</value>
+  </data>
+  <data name="ConversionOtherEncodersHint" xml:space="preserve">
+    <value>選択した形式に対して、追加のエンコーダーを確認できます。</value>
+  </data>
+  <data name="ConversionCheckingAdditional" xml:space="preserve">
+    <value>追加のエンコーダーを確認しています…</value>
+  </data>
+  <data name="ConversionConfirmedCompatibleCount" xml:space="preserve">
+    <value>互換性を確認したエンコーダー：{0}。</value>
+  </data>
+  <data name="ConversionAdditionalCancelled" xml:space="preserve">
+    <value>エンコーダーの確認をキャンセルしました。</value>
+  </data>
+  <data name="ConversionAdditionalFailed" xml:space="preserve">
+    <value>追加のエンコーダーを確認できませんでした。</value>
+  </data>
+  <data name="ConversionCheckingHardware" xml:space="preserve">
+    <value>ハードウェアエンコーダーを確認しています…</value>
+  </data>
+  <data name="ConversionHardwareSearchFailedDetails" xml:space="preserve">
+    <value>ハードウェアエンコーダーの確認を完了できませんでした。詳細は診断ログを参照してください。</value>
+  </data>
+  <data name="ConversionHardwareFoundCount" xml:space="preserve">
+    <value>利用可能なハードウェアエンコーダー：{0}。</value>
+  </data>
+  <data name="ConversionHardwareNotFound" xml:space="preserve">
+    <value>利用可能なハードウェアエンコーダーが見つかりませんでした。</value>
+  </data>
+  <data name="ConversionHardwareCancelled" xml:space="preserve">
+    <value>ハードウェアエンコーダーの確認をキャンセルしました。</value>
+  </data>
+  <data name="ConversionHardwareFailed" xml:space="preserve">
+    <value>ハードウェアエンコーダーを確認できませんでした。</value>
+  </data>
+  <data name="ConversionSelectFormatAndEncoder" xml:space="preserve">
+    <value>出力形式とエンコーダーを選択してください。</value>
+  </data>
+  <data name="ConversionCheckingCompatibility" xml:space="preserve">
+    <value>エンコーダーと出力形式の互換性を確認しています…</value>
+  </data>
+  <data name="ConversionNumbersOrEmpty" xml:space="preserve">
+    <value>数値を入力するか、欄を空のままにしてください。</value>
+  </data>
+  <data name="ConversionNumberTooLarge" xml:space="preserve">
+    <value>数値が大きすぎます。</value>
+  </data>
+  <data name="ConversionCheckCancelled" xml:space="preserve">
+    <value>確認をキャンセルしました。</value>
+  </data>
+  <data name="ConversionCheckParametersFailed" xml:space="preserve">
+    <value>パラメーターを確認できませんでした。FFmpeg が使用可能であることを確認してください。</value>
+  </data>
+  <data name="StreamPropertiesTitle" xml:space="preserve">
+    <value>プロパティ</value>
+  </data>
+  <data name="StreamPropertiesHeading" xml:space="preserve"><value>ストリームのプロパティ</value></data>
+  <data name="StreamHeaderVideo" xml:space="preserve"><value>映像ストリーム</value></data>
+  <data name="StreamHeaderAudio" xml:space="preserve"><value>音声ストリーム</value></data>
+  <data name="StreamHeaderSubtitle" xml:space="preserve"><value>字幕</value></data>
+  <data name="StreamHeaderImage" xml:space="preserve"><value>画像</value></data>
+  <data name="StreamHeaderCover" xml:space="preserve"><value>画像（カバーアート）</value></data>
+  <data name="StreamHeaderAnimation" xml:space="preserve"><value>アニメーション</value></data>
+  <data name="StreamHeaderAttachment" xml:space="preserve"><value>添付ファイル</value></data>
+  <data name="StreamHeaderOther" xml:space="preserve"><value>その他のストリーム</value></data>
+  <data name="StreamSummaryChannels" xml:space="preserve"><value>チャンネル：{0}</value></data>
+  <data name="StreamSectionBasic" xml:space="preserve"><value>基本情報</value></data>
+  <data name="StreamSectionAudio" xml:space="preserve"><value>音声プロパティ</value></data>
+  <data name="StreamSectionVideo" xml:space="preserve"><value>映像プロパティ</value></data>
+  <data name="StreamSectionImage" xml:space="preserve"><value>画像プロパティ</value></data>
+  <data name="StreamSectionTiming" xml:space="preserve"><value>時間情報</value></data>
+  <data name="StreamSectionIdentification" xml:space="preserve"><value>識別情報</value></data>
+  <data name="StreamSectionOther" xml:space="preserve"><value>その他のプロパティ</value></data>
+  <data name="StreamNotSpecified" xml:space="preserve">
+    <value>未指定</value>
+  </data>
+  <data name="StreamUnknownLanguage" xml:space="preserve">
+    <value>不明な言語</value>
+  </data>
+  <data name="StreamSourceIndex" xml:space="preserve">
+    <value>元のインデックス</value>
+  </data>
+  <data name="StreamTitle" xml:space="preserve">
+    <value>タイトル</value>
+  </data>
+  <data name="StreamDuration" xml:space="preserve">
+    <value>長さ</value>
+  </data>
+  <data name="StreamBitRateValue" xml:space="preserve">
+    <value>{0:N0} bps</value>
+  </data>
+  <data name="StreamResolution" xml:space="preserve">
+    <value>解像度</value>
+  </data>
+  <data name="StreamResolutionValue" xml:space="preserve">
+    <value>{0} × {1}</value>
+  </data>
+  <data name="StreamFrameRate" xml:space="preserve">
+    <value>フレームレート</value>
+  </data>
+  <data name="StreamFrameRateValue" xml:space="preserve">
+    <value>{0:0.###} fps</value>
+  </data>
+  <data name="StreamProfile" xml:space="preserve">
+    <value>プロファイル</value>
+  </data>
+  <data name="StreamPixelFormat" xml:space="preserve">
+    <value>ピクセル形式</value>
+  </data>
+  <data name="StreamSampleRate" xml:space="preserve">
+    <value>サンプリング周波数</value>
+  </data>
+  <data name="StreamSampleRateValue" xml:space="preserve">
+    <value>{0:N0} Hz</value>
+  </data>
+  <data name="StreamChannelLayout" xml:space="preserve">
+    <value>チャンネル配置</value>
+  </data>
+  <data name="StreamFrameCount" xml:space="preserve">
+    <value>フレーム数</value>
+  </data>
+  <data name="StreamFrameCountValue" xml:space="preserve">
+    <value>{0:N0}</value>
+  </data>
+  <data name="StreamImageFormat" xml:space="preserve">
+    <value>画像形式</value>
+  </data>
+  <data name="StreamTag" xml:space="preserve">
+    <value>タグ：{0}</value>
+  </data>
+  <data name="StreamFlag" xml:space="preserve">
+    <value>フラグ：{0}</value>
+  </data>
+  <data name="StreamYes" xml:space="preserve">
+    <value>はい</value>
+  </data>
+  <data name="StreamNo" xml:space="preserve">
+    <value>いいえ</value>
+  </data>
+  <data name="StreamCodecLongName" xml:space="preserve">
+    <value>コーデックの正式名称</value>
+  </data>
+  <data name="StreamCodecTagString" xml:space="preserve">
+    <value>コーデック識別子</value>
+  </data>
+  <data name="StreamCodecTag" xml:space="preserve">
+    <value>コーデックタグ</value>
+  </data>
+  <data name="StreamLevel" xml:space="preserve">
+    <value>レベル</value>
+  </data>
+  <data name="StreamSampleFormat" xml:space="preserve">
+    <value>サンプル形式</value>
+  </data>
+  <data name="StreamDisplayAspectRatio" xml:space="preserve">
+    <value>表示アスペクト比</value>
+  </data>
+  <data name="StreamSampleAspectRatio" xml:space="preserve">
+    <value>ピクセルアスペクト比</value>
+  </data>
+  <data name="StreamColorRange" xml:space="preserve">
+    <value>色範囲</value>
+  </data>
+  <data name="StreamColorSpace" xml:space="preserve">
+    <value>色空間</value>
+  </data>
+  <data name="StreamColorTransfer" xml:space="preserve">
+    <value>伝達特性</value>
+  </data>
+  <data name="StreamColorPrimaries" xml:space="preserve">
+    <value>原色</value>
+  </data>
+  <data name="DiagnosticPreviewTitle" xml:space="preserve">
+    <value>診断レポート</value>
+  </data>
+  <data name="DiagnosticPreviewSave" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="DiagnosticPreviewSaveTitle" xml:space="preserve">
+    <value>診断レポートを保存</value>
+  </data>
+  <data name="DiagnosticPreviewSaveFailed" xml:space="preserve">
+    <value>ログを保存できませんでした。選択したファイルへのアクセス権を確認してください。</value>
+  </data>
+  <data name="DiagnosticPreviewReadFailed" xml:space="preserve">
+    <value>診断ログを読み取れませんでした。</value>
+  </data>
+  <data name="LogCheckingTool" xml:space="preserve">
+    <value>{0} を確認しています…</value>
+  </data>
+  <data name="LogToolUnavailable" xml:space="preserve">
+    <value>{0} が見つからないか、正常に動作していません。パスを確認するか、設定からインストールしてください。</value>
+  </data>
+  <data name="LogToolReadyVersion" xml:space="preserve">
+    <value>{0} {1} が見つかり、使用できます。</value>
+  </data>
+  <data name="LogToolReady" xml:space="preserve">
+    <value>{0} が見つかり、使用できます。</value>
+  </data>
+  <data name="LogAnalysisCompleteCount" xml:space="preserve">
+    <value>解析完了。検出されたメディアストリーム：{0}</value>
+  </data>
+  <data name="LogAnalysisComplete" xml:space="preserve">
+    <value>解析が完了しました。</value>
+  </data>
+  <data name="LogAnalysisStarted" xml:space="preserve">
+    <value>ファイルの解析を開始しました。</value>
+  </data>
+  <data name="LogAnalysisTimeout" xml:space="preserve">
+    <value>FFprobe が時間内に応答しませんでした。ファイルを再解析してください。</value>
+  </data>
+  <data name="LogAnalysisCancelled" xml:space="preserve">
+    <value>ファイルの解析をキャンセルしました。必要に応じてファイルを開き直してください。</value>
+  </data>
+  <data name="LogAnalysisFailed" xml:space="preserve">
+    <value>ファイルを解析できませんでした。</value>
+  </data>
+  <data name="LogPreviewReady" xml:space="preserve">
+    <value>プレビューの準備ができました。</value>
+  </data>
+  <data name="LogPreviewUnavailable" xml:space="preserve">
+    <value>プレビュー画像を生成できませんでした。</value>
+  </data>
+  <data name="LogPreviewCancelled" xml:space="preserve">
+    <value>前のプレビューをキャンセルしました。</value>
+  </data>
+  <data name="LogProcessingStartedCount" xml:space="preserve">
+    <value>処理を開始しました。ストリーム：{0}。</value>
+  </data>
+  <data name="LogProcessingStarted" xml:space="preserve">
+    <value>処理を開始しました。</value>
+  </data>
+  <data name="LogConvertingStreamFormat" xml:space="preserve">
+    <value>ストリーム #{0} から {1} への変換を開始しました。</value>
+  </data>
+  <data name="LogExtractingStreamFormat" xml:space="preserve">
+    <value>ストリーム #{0} の {1} 形式での抽出を開始しました。</value>
+  </data>
+  <data name="LogConvertingStream" xml:space="preserve">
+    <value>ストリーム #{0} の変換を開始しました。</value>
+  </data>
+  <data name="LogExtractingStream" xml:space="preserve">
+    <value>ストリーム #{0} の抽出を開始しました。</value>
+  </data>
+  <data name="LogStreamStarted" xml:space="preserve">
+    <value>ストリームの処理を開始しました。</value>
+  </data>
+  <data name="LogStreamConverted" xml:space="preserve">
+    <value>ストリーム #{0} を変換しました{1}{2}。</value>
+  </data>
+  <data name="LogStreamExtracted" xml:space="preserve">
+    <value>ストリーム #{0} を抽出しました{1}{2}。</value>
+  </data>
+  <data name="LogProcessingComplete" xml:space="preserve">
+    <value>処理が完了しました。</value>
+  </data>
+  <data name="LogProcessingCancelled" xml:space="preserve">
+    <value>処理を停止しました。未完了のストリームは再処理できます。</value>
+  </data>
+  <data name="LogProcessingErrors" xml:space="preserve">
+    <value>処理はエラーを伴って終了しました。</value>
+  </data>
+  <data name="LogErrorOutputAccess" xml:space="preserve">
+    <value>出力フォルダーへのアクセスが拒否されました</value>
+  </data>
+  <data name="LogErrorWrite" xml:space="preserve">
+    <value>ファイルの書き込みに失敗しました</value>
+  </data>
+  <data name="LogErrorFfmpegLaunch" xml:space="preserve">
+    <value>FFmpeg を起動できませんでした</value>
+  </data>
+  <data name="LogStreamFailed" xml:space="preserve">
+    <value>ストリーム #{0} を抽出できませんでした：{1}。</value>
+  </data>
+  <data name="LogStreamConversionFailed" xml:space="preserve">
+    <value>ストリーム #{0} を変換できませんでした：{1}。</value>
+  </data>
+  <data name="LogStreamCancelled" xml:space="preserve">
+    <value>ストリーム #{0} の処理をキャンセルしました。必要に応じて再実行してください。</value>
+  </data>
+  <data name="LogStreamTimeout" xml:space="preserve">
+    <value>ストリーム #{0} の処理がタイムアウトしました。</value>
+  </data>
+  <data name="MainResultAttachmentFailed" xml:space="preserve">
+    <value>Matroska 添付ファイルを読み取れませんでした。詳細は診断レポートを参照してください。</value>
+  </data>
+  <data name="OutputLanguageUnspecified" xml:space="preserve">
+    <value>言語未指定</value>
+  </data>
+  <data name="LogCompatibleFoundCount" xml:space="preserve">
+    <value>互換性のあるエンコーダーが見つかりました：{0}。</value>
+  </data>
+  <data name="LogHardwareSearchStarted" xml:space="preserve">
+    <value>ハードウェアエンコーダーを検索しています。</value>
+  </data>
+  <data name="LogCompatibleSearchStarted" xml:space="preserve">
+    <value>互換性のあるエンコーダーを検索しています。</value>
+  </data>
+  <data name="LogCompatibleNotFound" xml:space="preserve">
+    <value>互換性のあるエンコーダーが見つかりませんでした。</value>
+  </data>
+  <data name="LogHardwareSearchCancelled" xml:space="preserve">
+    <value>ハードウェアエンコーダーの検索をキャンセルしました。必要に応じて再検索してください。</value>
+  </data>
+  <data name="LogCompatibleSearchCancelled" xml:space="preserve">
+    <value>互換性のあるエンコーダーの検索をキャンセルしました。必要に応じて再検索してください。</value>
+  </data>
+  <data name="LogHardwareSearchFailed" xml:space="preserve">
+    <value>ハードウェアエンコーダーの検索を完了できませんでした。</value>
+  </data>
+  <data name="LogCompatibleSearchFailed" xml:space="preserve">
+    <value>互換性のあるエンコーダーの検索を完了できませんでした。</value>
+  </data>
+  <data name="LogSearchStale" xml:space="preserve">
+    <value>出力形式が変更されたため、検索結果は適用されませんでした。新しい形式で再検索してください。</value>
+  </data>
+  <data name="GuideWindowTitle" xml:space="preserve">
+    <value>メディア形式ガイド</value>
+  </data>
+  <data name="GuideSearchPlaceholder" xml:space="preserve">
+    <value>メディア形式ガイドを検索</value>
+  </data>
+  <data name="GuideClearSearch" xml:space="preserve">
+    <value>クリア</value>
+  </data>
+  <data name="GuidePrevious" xml:space="preserve">
+    <value>前へ</value>
+  </data>
+  <data name="GuideNext" xml:space="preserve">
+    <value>次へ</value>
+  </data>
+  <data name="GuideContents" xml:space="preserve">
+    <value>目次</value>
+  </data>
+  <data name="GuideSearchResults" xml:space="preserve">
+    <value>検索結果</value>
+  </data>
+  <data name="GuideNoResults" xml:space="preserve">
+    <value>一致する項目がありません</value>
+  </data>
+  <data name="GuideArticleCount" xml:space="preserve">
+    <value>記事：{0}</value>
+  </data>
+  <data name="GuideNavigationUnavailable" xml:space="preserve">
+    <value>ナビゲーションを利用できません</value>
+  </data>
+  <data name="GuideLoadFailed" xml:space="preserve">
+    <value>メディア形式ガイドを読み込めませんでした：{0}</value>
+  </data>
+  <data name="GuideRussianOriginalNotice" xml:space="preserve">
+    <value>メディア形式ガイドは選択した言語にまだ翻訳されていません。ロシア語の原文を表示しています。</value>
+  </data>
+  <data name="ViewNotFound" xml:space="preserve">
+    <value>ビューが見つかりません：{0}</value>
+  </data>
+  <data name="MainImageFormat" xml:space="preserve"><value>画像形式</value></data>
+  <data name="MainAnimationFormat" xml:space="preserve"><value>アニメーション形式</value></data>
+  <data name="MainOriginalImage" xml:space="preserve"><value>{0} — 元の画像（再エンコードなし）；.{1} ファイル</value></data>
+  <data name="MainOriginalAnimation" xml:space="preserve"><value>{0} — 元のアニメーション（再エンコードなし）；.{1} ファイル</value></data>
+  <data name="ConversionHeadingImage" xml:space="preserve"><value>画像の変換設定</value></data>
+  <data name="ConversionHeadingAnimation" xml:space="preserve"><value>アニメーションの変換設定</value></data>
+  <data name="ConversionAnimationOutputsHint" xml:space="preserve"><value>アニメーションはアニメーション形式または動画形式で保存できます。静止画 1 枚だけの書き出しには対応していません。</value></data>
+  <data name="ConversionImageOutputsHint" xml:space="preserve"><value>画像は画像形式でのみ保存できます。</value></data>
+  <data name="LogVisualExtractionStarted" xml:space="preserve"><value>ストリーム #{0} から画像またはアニメーションを {1} 形式で抽出しています。</value></data>
+  <data name="LogVisualConversionStarted" xml:space="preserve"><value>ストリーム #{0} の画像またはアニメーションを {1} に変換しています。</value></data>
+  <data name="LogVisualExtractionCompleted" xml:space="preserve"><value>ストリーム #{0} から画像またはアニメーションを抽出しました：{1}、{2}。</value></data>
+  <data name="LogVisualConversionCompleted" xml:space="preserve"><value>ストリーム #{0} の画像またはアニメーションを変換しました：{1}、{2}。</value></data>
+  <data name="MainAttachments" xml:space="preserve"><value>添付ファイル</value></data>
+  <data name="MainAttachmentCount" xml:space="preserve"><value>検出数：{0}</value></data>
+  <data name="AttachmentView" xml:space="preserve"><value>表示</value></data>
+  <data name="AttachmentExtractAll" xml:space="preserve"><value>すべて抽出</value></data>
+  <data name="AttachmentWindowTitle" xml:space="preserve"><value>MKV 添付ファイル</value></data>
+  <data name="AttachmentName" xml:space="preserve"><value>名前</value></data>
+  <data name="AttachmentType" xml:space="preserve"><value>種類</value></data>
+  <data name="AttachmentMime" xml:space="preserve"><value>MIME</value></data>
+  <data name="AttachmentFoundCount" xml:space="preserve"><value>検出された添付ファイル：{0}</value></data>
+  <data name="AttachmentSize" xml:space="preserve"><value>サイズ</value></data>
+  <data name="AttachmentDescription" xml:space="preserve"><value>説明</value></data>
+  <data name="AttachmentApply" xml:space="preserve"><value>適用</value></data>
+  <data name="AttachmentSelectedCount" xml:space="preserve"><value>選択済み：{1} 件中 {0} 件</value></data>
+  <data name="LogAttachmentsFound" xml:space="preserve"><value>MKV 添付ファイルが見つかりました：{0}。</value></data>
+  <data name="LogAttachmentsExportAll" xml:space="preserve"><value>すべての MKV 添付ファイルを抽出しています：{0}。</value></data>
+  <data name="MainProgressListedAttachment" xml:space="preserve"><value>添付ファイル {0} を抽出中</value></data>
+  <data name="MainProgressListedAttachmentPercent" xml:space="preserve"><value>添付ファイル {0}：{1:P0}</value></data>
+  <data name="LogAttachmentStarted" xml:space="preserve"><value>添付ファイル {0} の抽出を開始しました。</value></data>
+  <data name="LogAttachmentCompleted" xml:space="preserve"><value>添付ファイル {0} を抽出しました：{1}。</value></data>
+  <data name="LogAttachmentFailed" xml:space="preserve"><value>添付ファイル {0} を抽出できませんでした：{1}。</value></data>
+  <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>MKV 添付ファイル一覧を読み取れませんでした。他のストリームは引き続き利用できます。必要に応じてファイルを確認し、開き直してください。</value></data>
+  <data name="LogOutputFolderAccessDenied" xml:space="preserve"><value>出力フォルダーに書き込めません。ファイルを保存できる別のフォルダーを選択してください。</value></data>
+  <data name="LogAviH264Copy" xml:space="preserve"><value>AVI の互換性：映像ビットストリームを再エンコードせずに調整しました。一部のアプリでは再生が制限される場合があります。互換性を高めるには、適切な映像エンコーダーを選んで変換してください。</value></data>
+  <data name="LogMxfUnofficialCopy" xml:space="preserve"><value>MXF の互換性：FFmpeg の非公式モードで元のフレームレートを保持しました。一部のアプリでは再生が制限される場合があります。互換性を高めるには、標準の MXF フレームレートに変換してください。</value></data>
+  <data name="LogSpecialCopyFailed" xml:space="preserve"><value>再エンコードせずに映像を抽出できませんでした。変換用の互換エンコーダーを選択してください：{0}</value></data>
+  <data name="LogVideoCopyCodecError" xml:space="preserve"><value>映像を {0} に抽出できませんでした：コンテナーがこの映像コーデックに対応していません。互換エンコーダーを選択してください。</value></data>
+  <data name="LogVideoCopyProfileError" xml:space="preserve"><value>映像を {0} に抽出できませんでした：このコーデックプロファイルに対応していません。互換エンコーダーまたはプロファイルを選択してください。</value></data>
+  <data name="LogVideoCopyFrameRateError" xml:space="preserve"><value>映像を {0} に抽出できませんでした：元のフレームレートに対応していません。互換形式またはエンコーダーを選択してください。</value></data>
+  <data name="LogVideoCopyResolutionError" xml:space="preserve"><value>映像を {0} に抽出できませんでした：解像度に対応していません。互換形式を選ぶか、変換設定を調整してください。</value></data>
+  <data name="LogVideoCopyPixelFormatError" xml:space="preserve"><value>映像を {0} に抽出できませんでした：ピクセル形式に対応していません。互換エンコーダーを選択してください。</value></data>
+  <data name="LogVideoCopyTimestampsError" xml:space="preserve"><value>映像を {0} に抽出できませんでした：タイムスタンプが無効です。診断レポートを参照し、変換を検討してください。</value></data>
+  <data name="LogVideoCopyHeadersError" xml:space="preserve"><value>映像を {0} に抽出できませんでした：映像ストリームのヘッダーが欠落または破損しています。診断レポートを参照してください。</value></data>
+  <data name="LogVideoCopyBitstreamError" xml:space="preserve"><value>映像を {0} に抽出できませんでした：映像ビットストリームが無効です。診断レポートを参照し、変換を検討してください。</value></data>
+  <data name="LogVideoCopyUnknownError" xml:space="preserve"><value>映像を {0} に抽出できませんでした。原因は不明です。診断レポートを参照し、エンコーダーを選択して変換することを検討してください。</value></data>
+  <data name="InstallerRepairFfmpeg" xml:space="preserve"><value>FFmpeg を修復</value></data>
+  <data name="ToolsWingetRepairNeeded" xml:space="preserve"><value>FFmpeg は Windows に登録されていますが、必要なファイルが見つからないか利用できません。修復には再インストールが必要です。</value></data>
+  <data name="ToolsWingetRepairStarted" xml:space="preserve"><value>WinGet を使用して FFmpeg を修復しています。</value></data>
+  <data name="ToolsWingetRepairComplete" xml:space="preserve"><value>FFmpeg を修復し、動作を確認しました。</value></data>
+  <data name="ToolsWingetRepairFailed" xml:space="preserve"><value>WinGet で FFmpeg を修復できませんでした。詳細は診断レポートを参照してください。</value></data>
+  <data name="ToolsLocalRepairNeeded" xml:space="preserve"><value>アプリが管理する FFmpeg のコピーが破損しています。再ダウンロードして修復してください。</value></data>
+  <data name="ToolsLocalRepairStarted" xml:space="preserve"><value>アプリが管理する FFmpeg のコピーを修復しています。</value></data>
+  <data name="ToolsLocalRepairComplete" xml:space="preserve"><value>アプリが管理する FFmpeg のコピーを修復し、動作を確認しました。</value></data>
+  <data name="DiagnosticPreviewClear" xml:space="preserve"><value>クリア</value></data>
+  <data name="DiagnosticPreviewClearFailed" xml:space="preserve"><value>診断ログをクリアできませんでした。</value></data>
+  <data name="DiagnosticEventsCount" xml:space="preserve"><value>イベント：{0}</value></data>
+  <data name="DiagnosticWarningsCount" xml:space="preserve"><value>警告：{0}</value></data>
+  <data name="DiagnosticErrorsCount" xml:space="preserve"><value>エラー：{0}</value></data>
+</root>

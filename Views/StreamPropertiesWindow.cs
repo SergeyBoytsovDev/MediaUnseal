@@ -38,7 +38,9 @@ internal static class StreamPropertiesWindow
         var footer = new Border { Padding = new Thickness(16, 10), BorderBrush = Resource("LineBrush"),
             BorderThickness = new Thickness(0, 1, 0, 0) };
         var close = new Button { Content = L.Get("MainClose"), MinWidth = 100,
-            HorizontalAlignment = HorizontalAlignment.Right };
+            HorizontalAlignment = HorizontalAlignment.Right,
+            HorizontalContentAlignment = HorizontalAlignment.Center,
+            VerticalContentAlignment = VerticalAlignment.Center };
         close.Click += (_, _) => window.Close();
         footer.Child = close;
         Grid.SetRow(footer, 2);
@@ -109,7 +111,7 @@ internal static class StreamPropertiesWindow
             Foreground = Resource("AccentBrush"), VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Center });
         var description = new StackPanel { Spacing = 4 };
-        description.Children.Add(new TextBlock { Text = L.Get("StreamPropertiesTitle"),
+        description.Children.Add(new TextBlock { Text = L.Get("StreamPropertiesHeading"),
             FontSize = 12, Foreground = Resource("MutedTextBrush") });
         description.Children.Add(new TextBlock { Text = title, FontSize = 22,
             FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.WrapWithOverflow });

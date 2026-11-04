@@ -37,6 +37,8 @@
      <StackPanel Spacing="10">
       <TextBlock Text="{DynamicResource Loc_SupportSbp}" FontWeight="SemiBold" FontSize="16"
                  TextWrapping="Wrap" TextAlignment="Center"/>
+      <TextBlock Text="{DynamicResource Loc_SupportSbpBank}" Foreground="{DynamicResource MutedTextBrush}"
+                 TextAlignment="Center"/>
       <Image Source="avares://TrackExtractor/Assets/sbpqr.jpg" Width="190" Height="190"
              Stretch="Uniform" HorizontalAlignment="Center"/>
      </StackPanel>

@@ -1343,6 +1343,7 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
   <data name="StreamPropertiesTitle" xml:space="preserve">
     <value>Properties</value>
   </data>
+  <data name="StreamPropertiesHeading" xml:space="preserve"><value>Stream properties</value></data>
   <data name="StreamHeaderVideo" xml:space="preserve"><value>Video stream</value></data>
   <data name="StreamHeaderAudio" xml:space="preserve"><value>Audio stream</value></data>
   <data name="StreamHeaderSubtitle" xml:space="preserve"><value>Subtitles</value></data>

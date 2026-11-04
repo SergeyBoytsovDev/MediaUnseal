@@ -1,0 +1,1704 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Paramètres</value>
+  </data>
+  <data name="LanguageSection" xml:space="preserve">
+    <value>Langue de l’interface</value>
+  </data>
+  <data name="RussianName" xml:space="preserve">
+    <value>Russe</value>
+  </data>
+  <data name="UnknownLanguageFolder" xml:space="preserve">
+    <value>langue non précisée</value>
+  </data>
+  <data name="VersionFormat" xml:space="preserve">
+    <value>Version : {0}</value>
+  </data>
+  <data name="VersionUnspecified" xml:space="preserve">
+    <value>non précisée</value>
+  </data>
+  <data name="SettingsSections" xml:space="preserve">
+    <value>RUBRIQUES</value>
+  </data>
+  <data name="SettingsInstaller" xml:space="preserve">
+    <value>Installation de FFmpeg</value>
+  </data>
+  <data name="SettingsAppearance" xml:space="preserve">
+    <value>Apparence</value>
+  </data>
+  <data name="SettingsKnowledgeBase" xml:space="preserve">
+    <value>Guide des médias</value>
+  </data>
+  <data name="SettingsAbout" xml:space="preserve">
+    <value>À propos</value>
+  </data>
+  <data name="SettingsThemeLabel" xml:space="preserve">
+    <value>Thème de l’interface</value>
+  </data>
+  <data name="SettingsThemeStudioDark" xml:space="preserve">
+    <value>Studio Dark</value>
+  </data>
+  <data name="SettingsThemeStudioDarkDescription" xml:space="preserve">
+    <value>Style studio à contraste élevé</value>
+  </data>
+  <data name="SettingsThemeResolve" xml:space="preserve">
+    <value>Resolve Workspace</value>
+  </data>
+  <data name="SettingsThemeResolveDescription" xml:space="preserve">
+    <value>Espace de travail compact pour la production</value>
+  </data>
+  <data name="SettingsThemeAdobe" xml:space="preserve">
+    <value>Adobe Clean Pro</value>
+  </data>
+  <data name="SettingsThemeAdobeDescription" xml:space="preserve">
+    <value>Typographie et espacements épurés</value>
+  </data>
+  <data name="SettingsThemeIndustrial" xml:space="preserve">
+    <value>Industrial Utility</value>
+  </data>
+  <data name="SettingsThemeIndustrialDescription" xml:space="preserve">
+    <value>Thème fonctionnel et épuré</value>
+  </data>
+  <data name="SettingsThemeHybrid" xml:space="preserve">
+    <value>Hybrid Modern Panel</value>
+  </data>
+  <data name="SettingsThemeHybridDescription" xml:space="preserve">
+    <value>Panneaux doux aux accents froids</value>
+  </data>
+  <data name="LanguageEnglishName" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="LanguageEnglishDescription" xml:space="preserve">
+    <value>Anglais</value>
+  </data>
+  <data name="LanguageGermanName" xml:space="preserve">
+    <value>Deutsch</value>
+  </data>
+  <data name="LanguageGermanDescription" xml:space="preserve">
+    <value>Allemand</value>
+  </data>
+  <data name="LanguageFrenchName" xml:space="preserve">
+    <value>Français</value>
+  </data>
+  <data name="LanguageFrenchDescription" xml:space="preserve">
+    <value>Français</value>
+  </data>
+  <data name="LanguageSpanishName" xml:space="preserve">
+    <value>Español</value>
+  </data>
+  <data name="LanguageSpanishDescription" xml:space="preserve">
+    <value>Espagnol</value>
+  </data>
+  <data name="LanguagePortugueseName" xml:space="preserve">
+    <value>Português</value>
+  </data>
+  <data name="LanguagePortugueseDescription" xml:space="preserve">
+    <value>Portugais</value>
+  </data>
+  <data name="LanguageItalianName" xml:space="preserve">
+    <value>Italiano</value>
+  </data>
+  <data name="LanguageItalianDescription" xml:space="preserve">
+    <value>Italien</value>
+  </data>
+  <data name="LanguageChineseName" xml:space="preserve">
+    <value>中文（简体）</value>
+  </data>
+  <data name="LanguageChineseDescription" xml:space="preserve">
+    <value>Chinois (simplifié)</value>
+  </data>
+  <data name="LanguageJapaneseName" xml:space="preserve">
+    <value>日本語</value>
+  </data>
+  <data name="LanguageJapaneseDescription" xml:space="preserve">
+    <value>Japonais</value>
+  </data>
+  <data name="LanguageKoreanName" xml:space="preserve">
+    <value>한국어</value>
+  </data>
+  <data name="LanguageKoreanDescription" xml:space="preserve">
+    <value>Coréen</value>
+  </data>
+  <data name="SettingsGuideTitle" xml:space="preserve">
+    <value>Guide des médias</value>
+  </data>
+  <data name="SettingsGuideDescription1" xml:space="preserve">
+    <value>Le guide des médias présente les conteneurs, les codecs vidéo et audio, les formats de sous-titres et les formats d’image.</value>
+  </data>
+  <data name="SettingsGuideDescription2" xml:space="preserve">
+    <value>Découvrez à quoi servent les différents formats, comment ils fonctionnent ensemble et comment les utiliser pour extraire ou convertir des flux multimédias.</value>
+  </data>
+  <data name="SettingsOpenGuide" xml:space="preserve">
+    <value>Ouvrir le guide des médias</value>
+  </data>
+  <data name="SettingsProductName" xml:space="preserve">
+    <value>Track Extractor</value>
+  </data>
+  <data name="SettingsDevelopmentBadge" xml:space="preserve">
+    <value>Développement</value>
+  </data>
+  <data name="SettingsAboutSummary" xml:space="preserve">
+    <value>Analysez les fichiers multimédias et extrayez ou convertissez les vidéos, l’audio, les sous-titres, les images et les pièces jointes.</value>
+  </data>
+  <data name="SettingsCheckUpdates" xml:space="preserve">
+    <value>Rechercher une mise à jour</value>
+  </data>
+  <data name="SettingsGeneralInformation" xml:space="preserve">
+    <value>Informations générales</value>
+  </data>
+  <data name="SettingsDeveloper" xml:space="preserve">
+    <value>Développeur</value>
+  </data>
+  <data name="SettingsDeveloperName" xml:space="preserve"><value>Sergey Boitcov</value></data>
+  <data name="SettingsPlatformsLabel" xml:space="preserve"><value>Plateformes</value></data>
+  <data name="SettingsPlatforms" xml:space="preserve">
+    <value>Windows, Linux, macOS</value>
+  </data>
+  <data name="SettingsTechnologyLabel" xml:space="preserve"><value>Technologies</value></data>
+  <data name="SettingsTechnology" xml:space="preserve">
+    <value>.NET {0}, Avalonia UI {1}</value>
+  </data>
+  <data name="SettingsMediaComponents" xml:space="preserve">
+    <value>Composants système</value>
+  </data>
+  <data name="SettingsFfmpegRights" xml:space="preserve">
+    <value>Les droits sur FFmpeg et FFprobe appartiennent à leurs propriétaires respectifs. Les conditions d’utilisation dépendent de la licence de la version utilisée.</value>
+  </data>
+  <data name="SettingsUpdateCurrent" xml:space="preserve"><value>Vous disposez de la dernière version</value></data>
+  <data name="SettingsUpdateAvailable" xml:space="preserve"><value>La version 1.0.1 est disponible</value></data>
+  <data name="SettingsInstallUpdate" xml:space="preserve"><value>Installer la mise à jour</value></data>
+  <data name="SettingsLicenses" xml:space="preserve"><value>Licences</value></data>
+  <data name="SettingsFfmpegLicense" xml:space="preserve"><value>Les conditions dépendent de la version utilisée</value></data>
+  <data name="SettingsOpenLicense" xml:space="preserve"><value>Ouvrir la licence</value></data>
+  <data name="SettingsReportBug" xml:space="preserve"><value>Signaler un bug</value></data>
+  <data name="SettingsEmailLabel" xml:space="preserve"><value>E-mail</value></data>
+  <data name="SettingsTelegramLabel" xml:space="preserve"><value>Canal Telegram</value></data>
+  <data name="SettingsAboutFooter" xml:space="preserve"><value>© {0} · {1} {2}</value></data>
+  <data name="SettingsSupportDeveloper" xml:space="preserve"><value>Soutenir le développeur</value></data>
+  <data name="SettingsOpenLinkFailed" xml:space="preserve"><value>Impossible d’ouvrir le lien dans l’application système.</value></data>
+  <data name="SupportDescription" xml:space="preserve"><value>{0} est un projet indépendant. Si vous le trouvez utile, vous pouvez soutenir son développement par un don volontaire.</value></data>
+  <data name="SupportCrypto" xml:space="preserve"><value>Cryptomonnaie</value></data>
+  <data name="SupportCryptoDescription" xml:space="preserve"><value>Adresse du portefeuille et code QR</value></data>
+  <data name="SupportCryptoNetwork" xml:space="preserve"><value>USDT · Réseau TRON (TRC20)</value></data>
+  <data name="SupportCopyAddress" xml:space="preserve"><value>Copier l’adresse</value></data>
+  <data name="SupportAddressCopied" xml:space="preserve"><value>Adresse copiée.</value></data>
+  <data name="SupportSbp" xml:space="preserve"><value>Système de paiements rapides</value></data>
+  <data name="SupportSbpDescription" xml:space="preserve"><value>Coordonnées de paiement et code QR</value></data>
+  <data name="SupportSbpInstruction" xml:space="preserve"><value>Scannez le code QR avec votre application bancaire ou utilisez le numéro de téléphone.</value></data>
+  <data name="SupportSbpBank" xml:space="preserve"><value>Sberbank</value></data>
+  <data name="SupportCopyDetails" xml:space="preserve"><value>Copier le numéro</value></data>
+  <data name="SupportDetailsCopied" xml:space="preserve"><value>Numéro copié.</value></data>
+  <data name="SupportCopyFailed" xml:space="preserve"><value>Impossible de copier les coordonnées.</value></data>
+  <data name="SettingsThirdParty" xml:space="preserve">
+    <value>Composants tiers et licences</value>
+  </data>
+  <data name="SettingsAvalonia" xml:space="preserve">
+    <value>Avalonia UI fournit l’interface de l’application.</value>
+  </data>
+  <data name="SettingsMvvm" xml:space="preserve">
+    <value>CommunityToolkit.Mvvm assure la prise en charge du modèle MVVM.</value>
+  </data>
+  <data name="SettingsExternalTools" xml:space="preserve">
+    <value>FFmpeg et FFprobe sont des outils externes de traitement et d’analyse des fichiers multimédias.</value>
+  </data>
+  <data name="SettingsMatroskaTitle" xml:space="preserve">
+    <value>Module intégré pour les pièces jointes Matroska (MKV)</value>
+  </data>
+  <data name="SettingsMatroskaDescription" xml:space="preserve">
+    <value>Le module C# repère, lit et extrait les images JPEG/PNG intégrées grâce aux structures Matroska/EBML et à l’index SeekHead. FFmpeg n’est pas utilisé lorsque les octets des pièces jointes sont copiés directement.</value>
+  </data>
+  <data name="SettingsLicensePending" xml:space="preserve">
+    <value>Les informations de licence seront ajoutées avant la publication</value>
+  </data>
+  <data name="InstallerRequirement" xml:space="preserve">
+    <value>FFmpeg et FFprobe sont nécessaires pour travailler avec les fichiers multimédias</value>
+  </data>
+  <data name="InstallerFfmpegRole" xml:space="preserve">
+    <value>Traitement multimédia</value>
+  </data>
+  <data name="InstallerFfprobeRole" xml:space="preserve">
+    <value>Analyse multimédia</value>
+  </data>
+  <data name="InstallerAllReady" xml:space="preserve">
+    <value>Tous les composants sont prêts</value>
+  </data>
+  <data name="InstallerCancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="InstallerContinue" xml:space="preserve">
+    <value>Continuer</value>
+  </data>
+  <data name="InstallerRetry" xml:space="preserve">
+    <value>Vérifier à nouveau</value>
+  </data>
+  <data name="InstallerSelectFfmpeg" xml:space="preserve">
+    <value>Localiser FFmpeg</value>
+  </data>
+  <data name="InstallerSelectFfprobe" xml:space="preserve">
+    <value>Localiser FFprobe</value>
+  </data>
+  <data name="InstallerFilePickerUnavailable" xml:space="preserve">
+    <value>Impossible d’ouvrir le sélecteur de fichiers. Réessayez.</value>
+  </data>
+  <data name="InstallerSelectExecutableFormat" xml:space="preserve">
+    <value>Sélectionnez l’exécutable {0}</value>
+  </data>
+  <data name="InstallerSelectLocalExecutable" xml:space="preserve">
+    <value>Sélectionnez un fichier exécutable local.</value>
+  </data>
+  <data name="InstallerSelectFileFailed" xml:space="preserve">
+    <value>Impossible de sélectionner le fichier. Vérifiez les autorisations et réessayez.</value>
+  </data>
+  <data name="InstallerOperationCancelled" xml:space="preserve">
+    <value>Opération annulée. Vous pouvez relancer la vérification ou l’installation.</value>
+  </data>
+  <data name="InstallerOperationFailed" xml:space="preserve">
+    <value>Impossible de terminer l’opération. Réessayez ou indiquez les chemins manuellement.</value>
+  </data>
+  <data name="InstallerRetryInstall" xml:space="preserve">
+    <value>Réessayer l’installation</value>
+  </data>
+  <data name="InstallerInstallComponents" xml:space="preserve">
+    <value>Installer les composants</value>
+  </data>
+  <data name="InstallerInstallationMethod" xml:space="preserve">
+    <value>Méthode d’installation</value>
+  </data>
+  <data name="InstallerManualFileMissing" xml:space="preserve">
+    <value>Fichier introuvable. Sélectionnez un exécutable existant.</value>
+  </data>
+  <data name="InstallerToolCheckFailed" xml:space="preserve">
+    <value>La vérification de l’outil a échoué. Réessayez ou sélectionnez un autre chemin.</value>
+  </data>
+  <data name="InstallerWingetSourcesUnavailable" xml:space="preserve">
+    <value>WinGet est disponible, mais ses sources de paquets n’ont pas répondu.</value>
+  </data>
+  <data name="InstallerWingetFallbackAvailable" xml:space="preserve">
+    <value>WinGet est disponible, mais sa source n’a pas répondu. gyan.dev peut servir de solution de secours.</value>
+  </data>
+  <data name="InstallerWingetAvailable" xml:space="preserve">
+    <value>WinGet est disponible.</value>
+  </data>
+  <data name="InstallerWingetUnavailableManual" xml:space="preserve">
+    <value>WinGet est indisponible. Indiquez les chemins manuellement.</value>
+  </data>
+  <data name="InstallerWingetAndSourceUnavailable" xml:space="preserve">
+    <value>WinGet est indisponible. gyan.dev n’a pas répondu.</value>
+  </data>
+  <data name="InstallerWingetUnavailableFallback" xml:space="preserve">
+    <value>WinGet est indisponible. L’installation via gyan.dev est disponible comme solution de secours.</value>
+  </data>
+  <data name="InstallerNoticeWithMethod" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="InstallerCheckError" xml:space="preserve">
+    <value>Échec de la vérification.</value>
+  </data>
+  <data name="InstallerAutoInstallUnavailable" xml:space="preserve">
+    <value>L’installation automatique n’est pas disponible sur cette plateforme. Utilisez la commande suggérée ou indiquez les chemins manuellement.</value>
+  </data>
+  <data name="InstallerDirectDownloadWindowsOnly" xml:space="preserve">
+    <value>Le téléchargement direct n’est pris en charge que sur Windows 10/11 x64.</value>
+  </data>
+  <data name="InstallerPreparingDirectDownload" xml:space="preserve">
+    <value>Préparation du téléchargement depuis gyan.dev…</value>
+  </data>
+  <data name="InstallerInstallingWithWinget" xml:space="preserve">
+    <value>Installation avec WinGet…</value>
+  </data>
+  <data name="InstallerDirectFallbackNoWinget" xml:space="preserve">
+    <value>WinGet est indisponible. Téléchargement direct de FFmpeg à la place.</value>
+  </data>
+  <data name="InstallerDirectFallbackFailedWinget" xml:space="preserve">
+    <value>L’installation par WinGet a échoué. Téléchargement direct de FFmpeg à la place.</value>
+  </data>
+  <data name="InstallerDirectDownloadLocation" xml:space="preserve">
+    <value>Le téléchargement depuis gyan.dev est installé dans votre dossier de données utilisateur. La variable PATH n’est pas modifiée.</value>
+  </data>
+  <data name="InstallerCheckingAfterInstall" xml:space="preserve">
+    <value>Vérification des composants après l’installation…</value>
+  </data>
+  <data name="InstallerVerificationFailed" xml:space="preserve">
+    <value>La vérification après installation n’a pas pu confirmer le fonctionnement des deux outils. Relancez-la ou indiquez leurs chemins manuellement.</value>
+  </data>
+  <data name="InstallerInstallCancelled" xml:space="preserve">
+    <value>Installation annulée. Vous pouvez réessayer.</value>
+  </data>
+  <data name="InstallerCheckingTools" xml:space="preserve">
+    <value>Vérification des outils…</value>
+  </data>
+  <data name="InstallerBuildSourceBoth" xml:space="preserve">
+    <value>Source des exécutables FFmpeg et FFprobe : gyan.dev</value>
+  </data>
+  <data name="InstallerBuildSourceFfmpeg" xml:space="preserve">
+    <value>Source de l’exécutable FFmpeg : gyan.dev</value>
+  </data>
+  <data name="InstallerBuildSourceFfprobe" xml:space="preserve">
+    <value>Source de l’exécutable FFprobe : gyan.dev</value>
+  </data>
+  <data name="InstallerReadyVersions" xml:space="preserve">
+    <value>Prêt. FFmpeg {0}, FFprobe {1}.</value>
+  </data>
+  <data name="InstallerToolsRequired" xml:space="preserve">
+    <value>FFmpeg et FFprobe sont nécessaires pour travailler avec les fichiers multimédias.</value>
+  </data>
+  <data name="InstallerBothReady" xml:space="preserve">
+    <value>Les deux outils sont prêts.</value>
+  </data>
+  <data name="InstallerMissingPrompt" xml:space="preserve">
+    <value>Installez les outils manquants ou indiquez leurs chemins.</value>
+  </data>
+  <data name="InstallerFoundVersion" xml:space="preserve">
+    <value>Trouvé · {0}</value>
+  </data>
+  <data name="InstallerNotFound" xml:space="preserve">
+    <value>Introuvable</value>
+  </data>
+  <data name="InstallerError" xml:space="preserve">
+    <value>Erreur</value>
+  </data>
+  <data name="InstallerCheckingBrief" xml:space="preserve">
+    <value>Vérification…</value>
+  </data>
+  <data name="ToolsSavedPathsReadFailed" xml:space="preserve">
+    <value>Impossible de lire les chemins enregistrés. Vérifiez le fichier des paramètres utilisateur.</value>
+  </data>
+  <data name="ToolsFileNotFound" xml:space="preserve">
+    <value>Fichier introuvable.</value>
+  </data>
+  <data name="ToolsFileNotFoundPath" xml:space="preserve">
+    <value>Fichier introuvable : {0}</value>
+  </data>
+  <data name="ToolsRecoveredPathsSaveFailed" xml:space="preserve">
+    <value>Des outils fonctionnels ont été trouvés, mais leurs chemins n’ont pas pu être enregistrés. Vérifiez l’accès aux paramètres utilisateur.</value>
+  </data>
+  <data name="ToolsManualPathSaveFailed" xml:space="preserve">
+    <value>L’outil fonctionne, mais son chemin n’a pas pu être enregistré. Vérifiez l’accès aux paramètres utilisateur.</value>
+  </data>
+  <data name="ToolsWingetOption" xml:space="preserve">
+    <value>WinGet est disponible pour installer le paquet Gyan.FFmpeg.</value>
+  </data>
+  <data name="ToolsWingetSourceFallback" xml:space="preserve">
+    <value>La source WinGet n’a pas répondu. Un téléchargement de secours depuis gyan.dev est disponible.</value>
+  </data>
+  <data name="ToolsNoWingetFallback" xml:space="preserve">
+    <value>WinGet est indisponible. Un téléchargement de secours depuis gyan.dev est disponible.</value>
+  </data>
+  <data name="ToolsInstallSourcesUnavailable" xml:space="preserve">
+    <value>Impossible de contacter les sources d’installation. Vérifiez votre connexion Internet et réessayez</value>
+  </data>
+  <data name="ToolsMacBrewOption" xml:space="preserve">
+    <value>Exécutez dans le Terminal : brew install ffmpeg. Puis sélectionnez « Vérifier à nouveau ». Cette application n’exécute pas Homebrew et ne permet pas le téléchargement direct de binaires macOS. Sinon, consultez https://ffmpeg.org/download.html et indiquez les chemins manuellement.</value>
+  </data>
+  <data name="ToolsMacNoBrewOption" xml:space="preserve">
+    <value>Homebrew est introuvable. Installez-le depuis https://brew.sh puis exécutez brew install ffmpeg, ou indiquez les chemins manuellement. Le téléchargement automatique de binaires macOS n’est pas pris en charge.</value>
+  </data>
+  <data name="ToolsLinuxManagerOption" xml:space="preserve">
+    <value>Exécutez dans un terminal : {0}. La disponibilité du paquet dépend des dépôts de votre distribution. Puis sélectionnez « Vérifier à nouveau ». Si le paquet est indisponible, consultez https://ffmpeg.org/download.html ou indiquez les chemins manuellement. Il n’existe pas de téléchargement direct universel pour Linux.</value>
+  </data>
+  <data name="ToolsLinuxNoManagerOption" xml:space="preserve">
+    <value>Aucun gestionnaire de paquets pris en charge n’a été trouvé. Choisissez un paquet adapté à votre distribution et à votre architecture sur https://ffmpeg.org/download.html, puis indiquez les chemins manuellement. Il n’existe pas de téléchargement direct universel pour Linux.</value>
+  </data>
+  <data name="ToolsManualInstallOption" xml:space="preserve">
+    <value>Installez FFmpeg manuellement, puis sélectionnez « Vérifier à nouveau ».</value>
+  </data>
+  <data name="ToolsAlreadyInstalled" xml:space="preserve">
+    <value>FFmpeg et FFprobe sont déjà disponibles et fonctionnels. Une réinstallation est inutile.</value>
+  </data>
+  <data name="ToolsWingetUnavailable" xml:space="preserve">
+    <value>WinGet est indisponible.</value>
+  </data>
+  <data name="ToolsVerifiedReady" xml:space="preserve">
+    <value>FFmpeg et FFprobe ont été vérifiés et sont prêts.</value>
+  </data>
+  <data name="ToolsWingetExitFailure" xml:space="preserve">
+    <value>WinGet n’a pas installé FFmpeg (code de sortie {0}).</value>
+  </data>
+  <data name="ToolsWingetMissingAfterInstall" xml:space="preserve">
+    <value>WinGet a terminé, mais les deux outils fonctionnels restent introuvables. Vous pouvez relancer la vérification après avoir redémarré l’application.</value>
+  </data>
+  <data name="ToolsWingetTimeout" xml:space="preserve">
+    <value>Délai d’attente de WinGet dépassé. Relancez la vérification.</value>
+  </data>
+  <data name="ToolsWingetInstallFailed" xml:space="preserve">
+    <value>Impossible de terminer l’installation avec WinGet. Vérifiez les autorisations ou essayez la méthode de secours.</value>
+  </data>
+  <data name="ToolsDirectDownloadAdvice" xml:space="preserve">
+    <value> Un téléchargement de secours depuis gyan.dev vers votre dossier de données utilisateur est disponible. La variable PATH ne sera pas modifiée.</value>
+  </data>
+  <data name="ToolsFailureWithAdvice" xml:space="preserve">
+    <value>{0}{1}</value>
+  </data>
+  <data name="ToolsManualArchitectureAdvice" xml:space="preserve">
+    <value> Le téléchargement direct n’est pris en charge que sur Windows 10/11 x64. Indiquez manuellement des outils compatibles avec cette architecture : https://ffmpeg.org/download.html.</value>
+  </data>
+  <data name="ToolsExecutableExitFailure" xml:space="preserve">
+    <value>{0} : échec de l’exécution (code de sortie {1}).</value>
+  </data>
+  <data name="ToolsWrongExecutable" xml:space="preserve">
+    <value>{0} : exécutable incorrect ; la réponse à -version n’identifie pas l’outil attendu.</value>
+  </data>
+  <data name="ToolsVersionTimeout" xml:space="preserve">
+    <value>{0} : délai de réponse dépassé après 5 secondes.</value>
+  </data>
+  <data name="ToolsLaunchFailed" xml:space="preserve">
+    <value>{0} : démarrage impossible. Vérifiez les autorisations et la compatibilité du fichier.</value>
+  </data>
+  <data name="ToolsDirectDownloadWindowsOnly" xml:space="preserve">
+    <value>Le téléchargement direct n’est disponible que sur Windows 10/11 x64. Indiquez manuellement des outils compatibles.</value>
+  </data>
+  <data name="ToolsAlreadyDownloaded" xml:space="preserve">
+    <value>FFmpeg et FFprobe sont déjà disponibles et fonctionnels. Aucun nouveau téléchargement n’est nécessaire.</value>
+  </data>
+  <data name="ToolsDownloadingChecksum" xml:space="preserve">
+    <value>Téléchargement de la somme de contrôle depuis gyan.dev…</value>
+  </data>
+  <data name="ToolsDownloadingArchive" xml:space="preserve">
+    <value>Téléchargement de FFmpeg et FFprobe depuis gyan.dev…</value>
+  </data>
+  <data name="ToolsCheckingChecksum" xml:space="preserve">
+    <value>Vérification de la somme de contrôle SHA-256…</value>
+  </data>
+  <data name="ToolsExtractingArchive" xml:space="preserve">
+    <value>Extraction sécurisée de l’archive…</value>
+  </data>
+  <data name="ToolsCheckingDownloadedExecutables" xml:space="preserve">
+    <value>Vérification des exécutables FFmpeg et FFprobe installés…</value>
+  </data>
+  <data name="ToolsDownloadedReady" xml:space="preserve">
+    <value>FFmpeg et FFprobe sont installés dans votre dossier de données utilisateur et accessibles à Track Extractor. Ils n’ont pas été ajoutés à PATH : les commandes courtes dans un terminal ne les trouveront pas.</value>
+  </data>
+  <data name="ToolsDownloadTimeout" xml:space="preserve">
+    <value>Délai de téléchargement ou d’installation dépassé après 20 minutes. Vérifiez votre connexion et réessayez.</value>
+  </data>
+  <data name="ToolsDownloadHttpFailure" xml:space="preserve">
+    <value>Le serveur de téléchargement est actuellement indisponible (HTTP {0}). Réessayez plus tard.</value>
+  </data>
+  <data name="ToolsDownloadNetworkFailure" xml:space="preserve">
+    <value>Impossible de joindre le serveur de téléchargement, ou la connexion a été interrompue. Vérifiez votre connexion et réessayez.</value>
+  </data>
+  <data name="ToolsDownloadChecksumFailure" xml:space="preserve">
+    <value>Impossible de vérifier la somme de contrôle SHA-256 de l’archive. Aucun fichier téléchargé n’a été exécuté ; relancez le téléchargement.</value>
+  </data>
+  <data name="ToolsDownloadArchiveFailure" xml:space="preserve">
+    <value>L’archive téléchargée est endommagée, incomplète ou dangereuse. Aucun fichier téléchargé n’a été exécuté ; relancez le téléchargement.</value>
+  </data>
+  <data name="ToolsDownloadWriteFailure" xml:space="preserve">
+    <value>Impossible d’écrire dans votre dossier de données utilisateur. Vérifiez l’espace libre et les autorisations.</value>
+  </data>
+  <data name="ToolsDownloadComplete" xml:space="preserve">
+    <value>Téléchargement terminé.</value>
+  </data>
+  <data name="ToolsDownloadProgressOf" xml:space="preserve">
+    <value>{0:F1} Mo téléchargés sur {1:F1} Mo</value>
+  </data>
+  <data name="ToolsDownloadProgress" xml:space="preserve">
+    <value>{0:F1} Mo téléchargés</value>
+  </data>
+  <data name="MainPath" xml:space="preserve">
+    <value>Chemin :</value>
+  </data>
+  <data name="MainAudioFormat" xml:space="preserve">
+    <value>Format audio</value>
+  </data>
+  <data name="MainColumnLanguage" xml:space="preserve">
+    <value>Langue</value>
+  </data>
+  <data name="MainClose" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="MainColumnDetails" xml:space="preserve">
+    <value>Canaux / Résolution</value>
+  </data>
+  <data name="MainColumnBitrate" xml:space="preserve">
+    <value>Débit binaire</value>
+  </data>
+  <data name="MainSaveLog" xml:space="preserve">
+    <value>Enregistrer le journal</value>
+  </data>
+  <data name="MainSaveFolder" xml:space="preserve">
+    <value>Dossier de sortie</value>
+  </data>
+  <data name="MainClear" xml:space="preserve">
+    <value>Effacer</value>
+  </data>
+  <data name="MainGroupLanguages" xml:space="preserve">
+    <value>Regrouper par langue (créer des sous-dossiers)</value>
+  </data>
+  <data name="MainColumnType" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="MainSaveMetadata" xml:space="preserve">
+    <value>Conserver les métadonnées</value>
+  </data>
+  <data name="MainSelectAll" xml:space="preserve">
+    <value>Sélectionner ou désélectionner tous les flux</value>
+  </data>
+  <data name="MainColumnCodec" xml:space="preserve">
+    <value>Codec</value>
+  </data>
+  <data name="MainSubtitleFormat" xml:space="preserve">
+    <value>Format des sous-titres</value>
+  </data>
+  <data name="MainDropReplace" xml:space="preserve">
+    <value>Déposez un autre fichier ici pour le remplacer</value>
+  </data>
+  <data name="MainVideo" xml:space="preserve">
+    <value>Vidéo :</value>
+  </data>
+  <data name="MainBrowse" xml:space="preserve">
+    <value>Parcourir</value>
+  </data>
+  <data name="MainFileLoaded" xml:space="preserve">
+    <value>Fichier chargé avec succès</value>
+  </data>
+  <data name="MainAudio" xml:space="preserve">
+    <value>Audio :</value>
+  </data>
+  <data name="MainColumnStatus" xml:space="preserve">
+    <value>État</value>
+  </data>
+  <data name="MainMinimize" xml:space="preserve">
+    <value>Réduire</value>
+  </data>
+  <data name="MainFileInfo" xml:space="preserve">
+    <value>Informations sur le fichier</value>
+  </data>
+  <data name="MainOpenFolder" xml:space="preserve">
+    <value>Ouvrir le dossier</value>
+  </data>
+  <data name="MainChooseFile" xml:space="preserve">
+    <value>Choisir un fichier</value>
+  </data>
+  <data name="MainSubtitles" xml:space="preserve">
+    <value>Sous-titres :</value>
+  </data>
+  <data name="MainColumnIndex" xml:space="preserve">
+    <value>Indice</value>
+  </data>
+  <data name="MainFormat" xml:space="preserve">
+    <value>Format :</value>
+  </data>
+  <data name="MainExportSettings" xml:space="preserve">
+    <value>Paramètres d’exportation</value>
+  </data>
+  <data name="MainEventLog" xml:space="preserve">
+    <value>Journal des événements</value>
+  </data>
+  <data name="MainSourceFolder" xml:space="preserve">
+    <value>Créer un dossier portant le nom du fichier source</value>
+  </data>
+  <data name="MainDuration" xml:space="preserve">
+    <value>Durée :</value>
+  </data>
+  <data name="MainConfigure" xml:space="preserve">
+    <value>Configurer</value>
+  </data>
+  <data name="MainVideoFormat" xml:space="preserve">
+    <value>Format vidéo</value>
+  </data>
+  <data name="MainMaximizeRestore" xml:space="preserve">
+    <value>Agrandir ou restaurer</value>
+  </data>
+  <data name="MainSize" xml:space="preserve">
+    <value>Taille :</value>
+  </data>
+  <data name="MainDropFile" xml:space="preserve">
+    <value>Déposez un fichier vidéo ici</value>
+  </data>
+  <data name="MainChooseFolder" xml:space="preserve">
+    <value>Choisir un dossier</value>
+  </data>
+  <data name="MainStreamProperties" xml:space="preserve">
+    <value>Propriétés</value>
+  </data>
+  <data name="MainSourceFile" xml:space="preserve">
+    <value>Fichier source</value>
+  </data>
+  <data name="MainClearSelectedFile" xml:space="preserve">
+    <value>Effacer le fichier sélectionné</value>
+  </data>
+  <data name="MainFutureAttachments" xml:space="preserve">
+    <value>Extraire les pièces jointes MKV — disponible dans une prochaine version</value>
+  </data>
+  <data name="MainSupportedFormats" xml:space="preserve">
+    <value>Formats pris en charge : MP4, MKV, MOV, AVI, WebM et autres.</value>
+  </data>
+  <data name="MainNoFile" xml:space="preserve">
+    <value>Aucun fichier sélectionné</value>
+  </data>
+  <data name="MainSelectFolderAndTracks" xml:space="preserve">
+    <value>Sélectionnez un dossier de sortie et des flux.</value>
+  </data>
+  <data name="MainTracksHeading" xml:space="preserve">
+    <value>Flux multimédias trouvés ({0})</value>
+  </data>
+  <data name="MainSelectedCount" xml:space="preserve">
+    <value>Sélectionnés : {0}</value>
+  </data>
+  <data name="MainProcess" xml:space="preserve">
+    <value>Traiter</value>
+  </data>
+  <data name="MainExtract" xml:space="preserve">
+    <value>Extraire</value>
+  </data>
+  <data name="MainCheckingDependencies" xml:space="preserve">
+    <value>Vérification des dépendances…</value>
+  </data>
+  <data name="MainNeedTools" xml:space="preserve">
+    <value>FFmpeg et FFprobe requis</value>
+  </data>
+  <data name="MainAnalyzingFile" xml:space="preserve">
+    <value>Analyse du fichier…</value>
+  </data>
+  <data name="MainProcessing" xml:space="preserve">
+    <value>Traitement…</value>
+  </data>
+  <data name="MainAnalysisError" xml:space="preserve">
+    <value>Échec de l’analyse</value>
+  </data>
+  <data name="MainReady" xml:space="preserve">
+    <value>Prêt</value>
+  </data>
+  <data name="MainChooseOrDropFile" xml:space="preserve">
+    <value>Choisissez un fichier ou déposez-le dans la zone à gauche</value>
+  </data>
+  <data name="MainBytesExact" xml:space="preserve">
+    <value>{0:N0} octets</value>
+  </data>
+  <data name="MainSelectFileAndTracks" xml:space="preserve">
+    <value>Sélectionnez un fichier et des flux.</value>
+  </data>
+  <data name="MainStopBeforeFile" xml:space="preserve">
+    <value>Arrêtez ou terminez d’abord l’extraction en cours.</value>
+  </data>
+  <data name="MainInstallBeforeFile" xml:space="preserve">
+    <value>Installez FFmpeg et FFprobe avant de sélectionner un fichier.</value>
+  </data>
+  <data name="MainAnalyzing" xml:space="preserve">
+    <value>Analyse en cours</value>
+  </data>
+  <data name="MainDone" xml:space="preserve">
+    <value>Terminé</value>
+  </data>
+  <data name="MainAnalysisCancelled" xml:space="preserve">
+    <value>Analyse annulée</value>
+  </data>
+  <data name="MainFileNotFound" xml:space="preserve">
+    <value>Fichier introuvable. Choisissez un autre fichier.</value>
+  </data>
+  <data name="MainFileAccessDenied" xml:space="preserve">
+    <value>Accès au fichier ou à FFprobe refusé.</value>
+  </data>
+  <data name="MainProbeLaunchFailed" xml:space="preserve">
+    <value>Impossible de démarrer FFprobe. Vérifiez à nouveau les dépendances.</value>
+  </data>
+  <data name="MainFileReadFailed" xml:space="preserve">
+    <value>Impossible de lire le fichier. Vérifiez les autorisations et réessayez.</value>
+  </data>
+  <data name="MainFileDamaged" xml:space="preserve">
+    <value>Le fichier est peut-être endommagé ou non pris en charge.</value>
+  </data>
+  <data name="MainInvalidOutputFolder" xml:space="preserve">
+    <value>Chemin du dossier de sortie non valide.</value>
+  </data>
+  <data name="MainOutputFolderMissingChoose" xml:space="preserve">
+    <value>Dossier de sortie introuvable. Choisissez-en un autre.</value>
+  </data>
+  <data name="MainOutputFolderSelected" xml:space="preserve">
+    <value>Dossier sélectionné. Les fichiers ayant le même nom seront numérotés ; les fichiers existants seront conservés.</value>
+  </data>
+  <data name="LogOutputFolderChanged" xml:space="preserve">
+    <value>Dossier de sortie modifié.</value>
+  </data>
+  <data name="MainExportRequirements" xml:space="preserve">
+    <value>Sélectionnez des flux disponibles et un dossier de sortie ; vérifiez que FFmpeg et FFprobe sont prêts.</value>
+  </data>
+  <data name="MainPreparingExport" xml:space="preserve">
+    <value>Préparation du traitement…</value>
+  </data>
+  <data name="MainStatusWithTime" xml:space="preserve">
+    <value>{0} Temps écoulé : {1}</value>
+  </data>
+  <data name="MainAwaitingExtraction" xml:space="preserve">
+    <value>En attente d’extraction.</value>
+  </data>
+  <data name="MainGroupedProgress" xml:space="preserve">
+    <value>{0} ({1}–{2} sur {3})</value>
+  </data>
+  <data name="MainStreamProgress" xml:space="preserve">
+    <value>Flux nº {0} ({1} sur {2})</value>
+  </data>
+  <data name="MainStatusWithTotalTime" xml:space="preserve">
+    <value>{0} Durée totale : {1}</value>
+  </data>
+  <data name="MainExportComplete" xml:space="preserve">
+    <value>Tous les flux sélectionnés ont été traités.</value>
+  </data>
+  <data name="MainExportCancelled" xml:space="preserve">
+    <value>Extraction arrêtée. Les fichiers terminés ont été conservés.</value>
+  </data>
+  <data name="MainExportPartial" xml:space="preserve">
+    <value>Traitement terminé avec des erreurs. Les fichiers terminés ont été conservés.</value>
+  </data>
+  <data name="MainExtractionCancelled" xml:space="preserve">
+    <value>Extraction annulée.</value>
+  </data>
+  <data name="MainExportStartFailed" xml:space="preserve">
+    <value>Impossible de démarrer l’extraction.</value>
+  </data>
+  <data name="MainSourceMissing" xml:space="preserve">
+    <value>Fichier source introuvable.</value>
+  </data>
+  <data name="MainOutputFolderMissing" xml:space="preserve">
+    <value>Dossier de sortie introuvable.</value>
+  </data>
+  <data name="MainOutputFolderAccessDenied" xml:space="preserve">
+    <value>Accès au dossier de sortie refusé.</value>
+  </data>
+  <data name="MainExtractionError" xml:space="preserve">
+    <value>Échec de l’extraction.</value>
+  </data>
+  <data name="MainExportErrorAdvice" xml:space="preserve">
+    <value>Échec de l’extraction. Consultez le journal et réessayez.</value>
+  </data>
+  <data name="MainEmptyStreams" xml:space="preserve">
+    <value>Ajoutez un fichier pour afficher ses flux.</value>
+  </data>
+  <data name="MainToolsCheckFailed" xml:space="preserve">
+    <value>Impossible de vérifier les outils : {0}</value>
+  </data>
+  <data name="MainFormatMp4" xml:space="preserve">
+    <value>MP4 — grande compatibilité</value>
+  </data>
+  <data name="MainFormatMkv" xml:space="preserve">
+    <value>MKV — conteneur polyvalent</value>
+  </data>
+  <data name="MainFormatMov" xml:space="preserve">
+    <value>MOV — vidéo QuickTime</value>
+  </data>
+  <data name="MainFormatAvi" xml:space="preserve">
+    <value>AVI — ancien conteneur</value>
+  </data>
+  <data name="MainFormatWebm" xml:space="preserve">
+    <value>WebM — vidéo pour le Web</value>
+  </data>
+  <data name="MainFormatMp3" xml:space="preserve">
+    <value>MP3 — audio compact</value>
+  </data>
+  <data name="MainFormatWav" xml:space="preserve">
+    <value>WAV — audio non compressé</value>
+  </data>
+  <data name="MainFormatFlac" xml:space="preserve">
+    <value>FLAC — audio sans perte</value>
+  </data>
+  <data name="MainFormatAac" xml:space="preserve">
+    <value>AAC — audio compact</value>
+  </data>
+  <data name="MainFormatAc3" xml:space="preserve">
+    <value>AC3 — audio multicanal</value>
+  </data>
+  <data name="MainFormatOgg" xml:space="preserve">
+    <value>OGG — conteneur ouvert</value>
+  </data>
+  <data name="MainFormatOpus" xml:space="preserve">
+    <value>Opus — compression efficace</value>
+  </data>
+  <data name="MainFormatSrt" xml:space="preserve">
+    <value>SRT — sous-titres textuels</value>
+  </data>
+  <data name="MainFormatAss" xml:space="preserve">
+    <value>ASS — sous-titres mis en forme</value>
+  </data>
+  <data name="MainFormatWebvtt" xml:space="preserve">
+    <value>WebVTT — sous-titres pour le Web</value>
+  </data>
+  <data name="MainOriginalSubtitles" xml:space="preserve">
+    <value>{0} — sous-titres textuels d’origine</value>
+  </data>
+  <data name="MainOriginalCompressedAudio" xml:space="preserve">
+    <value>{0} — audio compressé d’origine</value>
+  </data>
+  <data name="MainOriginalMultichannelAudio" xml:space="preserve">
+    <value>{0} — audio multicanal d’origine</value>
+  </data>
+  <data name="MainOriginalAudio" xml:space="preserve">
+    <value>{0} — audio d’origine</value>
+  </data>
+  <data name="MainOriginalVideo" xml:space="preserve">
+    <value>{0} — vidéo d’origine ; fichier .{1}</value>
+  </data>
+  <data name="MainOriginalNoTranscode" xml:space="preserve">
+    <value>Original — sans transcodage</value>
+  </data>
+  <data name="MainSourceFormatOriginal" xml:space="preserve">
+    <value>{0} — Original</value>
+  </data>
+  <data name="MainSourceCustomFormat" xml:space="preserve"><value>{0} — Original — réglage personnalisé</value></data>
+  <data name="MainOriginalShort" xml:space="preserve">
+    <value>Original</value>
+  </data>
+  <data name="MainMixedFormatsOriginal" xml:space="preserve">
+    <value>Formats mixtes — Original</value>
+  </data>
+  <data name="MainFormatsReadFailed" xml:space="preserve">
+    <value>Impossible de lire les formats de sortie de FFmpeg.</value>
+  </data>
+  <data name="MainConversionUnavailable" xml:space="preserve">
+    <value>La conversion n’est pas disponible pour le flux sélectionné.</value>
+  </data>
+  <data name="MainNoSuitableEncoder" xml:space="preserve">
+    <value>Aucun encodeur approprié n’est disponible pour ce format.</value>
+  </data>
+  <data name="MainCustomFormat" xml:space="preserve">
+    <value>{0} — réglage personnalisé</value>
+  </data>
+  <data name="MainPickMediaFile" xml:space="preserve">
+    <value>Choisir un fichier multimédia</value>
+  </data>
+  <data name="MainFilePickFailed" xml:space="preserve">
+    <value>Impossible de sélectionner le fichier. Vérifiez les autorisations et réessayez.</value>
+  </data>
+  <data name="MainDropOneLocalFile" xml:space="preserve">
+    <value>Déposez un seul fichier local.</value>
+  </data>
+  <data name="MainDropOpenFailed" xml:space="preserve">
+    <value>Impossible d’ouvrir le fichier déposé.</value>
+  </data>
+  <data name="MainPickLocalFile" xml:space="preserve">
+    <value>Choisissez un fichier local.</value>
+  </data>
+  <data name="MainPickSaveFolder" xml:space="preserve">
+    <value>Choisir un dossier de sortie</value>
+  </data>
+  <data name="MainPickLocalFolder" xml:space="preserve">
+    <value>Choisissez un dossier de sortie local.</value>
+  </data>
+  <data name="MainFolderPickFailed" xml:space="preserve">
+    <value>Impossible de sélectionner le dossier. Vérifiez les autorisations d’accès.</value>
+  </data>
+  <data name="MainResultFolderMissing" xml:space="preserve">
+    <value>Dossier des résultats introuvable. Choisissez un dossier existant.</value>
+  </data>
+  <data name="MainResultFolderOpenFailed" xml:space="preserve">
+    <value>Impossible d’ouvrir le dossier des résultats. Vérifiez les autorisations d’accès.</value>
+  </data>
+  <data name="MainSizeGiB" xml:space="preserve">
+    <value>{0:0.##} Gio</value>
+  </data>
+  <data name="MainSizeMiB" xml:space="preserve">
+    <value>{0:0.##} Mio</value>
+  </data>
+  <data name="MainSizeKiB" xml:space="preserve">
+    <value>{0:0.##} Kio</value>
+  </data>
+  <data name="MainSizeBytes" xml:space="preserve">
+    <value>{0} octets</value>
+  </data>
+  <data name="MainStreamSummary" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="MainTrackOne" xml:space="preserve">
+    <value>flux</value>
+  </data>
+  <data name="MainTrackFew" xml:space="preserve">
+    <value>flux</value>
+  </data>
+  <data name="MainTrackMany" xml:space="preserve">
+    <value>flux</value>
+  </data>
+  <data name="MainBitrateMbps" xml:space="preserve">
+    <value>{0:0.##} Mbit/s</value>
+  </data>
+  <data name="MainBitrateKbps" xml:space="preserve">
+    <value>{0:0.##} kbit/s</value>
+  </data>
+  <data name="MainBitrateBps" xml:space="preserve">
+    <value>{0} bit/s</value>
+  </data>
+  <data name="MainConversionAfterSetup" xml:space="preserve">
+    <value>Conversion disponible après configuration.</value>
+  </data>
+  <data name="MainUnavailableReason" xml:space="preserve">
+    <value>Indisponible : {0}</value>
+  </data>
+  <data name="MainNotSelected" xml:space="preserve">
+    <value>Non sélectionné</value>
+  </data>
+  <data name="MainModeExtract" xml:space="preserve">
+    <value>Extraction</value>
+  </data>
+  <data name="MainModeConvert" xml:space="preserve">
+    <value>Conversion</value>
+  </data>
+  <data name="MainCopyPreview" xml:space="preserve">
+    <value>.{0} · copie du flux</value>
+  </data>
+  <data name="MainCopyFormatUnknown" xml:space="preserve">
+    <value>Aucun format d’extraction disponible</value>
+  </data>
+  <data name="MainConvertingTo" xml:space="preserve">
+    <value>Conversion vers {0} ({1}).</value>
+  </data>
+  <data name="MainCopyingTo" xml:space="preserve">
+    <value>Copie vers {0} sans transcodage.</value>
+  </data>
+  <data name="MainTypeCover" xml:space="preserve">
+    <value>Jaquette</value>
+  </data>
+  <data name="MainTypeImage" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="MainTypeAnimation" xml:space="preserve">
+    <value>Animation</value>
+  </data>
+  <data name="MainTypeVideo" xml:space="preserve">
+    <value>Vidéo</value>
+  </data>
+  <data name="MainTypeAudio" xml:space="preserve">
+    <value>Audio</value>
+  </data>
+  <data name="MainTypeSubtitle" xml:space="preserve">
+    <value>Sous-titres</value>
+  </data>
+  <data name="MainTypeAttachment" xml:space="preserve">
+    <value>Pièce jointe</value>
+  </data>
+  <data name="MainTypeOther" xml:space="preserve">
+    <value>Autre</value>
+  </data>
+  <data name="MainMediaSummary" xml:space="preserve">
+    <value>{0}
+{1}
+Taille : {2:N0} octets ; conteneur : {3} ; durée : {4} ; débit : {5}
+Vidéo : {6} ; images : {7} ; animations : {8} ; audio : {9} ; sous-titres : {10} ; flux visuels inconnus : {11} ; total des flux : {12}</value>
+  </data>
+  <data name="MainDescriptionResolutionUnknown" xml:space="preserve">
+    <value>résolution : —</value>
+  </data>
+  <data name="MainDescriptionFps" xml:space="preserve">
+    <value>{0:0.##} ips</value>
+  </data>
+  <data name="MainDescriptionFpsUnknown" xml:space="preserve">
+    <value>IPS : —</value>
+  </data>
+  <data name="MainDescriptionDuration" xml:space="preserve">
+    <value>durée : {0}</value>
+  </data>
+  <data name="MainDescriptionChannels" xml:space="preserve">
+    <value>audio {0} canaux</value>
+  </data>
+  <data name="MainDescriptionChannelsUnknown" xml:space="preserve">
+    <value>canaux : —</value>
+  </data>
+  <data name="MainDescriptionSampleRate" xml:space="preserve">
+    <value>{0} Hz</value>
+  </data>
+  <data name="MainDescriptionSampleRateUnknown" xml:space="preserve">
+    <value>fréquence d’échantillonnage : —</value>
+  </data>
+  <data name="MainDescriptionText" xml:space="preserve">
+    <value>texte</value>
+  </data>
+  <data name="MainDescriptionGraphic" xml:space="preserve">
+    <value>image matricielle</value>
+  </data>
+  <data name="MainDescriptionCover" xml:space="preserve">
+    <value>Image (jaquette)</value>
+  </data>
+  <data name="MainDescriptionUnknownVisual" xml:space="preserve">
+    <value>Flux visuel inconnu</value>
+  </data>
+  <data name="MainDescriptionUnknownType" xml:space="preserve">
+    <value>Type inconnu</value>
+  </data>
+  <data name="MainChannelOne" xml:space="preserve">
+    <value>canal</value>
+  </data>
+  <data name="MainChannelFew" xml:space="preserve">
+    <value>canaux</value>
+  </data>
+  <data name="MainChannelMany" xml:space="preserve">
+    <value>canaux</value>
+  </data>
+  <data name="MainChannelsUnknown" xml:space="preserve">
+    <value>Canaux : —</value>
+  </data>
+  <data name="MainSubtitleText" xml:space="preserve">
+    <value>Texte</value>
+  </data>
+  <data name="MainSubtitleGraphic" xml:space="preserve">
+    <value>Image matricielle</value>
+  </data>
+  <data name="MainStatusUnavailable" xml:space="preserve">
+    <value>Indisponible</value>
+  </data>
+  <data name="MainStatusExtracting" xml:space="preserve">
+    <value>Extraction en cours</value>
+  </data>
+  <data name="MainStatusConverting" xml:space="preserve">
+    <value>Conversion en cours</value>
+  </data>
+  <data name="MainStatusExtracted" xml:space="preserve">
+    <value>Extrait</value>
+  </data>
+  <data name="MainStatusConverted" xml:space="preserve">
+    <value>Converti</value>
+  </data>
+  <data name="MainStatusCancelled" xml:space="preserve">
+    <value>Annulé</value>
+  </data>
+  <data name="MainStatusConversionAvailable" xml:space="preserve">
+    <value>Conversion disponible</value>
+  </data>
+  <data name="MainStatusAvailable" xml:space="preserve">
+    <value>Disponible</value>
+  </data>
+  <data name="MainStatusNeedsSetup" xml:space="preserve">
+    <value>Configuration requise</value>
+  </data>
+  <data name="MainReasonNoStreamIndex" xml:space="preserve">
+    <value>FFprobe n’a pas indiqué l’indice du flux.</value>
+  </data>
+  <data name="MainReasonUnknownCodec" xml:space="preserve">
+    <value>Le codec est inconnu ; impossible de déterminer un format sûr pour copier le flux.</value>
+  </data>
+  <data name="MainReasonAnimation" xml:space="preserve">
+    <value>Les animations peuvent actuellement être analysées uniquement ; leur extraction sera ajoutée séparément.</value>
+  </data>
+  <data name="MainReasonUnknownVisual" xml:space="preserve">
+    <value>Impossible de distinguer avec certitude une vidéo d’une image fixe.</value>
+  </data>
+  <data name="MainReasonUnknownAttachmentFormat" xml:space="preserve">
+    <value>Le format de l’image jointe n’a pas été confirmé pour l’extraction par copie de flux.</value>
+  </data>
+  <data name="MainReasonStandaloneImage" xml:space="preserve">
+    <value>Il s’agit d’une image indépendante, et non d’un flux dans un conteneur multimédia.</value>
+  </data>
+  <data name="MainReasonUnsupportedStreamType" xml:space="preserve">
+    <value>Ce type de flux ne peut pas actuellement être extrait sans transcodage.</value>
+  </data>
+  <data name="MainReasonUnsupportedCodec" xml:space="preserve">
+    <value>Aucune méthode vérifiée ne permet de copier le codec {0} dans un fichier distinct.</value>
+  </data>
+  <data name="MainProgressExtractingTo" xml:space="preserve">
+    <value>Flux nº {0} : extraction vers {1}</value>
+  </data>
+  <data name="MainProgressConvertingTo" xml:space="preserve">
+    <value>Flux nº {0} : conversion vers {1}</value>
+  </data>
+  <data name="MainProgressFfmpegPosition" xml:space="preserve">
+    <value>Flux nº {0} : position FFmpeg {1}</value>
+  </data>
+  <data name="MainProgressStream" xml:space="preserve">
+    <value>Flux nº {0}</value>
+  </data>
+  <data name="MainProgressWithPercent" xml:space="preserve">
+    <value>{0} · {1:0.#} %</value>
+  </data>
+  <data name="MainProgressAttachment" xml:space="preserve">
+    <value>Flux nº {0} : copie de la pièce jointe Matroska, {1:P0}</value>
+  </data>
+  <data name="MainResultSaved" xml:space="preserve">
+    <value>Enregistré : {0} ; {1} ; {2}</value>
+  </data>
+  <data name="MainResultCancelledAfter" xml:space="preserve">
+    <value>Traitement annulé après {0}.</value>
+  </data>
+  <data name="MainResultCancelled" xml:space="preserve">
+    <value>Traitement annulé.</value>
+  </data>
+  <data name="MainResultTimeout" xml:space="preserve">
+    <value>Délai d’extraction dépassé après {0}.</value>
+  </data>
+  <data name="MainResultOutputAccessDenied" xml:space="preserve">
+    <value>Accès au dossier ou au fichier de sortie refusé.</value>
+  </data>
+  <data name="MainResultWriteFailed" xml:space="preserve">
+    <value>Impossible d’écrire le fichier. Vérifiez l’espace libre et les autorisations.</value>
+  </data>
+  <data name="MainResultFfmpegLaunchFailed" xml:space="preserve">
+    <value>Impossible de démarrer FFmpeg. Vérifiez à nouveau les dépendances.</value>
+  </data>
+  <data name="MainResultUnexpectedFailure" xml:space="preserve">
+    <value>Impossible d’extraire le flux. Temps écoulé : {0}. Consultez le journal et réessayez.</value>
+  </data>
+  <data name="MainResultNotStartedCancelled" xml:space="preserve">
+    <value>Non démarré car l’opération a été annulée.</value>
+  </data>
+  <data name="MainAllTracksExtracted" xml:space="preserve">
+    <value>Tous les flux ont été extraits.</value>
+  </data>
+  <data name="MainProgressSharedPass" xml:space="preserve">
+    <value>Flux nº {0} : passe FFmpeg partagée</value>
+  </data>
+  <data name="MainProgressStreams" xml:space="preserve">
+    <value>Flux {0}</value>
+  </data>
+  <data name="MainResultSaveStreamFailed" xml:space="preserve">
+    <value>Impossible d’enregistrer le flux nº {0}. Temps écoulé : {1}.</value>
+  </data>
+  <data name="MainResultExtractionCancelledAfter" xml:space="preserve">
+    <value>Extraction annulée après {0}.</value>
+  </data>
+  <data name="MainResultFfmpegTimeout" xml:space="preserve">
+    <value>Délai d’attente de FFmpeg dépassé après {0}.</value>
+  </data>
+  <data name="MainResultSizeGb" xml:space="preserve">
+    <value>{0:0.##} Go</value>
+  </data>
+  <data name="MainResultSizeMb" xml:space="preserve">
+    <value>{0:0.##} Mo</value>
+  </data>
+  <data name="MainResultSizeKb" xml:space="preserve">
+    <value>{0:0.##} Ko</value>
+  </data>
+  <data name="MainResultFfmpegExitCode" xml:space="preserve">
+    <value>FFmpeg s’est terminé avec le code {0}.</value>
+  </data>
+  <data name="MainResultTechnicalDetail" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="MainResultEmptyOutput" xml:space="preserve">
+    <value>Aucun fichier de flux non vide n’a été créé.</value>
+  </data>
+  <data name="MainResultFailureWithTime" xml:space="preserve">
+    <value>{0} Temps écoulé : {1}.</value>
+  </data>
+  <data name="MainValidationUnsupportedType" xml:space="preserve">
+    <value>Le format sélectionné ne prend pas en charge ce type de flux.</value>
+  </data>
+  <data name="MainValidationInvalidName" xml:space="preserve">
+    <value>Nom de format de sortie ou d’encodeur non valide.</value>
+  </data>
+  <data name="MainValidationGraphicSubtitle" xml:space="preserve">
+    <value>Les sous-titres bitmap ne peuvent pas être convertis en texte sans reconnaissance optique de caractères (OCR).</value>
+  </data>
+  <data name="MainValidationSubtitleEncoder" xml:space="preserve">
+    <value>L’encodeur sélectionné ne produit pas de sous-titres textuels.</value>
+  </data>
+  <data name="MainValidationOutOfRange" xml:space="preserve">
+    <value>Les paramètres de conversion dépassent les valeurs autorisées.</value>
+  </data>
+  <data name="MainValidationWrongTypeParameters" xml:space="preserve">
+    <value>Ces paramètres ne s’appliquent pas à ce type de flux.</value>
+  </data>
+  <data name="ConversionOriginalTextStream" xml:space="preserve"><value>Flux texte LRC</value></data>
+  <data name="ConversionSourceEncoder" xml:space="preserve"><value>{0} — original</value></data>
+  <data name="ConversionCopyIncompatible" xml:space="preserve"><value>Le codec source ne peut pas être copié dans le conteneur sélectionné.</value></data>
+  <data name="MainValidationUnsupportedOutputFormat" xml:space="preserve">
+    <value>Le format de sortie ne prend pas en charge ce type de flux.</value>
+  </data>
+  <data name="MainValidationProbeFileFailed" xml:space="preserve">
+    <value>L’encodeur {0} est répertorié par FFmpeg, mais n’a pas pu créer de fichier de test au format {1} (code de sortie FFmpeg : {2}).</value>
+  </data>
+  <data name="MainValidationEncoderTimeout" xml:space="preserve">
+    <value>La vérification de l’encodeur {0} a dépassé le délai imparti.</value>
+  </data>
+  <data name="MainValidationEncoderCheckFailed" xml:space="preserve">
+    <value>Impossible de vérifier l’encodeur {0} avec le format {1}.</value>
+  </data>
+  <data name="ConversionBitrate" xml:space="preserve">
+    <value>Débit, kbit/s</value>
+  </data>
+  <data name="ConversionVideoOptions" xml:space="preserve">
+    <value>Paramètres vidéo</value>
+  </data>
+  <data name="ConversionWidth" xml:space="preserve">
+    <value>Largeur, px</value>
+  </data>
+  <data name="ConversionFindHardware" xml:space="preserve">
+    <value>Encodeurs matériels</value>
+  </data>
+  <data name="ConversionFindCompatible" xml:space="preserve">
+    <value>Rechercher d’autres encodeurs</value>
+  </data>
+  <data name="ConversionChannels" xml:space="preserve">
+    <value>Canaux</value>
+  </data>
+  <data name="ConversionAutomatic" xml:space="preserve">
+    <value>Automatique</value>
+  </data>
+  <data name="ConversionCancel" xml:space="preserve">
+    <value>Annuler</value>
+  </data>
+  <data name="ConversionOutputFormat" xml:space="preserve">
+    <value>Conteneur / format de sortie</value>
+  </data>
+  <data name="ConversionAudioOptions" xml:space="preserve">
+    <value>Paramètres audio</value>
+  </data>
+  <data name="ConversionFrameRate" xml:space="preserve">
+    <value>Fréquence d’images, ips</value>
+  </data>
+  <data name="ConversionWindowTitle" xml:space="preserve">
+    <value>Paramètres avancés de conversion</value>
+  </data>
+  <data name="ConversionCrf" xml:space="preserve">
+    <value>Qualité / CRF</value>
+  </data>
+  <data name="ConversionHeight" xml:space="preserve">
+    <value>Hauteur, px</value>
+  </data>
+  <data name="ConversionApply" xml:space="preserve">
+    <value>Appliquer</value>
+  </data>
+  <data name="ConversionEncoder" xml:space="preserve">
+    <value>Encodeur</value>
+  </data>
+  <data name="ConversionSampleRate" xml:space="preserve">
+    <value>Fréquence d’échantillonnage, Hz</value>
+  </data>
+  <data name="ConversionQuality" xml:space="preserve">
+    <value>Qualité, 0–10</value>
+  </data>
+  <data name="ConversionSeparateFilesHint" xml:space="preserve">
+    <value>Chaque flux est enregistré dans un fichier distinct. Laissez un champ vide pour utiliser le mode Automatique.</value>
+  </data>
+  <data name="ConversionHeadingVideo" xml:space="preserve">
+    <value>Paramètres de conversion vidéo</value>
+  </data>
+  <data name="ConversionHeadingAudio" xml:space="preserve">
+    <value>Paramètres de conversion audio</value>
+  </data>
+  <data name="ConversionHeadingSubtitles" xml:space="preserve">
+    <value>Paramètres de conversion des sous-titres</value>
+  </data>
+  <data name="ConversionCopyEncoderDescription" xml:space="preserve">
+    <value>copie sans transcodage</value>
+  </data>
+  <data name="ConversionOriginalCopyCodec" xml:space="preserve">
+    <value>Original (copie sans transcodage) — {0}</value>
+  </data>
+  <data name="ConversionForceReencode" xml:space="preserve">
+    <value>Forcer le réencodage</value>
+  </data>
+  <data name="ConversionCopyNote" xml:space="preserve">
+    <value>Le flux d’origine sera copié sans transcodage.</value>
+  </data>
+  <data name="ConversionOtherEncodersHint" xml:space="preserve">
+    <value>D’autres encodeurs peuvent être vérifiés pour le format sélectionné.</value>
+  </data>
+  <data name="ConversionCheckingAdditional" xml:space="preserve">
+    <value>Vérification des encodeurs supplémentaires…</value>
+  </data>
+  <data name="ConversionConfirmedCompatibleCount" xml:space="preserve">
+    <value>Encodeurs compatibles confirmés : {0}.</value>
+  </data>
+  <data name="ConversionAdditionalCancelled" xml:space="preserve">
+    <value>Vérification des encodeurs annulée.</value>
+  </data>
+  <data name="ConversionAdditionalFailed" xml:space="preserve">
+    <value>Impossible de vérifier les encodeurs supplémentaires.</value>
+  </data>
+  <data name="ConversionCheckingHardware" xml:space="preserve">
+    <value>Vérification des encodeurs matériels…</value>
+  </data>
+  <data name="ConversionHardwareSearchFailedDetails" xml:space="preserve">
+    <value>Impossible de terminer la vérification des encodeurs matériels. Consultez le journal de diagnostic.</value>
+  </data>
+  <data name="ConversionHardwareFoundCount" xml:space="preserve">
+    <value>Encodeurs matériels disponibles : {0}.</value>
+  </data>
+  <data name="ConversionHardwareNotFound" xml:space="preserve">
+    <value>Aucun encodeur matériel disponible n’a été trouvé.</value>
+  </data>
+  <data name="ConversionHardwareCancelled" xml:space="preserve">
+    <value>Vérification des encodeurs matériels annulée.</value>
+  </data>
+  <data name="ConversionHardwareFailed" xml:space="preserve">
+    <value>Impossible de vérifier les encodeurs matériels.</value>
+  </data>
+  <data name="ConversionSelectFormatAndEncoder" xml:space="preserve">
+    <value>Sélectionnez un format de sortie et un encodeur.</value>
+  </data>
+  <data name="ConversionCheckingCompatibility" xml:space="preserve">
+    <value>Vérification de la compatibilité de l’encodeur avec le format de sortie…</value>
+  </data>
+  <data name="ConversionNumbersOrEmpty" xml:space="preserve">
+    <value>Saisissez des valeurs numériques ou laissez les champs vides.</value>
+  </data>
+  <data name="ConversionNumberTooLarge" xml:space="preserve">
+    <value>La valeur numérique est trop élevée.</value>
+  </data>
+  <data name="ConversionCheckCancelled" xml:space="preserve">
+    <value>Vérification annulée.</value>
+  </data>
+  <data name="ConversionCheckParametersFailed" xml:space="preserve">
+    <value>Impossible de vérifier les paramètres. Assurez-vous que FFmpeg est disponible.</value>
+  </data>
+  <data name="StreamPropertiesTitle" xml:space="preserve">
+    <value>Propriétés</value>
+  </data>
+  <data name="StreamPropertiesHeading" xml:space="preserve"><value>Propriétés du flux</value></data>
+  <data name="StreamHeaderVideo" xml:space="preserve"><value>Flux vidéo</value></data>
+  <data name="StreamHeaderAudio" xml:space="preserve"><value>Flux audio</value></data>
+  <data name="StreamHeaderSubtitle" xml:space="preserve"><value>Sous-titres</value></data>
+  <data name="StreamHeaderImage" xml:space="preserve"><value>Image</value></data>
+  <data name="StreamHeaderCover" xml:space="preserve"><value>Image (jaquette)</value></data>
+  <data name="StreamHeaderAnimation" xml:space="preserve"><value>Animation</value></data>
+  <data name="StreamHeaderAttachment" xml:space="preserve"><value>Pièce jointe</value></data>
+  <data name="StreamHeaderOther" xml:space="preserve"><value>Autre flux</value></data>
+  <data name="StreamSummaryChannels" xml:space="preserve"><value>Canaux : {0}</value></data>
+  <data name="StreamSectionBasic" xml:space="preserve"><value>Général</value></data>
+  <data name="StreamSectionAudio" xml:space="preserve"><value>Propriétés audio</value></data>
+  <data name="StreamSectionVideo" xml:space="preserve"><value>Propriétés vidéo</value></data>
+  <data name="StreamSectionImage" xml:space="preserve"><value>Propriétés de l’image</value></data>
+  <data name="StreamSectionTiming" xml:space="preserve"><value>Chronologie</value></data>
+  <data name="StreamSectionIdentification" xml:space="preserve"><value>Identification</value></data>
+  <data name="StreamSectionOther" xml:space="preserve"><value>Autres propriétés</value></data>
+  <data name="StreamNotSpecified" xml:space="preserve">
+    <value>Non précisé</value>
+  </data>
+  <data name="StreamUnknownLanguage" xml:space="preserve">
+    <value>Langue inconnue</value>
+  </data>
+  <data name="StreamSourceIndex" xml:space="preserve">
+    <value>Indice source</value>
+  </data>
+  <data name="StreamTitle" xml:space="preserve">
+    <value>Titre</value>
+  </data>
+  <data name="StreamDuration" xml:space="preserve">
+    <value>Durée</value>
+  </data>
+  <data name="StreamBitRateValue" xml:space="preserve">
+    <value>{0:N0} bit/s</value>
+  </data>
+  <data name="StreamResolution" xml:space="preserve">
+    <value>Résolution</value>
+  </data>
+  <data name="StreamResolutionValue" xml:space="preserve">
+    <value>{0} × {1}</value>
+  </data>
+  <data name="StreamFrameRate" xml:space="preserve">
+    <value>Fréquence d’images</value>
+  </data>
+  <data name="StreamFrameRateValue" xml:space="preserve">
+    <value>{0:0.###} ips</value>
+  </data>
+  <data name="StreamProfile" xml:space="preserve">
+    <value>Profil</value>
+  </data>
+  <data name="StreamPixelFormat" xml:space="preserve">
+    <value>Format de pixels</value>
+  </data>
+  <data name="StreamSampleRate" xml:space="preserve">
+    <value>Fréquence d’échantillonnage</value>
+  </data>
+  <data name="StreamSampleRateValue" xml:space="preserve">
+    <value>{0:N0} Hz</value>
+  </data>
+  <data name="StreamChannelLayout" xml:space="preserve">
+    <value>Disposition des canaux</value>
+  </data>
+  <data name="StreamFrameCount" xml:space="preserve">
+    <value>Images</value>
+  </data>
+  <data name="StreamFrameCountValue" xml:space="preserve">
+    <value>{0:N0}</value>
+  </data>
+  <data name="StreamImageFormat" xml:space="preserve">
+    <value>Format d’image</value>
+  </data>
+  <data name="StreamTag" xml:space="preserve">
+    <value>Étiquette : {0}</value>
+  </data>
+  <data name="StreamFlag" xml:space="preserve">
+    <value>Indicateur : {0}</value>
+  </data>
+  <data name="StreamYes" xml:space="preserve">
+    <value>oui</value>
+  </data>
+  <data name="StreamNo" xml:space="preserve">
+    <value>non</value>
+  </data>
+  <data name="StreamCodecLongName" xml:space="preserve">
+    <value>Nom complet du codec</value>
+  </data>
+  <data name="StreamCodecTagString" xml:space="preserve">
+    <value>Identifiant du codec</value>
+  </data>
+  <data name="StreamCodecTag" xml:space="preserve">
+    <value>Étiquette du codec</value>
+  </data>
+  <data name="StreamLevel" xml:space="preserve">
+    <value>Niveau</value>
+  </data>
+  <data name="StreamSampleFormat" xml:space="preserve">
+    <value>Format d’échantillon</value>
+  </data>
+  <data name="StreamDisplayAspectRatio" xml:space="preserve">
+    <value>Rapport d’aspect d’affichage</value>
+  </data>
+  <data name="StreamSampleAspectRatio" xml:space="preserve">
+    <value>Rapport d’aspect des pixels</value>
+  </data>
+  <data name="StreamColorRange" xml:space="preserve">
+    <value>Plage de couleurs</value>
+  </data>
+  <data name="StreamColorSpace" xml:space="preserve">
+    <value>Espace colorimétrique</value>
+  </data>
+  <data name="StreamColorTransfer" xml:space="preserve">
+    <value>Caractéristique de transfert</value>
+  </data>
+  <data name="StreamColorPrimaries" xml:space="preserve">
+    <value>Couleurs primaires</value>
+  </data>
+  <data name="DiagnosticPreviewTitle" xml:space="preserve">
+    <value>Rapport de diagnostic</value>
+  </data>
+  <data name="DiagnosticPreviewSave" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="DiagnosticPreviewSaveTitle" xml:space="preserve">
+    <value>Enregistrer le rapport de diagnostic</value>
+  </data>
+  <data name="DiagnosticPreviewSaveFailed" xml:space="preserve">
+    <value>Impossible d’enregistrer le journal. Vérifiez l’accès au fichier sélectionné.</value>
+  </data>
+  <data name="DiagnosticPreviewReadFailed" xml:space="preserve">
+    <value>Impossible de lire le journal de diagnostic.</value>
+  </data>
+  <data name="LogCheckingTool" xml:space="preserve">
+    <value>Vérification de {0}…</value>
+  </data>
+  <data name="LogToolUnavailable" xml:space="preserve">
+    <value>{0} est introuvable ou ne fonctionne pas. Vérifiez son chemin ou installez-le depuis les paramètres.</value>
+  </data>
+  <data name="LogToolReadyVersion" xml:space="preserve">
+    <value>{0} {1} trouvé et prêt.</value>
+  </data>
+  <data name="LogToolReady" xml:space="preserve">
+    <value>{0} trouvé et prêt.</value>
+  </data>
+  <data name="LogAnalysisCompleteCount" xml:space="preserve">
+    <value>Analyse terminée. Flux multimédias trouvés : {0}</value>
+  </data>
+  <data name="LogAnalysisComplete" xml:space="preserve">
+    <value>Analyse terminée.</value>
+  </data>
+  <data name="LogAnalysisStarted" xml:space="preserve">
+    <value>Analyse du fichier démarrée.</value>
+  </data>
+  <data name="LogAnalysisTimeout" xml:space="preserve">
+    <value>FFprobe n’a pas répondu à temps. Relancez l’analyse du fichier.</value>
+  </data>
+  <data name="LogAnalysisCancelled" xml:space="preserve">
+    <value>Analyse du fichier annulée. Rouvrez-le si nécessaire.</value>
+  </data>
+  <data name="LogAnalysisFailed" xml:space="preserve">
+    <value>Impossible d’analyser le fichier.</value>
+  </data>
+  <data name="LogPreviewReady" xml:space="preserve">
+    <value>Aperçu prêt.</value>
+  </data>
+  <data name="LogPreviewUnavailable" xml:space="preserve">
+    <value>Impossible de générer une image d’aperçu.</value>
+  </data>
+  <data name="LogPreviewCancelled" xml:space="preserve">
+    <value>Aperçu précédent annulé.</value>
+  </data>
+  <data name="LogProcessingStartedCount" xml:space="preserve">
+    <value>Traitement démarré. Flux : {0}.</value>
+  </data>
+  <data name="LogProcessingStarted" xml:space="preserve">
+    <value>Traitement démarré.</value>
+  </data>
+  <data name="LogConvertingStreamFormat" xml:space="preserve">
+    <value>Conversion du flux nº {0} vers {1} démarrée.</value>
+  </data>
+  <data name="LogExtractingStreamFormat" xml:space="preserve">
+    <value>Extraction du flux nº {0} au format {1} démarrée.</value>
+  </data>
+  <data name="LogConvertingStream" xml:space="preserve">
+    <value>Conversion du flux nº {0} démarrée.</value>
+  </data>
+  <data name="LogExtractingStream" xml:space="preserve">
+    <value>Extraction du flux nº {0} démarrée.</value>
+  </data>
+  <data name="LogStreamStarted" xml:space="preserve">
+    <value>Traitement du flux démarré.</value>
+  </data>
+  <data name="LogStreamConverted" xml:space="preserve">
+    <value>Flux nº {0} converti{1}{2}.</value>
+  </data>
+  <data name="LogStreamExtracted" xml:space="preserve">
+    <value>Flux nº {0} extrait{1}{2}.</value>
+  </data>
+  <data name="LogProcessingComplete" xml:space="preserve">
+    <value>Traitement terminé.</value>
+  </data>
+  <data name="LogProcessingCancelled" xml:space="preserve">
+    <value>Traitement arrêté. Vous pouvez retraiter les flux inachevés.</value>
+  </data>
+  <data name="LogProcessingErrors" xml:space="preserve">
+    <value>Traitement terminé avec des erreurs.</value>
+  </data>
+  <data name="LogErrorOutputAccess" xml:space="preserve">
+    <value>accès au dossier de sortie refusé</value>
+  </data>
+  <data name="LogErrorWrite" xml:space="preserve">
+    <value>échec de l’écriture du fichier</value>
+  </data>
+  <data name="LogErrorFfmpegLaunch" xml:space="preserve">
+    <value>impossible de démarrer FFmpeg</value>
+  </data>
+  <data name="LogStreamFailed" xml:space="preserve">
+    <value>Impossible d’extraire le flux nº {0} : {1}.</value>
+  </data>
+  <data name="LogStreamConversionFailed" xml:space="preserve">
+    <value>Impossible de convertir le flux nº {0} : {1}.</value>
+  </data>
+  <data name="LogStreamCancelled" xml:space="preserve">
+    <value>Traitement du flux nº {0} annulé. Relancez-le si nécessaire.</value>
+  </data>
+  <data name="LogStreamTimeout" xml:space="preserve">
+    <value>Délai de traitement du flux nº {0} dépassé.</value>
+  </data>
+  <data name="MainResultAttachmentFailed" xml:space="preserve">
+    <value>Impossible de lire la pièce jointe Matroska. Consultez le rapport de diagnostic.</value>
+  </data>
+  <data name="OutputLanguageUnspecified" xml:space="preserve">
+    <value>langue non précisée</value>
+  </data>
+  <data name="LogCompatibleFoundCount" xml:space="preserve">
+    <value>Encodeurs compatibles trouvés : {0}.</value>
+  </data>
+  <data name="LogHardwareSearchStarted" xml:space="preserve">
+    <value>Recherche d’encodeurs matériels.</value>
+  </data>
+  <data name="LogCompatibleSearchStarted" xml:space="preserve">
+    <value>Recherche d’encodeurs compatibles.</value>
+  </data>
+  <data name="LogCompatibleNotFound" xml:space="preserve">
+    <value>Aucun encodeur compatible trouvé.</value>
+  </data>
+  <data name="LogHardwareSearchCancelled" xml:space="preserve">
+    <value>Recherche d’encodeurs matériels annulée. Relancez-la si nécessaire.</value>
+  </data>
+  <data name="LogCompatibleSearchCancelled" xml:space="preserve">
+    <value>Recherche d’encodeurs compatibles annulée. Relancez-la si nécessaire.</value>
+  </data>
+  <data name="LogHardwareSearchFailed" xml:space="preserve">
+    <value>Impossible de terminer la recherche d’encodeurs matériels.</value>
+  </data>
+  <data name="LogCompatibleSearchFailed" xml:space="preserve">
+    <value>Impossible de terminer la recherche d’encodeurs compatibles.</value>
+  </data>
+  <data name="LogSearchStale" xml:space="preserve">
+    <value>Le format de sortie a changé ; les résultats de recherche n’ont pas été appliqués. Relancez la recherche pour le nouveau format.</value>
+  </data>
+  <data name="GuideWindowTitle" xml:space="preserve">
+    <value>Guide des médias</value>
+  </data>
+  <data name="GuideSearchPlaceholder" xml:space="preserve">
+    <value>Rechercher dans le guide des médias</value>
+  </data>
+  <data name="GuideClearSearch" xml:space="preserve">
+    <value>Effacer</value>
+  </data>
+  <data name="GuidePrevious" xml:space="preserve">
+    <value>Précédent</value>
+  </data>
+  <data name="GuideNext" xml:space="preserve">
+    <value>Suivant</value>
+  </data>
+  <data name="GuideContents" xml:space="preserve">
+    <value>Sommaire</value>
+  </data>
+  <data name="GuideSearchResults" xml:space="preserve">
+    <value>Résultats de recherche</value>
+  </data>
+  <data name="GuideNoResults" xml:space="preserve">
+    <value>Aucun résultat trouvé</value>
+  </data>
+  <data name="GuideArticleCount" xml:space="preserve">
+    <value>Articles : {0}</value>
+  </data>
+  <data name="GuideNavigationUnavailable" xml:space="preserve">
+    <value>Navigation indisponible</value>
+  </data>
+  <data name="GuideLoadFailed" xml:space="preserve">
+    <value>Impossible de charger le guide des médias : {0}</value>
+  </data>
+  <data name="GuideRussianOriginalNotice" xml:space="preserve">
+    <value>Le guide des médias n’a pas encore été traduit dans la langue sélectionnée. La version originale en russe est affichée.</value>
+  </data>
+  <data name="ViewNotFound" xml:space="preserve">
+    <value>Vue introuvable : {0}</value>
+  </data>
+  <data name="MainImageFormat" xml:space="preserve"><value>Format d’image</value></data>
+  <data name="MainAnimationFormat" xml:space="preserve"><value>Format d’animation</value></data>
+  <data name="MainOriginalImage" xml:space="preserve"><value>{0} — image d’origine, sans réencodage ; fichier .{1}</value></data>
+  <data name="MainOriginalAnimation" xml:space="preserve"><value>{0} — animation d’origine, sans réencodage ; fichier .{1}</value></data>
+  <data name="ConversionHeadingImage" xml:space="preserve"><value>Paramètres de conversion d’image</value></data>
+  <data name="ConversionHeadingAnimation" xml:space="preserve"><value>Paramètres de conversion d’animation</value></data>
+  <data name="ConversionAnimationOutputsHint" xml:space="preserve"><value>Une animation peut être enregistrée en tant qu’animation ou vidéo. L’exportation d’une seule image fixe n’est pas disponible.</value></data>
+  <data name="ConversionImageOutputsHint" xml:space="preserve"><value>Les images ne peuvent être enregistrées que dans des formats d’image.</value></data>
+  <data name="LogVisualExtractionStarted" xml:space="preserve"><value>Extraction de l’image ou de l’animation du flux nº {0} au format {1}.</value></data>
+  <data name="LogVisualConversionStarted" xml:space="preserve"><value>Conversion de l’image ou de l’animation du flux nº {0} au format {1}.</value></data>
+  <data name="LogVisualExtractionCompleted" xml:space="preserve"><value>Image ou animation extraite du flux nº {0} : {1}, {2}.</value></data>
+  <data name="LogVisualConversionCompleted" xml:space="preserve"><value>Image ou animation convertie du flux nº {0} : {1}, {2}.</value></data>
+  <data name="MainAttachments" xml:space="preserve"><value>Pièces jointes</value></data>
+  <data name="MainAttachmentCount" xml:space="preserve"><value>Trouvées : {0}</value></data>
+  <data name="AttachmentView" xml:space="preserve"><value>Afficher</value></data>
+  <data name="AttachmentExtractAll" xml:space="preserve"><value>Tout extraire</value></data>
+  <data name="AttachmentWindowTitle" xml:space="preserve"><value>Pièces jointes MKV</value></data>
+  <data name="AttachmentName" xml:space="preserve"><value>Nom</value></data>
+  <data name="AttachmentType" xml:space="preserve"><value>Type</value></data>
+  <data name="AttachmentMime" xml:space="preserve"><value>MIME</value></data>
+  <data name="AttachmentFoundCount" xml:space="preserve"><value>Pièces jointes trouvées : {0}</value></data>
+  <data name="AttachmentSize" xml:space="preserve"><value>Taille</value></data>
+  <data name="AttachmentDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="AttachmentApply" xml:space="preserve"><value>Appliquer</value></data>
+  <data name="AttachmentSelectedCount" xml:space="preserve"><value>Sélectionnées : {0} sur {1}</value></data>
+  <data name="LogAttachmentsFound" xml:space="preserve"><value>Pièces jointes MKV trouvées : {0}.</value></data>
+  <data name="LogAttachmentsExportAll" xml:space="preserve"><value>Extraction de toutes les pièces jointes MKV : {0}.</value></data>
+  <data name="MainProgressListedAttachment" xml:space="preserve"><value>Extraction de la pièce jointe {0}</value></data>
+  <data name="MainProgressListedAttachmentPercent" xml:space="preserve"><value>Pièce jointe {0} : {1:P0}</value></data>
+  <data name="LogAttachmentStarted" xml:space="preserve"><value>Extraction de la pièce jointe {0}.</value></data>
+  <data name="LogAttachmentCompleted" xml:space="preserve"><value>Pièce jointe {0} extraite : {1}.</value></data>
+  <data name="LogAttachmentFailed" xml:space="preserve"><value>Impossible d’extraire la pièce jointe {0} : {1}.</value></data>
+  <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>Impossible de lire la liste des pièces jointes MKV. Les autres flux restent disponibles ; vérifiez et rouvrez le fichier si nécessaire.</value></data>
+  <data name="LogOutputFolderAccessDenied" xml:space="preserve"><value>Le dossier de sortie n’est pas accessible en écriture. Choisissez un autre dossier dans lequel vous pouvez enregistrer des fichiers.</value></data>
+  <data name="LogAviH264Copy" xml:space="preserve"><value>Compatibilité AVI : le flux binaire vidéo a été adapté sans réencodage. La lecture peut être limitée dans certaines applications. Pour une meilleure compatibilité, choisissez un encodeur vidéo approprié pour la conversion.</value></data>
+  <data name="LogMxfUnofficialCopy" xml:space="preserve"><value>Compatibilité MXF : le mode non officiel de FFmpeg a conservé la fréquence d’images source. La lecture peut être limitée dans certaines applications. Pour une meilleure compatibilité, convertissez la vidéo à une fréquence d’images MXF standard.</value></data>
+  <data name="LogSpecialCopyFailed" xml:space="preserve"><value>Impossible d’extraire la vidéo sans réencodage. Choisissez un encodeur compatible pour la conversion : {0}</value></data>
+  <data name="LogVideoCopyCodecError" xml:space="preserve"><value>Impossible d’extraire la vidéo vers {0} : le conteneur ne prend pas en charge ce codec vidéo. Choisissez un encodeur compatible pour la conversion.</value></data>
+  <data name="LogVideoCopyProfileError" xml:space="preserve"><value>Impossible d’extraire la vidéo vers {0} : ce profil de codec n’est pas pris en charge. Choisissez un encodeur ou un profil compatible pour la conversion.</value></data>
+  <data name="LogVideoCopyFrameRateError" xml:space="preserve"><value>Impossible d’extraire la vidéo vers {0} : la fréquence d’images source n’est pas prise en charge. Choisissez un format ou un encodeur compatible pour la conversion.</value></data>
+  <data name="LogVideoCopyResolutionError" xml:space="preserve"><value>Impossible d’extraire la vidéo vers {0} : la résolution n’est pas prise en charge. Choisissez un format compatible ou ajustez les paramètres de conversion.</value></data>
+  <data name="LogVideoCopyPixelFormatError" xml:space="preserve"><value>Impossible d’extraire la vidéo vers {0} : le format de pixels n’est pas pris en charge. Choisissez un encodeur compatible pour la conversion.</value></data>
+  <data name="LogVideoCopyTimestampsError" xml:space="preserve"><value>Impossible d’extraire la vidéo vers {0} : les horodatages sont invalides. Consultez le rapport de diagnostic et envisagez une conversion.</value></data>
+  <data name="LogVideoCopyHeadersError" xml:space="preserve"><value>Impossible d’extraire la vidéo vers {0} : les en-têtes du flux vidéo sont absents ou endommagés. Consultez le rapport de diagnostic.</value></data>
+  <data name="LogVideoCopyBitstreamError" xml:space="preserve"><value>Impossible d’extraire la vidéo vers {0} : le flux binaire vidéo est invalide. Consultez le rapport de diagnostic et envisagez une conversion.</value></data>
+  <data name="LogVideoCopyUnknownError" xml:space="preserve"><value>Impossible d’extraire la vidéo vers {0}. La cause est inconnue ; consultez le rapport de diagnostic. Envisagez de choisir un encodeur pour la conversion.</value></data>
+  <data name="InstallerRepairFfmpeg" xml:space="preserve"><value>Réparer FFmpeg</value></data>
+  <data name="ToolsWingetRepairNeeded" xml:space="preserve"><value>FFmpeg est enregistré dans Windows, mais des fichiers requis sont manquants ou inaccessibles. Une réinstallation est nécessaire pour le réparer.</value></data>
+  <data name="ToolsWingetRepairStarted" xml:space="preserve"><value>Réparation de FFmpeg avec WinGet.</value></data>
+  <data name="ToolsWingetRepairComplete" xml:space="preserve"><value>FFmpeg a été réparé et vérifié.</value></data>
+  <data name="ToolsWingetRepairFailed" xml:space="preserve"><value>WinGet n’a pas pu réparer FFmpeg. Consultez le rapport de diagnostic.</value></data>
+  <data name="ToolsLocalRepairNeeded" xml:space="preserve"><value>La copie de FFmpeg gérée par l’application est endommagée. Téléchargez-la à nouveau pour la réparer.</value></data>
+  <data name="ToolsLocalRepairStarted" xml:space="preserve"><value>Réparation de la copie de FFmpeg gérée par l’application.</value></data>
+  <data name="ToolsLocalRepairComplete" xml:space="preserve"><value>La copie de FFmpeg gérée par l’application a été réparée et vérifiée.</value></data>
+  <data name="DiagnosticPreviewClear" xml:space="preserve"><value>Effacer</value></data>
+  <data name="DiagnosticPreviewClearFailed" xml:space="preserve"><value>Impossible d’effacer le journal de diagnostic.</value></data>
+  <data name="DiagnosticEventsCount" xml:space="preserve"><value>Événements : {0}</value></data>
+  <data name="DiagnosticWarningsCount" xml:space="preserve"><value>Avertissements : {0}</value></data>
+  <data name="DiagnosticErrorsCount" xml:space="preserve"><value>Erreurs : {0}</value></data>
+</root>

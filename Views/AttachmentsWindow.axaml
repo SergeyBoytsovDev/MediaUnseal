@@ -3,7 +3,7 @@
         xmlns:vm="using:TrackExtractor.ViewModels"
         x:Class="TrackExtractor.Views.AttachmentsWindow"
         Title="{DynamicResource Loc_AttachmentWindowTitle}" Icon="/Assets/Icons/TrackExtractor-256.png"
-        Width="920" Height="500" MinWidth="720" MinHeight="300" CanResize="True"
+        Width="820" Height="500" MinWidth="720" MinHeight="300" CanResize="True"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
         FontFamily="Inter" FontSize="14">

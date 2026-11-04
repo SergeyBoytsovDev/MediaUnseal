@@ -1,0 +1,1704 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="LanguageSection" xml:space="preserve">
+    <value>界面语言</value>
+  </data>
+  <data name="RussianName" xml:space="preserve">
+    <value>俄语</value>
+  </data>
+  <data name="UnknownLanguageFolder" xml:space="preserve">
+    <value>未指定语言</value>
+  </data>
+  <data name="VersionFormat" xml:space="preserve">
+    <value>版本：{0}</value>
+  </data>
+  <data name="VersionUnspecified" xml:space="preserve">
+    <value>未指定</value>
+  </data>
+  <data name="SettingsSections" xml:space="preserve">
+    <value>设置分类</value>
+  </data>
+  <data name="SettingsInstaller" xml:space="preserve">
+    <value>FFmpeg 安装程序</value>
+  </data>
+  <data name="SettingsAppearance" xml:space="preserve">
+    <value>外观</value>
+  </data>
+  <data name="SettingsKnowledgeBase" xml:space="preserve">
+    <value>媒体格式指南</value>
+  </data>
+  <data name="SettingsAbout" xml:space="preserve">
+    <value>关于</value>
+  </data>
+  <data name="SettingsThemeLabel" xml:space="preserve">
+    <value>界面主题</value>
+  </data>
+  <data name="SettingsThemeStudioDark" xml:space="preserve">
+    <value>Studio Dark</value>
+  </data>
+  <data name="SettingsThemeStudioDarkDescription" xml:space="preserve">
+    <value>高对比度工作室风格</value>
+  </data>
+  <data name="SettingsThemeResolve" xml:space="preserve">
+    <value>Resolve Workspace</value>
+  </data>
+  <data name="SettingsThemeResolveDescription" xml:space="preserve">
+    <value>紧凑的制作工作区</value>
+  </data>
+  <data name="SettingsThemeAdobe" xml:space="preserve">
+    <value>Adobe Clean Pro</value>
+  </data>
+  <data name="SettingsThemeAdobeDescription" xml:space="preserve">
+    <value>简洁的字体与间距</value>
+  </data>
+  <data name="SettingsThemeIndustrial" xml:space="preserve">
+    <value>Industrial Utility</value>
+  </data>
+  <data name="SettingsThemeIndustrialDescription" xml:space="preserve">
+    <value>专注实用的主题</value>
+  </data>
+  <data name="SettingsThemeHybrid" xml:space="preserve">
+    <value>Hybrid Modern Panel</value>
+  </data>
+  <data name="SettingsThemeHybridDescription" xml:space="preserve">
+    <value>柔和面板与冷色强调</value>
+  </data>
+  <data name="LanguageEnglishName" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="LanguageEnglishDescription" xml:space="preserve">
+    <value>英语</value>
+  </data>
+  <data name="LanguageGermanName" xml:space="preserve">
+    <value>Deutsch</value>
+  </data>
+  <data name="LanguageGermanDescription" xml:space="preserve">
+    <value>德语</value>
+  </data>
+  <data name="LanguageFrenchName" xml:space="preserve">
+    <value>Français</value>
+  </data>
+  <data name="LanguageFrenchDescription" xml:space="preserve">
+    <value>法语</value>
+  </data>
+  <data name="LanguageSpanishName" xml:space="preserve">
+    <value>Español</value>
+  </data>
+  <data name="LanguageSpanishDescription" xml:space="preserve">
+    <value>西班牙语</value>
+  </data>
+  <data name="LanguagePortugueseName" xml:space="preserve">
+    <value>Português</value>
+  </data>
+  <data name="LanguagePortugueseDescription" xml:space="preserve">
+    <value>葡萄牙语</value>
+  </data>
+  <data name="LanguageItalianName" xml:space="preserve">
+    <value>Italiano</value>
+  </data>
+  <data name="LanguageItalianDescription" xml:space="preserve">
+    <value>意大利语</value>
+  </data>
+  <data name="LanguageChineseName" xml:space="preserve">
+    <value>中文（简体）</value>
+  </data>
+  <data name="LanguageChineseDescription" xml:space="preserve">
+    <value>简体中文</value>
+  </data>
+  <data name="LanguageJapaneseName" xml:space="preserve">
+    <value>日本語</value>
+  </data>
+  <data name="LanguageJapaneseDescription" xml:space="preserve">
+    <value>日语</value>
+  </data>
+  <data name="LanguageKoreanName" xml:space="preserve">
+    <value>한국어</value>
+  </data>
+  <data name="LanguageKoreanDescription" xml:space="preserve">
+    <value>韩语</value>
+  </data>
+  <data name="SettingsGuideTitle" xml:space="preserve">
+    <value>媒体格式指南</value>
+  </data>
+  <data name="SettingsGuideDescription1" xml:space="preserve">
+    <value>媒体格式指南介绍容器格式、视频和音频编解码器、字幕格式以及图像格式。</value>
+  </data>
+  <data name="SettingsGuideDescription2" xml:space="preserve">
+    <value>了解不同格式的用途、它们如何协同工作，以及在提取或转换媒体流时如何使用。</value>
+  </data>
+  <data name="SettingsOpenGuide" xml:space="preserve">
+    <value>打开媒体格式指南</value>
+  </data>
+  <data name="SettingsProductName" xml:space="preserve">
+    <value>Track Extractor</value>
+  </data>
+  <data name="SettingsDevelopmentBadge" xml:space="preserve">
+    <value>开发中</value>
+  </data>
+  <data name="SettingsAboutSummary" xml:space="preserve">
+    <value>分析媒体文件，提取或转换视频、音频、字幕、图像和附件。</value>
+  </data>
+  <data name="SettingsCheckUpdates" xml:space="preserve">
+    <value>检查更新</value>
+  </data>
+  <data name="SettingsGeneralInformation" xml:space="preserve">
+    <value>常规信息</value>
+  </data>
+  <data name="SettingsDeveloper" xml:space="preserve">
+    <value>开发者</value>
+  </data>
+  <data name="SettingsDeveloperName" xml:space="preserve"><value>Sergey Boitcov</value></data>
+  <data name="SettingsPlatformsLabel" xml:space="preserve"><value>支持的平台</value></data>
+  <data name="SettingsPlatforms" xml:space="preserve">
+    <value>Windows、Linux、macOS</value>
+  </data>
+  <data name="SettingsTechnologyLabel" xml:space="preserve"><value>技术</value></data>
+  <data name="SettingsTechnology" xml:space="preserve">
+    <value>.NET {0}、Avalonia UI {1}</value>
+  </data>
+  <data name="SettingsMediaComponents" xml:space="preserve">
+    <value>系统组件</value>
+  </data>
+  <data name="SettingsFfmpegRights" xml:space="preserve">
+    <value>FFmpeg 和 FFprobe 的权利归各自权利人所有。使用条款取决于所用构建版本的许可证。</value>
+  </data>
+  <data name="SettingsUpdateCurrent" xml:space="preserve"><value>当前已是最新版本</value></data>
+  <data name="SettingsUpdateAvailable" xml:space="preserve"><value>有可用更新：版本 1.0.1</value></data>
+  <data name="SettingsInstallUpdate" xml:space="preserve"><value>安装更新</value></data>
+  <data name="SettingsLicenses" xml:space="preserve"><value>许可证</value></data>
+  <data name="SettingsFfmpegLicense" xml:space="preserve"><value>条款取决于构建版本</value></data>
+  <data name="SettingsOpenLicense" xml:space="preserve"><value>查看许可证</value></data>
+  <data name="SettingsReportBug" xml:space="preserve"><value>报告问题</value></data>
+  <data name="SettingsEmailLabel" xml:space="preserve"><value>电子邮箱</value></data>
+  <data name="SettingsTelegramLabel" xml:space="preserve"><value>Telegram 频道</value></data>
+  <data name="SettingsAboutFooter" xml:space="preserve"><value>© {0} · {1} {2}</value></data>
+  <data name="SettingsSupportDeveloper" xml:space="preserve"><value>支持开发者</value></data>
+  <data name="SettingsOpenLinkFailed" xml:space="preserve"><value>无法使用系统应用打开链接。</value></data>
+  <data name="SupportDescription" xml:space="preserve"><value>{0} 是一个独立项目。如果它对您有所帮助，欢迎自愿支持其开发。</value></data>
+  <data name="SupportCrypto" xml:space="preserve"><value>加密货币</value></data>
+  <data name="SupportCryptoDescription" xml:space="preserve"><value>钱包地址和二维码</value></data>
+  <data name="SupportCryptoNetwork" xml:space="preserve"><value>USDT · TRON 网络 (TRC20)</value></data>
+  <data name="SupportCopyAddress" xml:space="preserve"><value>复制地址</value></data>
+  <data name="SupportAddressCopied" xml:space="preserve"><value>地址已复制。</value></data>
+  <data name="SupportSbp" xml:space="preserve"><value>快捷支付系统</value></data>
+  <data name="SupportSbpDescription" xml:space="preserve"><value>支付信息和二维码</value></data>
+  <data name="SupportSbpInstruction" xml:space="preserve"><value>使用银行应用扫描二维码，或使用电话号码支付。</value></data>
+  <data name="SupportSbpBank" xml:space="preserve"><value>Sberbank</value></data>
+  <data name="SupportCopyDetails" xml:space="preserve"><value>复制号码</value></data>
+  <data name="SupportDetailsCopied" xml:space="preserve"><value>号码已复制。</value></data>
+  <data name="SupportCopyFailed" xml:space="preserve"><value>无法复制支付信息。</value></data>
+  <data name="SettingsThirdParty" xml:space="preserve">
+    <value>第三方组件及许可证</value>
+  </data>
+  <data name="SettingsAvalonia" xml:space="preserve">
+    <value>Avalonia UI 提供应用程序界面。</value>
+  </data>
+  <data name="SettingsMvvm" xml:space="preserve">
+    <value>CommunityToolkit.Mvvm 提供 MVVM 支持。</value>
+  </data>
+  <data name="SettingsExternalTools" xml:space="preserve">
+    <value>FFmpeg 和 FFprobe 是用于处理和分析媒体文件的外部工具。</value>
+  </data>
+  <data name="SettingsMatroskaTitle" xml:space="preserve">
+    <value>内置 Matroska (MKV) 附件模块</value>
+  </data>
+  <data name="SettingsMatroskaDescription" xml:space="preserve">
+    <value>此 C# 模块使用 Matroska/EBML 结构和 SeekHead 索引定位、读取并提取嵌入的 JPEG/PNG 图像。直接复制附件数据时不使用 FFmpeg。</value>
+  </data>
+  <data name="SettingsLicensePending" xml:space="preserve">
+    <value>许可证信息将在发布前补充</value>
+  </data>
+  <data name="InstallerRequirement" xml:space="preserve">
+    <value>处理媒体文件需要 FFmpeg 和 FFprobe</value>
+  </data>
+  <data name="InstallerFfmpegRole" xml:space="preserve">
+    <value>媒体处理</value>
+  </data>
+  <data name="InstallerFfprobeRole" xml:space="preserve">
+    <value>媒体分析</value>
+  </data>
+  <data name="InstallerAllReady" xml:space="preserve">
+    <value>所有组件均已就绪</value>
+  </data>
+  <data name="InstallerCancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="InstallerContinue" xml:space="preserve">
+    <value>继续</value>
+  </data>
+  <data name="InstallerRetry" xml:space="preserve">
+    <value>重新检查</value>
+  </data>
+  <data name="InstallerSelectFfmpeg" xml:space="preserve">
+    <value>定位 FFmpeg</value>
+  </data>
+  <data name="InstallerSelectFfprobe" xml:space="preserve">
+    <value>定位 FFprobe</value>
+  </data>
+  <data name="InstallerFilePickerUnavailable" xml:space="preserve">
+    <value>无法打开文件选择器。请重试。</value>
+  </data>
+  <data name="InstallerSelectExecutableFormat" xml:space="preserve">
+    <value>选择 {0} 可执行文件</value>
+  </data>
+  <data name="InstallerSelectLocalExecutable" xml:space="preserve">
+    <value>请选择本地可执行文件。</value>
+  </data>
+  <data name="InstallerSelectFileFailed" xml:space="preserve">
+    <value>无法选择文件。请检查访问权限后重试。</value>
+  </data>
+  <data name="InstallerOperationCancelled" xml:space="preserve">
+    <value>操作已取消。您可以重新检查或安装。</value>
+  </data>
+  <data name="InstallerOperationFailed" xml:space="preserve">
+    <value>无法完成操作。请重试或手动指定路径。</value>
+  </data>
+  <data name="InstallerRetryInstall" xml:space="preserve">
+    <value>重试安装</value>
+  </data>
+  <data name="InstallerInstallComponents" xml:space="preserve">
+    <value>安装组件</value>
+  </data>
+  <data name="InstallerInstallationMethod" xml:space="preserve">
+    <value>安装方式</value>
+  </data>
+  <data name="InstallerManualFileMissing" xml:space="preserve">
+    <value>未找到文件。请选择现有的可执行文件。</value>
+  </data>
+  <data name="InstallerToolCheckFailed" xml:space="preserve">
+    <value>工具检查失败。请重新检查或选择其他路径。</value>
+  </data>
+  <data name="InstallerWingetSourcesUnavailable" xml:space="preserve">
+    <value>WinGet 可用，但其软件包源未响应。</value>
+  </data>
+  <data name="InstallerWingetFallbackAvailable" xml:space="preserve">
+    <value>WinGet 可用，但软件包源未响应。可以使用 gyan.dev 作为备用来源。</value>
+  </data>
+  <data name="InstallerWingetAvailable" xml:space="preserve">
+    <value>WinGet 可用。</value>
+  </data>
+  <data name="InstallerWingetUnavailableManual" xml:space="preserve">
+    <value>WinGet 不可用。请手动指定路径。</value>
+  </data>
+  <data name="InstallerWingetAndSourceUnavailable" xml:space="preserve">
+    <value>WinGet 不可用，且 gyan.dev 未响应。</value>
+  </data>
+  <data name="InstallerWingetUnavailableFallback" xml:space="preserve">
+    <value>WinGet 不可用。可以通过 gyan.dev 作为备用方式安装。</value>
+  </data>
+  <data name="InstallerNoticeWithMethod" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="InstallerCheckError" xml:space="preserve">
+    <value>检查失败。</value>
+  </data>
+  <data name="InstallerAutoInstallUnavailable" xml:space="preserve">
+    <value>此平台不支持自动安装。请使用建议的命令或手动指定路径。</value>
+  </data>
+  <data name="InstallerDirectDownloadWindowsOnly" xml:space="preserve">
+    <value>仅 Windows 10/11 x64 支持直接下载。</value>
+  </data>
+  <data name="InstallerPreparingDirectDownload" xml:space="preserve">
+    <value>正在准备从 gyan.dev 下载…</value>
+  </data>
+  <data name="InstallerInstallingWithWinget" xml:space="preserve">
+    <value>正在通过 WinGet 安装…</value>
+  </data>
+  <data name="InstallerDirectFallbackNoWinget" xml:space="preserve">
+    <value>WinGet 不可用。将直接下载 FFmpeg。</value>
+  </data>
+  <data name="InstallerDirectFallbackFailedWinget" xml:space="preserve">
+    <value>WinGet 安装失败。将直接下载 FFmpeg。</value>
+  </data>
+  <data name="InstallerDirectDownloadLocation" xml:space="preserve">
+    <value>从 gyan.dev 下载的文件会安装到您的用户数据文件夹，不会修改 PATH。</value>
+  </data>
+  <data name="InstallerCheckingAfterInstall" xml:space="preserve">
+    <value>正在检查安装后的组件…</value>
+  </data>
+  <data name="InstallerVerificationFailed" xml:space="preserve">
+    <value>安装后的检查无法确认两个工具均正常工作。请重新检查或手动指定路径。</value>
+  </data>
+  <data name="InstallerInstallCancelled" xml:space="preserve">
+    <value>安装已取消。您可以重试。</value>
+  </data>
+  <data name="InstallerCheckingTools" xml:space="preserve">
+    <value>正在检查工具…</value>
+  </data>
+  <data name="InstallerBuildSourceBoth" xml:space="preserve">
+    <value>FFmpeg 和 FFprobe 二进制文件来源：gyan.dev</value>
+  </data>
+  <data name="InstallerBuildSourceFfmpeg" xml:space="preserve">
+    <value>FFmpeg 二进制文件来源：gyan.dev</value>
+  </data>
+  <data name="InstallerBuildSourceFfprobe" xml:space="preserve">
+    <value>FFprobe 二进制文件来源：gyan.dev</value>
+  </data>
+  <data name="InstallerReadyVersions" xml:space="preserve">
+    <value>已就绪。FFmpeg {0}、FFprobe {1}。</value>
+  </data>
+  <data name="InstallerToolsRequired" xml:space="preserve">
+    <value>处理媒体文件需要 FFmpeg 和 FFprobe。</value>
+  </data>
+  <data name="InstallerBothReady" xml:space="preserve">
+    <value>两个工具均已就绪。</value>
+  </data>
+  <data name="InstallerMissingPrompt" xml:space="preserve">
+    <value>请安装缺失的工具或指定其路径。</value>
+  </data>
+  <data name="InstallerFoundVersion" xml:space="preserve">
+    <value>已找到 · {0}</value>
+  </data>
+  <data name="InstallerNotFound" xml:space="preserve">
+    <value>未找到</value>
+  </data>
+  <data name="InstallerError" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="InstallerCheckingBrief" xml:space="preserve">
+    <value>正在检查…</value>
+  </data>
+  <data name="ToolsSavedPathsReadFailed" xml:space="preserve">
+    <value>无法读取已保存的路径。请检查用户设置文件。</value>
+  </data>
+  <data name="ToolsFileNotFound" xml:space="preserve">
+    <value>未找到文件。</value>
+  </data>
+  <data name="ToolsFileNotFoundPath" xml:space="preserve">
+    <value>未找到文件：{0}</value>
+  </data>
+  <data name="ToolsRecoveredPathsSaveFailed" xml:space="preserve">
+    <value>已找到正常工作的工具，但无法保存其路径。请检查用户设置的访问权限。</value>
+  </data>
+  <data name="ToolsManualPathSaveFailed" xml:space="preserve">
+    <value>工具运行正常，但无法保存其路径。请检查用户设置的访问权限。</value>
+  </data>
+  <data name="ToolsWingetOption" xml:space="preserve">
+    <value>可以使用 WinGet 安装 Gyan.FFmpeg 软件包。</value>
+  </data>
+  <data name="ToolsWingetSourceFallback" xml:space="preserve">
+    <value>WinGet 软件源未响应。可从 gyan.dev 进行备用下载。</value>
+  </data>
+  <data name="ToolsNoWingetFallback" xml:space="preserve">
+    <value>WinGet 不可用。可从 gyan.dev 进行备用下载。</value>
+  </data>
+  <data name="ToolsInstallSourcesUnavailable" xml:space="preserve">
+    <value>无法连接到安装来源。请检查网络连接后重试</value>
+  </data>
+  <data name="ToolsMacBrewOption" xml:space="preserve">
+    <value>在终端中运行：brew install ffmpeg。然后选择“重新检查”。本应用不会运行 Homebrew，也不支持直接下载 macOS 二进制文件。或者访问 https://ffmpeg.org/download.html 并手动指定路径。</value>
+  </data>
+  <data name="ToolsMacNoBrewOption" xml:space="preserve">
+    <value>未找到 Homebrew。请从 https://brew.sh 安装，然后运行 brew install ffmpeg，或手动指定路径。不支持自动下载 macOS 二进制文件。</value>
+  </data>
+  <data name="ToolsLinuxManagerOption" xml:space="preserve">
+    <value>在终端中运行：{0}。软件包是否可用取决于您所用发行版的软件仓库。然后选择“重新检查”。如果软件包不可用，请访问 https://ffmpeg.org/download.html 或手动指定路径。Linux 没有通用的直接下载方式。</value>
+  </data>
+  <data name="ToolsLinuxNoManagerOption" xml:space="preserve">
+    <value>未找到受支持的软件包管理器。请在 https://ffmpeg.org/download.html 选择适合您发行版和架构的软件包，然后手动指定路径。Linux 没有通用的直接下载方式。</value>
+  </data>
+  <data name="ToolsManualInstallOption" xml:space="preserve">
+    <value>请手动安装 FFmpeg，然后选择“重新检查”。</value>
+  </data>
+  <data name="ToolsAlreadyInstalled" xml:space="preserve">
+    <value>FFmpeg 和 FFprobe 已安装且可正常使用，无需重新安装。</value>
+  </data>
+  <data name="ToolsWingetUnavailable" xml:space="preserve">
+    <value>WinGet 不可用。</value>
+  </data>
+  <data name="ToolsVerifiedReady" xml:space="preserve">
+    <value>FFmpeg 和 FFprobe 已检查并就绪。</value>
+  </data>
+  <data name="ToolsWingetExitFailure" xml:space="preserve">
+    <value>WinGet 未能安装 FFmpeg（退出代码 {0}）。</value>
+  </data>
+  <data name="ToolsWingetMissingAfterInstall" xml:space="preserve">
+    <value>WinGet 已结束，但未能找到两个正常工作的工具。您可以重启应用后重新检查。</value>
+  </data>
+  <data name="ToolsWingetTimeout" xml:space="preserve">
+    <value>WinGet 操作超时。请重新检查。</value>
+  </data>
+  <data name="ToolsWingetInstallFailed" xml:space="preserve">
+    <value>无法完成 WinGet 安装。请检查访问权限或尝试备用方式。</value>
+  </data>
+  <data name="ToolsDirectDownloadAdvice" xml:space="preserve">
+    <value> 可以从 gyan.dev 下载到用户数据文件夹作为备用方案。PATH 不会更改。</value>
+  </data>
+  <data name="ToolsFailureWithAdvice" xml:space="preserve">
+    <value>{0}{1}</value>
+  </data>
+  <data name="ToolsManualArchitectureAdvice" xml:space="preserve">
+    <value> 仅 Windows 10/11 x64 支持直接下载。请手动指定适合此架构的工具：https://ffmpeg.org/download.html。</value>
+  </data>
+  <data name="ToolsExecutableExitFailure" xml:space="preserve">
+    <value>{0}：执行失败（退出代码 {1}）。</value>
+  </data>
+  <data name="ToolsWrongExecutable" xml:space="preserve">
+    <value>{0}：可执行文件不正确；其 -version 输出无法识别为预期工具。</value>
+  </data>
+  <data name="ToolsVersionTimeout" xml:space="preserve">
+    <value>{0}：响应超时（5 秒）。</value>
+  </data>
+  <data name="ToolsLaunchFailed" xml:space="preserve">
+    <value>{0}：无法启动。请检查文件权限和兼容性。</value>
+  </data>
+  <data name="ToolsDirectDownloadWindowsOnly" xml:space="preserve">
+    <value>仅 Windows 10/11 x64 支持直接下载。请手动指定兼容工具。</value>
+  </data>
+  <data name="ToolsAlreadyDownloaded" xml:space="preserve">
+    <value>FFmpeg 和 FFprobe 已安装且运行正常，无需再次下载。</value>
+  </data>
+  <data name="ToolsDownloadingChecksum" xml:space="preserve">
+    <value>正在从 gyan.dev 下载校验和…</value>
+  </data>
+  <data name="ToolsDownloadingArchive" xml:space="preserve">
+    <value>正在从 gyan.dev 下载 FFmpeg 和 FFprobe…</value>
+  </data>
+  <data name="ToolsCheckingChecksum" xml:space="preserve">
+    <value>正在验证 SHA-256 校验和…</value>
+  </data>
+  <data name="ToolsExtractingArchive" xml:space="preserve">
+    <value>正在安全解压归档文件…</value>
+  </data>
+  <data name="ToolsCheckingDownloadedExecutables" xml:space="preserve">
+    <value>正在检查已安装的 FFmpeg 和 FFprobe 可执行文件…</value>
+  </data>
+  <data name="ToolsDownloadedReady" xml:space="preserve">
+    <value>FFmpeg 和 FFprobe 已安装到用户数据文件夹，可供 Track Extractor 使用。它们未加入 PATH，因此在终端中输入简短命令无法找到它们。</value>
+  </data>
+  <data name="ToolsDownloadTimeout" xml:space="preserve">
+    <value>下载或安装超过 20 分钟，已超时。请检查连接后重试。</value>
+  </data>
+  <data name="ToolsDownloadHttpFailure" xml:space="preserve">
+    <value>下载服务器当前不可用（HTTP {0}）。请稍后重试。</value>
+  </data>
+  <data name="ToolsDownloadNetworkFailure" xml:space="preserve">
+    <value>无法连接下载服务器，或连接已中断。请检查网络连接后重试。</value>
+  </data>
+  <data name="ToolsDownloadChecksumFailure" xml:space="preserve">
+    <value>无法验证归档文件的 SHA-256 校验和。未运行任何下载文件；请重新下载。</value>
+  </data>
+  <data name="ToolsDownloadArchiveFailure" xml:space="preserve">
+    <value>下载的归档文件已损坏、不完整或不安全。未运行任何下载文件；请重新下载。</value>
+  </data>
+  <data name="ToolsDownloadWriteFailure" xml:space="preserve">
+    <value>无法向用户数据文件夹写入文件。请检查剩余空间和访问权限。</value>
+  </data>
+  <data name="ToolsDownloadComplete" xml:space="preserve">
+    <value>下载完成。</value>
+  </data>
+  <data name="ToolsDownloadProgressOf" xml:space="preserve">
+    <value>已下载 {0:F1} / {1:F1} MB</value>
+  </data>
+  <data name="ToolsDownloadProgress" xml:space="preserve">
+    <value>已下载 {0:F1} MB</value>
+  </data>
+  <data name="MainPath" xml:space="preserve">
+    <value>路径：</value>
+  </data>
+  <data name="MainAudioFormat" xml:space="preserve">
+    <value>音频格式</value>
+  </data>
+  <data name="MainColumnLanguage" xml:space="preserve">
+    <value>语言</value>
+  </data>
+  <data name="MainClose" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="MainColumnDetails" xml:space="preserve">
+    <value>声道 / 分辨率</value>
+  </data>
+  <data name="MainColumnBitrate" xml:space="preserve">
+    <value>比特率</value>
+  </data>
+  <data name="MainSaveLog" xml:space="preserve">
+    <value>保存日志</value>
+  </data>
+  <data name="MainSaveFolder" xml:space="preserve">
+    <value>输出文件夹</value>
+  </data>
+  <data name="MainClear" xml:space="preserve">
+    <value>清除</value>
+  </data>
+  <data name="MainGroupLanguages" xml:space="preserve">
+    <value>按语言分组（创建子文件夹）</value>
+  </data>
+  <data name="MainColumnType" xml:space="preserve">
+    <value>类型</value>
+  </data>
+  <data name="MainSaveMetadata" xml:space="preserve">
+    <value>保留元数据</value>
+  </data>
+  <data name="MainSelectAll" xml:space="preserve">
+    <value>全选或取消选择所有媒体流</value>
+  </data>
+  <data name="MainColumnCodec" xml:space="preserve">
+    <value>编解码器</value>
+  </data>
+  <data name="MainSubtitleFormat" xml:space="preserve">
+    <value>字幕格式</value>
+  </data>
+  <data name="MainDropReplace" xml:space="preserve">
+    <value>将另一个文件拖到此处以替换</value>
+  </data>
+  <data name="MainVideo" xml:space="preserve">
+    <value>视频：</value>
+  </data>
+  <data name="MainBrowse" xml:space="preserve">
+    <value>浏览</value>
+  </data>
+  <data name="MainFileLoaded" xml:space="preserve">
+    <value>文件加载成功</value>
+  </data>
+  <data name="MainAudio" xml:space="preserve">
+    <value>音频：</value>
+  </data>
+  <data name="MainColumnStatus" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="MainMinimize" xml:space="preserve">
+    <value>最小化</value>
+  </data>
+  <data name="MainFileInfo" xml:space="preserve">
+    <value>文件信息</value>
+  </data>
+  <data name="MainOpenFolder" xml:space="preserve">
+    <value>打开文件夹</value>
+  </data>
+  <data name="MainChooseFile" xml:space="preserve">
+    <value>选择文件</value>
+  </data>
+  <data name="MainSubtitles" xml:space="preserve">
+    <value>字幕：</value>
+  </data>
+  <data name="MainColumnIndex" xml:space="preserve">
+    <value>索引</value>
+  </data>
+  <data name="MainFormat" xml:space="preserve">
+    <value>格式：</value>
+  </data>
+  <data name="MainExportSettings" xml:space="preserve">
+    <value>导出设置</value>
+  </data>
+  <data name="MainEventLog" xml:space="preserve">
+    <value>事件日志</value>
+  </data>
+  <data name="MainSourceFolder" xml:space="preserve">
+    <value>创建以源文件命名的文件夹</value>
+  </data>
+  <data name="MainDuration" xml:space="preserve">
+    <value>时长：</value>
+  </data>
+  <data name="MainConfigure" xml:space="preserve">
+    <value>配置</value>
+  </data>
+  <data name="MainVideoFormat" xml:space="preserve">
+    <value>视频格式</value>
+  </data>
+  <data name="MainMaximizeRestore" xml:space="preserve">
+    <value>最大化或还原</value>
+  </data>
+  <data name="MainSize" xml:space="preserve">
+    <value>大小：</value>
+  </data>
+  <data name="MainDropFile" xml:space="preserve">
+    <value>将视频文件拖到此处</value>
+  </data>
+  <data name="MainChooseFolder" xml:space="preserve">
+    <value>选择文件夹</value>
+  </data>
+  <data name="MainStreamProperties" xml:space="preserve">
+    <value>属性</value>
+  </data>
+  <data name="MainSourceFile" xml:space="preserve">
+    <value>源文件</value>
+  </data>
+  <data name="MainClearSelectedFile" xml:space="preserve">
+    <value>清除已选文件</value>
+  </data>
+  <data name="MainFutureAttachments" xml:space="preserve">
+    <value>提取 MKV 附件 — 将在未来版本中提供</value>
+  </data>
+  <data name="MainSupportedFormats" xml:space="preserve">
+    <value>支持的格式：MP4、MKV、MOV、AVI、WebM 等。</value>
+  </data>
+  <data name="MainNoFile" xml:space="preserve">
+    <value>未选择文件</value>
+  </data>
+  <data name="MainSelectFolderAndTracks" xml:space="preserve">
+    <value>请选择输出文件夹和媒体流。</value>
+  </data>
+  <data name="MainTracksHeading" xml:space="preserve">
+    <value>找到的媒体流（{0}）</value>
+  </data>
+  <data name="MainSelectedCount" xml:space="preserve">
+    <value>已选择：{0}</value>
+  </data>
+  <data name="MainProcess" xml:space="preserve">
+    <value>处理</value>
+  </data>
+  <data name="MainExtract" xml:space="preserve">
+    <value>提取</value>
+  </data>
+  <data name="MainCheckingDependencies" xml:space="preserve">
+    <value>正在检查依赖项…</value>
+  </data>
+  <data name="MainNeedTools" xml:space="preserve">
+    <value>需要 FFmpeg 和 FFprobe</value>
+  </data>
+  <data name="MainAnalyzingFile" xml:space="preserve">
+    <value>正在分析文件…</value>
+  </data>
+  <data name="MainProcessing" xml:space="preserve">
+    <value>正在处理…</value>
+  </data>
+  <data name="MainAnalysisError" xml:space="preserve">
+    <value>分析失败</value>
+  </data>
+  <data name="MainReady" xml:space="preserve">
+    <value>就绪</value>
+  </data>
+  <data name="MainChooseOrDropFile" xml:space="preserve">
+    <value>选择文件，或将文件拖放到左侧区域</value>
+  </data>
+  <data name="MainBytesExact" xml:space="preserve">
+    <value>{0:N0} 字节</value>
+  </data>
+  <data name="MainSelectFileAndTracks" xml:space="preserve">
+    <value>请选择文件和媒体流。</value>
+  </data>
+  <data name="MainStopBeforeFile" xml:space="preserve">
+    <value>请先停止或完成当前提取任务。</value>
+  </data>
+  <data name="MainInstallBeforeFile" xml:space="preserve">
+    <value>请先安装 FFmpeg 和 FFprobe，再选择文件。</value>
+  </data>
+  <data name="MainAnalyzing" xml:space="preserve">
+    <value>正在分析</value>
+  </data>
+  <data name="MainDone" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="MainAnalysisCancelled" xml:space="preserve">
+    <value>分析已取消</value>
+  </data>
+  <data name="MainFileNotFound" xml:space="preserve">
+    <value>未找到文件。请选择其他文件。</value>
+  </data>
+  <data name="MainFileAccessDenied" xml:space="preserve">
+    <value>对文件或 FFprobe 的访问被拒绝。</value>
+  </data>
+  <data name="MainProbeLaunchFailed" xml:space="preserve">
+    <value>无法启动 FFprobe。请重新检查依赖项。</value>
+  </data>
+  <data name="MainFileReadFailed" xml:space="preserve">
+    <value>无法读取文件。请检查访问权限后重试。</value>
+  </data>
+  <data name="MainFileDamaged" xml:space="preserve">
+    <value>文件可能已损坏或不受支持。</value>
+  </data>
+  <data name="MainInvalidOutputFolder" xml:space="preserve">
+    <value>输出文件夹路径无效。</value>
+  </data>
+  <data name="MainOutputFolderMissingChoose" xml:space="preserve">
+    <value>未找到输出文件夹。请选择其他文件夹。</value>
+  </data>
+  <data name="MainOutputFolderSelected" xml:space="preserve">
+    <value>已选择文件夹。重名文件将自动编号，现有文件不会被覆盖。</value>
+  </data>
+  <data name="LogOutputFolderChanged" xml:space="preserve">
+    <value>输出文件夹已更改。</value>
+  </data>
+  <data name="MainExportRequirements" xml:space="preserve">
+    <value>请选择可用媒体流和输出文件夹，并确保 FFmpeg 和 FFprobe 已就绪。</value>
+  </data>
+  <data name="MainPreparingExport" xml:space="preserve">
+    <value>正在准备处理…</value>
+  </data>
+  <data name="MainStatusWithTime" xml:space="preserve">
+    <value>{0} 已用时间：{1}</value>
+  </data>
+  <data name="MainAwaitingExtraction" xml:space="preserve">
+    <value>等待提取。</value>
+  </data>
+  <data name="MainGroupedProgress" xml:space="preserve">
+    <value>{0}（{1}–{2} / {3}）</value>
+  </data>
+  <data name="MainStreamProgress" xml:space="preserve">
+    <value>流 #{0}（{1} / {2}）</value>
+  </data>
+  <data name="MainStatusWithTotalTime" xml:space="preserve">
+    <value>{0} 总耗时：{1}</value>
+  </data>
+  <data name="MainExportComplete" xml:space="preserve">
+    <value>所有选定的媒体流均已处理。</value>
+  </data>
+  <data name="MainExportCancelled" xml:space="preserve">
+    <value>提取已停止。已完成的文件已保留。</value>
+  </data>
+  <data name="MainExportPartial" xml:space="preserve">
+    <value>处理完成，但出现错误。已完成的文件已保留。</value>
+  </data>
+  <data name="MainExtractionCancelled" xml:space="preserve">
+    <value>提取已取消。</value>
+  </data>
+  <data name="MainExportStartFailed" xml:space="preserve">
+    <value>无法开始提取。</value>
+  </data>
+  <data name="MainSourceMissing" xml:space="preserve">
+    <value>未找到源文件。</value>
+  </data>
+  <data name="MainOutputFolderMissing" xml:space="preserve">
+    <value>未找到输出文件夹。</value>
+  </data>
+  <data name="MainOutputFolderAccessDenied" xml:space="preserve">
+    <value>访问输出文件夹被拒绝。</value>
+  </data>
+  <data name="MainExtractionError" xml:space="preserve">
+    <value>提取失败。</value>
+  </data>
+  <data name="MainExportErrorAdvice" xml:space="preserve">
+    <value>提取失败。请查看日志后重试。</value>
+  </data>
+  <data name="MainEmptyStreams" xml:space="preserve">
+    <value>添加文件后即可查看其中的媒体流。</value>
+  </data>
+  <data name="MainToolsCheckFailed" xml:space="preserve">
+    <value>无法检查工具：{0}</value>
+  </data>
+  <data name="MainFormatMp4" xml:space="preserve">
+    <value>MP4 — 广泛兼容</value>
+  </data>
+  <data name="MainFormatMkv" xml:space="preserve">
+    <value>MKV — 灵活的容器格式</value>
+  </data>
+  <data name="MainFormatMov" xml:space="preserve">
+    <value>MOV — QuickTime 视频</value>
+  </data>
+  <data name="MainFormatAvi" xml:space="preserve">
+    <value>AVI — 旧式容器格式</value>
+  </data>
+  <data name="MainFormatWebm" xml:space="preserve">
+    <value>WebM — 网页视频</value>
+  </data>
+  <data name="MainFormatMp3" xml:space="preserve">
+    <value>MP3 — 高效压缩音频</value>
+  </data>
+  <data name="MainFormatWav" xml:space="preserve">
+    <value>WAV — 未压缩音频</value>
+  </data>
+  <data name="MainFormatFlac" xml:space="preserve">
+    <value>FLAC — 无损音频</value>
+  </data>
+  <data name="MainFormatAac" xml:space="preserve">
+    <value>AAC — 高效压缩音频</value>
+  </data>
+  <data name="MainFormatAc3" xml:space="preserve">
+    <value>AC3 — 多声道音频</value>
+  </data>
+  <data name="MainFormatOgg" xml:space="preserve">
+    <value>OGG — 开放容器格式</value>
+  </data>
+  <data name="MainFormatOpus" xml:space="preserve">
+    <value>Opus — 高效压缩</value>
+  </data>
+  <data name="MainFormatSrt" xml:space="preserve">
+    <value>SRT — 文本字幕</value>
+  </data>
+  <data name="MainFormatAss" xml:space="preserve">
+    <value>ASS — 带样式的字幕</value>
+  </data>
+  <data name="MainFormatWebvtt" xml:space="preserve">
+    <value>WebVTT — 网页字幕</value>
+  </data>
+  <data name="MainOriginalSubtitles" xml:space="preserve">
+    <value>{0} — 原始文本字幕</value>
+  </data>
+  <data name="MainOriginalCompressedAudio" xml:space="preserve">
+    <value>{0} — 原始压缩音频</value>
+  </data>
+  <data name="MainOriginalMultichannelAudio" xml:space="preserve">
+    <value>{0} — 原始多声道音频</value>
+  </data>
+  <data name="MainOriginalAudio" xml:space="preserve">
+    <value>{0} — 原始音频</value>
+  </data>
+  <data name="MainOriginalVideo" xml:space="preserve">
+    <value>{0} — 原始视频；.{1} 文件</value>
+  </data>
+  <data name="MainOriginalNoTranscode" xml:space="preserve">
+    <value>原始格式 — 不转码</value>
+  </data>
+  <data name="MainSourceFormatOriginal" xml:space="preserve">
+    <value>{0} — 原始格式</value>
+  </data>
+  <data name="MainSourceCustomFormat" xml:space="preserve"><value>{0} — 原始格式 — 自定义设置</value></data>
+  <data name="MainOriginalShort" xml:space="preserve">
+    <value>原始格式</value>
+  </data>
+  <data name="MainMixedFormatsOriginal" xml:space="preserve">
+    <value>混合格式 — 原始格式</value>
+  </data>
+  <data name="MainFormatsReadFailed" xml:space="preserve">
+    <value>无法读取 FFmpeg 输出格式。</value>
+  </data>
+  <data name="MainConversionUnavailable" xml:space="preserve">
+    <value>所选媒体流不支持转换。</value>
+  </data>
+  <data name="MainNoSuitableEncoder" xml:space="preserve">
+    <value>此格式没有可用的合适编码器。</value>
+  </data>
+  <data name="MainCustomFormat" xml:space="preserve">
+    <value>{0} — 自定义设置</value>
+  </data>
+  <data name="MainPickMediaFile" xml:space="preserve">
+    <value>选择媒体文件</value>
+  </data>
+  <data name="MainFilePickFailed" xml:space="preserve">
+    <value>无法选择文件。请检查访问权限后重试。</value>
+  </data>
+  <data name="MainDropOneLocalFile" xml:space="preserve">
+    <value>请仅拖放一个本地文件。</value>
+  </data>
+  <data name="MainDropOpenFailed" xml:space="preserve">
+    <value>无法打开拖放的文件。</value>
+  </data>
+  <data name="MainPickLocalFile" xml:space="preserve">
+    <value>请选择本地文件。</value>
+  </data>
+  <data name="MainPickSaveFolder" xml:space="preserve">
+    <value>选择输出文件夹</value>
+  </data>
+  <data name="MainPickLocalFolder" xml:space="preserve">
+    <value>请选择本地输出文件夹。</value>
+  </data>
+  <data name="MainFolderPickFailed" xml:space="preserve">
+    <value>无法选择文件夹。请检查访问权限。</value>
+  </data>
+  <data name="MainResultFolderMissing" xml:space="preserve">
+    <value>未找到结果文件夹。请选择现有文件夹。</value>
+  </data>
+  <data name="MainResultFolderOpenFailed" xml:space="preserve">
+    <value>无法打开结果文件夹。请检查访问权限。</value>
+  </data>
+  <data name="MainSizeGiB" xml:space="preserve">
+    <value>{0:0.##} GiB</value>
+  </data>
+  <data name="MainSizeMiB" xml:space="preserve">
+    <value>{0:0.##} MiB</value>
+  </data>
+  <data name="MainSizeKiB" xml:space="preserve">
+    <value>{0:0.##} KiB</value>
+  </data>
+  <data name="MainSizeBytes" xml:space="preserve">
+    <value>{0} 字节</value>
+  </data>
+  <data name="MainStreamSummary" xml:space="preserve">
+    <value>{0}（{1}）</value>
+  </data>
+  <data name="MainTrackOne" xml:space="preserve">
+    <value>个流</value>
+  </data>
+  <data name="MainTrackFew" xml:space="preserve">
+    <value>个流</value>
+  </data>
+  <data name="MainTrackMany" xml:space="preserve">
+    <value>个流</value>
+  </data>
+  <data name="MainBitrateMbps" xml:space="preserve">
+    <value>{0:0.##} Mbps</value>
+  </data>
+  <data name="MainBitrateKbps" xml:space="preserve">
+    <value>{0:0.##} kbps</value>
+  </data>
+  <data name="MainBitrateBps" xml:space="preserve">
+    <value>{0} bps</value>
+  </data>
+  <data name="MainConversionAfterSetup" xml:space="preserve">
+    <value>配置后可使用转换功能。</value>
+  </data>
+  <data name="MainUnavailableReason" xml:space="preserve">
+    <value>不可用：{0}</value>
+  </data>
+  <data name="MainNotSelected" xml:space="preserve">
+    <value>未选择</value>
+  </data>
+  <data name="MainModeExtract" xml:space="preserve">
+    <value>提取</value>
+  </data>
+  <data name="MainModeConvert" xml:space="preserve">
+    <value>转换</value>
+  </data>
+  <data name="MainCopyPreview" xml:space="preserve">
+    <value>.{0} · 直接复制流</value>
+  </data>
+  <data name="MainCopyFormatUnknown" xml:space="preserve">
+    <value>没有可用的提取格式</value>
+  </data>
+  <data name="MainConvertingTo" xml:space="preserve">
+    <value>正在转换为 {0}（{1}）。</value>
+  </data>
+  <data name="MainCopyingTo" xml:space="preserve">
+    <value>正在不转码复制到 {0}。</value>
+  </data>
+  <data name="MainTypeCover" xml:space="preserve">
+    <value>封面图</value>
+  </data>
+  <data name="MainTypeImage" xml:space="preserve">
+    <value>图像</value>
+  </data>
+  <data name="MainTypeAnimation" xml:space="preserve">
+    <value>动画</value>
+  </data>
+  <data name="MainTypeVideo" xml:space="preserve">
+    <value>视频</value>
+  </data>
+  <data name="MainTypeAudio" xml:space="preserve">
+    <value>音频</value>
+  </data>
+  <data name="MainTypeSubtitle" xml:space="preserve">
+    <value>字幕</value>
+  </data>
+  <data name="MainTypeAttachment" xml:space="preserve">
+    <value>附件</value>
+  </data>
+  <data name="MainTypeOther" xml:space="preserve">
+    <value>其他</value>
+  </data>
+  <data name="MainMediaSummary" xml:space="preserve">
+    <value>{0}
+{1}
+大小：{2:N0} 字节；容器：{3}；时长：{4}；比特率：{5}
+视频：{6}；图像：{7}；动画：{8}；音频：{9}；字幕：{10}；未知视觉流：{11}；流总数：{12}</value>
+  </data>
+  <data name="MainDescriptionResolutionUnknown" xml:space="preserve">
+    <value>分辨率：—</value>
+  </data>
+  <data name="MainDescriptionFps" xml:space="preserve">
+    <value>{0:0.##} fps</value>
+  </data>
+  <data name="MainDescriptionFpsUnknown" xml:space="preserve">
+    <value>帧率：—</value>
+  </data>
+  <data name="MainDescriptionDuration" xml:space="preserve">
+    <value>时长：{0}</value>
+  </data>
+  <data name="MainDescriptionChannels" xml:space="preserve">
+    <value>{0} 声道音频</value>
+  </data>
+  <data name="MainDescriptionChannelsUnknown" xml:space="preserve">
+    <value>声道：—</value>
+  </data>
+  <data name="MainDescriptionSampleRate" xml:space="preserve">
+    <value>{0} Hz</value>
+  </data>
+  <data name="MainDescriptionSampleRateUnknown" xml:space="preserve">
+    <value>采样率：—</value>
+  </data>
+  <data name="MainDescriptionText" xml:space="preserve">
+    <value>文本</value>
+  </data>
+  <data name="MainDescriptionGraphic" xml:space="preserve">
+    <value>位图</value>
+  </data>
+  <data name="MainDescriptionCover" xml:space="preserve">
+    <value>图像（封面图）</value>
+  </data>
+  <data name="MainDescriptionUnknownVisual" xml:space="preserve">
+    <value>未知视觉流</value>
+  </data>
+  <data name="MainDescriptionUnknownType" xml:space="preserve">
+    <value>未知类型</value>
+  </data>
+  <data name="MainChannelOne" xml:space="preserve">
+    <value>声道</value>
+  </data>
+  <data name="MainChannelFew" xml:space="preserve">
+    <value>声道</value>
+  </data>
+  <data name="MainChannelMany" xml:space="preserve">
+    <value>声道</value>
+  </data>
+  <data name="MainChannelsUnknown" xml:space="preserve">
+    <value>声道：—</value>
+  </data>
+  <data name="MainSubtitleText" xml:space="preserve">
+    <value>文本</value>
+  </data>
+  <data name="MainSubtitleGraphic" xml:space="preserve">
+    <value>位图</value>
+  </data>
+  <data name="MainStatusUnavailable" xml:space="preserve">
+    <value>不可用</value>
+  </data>
+  <data name="MainStatusExtracting" xml:space="preserve">
+    <value>正在提取</value>
+  </data>
+  <data name="MainStatusConverting" xml:space="preserve">
+    <value>正在转换</value>
+  </data>
+  <data name="MainStatusExtracted" xml:space="preserve">
+    <value>已提取</value>
+  </data>
+  <data name="MainStatusConverted" xml:space="preserve">
+    <value>已转换</value>
+  </data>
+  <data name="MainStatusCancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="MainStatusConversionAvailable" xml:space="preserve">
+    <value>可转换</value>
+  </data>
+  <data name="MainStatusAvailable" xml:space="preserve">
+    <value>可用</value>
+  </data>
+  <data name="MainStatusNeedsSetup" xml:space="preserve">
+    <value>需要配置</value>
+  </data>
+  <data name="MainReasonNoStreamIndex" xml:space="preserve">
+    <value>FFprobe 未返回媒体流索引。</value>
+  </data>
+  <data name="MainReasonUnknownCodec" xml:space="preserve">
+    <value>编解码器未知，无法确定安全的直接复制格式。</value>
+  </data>
+  <data name="MainReasonAnimation" xml:space="preserve">
+    <value>目前只能分析动画；提取功能将单独添加。</value>
+  </data>
+  <data name="MainReasonUnknownVisual" xml:space="preserve">
+    <value>无法可靠地区分视频和静态图像。</value>
+  </data>
+  <data name="MainReasonUnknownAttachmentFormat" xml:space="preserve">
+    <value>尚未确认附件图像格式是否支持直接复制提取。</value>
+  </data>
+  <data name="MainReasonStandaloneImage" xml:space="preserve">
+    <value>这是独立的图像文件，而不是媒体容器中的流。</value>
+  </data>
+  <data name="MainReasonUnsupportedStreamType" xml:space="preserve">
+    <value>此类媒体流目前无法在不转码的情况下提取。</value>
+  </data>
+  <data name="MainReasonUnsupportedCodec" xml:space="preserve">
+    <value>尚无经过验证的方法可将编解码器 {0} 的流复制为独立文件。</value>
+  </data>
+  <data name="MainProgressExtractingTo" xml:space="preserve">
+    <value>流 #{0}：正在提取到 {1}</value>
+  </data>
+  <data name="MainProgressConvertingTo" xml:space="preserve">
+    <value>流 #{0}：正在转换为 {1}</value>
+  </data>
+  <data name="MainProgressFfmpegPosition" xml:space="preserve">
+    <value>流 #{0}：FFmpeg 处理位置 {1}</value>
+  </data>
+  <data name="MainProgressStream" xml:space="preserve">
+    <value>流 #{0}</value>
+  </data>
+  <data name="MainProgressWithPercent" xml:space="preserve">
+    <value>{0} · {1:0.#}%</value>
+  </data>
+  <data name="MainProgressAttachment" xml:space="preserve">
+    <value>流 #{0}：正在复制 Matroska 附件，{1:P0}</value>
+  </data>
+  <data name="MainResultSaved" xml:space="preserve">
+    <value>已保存：{0}；{1}；{2}</value>
+  </data>
+  <data name="MainResultCancelledAfter" xml:space="preserve">
+    <value>处理在 {0} 后取消。</value>
+  </data>
+  <data name="MainResultCancelled" xml:space="preserve">
+    <value>处理已取消。</value>
+  </data>
+  <data name="MainResultTimeout" xml:space="preserve">
+    <value>提取超时（{0}）。</value>
+  </data>
+  <data name="MainResultOutputAccessDenied" xml:space="preserve">
+    <value>对输出文件夹或文件的访问被拒绝。</value>
+  </data>
+  <data name="MainResultWriteFailed" xml:space="preserve">
+    <value>无法写入文件。请检查可用空间和权限。</value>
+  </data>
+  <data name="MainResultFfmpegLaunchFailed" xml:space="preserve">
+    <value>无法启动 FFmpeg。请重新检查依赖项。</value>
+  </data>
+  <data name="MainResultUnexpectedFailure" xml:space="preserve">
+    <value>无法提取媒体流。已用时间：{0}。请查看日志后重试。</value>
+  </data>
+  <data name="MainResultNotStartedCancelled" xml:space="preserve">
+    <value>由于操作已取消，任务未启动。</value>
+  </data>
+  <data name="MainAllTracksExtracted" xml:space="preserve">
+    <value>所有媒体流均已提取。</value>
+  </data>
+  <data name="MainProgressSharedPass" xml:space="preserve">
+    <value>流 #{0}：共享 FFmpeg 处理过程</value>
+  </data>
+  <data name="MainProgressStreams" xml:space="preserve">
+    <value>媒体流 {0}</value>
+  </data>
+  <data name="MainResultSaveStreamFailed" xml:space="preserve">
+    <value>无法保存流 #{0}。已用时间：{1}。</value>
+  </data>
+  <data name="MainResultExtractionCancelledAfter" xml:space="preserve">
+    <value>提取在 {0} 后取消。</value>
+  </data>
+  <data name="MainResultFfmpegTimeout" xml:space="preserve">
+    <value>FFmpeg 超时（{0}）。</value>
+  </data>
+  <data name="MainResultSizeGb" xml:space="preserve">
+    <value>{0:0.##} GB</value>
+  </data>
+  <data name="MainResultSizeMb" xml:space="preserve">
+    <value>{0:0.##} MB</value>
+  </data>
+  <data name="MainResultSizeKb" xml:space="preserve">
+    <value>{0:0.##} KB</value>
+  </data>
+  <data name="MainResultFfmpegExitCode" xml:space="preserve">
+    <value>FFmpeg 已退出，退出代码为 {0}。</value>
+  </data>
+  <data name="MainResultTechnicalDetail" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="MainResultEmptyOutput" xml:space="preserve">
+    <value>未生成任何非空媒体流文件。</value>
+  </data>
+  <data name="MainResultFailureWithTime" xml:space="preserve">
+    <value>{0} 已用时间：{1}。</value>
+  </data>
+  <data name="MainValidationUnsupportedType" xml:space="preserve">
+    <value>所选格式不支持此类媒体流。</value>
+  </data>
+  <data name="MainValidationInvalidName" xml:space="preserve">
+    <value>输出格式或编码器名称无效。</value>
+  </data>
+  <data name="MainValidationGraphicSubtitle" xml:space="preserve">
+    <value>没有 OCR，无法将位图字幕转换为文本。</value>
+  </data>
+  <data name="MainValidationSubtitleEncoder" xml:space="preserve">
+    <value>所选编码器无法生成文本字幕。</value>
+  </data>
+  <data name="MainValidationOutOfRange" xml:space="preserve">
+    <value>转换参数超出允许范围。</value>
+  </data>
+  <data name="MainValidationWrongTypeParameters" xml:space="preserve">
+    <value>这些参数不适用于此类媒体流。</value>
+  </data>
+  <data name="ConversionOriginalTextStream" xml:space="preserve"><value>LRC 文本流</value></data>
+  <data name="ConversionSourceEncoder" xml:space="preserve"><value>{0} — 原始格式</value></data>
+  <data name="ConversionCopyIncompatible" xml:space="preserve"><value>无法将源编解码器直接复制到所选容器中。</value></data>
+  <data name="MainValidationUnsupportedOutputFormat" xml:space="preserve">
+    <value>输出格式不支持此类媒体流。</value>
+  </data>
+  <data name="MainValidationProbeFileFailed" xml:space="preserve">
+    <value>FFmpeg 列出了编码器 {0}，但无法创建 {1} 格式的测试文件（FFmpeg 退出代码：{2}）。</value>
+  </data>
+  <data name="MainValidationEncoderTimeout" xml:space="preserve">
+    <value>检查编码器 {0} 时超时。</value>
+  </data>
+  <data name="MainValidationEncoderCheckFailed" xml:space="preserve">
+    <value>无法在 {1} 格式下检查编码器 {0}。</value>
+  </data>
+  <data name="ConversionBitrate" xml:space="preserve">
+    <value>比特率（kbps）</value>
+  </data>
+  <data name="ConversionVideoOptions" xml:space="preserve">
+    <value>视频参数</value>
+  </data>
+  <data name="ConversionWidth" xml:space="preserve">
+    <value>宽度（像素）</value>
+  </data>
+  <data name="ConversionFindHardware" xml:space="preserve">
+    <value>硬件编码器</value>
+  </data>
+  <data name="ConversionFindCompatible" xml:space="preserve">
+    <value>查找更多编码器</value>
+  </data>
+  <data name="ConversionChannels" xml:space="preserve">
+    <value>声道</value>
+  </data>
+  <data name="ConversionAutomatic" xml:space="preserve">
+    <value>自动</value>
+  </data>
+  <data name="ConversionCancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="ConversionOutputFormat" xml:space="preserve">
+    <value>输出容器 / 格式</value>
+  </data>
+  <data name="ConversionAudioOptions" xml:space="preserve">
+    <value>音频参数</value>
+  </data>
+  <data name="ConversionFrameRate" xml:space="preserve">
+    <value>帧率（fps）</value>
+  </data>
+  <data name="ConversionWindowTitle" xml:space="preserve">
+    <value>高级转换设置</value>
+  </data>
+  <data name="ConversionCrf" xml:space="preserve">
+    <value>画质 / CRF</value>
+  </data>
+  <data name="ConversionHeight" xml:space="preserve">
+    <value>高度（像素）</value>
+  </data>
+  <data name="ConversionApply" xml:space="preserve">
+    <value>应用</value>
+  </data>
+  <data name="ConversionEncoder" xml:space="preserve">
+    <value>编码器</value>
+  </data>
+  <data name="ConversionSampleRate" xml:space="preserve">
+    <value>采样率（Hz）</value>
+  </data>
+  <data name="ConversionQuality" xml:space="preserve">
+    <value>质量（0–10）</value>
+  </data>
+  <data name="ConversionSeparateFilesHint" xml:space="preserve">
+    <value>每个媒体流会保存为单独文件。留空字段可使用“自动”设置。</value>
+  </data>
+  <data name="ConversionHeadingVideo" xml:space="preserve">
+    <value>视频转换设置</value>
+  </data>
+  <data name="ConversionHeadingAudio" xml:space="preserve">
+    <value>音频转换设置</value>
+  </data>
+  <data name="ConversionHeadingSubtitles" xml:space="preserve">
+    <value>字幕转换设置</value>
+  </data>
+  <data name="ConversionCopyEncoderDescription" xml:space="preserve">
+    <value>不转码直接复制</value>
+  </data>
+  <data name="ConversionOriginalCopyCodec" xml:space="preserve">
+    <value>原始格式（不转码直接复制）— {0}</value>
+  </data>
+  <data name="ConversionForceReencode" xml:space="preserve">
+    <value>强制重新编码</value>
+  </data>
+  <data name="ConversionCopyNote" xml:space="preserve">
+    <value>原始媒体流将直接复制，不进行转码。</value>
+  </data>
+  <data name="ConversionOtherEncodersHint" xml:space="preserve">
+    <value>可以检查所选格式是否支持其他编码器。</value>
+  </data>
+  <data name="ConversionCheckingAdditional" xml:space="preserve">
+    <value>正在检查其他编码器…</value>
+  </data>
+  <data name="ConversionConfirmedCompatibleCount" xml:space="preserve">
+    <value>已确认兼容的编码器：{0}。</value>
+  </data>
+  <data name="ConversionAdditionalCancelled" xml:space="preserve">
+    <value>编码器检查已取消。</value>
+  </data>
+  <data name="ConversionAdditionalFailed" xml:space="preserve">
+    <value>无法检查其他编码器。</value>
+  </data>
+  <data name="ConversionCheckingHardware" xml:space="preserve">
+    <value>正在检查硬件编码器…</value>
+  </data>
+  <data name="ConversionHardwareSearchFailedDetails" xml:space="preserve">
+    <value>无法完成硬件编码器检查。详情请查看诊断日志。</value>
+  </data>
+  <data name="ConversionHardwareFoundCount" xml:space="preserve">
+    <value>可用硬件编码器：{0}。</value>
+  </data>
+  <data name="ConversionHardwareNotFound" xml:space="preserve">
+    <value>未找到可用的硬件编码器。</value>
+  </data>
+  <data name="ConversionHardwareCancelled" xml:space="preserve">
+    <value>硬件编码器检查已取消。</value>
+  </data>
+  <data name="ConversionHardwareFailed" xml:space="preserve">
+    <value>无法检查硬件编码器。</value>
+  </data>
+  <data name="ConversionSelectFormatAndEncoder" xml:space="preserve">
+    <value>请选择输出格式和编码器。</value>
+  </data>
+  <data name="ConversionCheckingCompatibility" xml:space="preserve">
+    <value>正在检查编码器与输出格式的兼容性…</value>
+  </data>
+  <data name="ConversionNumbersOrEmpty" xml:space="preserve">
+    <value>请输入数字或将字段留空。</value>
+  </data>
+  <data name="ConversionNumberTooLarge" xml:space="preserve">
+    <value>数值过大。</value>
+  </data>
+  <data name="ConversionCheckCancelled" xml:space="preserve">
+    <value>检查已取消。</value>
+  </data>
+  <data name="ConversionCheckParametersFailed" xml:space="preserve">
+    <value>无法检查参数。请确保 FFmpeg 可用。</value>
+  </data>
+  <data name="StreamPropertiesTitle" xml:space="preserve">
+    <value>属性</value>
+  </data>
+  <data name="StreamPropertiesHeading" xml:space="preserve"><value>媒体流属性</value></data>
+  <data name="StreamHeaderVideo" xml:space="preserve"><value>视频流</value></data>
+  <data name="StreamHeaderAudio" xml:space="preserve"><value>音频流</value></data>
+  <data name="StreamHeaderSubtitle" xml:space="preserve"><value>字幕</value></data>
+  <data name="StreamHeaderImage" xml:space="preserve"><value>图像</value></data>
+  <data name="StreamHeaderCover" xml:space="preserve"><value>图像（封面图）</value></data>
+  <data name="StreamHeaderAnimation" xml:space="preserve"><value>动画</value></data>
+  <data name="StreamHeaderAttachment" xml:space="preserve"><value>附件</value></data>
+  <data name="StreamHeaderOther" xml:space="preserve"><value>其他媒体流</value></data>
+  <data name="StreamSummaryChannels" xml:space="preserve"><value>声道：{0}</value></data>
+  <data name="StreamSectionBasic" xml:space="preserve"><value>常规</value></data>
+  <data name="StreamSectionAudio" xml:space="preserve"><value>音频属性</value></data>
+  <data name="StreamSectionVideo" xml:space="preserve"><value>视频属性</value></data>
+  <data name="StreamSectionImage" xml:space="preserve"><value>图像属性</value></data>
+  <data name="StreamSectionTiming" xml:space="preserve"><value>时间信息</value></data>
+  <data name="StreamSectionIdentification" xml:space="preserve"><value>标识信息</value></data>
+  <data name="StreamSectionOther" xml:space="preserve"><value>其他属性</value></data>
+  <data name="StreamNotSpecified" xml:space="preserve">
+    <value>未指定</value>
+  </data>
+  <data name="StreamUnknownLanguage" xml:space="preserve">
+    <value>未知语言</value>
+  </data>
+  <data name="StreamSourceIndex" xml:space="preserve">
+    <value>源索引</value>
+  </data>
+  <data name="StreamTitle" xml:space="preserve">
+    <value>标题</value>
+  </data>
+  <data name="StreamDuration" xml:space="preserve">
+    <value>时长</value>
+  </data>
+  <data name="StreamBitRateValue" xml:space="preserve">
+    <value>{0:N0} bps</value>
+  </data>
+  <data name="StreamResolution" xml:space="preserve">
+    <value>分辨率</value>
+  </data>
+  <data name="StreamResolutionValue" xml:space="preserve">
+    <value>{0} × {1}</value>
+  </data>
+  <data name="StreamFrameRate" xml:space="preserve">
+    <value>帧率</value>
+  </data>
+  <data name="StreamFrameRateValue" xml:space="preserve">
+    <value>{0:0.###} fps</value>
+  </data>
+  <data name="StreamProfile" xml:space="preserve">
+    <value>配置文件</value>
+  </data>
+  <data name="StreamPixelFormat" xml:space="preserve">
+    <value>像素格式</value>
+  </data>
+  <data name="StreamSampleRate" xml:space="preserve">
+    <value>采样率</value>
+  </data>
+  <data name="StreamSampleRateValue" xml:space="preserve">
+    <value>{0:N0} Hz</value>
+  </data>
+  <data name="StreamChannelLayout" xml:space="preserve">
+    <value>声道布局</value>
+  </data>
+  <data name="StreamFrameCount" xml:space="preserve">
+    <value>帧数</value>
+  </data>
+  <data name="StreamFrameCountValue" xml:space="preserve">
+    <value>{0:N0}</value>
+  </data>
+  <data name="StreamImageFormat" xml:space="preserve">
+    <value>图像格式</value>
+  </data>
+  <data name="StreamTag" xml:space="preserve">
+    <value>标签：{0}</value>
+  </data>
+  <data name="StreamFlag" xml:space="preserve">
+    <value>标志：{0}</value>
+  </data>
+  <data name="StreamYes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="StreamNo" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="StreamCodecLongName" xml:space="preserve">
+    <value>编解码器完整名称</value>
+  </data>
+  <data name="StreamCodecTagString" xml:space="preserve">
+    <value>编解码器标识符</value>
+  </data>
+  <data name="StreamCodecTag" xml:space="preserve">
+    <value>编解码器标签</value>
+  </data>
+  <data name="StreamLevel" xml:space="preserve">
+    <value>级别</value>
+  </data>
+  <data name="StreamSampleFormat" xml:space="preserve">
+    <value>采样格式</value>
+  </data>
+  <data name="StreamDisplayAspectRatio" xml:space="preserve">
+    <value>显示宽高比</value>
+  </data>
+  <data name="StreamSampleAspectRatio" xml:space="preserve">
+    <value>像素宽高比</value>
+  </data>
+  <data name="StreamColorRange" xml:space="preserve">
+    <value>色彩范围</value>
+  </data>
+  <data name="StreamColorSpace" xml:space="preserve">
+    <value>色彩空间</value>
+  </data>
+  <data name="StreamColorTransfer" xml:space="preserve">
+    <value>色彩传递特性</value>
+  </data>
+  <data name="StreamColorPrimaries" xml:space="preserve">
+    <value>色彩原色</value>
+  </data>
+  <data name="DiagnosticPreviewTitle" xml:space="preserve">
+    <value>诊断报告</value>
+  </data>
+  <data name="DiagnosticPreviewSave" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="DiagnosticPreviewSaveTitle" xml:space="preserve">
+    <value>保存诊断报告</value>
+  </data>
+  <data name="DiagnosticPreviewSaveFailed" xml:space="preserve">
+    <value>无法保存日志。请检查对所选文件的访问权限。</value>
+  </data>
+  <data name="DiagnosticPreviewReadFailed" xml:space="preserve">
+    <value>无法读取诊断日志。</value>
+  </data>
+  <data name="LogCheckingTool" xml:space="preserve">
+    <value>正在检查 {0}…</value>
+  </data>
+  <data name="LogToolUnavailable" xml:space="preserve">
+    <value>未找到 {0} 或该工具无法正常工作。请检查路径或在设置中安装。</value>
+  </data>
+  <data name="LogToolReadyVersion" xml:space="preserve">
+    <value>已找到 {0} {1}，可以使用。</value>
+  </data>
+  <data name="LogToolReady" xml:space="preserve">
+    <value>已找到 {0}，可以使用。</value>
+  </data>
+  <data name="LogAnalysisCompleteCount" xml:space="preserve">
+    <value>分析完成。找到的媒体流：{0}</value>
+  </data>
+  <data name="LogAnalysisComplete" xml:space="preserve">
+    <value>分析完成。</value>
+  </data>
+  <data name="LogAnalysisStarted" xml:space="preserve">
+    <value>开始分析文件。</value>
+  </data>
+  <data name="LogAnalysisTimeout" xml:space="preserve">
+    <value>FFprobe 未及时响应。请重新分析文件。</value>
+  </data>
+  <data name="LogAnalysisCancelled" xml:space="preserve">
+    <value>文件分析已取消。如有需要，请重新打开文件。</value>
+  </data>
+  <data name="LogAnalysisFailed" xml:space="preserve">
+    <value>无法分析文件。</value>
+  </data>
+  <data name="LogPreviewReady" xml:space="preserve">
+    <value>预览已就绪。</value>
+  </data>
+  <data name="LogPreviewUnavailable" xml:space="preserve">
+    <value>无法生成预览图像。</value>
+  </data>
+  <data name="LogPreviewCancelled" xml:space="preserve">
+    <value>上一次预览已取消。</value>
+  </data>
+  <data name="LogProcessingStartedCount" xml:space="preserve">
+    <value>开始处理。媒体流：{0}。</value>
+  </data>
+  <data name="LogProcessingStarted" xml:space="preserve">
+    <value>开始处理。</value>
+  </data>
+  <data name="LogConvertingStreamFormat" xml:space="preserve">
+    <value>开始将流 #{0} 转换为 {1}。</value>
+  </data>
+  <data name="LogExtractingStreamFormat" xml:space="preserve">
+    <value>开始将流 #{0} 提取为 {1}。</value>
+  </data>
+  <data name="LogConvertingStream" xml:space="preserve">
+    <value>开始转换流 #{0}。</value>
+  </data>
+  <data name="LogExtractingStream" xml:space="preserve">
+    <value>开始提取流 #{0}。</value>
+  </data>
+  <data name="LogStreamStarted" xml:space="preserve">
+    <value>开始处理媒体流。</value>
+  </data>
+  <data name="LogStreamConverted" xml:space="preserve">
+    <value>流 #{0} 已转换{1}{2}。</value>
+  </data>
+  <data name="LogStreamExtracted" xml:space="preserve">
+    <value>流 #{0} 已提取{1}{2}。</value>
+  </data>
+  <data name="LogProcessingComplete" xml:space="preserve">
+    <value>处理完成。</value>
+  </data>
+  <data name="LogProcessingCancelled" xml:space="preserve">
+    <value>处理已停止。可以重新处理尚未完成的媒体流。</value>
+  </data>
+  <data name="LogProcessingErrors" xml:space="preserve">
+    <value>处理完成，但出现错误。</value>
+  </data>
+  <data name="LogErrorOutputAccess" xml:space="preserve">
+    <value>输出文件夹访问被拒绝</value>
+  </data>
+  <data name="LogErrorWrite" xml:space="preserve">
+    <value>文件写入失败</value>
+  </data>
+  <data name="LogErrorFfmpegLaunch" xml:space="preserve">
+    <value>无法启动 FFmpeg</value>
+  </data>
+  <data name="LogStreamFailed" xml:space="preserve">
+    <value>无法提取流 #{0}：{1}。</value>
+  </data>
+  <data name="LogStreamConversionFailed" xml:space="preserve">
+    <value>无法转换流 #{0}：{1}。</value>
+  </data>
+  <data name="LogStreamCancelled" xml:space="preserve">
+    <value>流 #{0} 的处理已取消。如有需要，请重新开始。</value>
+  </data>
+  <data name="LogStreamTimeout" xml:space="preserve">
+    <value>流 #{0} 处理超时。</value>
+  </data>
+  <data name="MainResultAttachmentFailed" xml:space="preserve">
+    <value>无法读取 Matroska 附件。详情请查看诊断报告。</value>
+  </data>
+  <data name="OutputLanguageUnspecified" xml:space="preserve">
+    <value>未指定语言</value>
+  </data>
+  <data name="LogCompatibleFoundCount" xml:space="preserve">
+    <value>找到兼容编码器：{0}。</value>
+  </data>
+  <data name="LogHardwareSearchStarted" xml:space="preserve">
+    <value>正在搜索硬件编码器。</value>
+  </data>
+  <data name="LogCompatibleSearchStarted" xml:space="preserve">
+    <value>正在搜索兼容编码器。</value>
+  </data>
+  <data name="LogCompatibleNotFound" xml:space="preserve">
+    <value>未找到兼容编码器。</value>
+  </data>
+  <data name="LogHardwareSearchCancelled" xml:space="preserve">
+    <value>硬件编码器搜索已取消。如有需要，请重新搜索。</value>
+  </data>
+  <data name="LogCompatibleSearchCancelled" xml:space="preserve">
+    <value>兼容编码器搜索已取消。如有需要，请重新搜索。</value>
+  </data>
+  <data name="LogHardwareSearchFailed" xml:space="preserve">
+    <value>无法完成硬件编码器搜索。</value>
+  </data>
+  <data name="LogCompatibleSearchFailed" xml:space="preserve">
+    <value>无法完成兼容编码器搜索。</value>
+  </data>
+  <data name="LogSearchStale" xml:space="preserve">
+    <value>输出格式已更改，因此未应用搜索结果。请针对新格式重新搜索。</value>
+  </data>
+  <data name="GuideWindowTitle" xml:space="preserve">
+    <value>媒体格式指南</value>
+  </data>
+  <data name="GuideSearchPlaceholder" xml:space="preserve">
+    <value>搜索媒体格式指南</value>
+  </data>
+  <data name="GuideClearSearch" xml:space="preserve">
+    <value>清除</value>
+  </data>
+  <data name="GuidePrevious" xml:space="preserve">
+    <value>上一页</value>
+  </data>
+  <data name="GuideNext" xml:space="preserve">
+    <value>下一页</value>
+  </data>
+  <data name="GuideContents" xml:space="preserve">
+    <value>目录</value>
+  </data>
+  <data name="GuideSearchResults" xml:space="preserve">
+    <value>搜索结果</value>
+  </data>
+  <data name="GuideNoResults" xml:space="preserve">
+    <value>未找到匹配项</value>
+  </data>
+  <data name="GuideArticleCount" xml:space="preserve">
+    <value>文章：{0}</value>
+  </data>
+  <data name="GuideNavigationUnavailable" xml:space="preserve">
+    <value>无法导航</value>
+  </data>
+  <data name="GuideLoadFailed" xml:space="preserve">
+    <value>无法加载媒体格式指南：{0}</value>
+  </data>
+  <data name="GuideRussianOriginalNotice" xml:space="preserve">
+    <value>媒体格式指南尚未翻译为所选语言。当前显示俄语原版。</value>
+  </data>
+  <data name="ViewNotFound" xml:space="preserve">
+    <value>未找到视图：{0}</value>
+  </data>
+  <data name="MainImageFormat" xml:space="preserve"><value>图像格式</value></data>
+  <data name="MainAnimationFormat" xml:space="preserve"><value>动画格式</value></data>
+  <data name="MainOriginalImage" xml:space="preserve"><value>{0} — 原始图像，不重新编码；.{1} 文件</value></data>
+  <data name="MainOriginalAnimation" xml:space="preserve"><value>{0} — 原始动画，不重新编码；.{1} 文件</value></data>
+  <data name="ConversionHeadingImage" xml:space="preserve"><value>图像转换设置</value></data>
+  <data name="ConversionHeadingAnimation" xml:space="preserve"><value>动画转换设置</value></data>
+  <data name="ConversionAnimationOutputsHint" xml:space="preserve"><value>动画可以保存为动画或视频，但暂不支持导出单张静态帧。</value></data>
+  <data name="ConversionImageOutputsHint" xml:space="preserve"><value>图像只能保存为图像格式。</value></data>
+  <data name="LogVisualExtractionStarted" xml:space="preserve"><value>正在从流 #{0} 提取图像或动画，格式为 {1}。</value></data>
+  <data name="LogVisualConversionStarted" xml:space="preserve"><value>正在将流 #{0} 中的图像或动画转换为 {1}。</value></data>
+  <data name="LogVisualExtractionCompleted" xml:space="preserve"><value>已从流 #{0} 提取图像或动画：{1}、{2}。</value></data>
+  <data name="LogVisualConversionCompleted" xml:space="preserve"><value>已转换流 #{0} 中的图像或动画：{1}、{2}。</value></data>
+  <data name="MainAttachments" xml:space="preserve"><value>附件</value></data>
+  <data name="MainAttachmentCount" xml:space="preserve"><value>找到：{0}</value></data>
+  <data name="AttachmentView" xml:space="preserve"><value>查看</value></data>
+  <data name="AttachmentExtractAll" xml:space="preserve"><value>全部提取</value></data>
+  <data name="AttachmentWindowTitle" xml:space="preserve"><value>MKV 附件</value></data>
+  <data name="AttachmentName" xml:space="preserve"><value>名称</value></data>
+  <data name="AttachmentType" xml:space="preserve"><value>类型</value></data>
+  <data name="AttachmentMime" xml:space="preserve"><value>MIME</value></data>
+  <data name="AttachmentFoundCount" xml:space="preserve"><value>找到的附件：{0}</value></data>
+  <data name="AttachmentSize" xml:space="preserve"><value>大小</value></data>
+  <data name="AttachmentDescription" xml:space="preserve"><value>描述</value></data>
+  <data name="AttachmentApply" xml:space="preserve"><value>应用</value></data>
+  <data name="AttachmentSelectedCount" xml:space="preserve"><value>已选择：{0} / {1}</value></data>
+  <data name="LogAttachmentsFound" xml:space="preserve"><value>找到 MKV 附件：{0}。</value></data>
+  <data name="LogAttachmentsExportAll" xml:space="preserve"><value>正在提取所有 MKV 附件：{0}。</value></data>
+  <data name="MainProgressListedAttachment" xml:space="preserve"><value>正在提取附件 {0}</value></data>
+  <data name="MainProgressListedAttachmentPercent" xml:space="preserve"><value>附件 {0}：{1:P0}</value></data>
+  <data name="LogAttachmentStarted" xml:space="preserve"><value>开始提取附件 {0}。</value></data>
+  <data name="LogAttachmentCompleted" xml:space="preserve"><value>附件 {0} 已提取：{1}。</value></data>
+  <data name="LogAttachmentFailed" xml:space="preserve"><value>无法提取附件 {0}：{1}。</value></data>
+  <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>无法读取 MKV 附件列表。其他媒体流仍可使用；如有需要，请检查并重新打开文件。</value></data>
+  <data name="LogOutputFolderAccessDenied" xml:space="preserve"><value>输出文件夹不可写。请选择其他可保存文件的文件夹。</value></data>
+  <data name="LogAviH264Copy" xml:space="preserve"><value>AVI 兼容性：已在不重新编码的情况下调整视频码流。部分应用可能无法正常播放。为提高兼容性，请选择合适的视频编码器进行转换。</value></data>
+  <data name="LogMxfUnofficialCopy" xml:space="preserve"><value>MXF 兼容性：FFmpeg 的非官方模式保留了源帧率。部分应用可能无法正常播放。为提高兼容性，请将视频转换为标准 MXF 帧率。</value></data>
+  <data name="LogSpecialCopyFailed" xml:space="preserve"><value>无法在不重新编码的情况下提取视频。请选择兼容编码器进行转换：{0}</value></data>
+  <data name="LogVideoCopyCodecError" xml:space="preserve"><value>无法将视频提取为 {0}：容器不支持此视频编解码器。请选择兼容编码器进行转换。</value></data>
+  <data name="LogVideoCopyProfileError" xml:space="preserve"><value>无法将视频提取为 {0}：不支持此编解码器配置文件。请选择兼容编码器或配置文件进行转换。</value></data>
+  <data name="LogVideoCopyFrameRateError" xml:space="preserve"><value>无法将视频提取为 {0}：不支持源帧率。请选择兼容格式或编码器进行转换。</value></data>
+  <data name="LogVideoCopyResolutionError" xml:space="preserve"><value>无法将视频提取为 {0}：不支持该分辨率。请选择兼容格式或调整转换设置。</value></data>
+  <data name="LogVideoCopyPixelFormatError" xml:space="preserve"><value>无法将视频提取为 {0}：不支持该像素格式。请选择兼容编码器进行转换。</value></data>
+  <data name="LogVideoCopyTimestampsError" xml:space="preserve"><value>无法将视频提取为 {0}：时间戳无效。请查看诊断报告，并考虑进行转换。</value></data>
+  <data name="LogVideoCopyHeadersError" xml:space="preserve"><value>无法将视频提取为 {0}：视频流头信息缺失或损坏。请查看诊断报告。</value></data>
+  <data name="LogVideoCopyBitstreamError" xml:space="preserve"><value>无法将视频提取为 {0}：视频码流无效。请查看诊断报告，并考虑进行转换。</value></data>
+  <data name="LogVideoCopyUnknownError" xml:space="preserve"><value>无法将视频提取为 {0}。原因未知，请查看诊断报告。可以考虑选择编码器进行转换。</value></data>
+  <data name="InstallerRepairFfmpeg" xml:space="preserve"><value>修复 FFmpeg</value></data>
+  <data name="ToolsWingetRepairNeeded" xml:space="preserve"><value>FFmpeg 已在 Windows 中注册，但必需文件缺失或不可用。需要重新安装以修复。</value></data>
+  <data name="ToolsWingetRepairStarted" xml:space="preserve"><value>正在通过 WinGet 修复 FFmpeg。</value></data>
+  <data name="ToolsWingetRepairComplete" xml:space="preserve"><value>FFmpeg 已修复并通过验证。</value></data>
+  <data name="ToolsWingetRepairFailed" xml:space="preserve"><value>WinGet 无法修复 FFmpeg。详情请查看诊断报告。</value></data>
+  <data name="ToolsLocalRepairNeeded" xml:space="preserve"><value>由应用管理的 FFmpeg 副本已损坏。请重新下载以修复。</value></data>
+  <data name="ToolsLocalRepairStarted" xml:space="preserve"><value>正在修复由应用管理的 FFmpeg 副本。</value></data>
+  <data name="ToolsLocalRepairComplete" xml:space="preserve"><value>由应用管理的 FFmpeg 副本已修复并通过验证。</value></data>
+  <data name="DiagnosticPreviewClear" xml:space="preserve"><value>清除</value></data>
+  <data name="DiagnosticPreviewClearFailed" xml:space="preserve"><value>无法清除诊断日志。</value></data>
+  <data name="DiagnosticEventsCount" xml:space="preserve"><value>事件：{0}</value></data>
+  <data name="DiagnosticWarningsCount" xml:space="preserve"><value>警告：{0}</value></data>
+  <data name="DiagnosticErrorsCount" xml:space="preserve"><value>错误：{0}</value></data>
+</root>

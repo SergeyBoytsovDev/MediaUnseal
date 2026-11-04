@@ -4,7 +4,7 @@
         x:Class="TrackExtractor.Views.SettingsWindow"
         x:DataType="vm:MainViewModel"
         Title="{DynamicResource Loc_SettingsTitle}" Icon="/Assets/Icons/TrackExtractor-256.png"
-        Width="870" Height="570" MinWidth="740" MinHeight="500"
+        Width="770" Height="570" MinWidth="740" MinHeight="500"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
         FontFamily="Inter" FontSize="14">
@@ -154,7 +154,7 @@
        <Border Tag="it" Grid.Row="3" Grid.Column="0" Classes="language-card" Height="60" BorderThickness="1" Padding="10,6" Opacity="0.55">
         <Grid ColumnDefinitions="*,Auto"><StackPanel Spacing="2"><TextBlock Text="{DynamicResource Loc_LanguageItalianName}" FontWeight="SemiBold"/><TextBlock Text="{DynamicResource Loc_LanguageItalianDescription}" Classes="secondary" FontSize="12"/></StackPanel><RadioButton Grid.Column="1" IsEnabled="False" VerticalAlignment="Center"/></Grid>
        </Border>
-       <Border Tag="zh-Hans" Grid.Row="3" Grid.Column="1" Classes="language-card" Height="60" BorderThickness="1" Padding="10,6" Opacity="0.55">
+       <Border Tag="zh-CN" Grid.Row="3" Grid.Column="1" Classes="language-card" Height="60" BorderThickness="1" Padding="10,6" Opacity="0.55">
         <Grid ColumnDefinitions="*,Auto"><StackPanel Spacing="2"><TextBlock Text="{DynamicResource Loc_LanguageChineseName}" FontWeight="SemiBold"/><TextBlock Text="{DynamicResource Loc_LanguageChineseDescription}" Classes="secondary" FontSize="12"/></StackPanel><RadioButton Grid.Column="1" IsEnabled="False" VerticalAlignment="Center"/></Grid>
        </Border>
        <Border Tag="ja" Grid.Row="4" Grid.Column="0" Classes="language-card" Height="60" BorderThickness="1" Padding="10,6" Opacity="0.55">

@@ -1,0 +1,1704 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms</value>
+  </resheader>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>설정</value>
+  </data>
+  <data name="LanguageSection" xml:space="preserve">
+    <value>인터페이스 언어</value>
+  </data>
+  <data name="RussianName" xml:space="preserve">
+    <value>러시아어</value>
+  </data>
+  <data name="UnknownLanguageFolder" xml:space="preserve">
+    <value>언어 미지정</value>
+  </data>
+  <data name="VersionFormat" xml:space="preserve">
+    <value>버전: {0}</value>
+  </data>
+  <data name="VersionUnspecified" xml:space="preserve">
+    <value>지정되지 않음</value>
+  </data>
+  <data name="SettingsSections" xml:space="preserve">
+    <value>설정 항목</value>
+  </data>
+  <data name="SettingsInstaller" xml:space="preserve">
+    <value>FFmpeg 설치 프로그램</value>
+  </data>
+  <data name="SettingsAppearance" xml:space="preserve">
+    <value>모양</value>
+  </data>
+  <data name="SettingsKnowledgeBase" xml:space="preserve">
+    <value>미디어 형식 가이드</value>
+  </data>
+  <data name="SettingsAbout" xml:space="preserve">
+    <value>프로그램 정보</value>
+  </data>
+  <data name="SettingsThemeLabel" xml:space="preserve">
+    <value>인터페이스 테마</value>
+  </data>
+  <data name="SettingsThemeStudioDark" xml:space="preserve">
+    <value>Studio Dark</value>
+  </data>
+  <data name="SettingsThemeStudioDarkDescription" xml:space="preserve">
+    <value>고대비 스튜디오 스타일</value>
+  </data>
+  <data name="SettingsThemeResolve" xml:space="preserve">
+    <value>Resolve Workspace</value>
+  </data>
+  <data name="SettingsThemeResolveDescription" xml:space="preserve">
+    <value>간결한 제작 작업 공간</value>
+  </data>
+  <data name="SettingsThemeAdobe" xml:space="preserve">
+    <value>Adobe Clean Pro</value>
+  </data>
+  <data name="SettingsThemeAdobeDescription" xml:space="preserve">
+    <value>깔끔한 글꼴과 간격</value>
+  </data>
+  <data name="SettingsThemeIndustrial" xml:space="preserve">
+    <value>Industrial Utility</value>
+  </data>
+  <data name="SettingsThemeIndustrialDescription" xml:space="preserve">
+    <value>기능에 집중한 테마</value>
+  </data>
+  <data name="SettingsThemeHybrid" xml:space="preserve">
+    <value>Hybrid Modern Panel</value>
+  </data>
+  <data name="SettingsThemeHybridDescription" xml:space="preserve">
+    <value>부드러운 패널과 차가운 색상 포인트</value>
+  </data>
+  <data name="LanguageEnglishName" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="LanguageEnglishDescription" xml:space="preserve">
+    <value>영어</value>
+  </data>
+  <data name="LanguageGermanName" xml:space="preserve">
+    <value>Deutsch</value>
+  </data>
+  <data name="LanguageGermanDescription" xml:space="preserve">
+    <value>독일어</value>
+  </data>
+  <data name="LanguageFrenchName" xml:space="preserve">
+    <value>Français</value>
+  </data>
+  <data name="LanguageFrenchDescription" xml:space="preserve">
+    <value>프랑스어</value>
+  </data>
+  <data name="LanguageSpanishName" xml:space="preserve">
+    <value>Español</value>
+  </data>
+  <data name="LanguageSpanishDescription" xml:space="preserve">
+    <value>스페인어</value>
+  </data>
+  <data name="LanguagePortugueseName" xml:space="preserve">
+    <value>Português</value>
+  </data>
+  <data name="LanguagePortugueseDescription" xml:space="preserve">
+    <value>포르투갈어</value>
+  </data>
+  <data name="LanguageItalianName" xml:space="preserve">
+    <value>Italiano</value>
+  </data>
+  <data name="LanguageItalianDescription" xml:space="preserve">
+    <value>이탈리아어</value>
+  </data>
+  <data name="LanguageChineseName" xml:space="preserve">
+    <value>中文（简体）</value>
+  </data>
+  <data name="LanguageChineseDescription" xml:space="preserve">
+    <value>중국어(간체)</value>
+  </data>
+  <data name="LanguageJapaneseName" xml:space="preserve">
+    <value>日本語</value>
+  </data>
+  <data name="LanguageJapaneseDescription" xml:space="preserve">
+    <value>일본어</value>
+  </data>
+  <data name="LanguageKoreanName" xml:space="preserve">
+    <value>한국어</value>
+  </data>
+  <data name="LanguageKoreanDescription" xml:space="preserve">
+    <value>한국어</value>
+  </data>
+  <data name="SettingsGuideTitle" xml:space="preserve">
+    <value>미디어 형식 가이드</value>
+  </data>
+  <data name="SettingsGuideDescription1" xml:space="preserve">
+    <value>미디어 형식 가이드에서는 컨테이너, 비디오 및 오디오 코덱, 자막 형식, 이미지 형식을 설명합니다.</value>
+  </data>
+  <data name="SettingsGuideDescription2" xml:space="preserve">
+    <value>각 형식의 용도와 조합 방식, 미디어 스트림을 추출하거나 변환할 때 사용하는 방법을 알아보세요.</value>
+  </data>
+  <data name="SettingsOpenGuide" xml:space="preserve">
+    <value>미디어 형식 가이드 열기</value>
+  </data>
+  <data name="SettingsProductName" xml:space="preserve">
+    <value>Track Extractor</value>
+  </data>
+  <data name="SettingsDevelopmentBadge" xml:space="preserve">
+    <value>개발 중</value>
+  </data>
+  <data name="SettingsAboutSummary" xml:space="preserve">
+    <value>미디어 파일을 분석하고 비디오, 오디오, 자막, 이미지 및 첨부 파일을 추출하거나 변환합니다.</value>
+  </data>
+  <data name="SettingsCheckUpdates" xml:space="preserve">
+    <value>업데이트 확인</value>
+  </data>
+  <data name="SettingsGeneralInformation" xml:space="preserve">
+    <value>일반 정보</value>
+  </data>
+  <data name="SettingsDeveloper" xml:space="preserve">
+    <value>개발자</value>
+  </data>
+  <data name="SettingsDeveloperName" xml:space="preserve"><value>Sergey Boitcov</value></data>
+  <data name="SettingsPlatformsLabel" xml:space="preserve"><value>지원 플랫폼</value></data>
+  <data name="SettingsPlatforms" xml:space="preserve">
+    <value>Windows, Linux, macOS</value>
+  </data>
+  <data name="SettingsTechnologyLabel" xml:space="preserve"><value>기술</value></data>
+  <data name="SettingsTechnology" xml:space="preserve">
+    <value>.NET {0}, Avalonia UI {1}</value>
+  </data>
+  <data name="SettingsMediaComponents" xml:space="preserve">
+    <value>시스템 구성 요소</value>
+  </data>
+  <data name="SettingsFfmpegRights" xml:space="preserve">
+    <value>FFmpeg와 FFprobe의 권리는 각 권리자에게 있습니다. 사용 조건은 해당 빌드의 라이선스에 따라 다릅니다.</value>
+  </data>
+  <data name="SettingsUpdateCurrent" xml:space="preserve"><value>최신 버전을 사용 중입니다</value></data>
+  <data name="SettingsUpdateAvailable" xml:space="preserve"><value>버전 1.0.1을 사용할 수 있습니다</value></data>
+  <data name="SettingsInstallUpdate" xml:space="preserve"><value>업데이트 설치</value></data>
+  <data name="SettingsLicenses" xml:space="preserve"><value>라이선스</value></data>
+  <data name="SettingsFfmpegLicense" xml:space="preserve"><value>조건은 빌드에 따라 다름</value></data>
+  <data name="SettingsOpenLicense" xml:space="preserve"><value>라이선스 열기</value></data>
+  <data name="SettingsReportBug" xml:space="preserve"><value>버그 신고</value></data>
+  <data name="SettingsEmailLabel" xml:space="preserve"><value>이메일</value></data>
+  <data name="SettingsTelegramLabel" xml:space="preserve"><value>Telegram 채널</value></data>
+  <data name="SettingsAboutFooter" xml:space="preserve"><value>© {0} · {1} {2}</value></data>
+  <data name="SettingsSupportDeveloper" xml:space="preserve"><value>개발자 후원하기</value></data>
+  <data name="SettingsOpenLinkFailed" xml:space="preserve"><value>시스템 앱에서 링크를 열 수 없습니다.</value></data>
+  <data name="SupportDescription" xml:space="preserve"><value>{0} 프로젝트는 독립적으로 개발됩니다. 유용하게 사용하셨다면 자발적인 후원으로 개발을 지원할 수 있습니다.</value></data>
+  <data name="SupportCrypto" xml:space="preserve"><value>암호화폐</value></data>
+  <data name="SupportCryptoDescription" xml:space="preserve"><value>지갑 주소 및 QR 코드</value></data>
+  <data name="SupportCryptoNetwork" xml:space="preserve"><value>USDT · TRON 네트워크(TRC20)</value></data>
+  <data name="SupportCopyAddress" xml:space="preserve"><value>주소 복사</value></data>
+  <data name="SupportAddressCopied" xml:space="preserve"><value>주소를 복사했습니다.</value></data>
+  <data name="SupportSbp" xml:space="preserve"><value>빠른 결제 시스템</value></data>
+  <data name="SupportSbpDescription" xml:space="preserve"><value>결제 정보 및 QR 코드</value></data>
+  <data name="SupportSbpInstruction" xml:space="preserve"><value>은행 앱에서 QR 코드를 스캔하거나 전화번호를 사용하세요.</value></data>
+  <data name="SupportSbpBank" xml:space="preserve"><value>Sberbank</value></data>
+  <data name="SupportCopyDetails" xml:space="preserve"><value>번호 복사</value></data>
+  <data name="SupportDetailsCopied" xml:space="preserve"><value>번호를 복사했습니다.</value></data>
+  <data name="SupportCopyFailed" xml:space="preserve"><value>결제 정보를 복사할 수 없습니다.</value></data>
+  <data name="SettingsThirdParty" xml:space="preserve">
+    <value>타사 구성 요소 및 라이선스</value>
+  </data>
+  <data name="SettingsAvalonia" xml:space="preserve">
+    <value>Avalonia UI는 애플리케이션 인터페이스를 제공합니다.</value>
+  </data>
+  <data name="SettingsMvvm" xml:space="preserve">
+    <value>CommunityToolkit.Mvvm은 MVVM 기능을 지원합니다.</value>
+  </data>
+  <data name="SettingsExternalTools" xml:space="preserve">
+    <value>FFmpeg와 FFprobe는 미디어 파일 처리 및 분석을 위한 외부 도구입니다.</value>
+  </data>
+  <data name="SettingsMatroskaTitle" xml:space="preserve">
+    <value>내장 Matroska(MKV) 첨부 파일 모듈</value>
+  </data>
+  <data name="SettingsMatroskaDescription" xml:space="preserve">
+    <value>C# 모듈은 Matroska/EBML 구조와 SeekHead 인덱스를 사용해 내장된 JPEG/PNG 이미지를 찾고 읽고 추출합니다. 첨부 파일 데이터를 직접 복사할 때는 FFmpeg를 사용하지 않습니다.</value>
+  </data>
+  <data name="SettingsLicensePending" xml:space="preserve">
+    <value>라이선스 정보는 출시 전에 추가됩니다</value>
+  </data>
+  <data name="InstallerRequirement" xml:space="preserve">
+    <value>미디어 파일을 처리하려면 FFmpeg와 FFprobe가 필요합니다</value>
+  </data>
+  <data name="InstallerFfmpegRole" xml:space="preserve">
+    <value>미디어 처리</value>
+  </data>
+  <data name="InstallerFfprobeRole" xml:space="preserve">
+    <value>미디어 분석</value>
+  </data>
+  <data name="InstallerAllReady" xml:space="preserve">
+    <value>모든 구성 요소가 준비되었습니다</value>
+  </data>
+  <data name="InstallerCancel" xml:space="preserve">
+    <value>취소</value>
+  </data>
+  <data name="InstallerContinue" xml:space="preserve">
+    <value>계속</value>
+  </data>
+  <data name="InstallerRetry" xml:space="preserve">
+    <value>다시 확인</value>
+  </data>
+  <data name="InstallerSelectFfmpeg" xml:space="preserve">
+    <value>FFmpeg 찾기</value>
+  </data>
+  <data name="InstallerSelectFfprobe" xml:space="preserve">
+    <value>FFprobe 찾기</value>
+  </data>
+  <data name="InstallerFilePickerUnavailable" xml:space="preserve">
+    <value>파일 선택 창을 열 수 없습니다. 다시 시도하세요.</value>
+  </data>
+  <data name="InstallerSelectExecutableFormat" xml:space="preserve">
+    <value>{0} 실행 파일 선택</value>
+  </data>
+  <data name="InstallerSelectLocalExecutable" xml:space="preserve">
+    <value>로컬 실행 파일을 선택하세요.</value>
+  </data>
+  <data name="InstallerSelectFileFailed" xml:space="preserve">
+    <value>파일을 선택할 수 없습니다. 접근 권한을 확인하고 다시 시도하세요.</value>
+  </data>
+  <data name="InstallerOperationCancelled" xml:space="preserve">
+    <value>작업이 취소되었습니다. 다시 확인하거나 설치할 수 있습니다.</value>
+  </data>
+  <data name="InstallerOperationFailed" xml:space="preserve">
+    <value>작업을 완료할 수 없습니다. 다시 시도하거나 경로를 직접 지정하세요.</value>
+  </data>
+  <data name="InstallerRetryInstall" xml:space="preserve">
+    <value>설치 다시 시도</value>
+  </data>
+  <data name="InstallerInstallComponents" xml:space="preserve">
+    <value>구성 요소 설치</value>
+  </data>
+  <data name="InstallerInstallationMethod" xml:space="preserve">
+    <value>설치 방법</value>
+  </data>
+  <data name="InstallerManualFileMissing" xml:space="preserve">
+    <value>파일을 찾을 수 없습니다. 존재하는 실행 파일을 선택하세요.</value>
+  </data>
+  <data name="InstallerToolCheckFailed" xml:space="preserve">
+    <value>도구 확인에 실패했습니다. 다시 확인하거나 다른 경로를 선택하세요.</value>
+  </data>
+  <data name="InstallerWingetSourcesUnavailable" xml:space="preserve">
+    <value>WinGet을 사용할 수 있지만 패키지 소스에서 응답하지 않았습니다.</value>
+  </data>
+  <data name="InstallerWingetFallbackAvailable" xml:space="preserve">
+    <value>WinGet을 사용할 수 있지만 소스에서 응답하지 않았습니다. gyan.dev를 대체 경로로 사용할 수 있습니다.</value>
+  </data>
+  <data name="InstallerWingetAvailable" xml:space="preserve">
+    <value>WinGet을 사용할 수 있습니다.</value>
+  </data>
+  <data name="InstallerWingetUnavailableManual" xml:space="preserve">
+    <value>WinGet을 사용할 수 없습니다. 경로를 직접 지정하세요.</value>
+  </data>
+  <data name="InstallerWingetAndSourceUnavailable" xml:space="preserve">
+    <value>WinGet을 사용할 수 없습니다. gyan.dev에서도 응답하지 않았습니다.</value>
+  </data>
+  <data name="InstallerWingetUnavailableFallback" xml:space="preserve">
+    <value>WinGet을 사용할 수 없습니다. 대신 gyan.dev를 통해 설치할 수 있습니다.</value>
+  </data>
+  <data name="InstallerNoticeWithMethod" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="InstallerCheckError" xml:space="preserve">
+    <value>확인에 실패했습니다.</value>
+  </data>
+  <data name="InstallerAutoInstallUnavailable" xml:space="preserve">
+    <value>이 플랫폼에서는 자동 설치를 지원하지 않습니다. 안내된 명령을 사용하거나 경로를 직접 지정하세요.</value>
+  </data>
+  <data name="InstallerDirectDownloadWindowsOnly" xml:space="preserve">
+    <value>직접 다운로드는 Windows 10/11 x64에서만 지원됩니다.</value>
+  </data>
+  <data name="InstallerPreparingDirectDownload" xml:space="preserve">
+    <value>gyan.dev에서 다운로드 준비 중…</value>
+  </data>
+  <data name="InstallerInstallingWithWinget" xml:space="preserve">
+    <value>WinGet으로 설치 중…</value>
+  </data>
+  <data name="InstallerDirectFallbackNoWinget" xml:space="preserve">
+    <value>WinGet을 사용할 수 없습니다. 대신 FFmpeg를 직접 다운로드합니다.</value>
+  </data>
+  <data name="InstallerDirectFallbackFailedWinget" xml:space="preserve">
+    <value>WinGet 설치에 실패했습니다. 대신 FFmpeg를 직접 다운로드합니다.</value>
+  </data>
+  <data name="InstallerDirectDownloadLocation" xml:space="preserve">
+    <value>gyan.dev에서 다운로드한 파일은 사용자 데이터 폴더에 설치됩니다. PATH는 변경되지 않습니다.</value>
+  </data>
+  <data name="InstallerCheckingAfterInstall" xml:space="preserve">
+    <value>설치 후 구성 요소 확인 중…</value>
+  </data>
+  <data name="InstallerVerificationFailed" xml:space="preserve">
+    <value>설치 후 확인에서 두 도구 모두 정상 작동하는지 확인하지 못했습니다. 다시 확인하거나 경로를 직접 지정하세요.</value>
+  </data>
+  <data name="InstallerInstallCancelled" xml:space="preserve">
+    <value>설치가 취소되었습니다. 다시 시도할 수 있습니다.</value>
+  </data>
+  <data name="InstallerCheckingTools" xml:space="preserve">
+    <value>도구 확인 중…</value>
+  </data>
+  <data name="InstallerBuildSourceBoth" xml:space="preserve">
+    <value>FFmpeg 및 FFprobe 바이너리 출처: gyan.dev</value>
+  </data>
+  <data name="InstallerBuildSourceFfmpeg" xml:space="preserve">
+    <value>FFmpeg 바이너리 출처: gyan.dev</value>
+  </data>
+  <data name="InstallerBuildSourceFfprobe" xml:space="preserve">
+    <value>FFprobe 바이너리 출처: gyan.dev</value>
+  </data>
+  <data name="InstallerReadyVersions" xml:space="preserve">
+    <value>준비 완료. FFmpeg {0}, FFprobe {1}.</value>
+  </data>
+  <data name="InstallerToolsRequired" xml:space="preserve">
+    <value>미디어 파일을 처리하려면 FFmpeg와 FFprobe가 필요합니다.</value>
+  </data>
+  <data name="InstallerBothReady" xml:space="preserve">
+    <value>두 도구 모두 준비되었습니다.</value>
+  </data>
+  <data name="InstallerMissingPrompt" xml:space="preserve">
+    <value>누락된 도구를 설치하거나 경로를 지정하세요.</value>
+  </data>
+  <data name="InstallerFoundVersion" xml:space="preserve">
+    <value>발견됨 · {0}</value>
+  </data>
+  <data name="InstallerNotFound" xml:space="preserve">
+    <value>찾을 수 없음</value>
+  </data>
+  <data name="InstallerError" xml:space="preserve">
+    <value>오류</value>
+  </data>
+  <data name="InstallerCheckingBrief" xml:space="preserve">
+    <value>확인 중…</value>
+  </data>
+  <data name="ToolsSavedPathsReadFailed" xml:space="preserve">
+    <value>저장된 경로를 읽을 수 없습니다. 사용자 설정 파일을 확인하세요.</value>
+  </data>
+  <data name="ToolsFileNotFound" xml:space="preserve">
+    <value>파일을 찾을 수 없습니다.</value>
+  </data>
+  <data name="ToolsFileNotFoundPath" xml:space="preserve">
+    <value>파일을 찾을 수 없음: {0}</value>
+  </data>
+  <data name="ToolsRecoveredPathsSaveFailed" xml:space="preserve">
+    <value>정상 작동하는 도구를 찾았지만 경로를 저장할 수 없었습니다. 사용자 설정 접근 권한을 확인하세요.</value>
+  </data>
+  <data name="ToolsManualPathSaveFailed" xml:space="preserve">
+    <value>도구는 정상 작동하지만 경로를 저장할 수 없었습니다. 사용자 설정 접근 권한을 확인하세요.</value>
+  </data>
+  <data name="ToolsWingetOption" xml:space="preserve">
+    <value>WinGet을 사용해 Gyan.FFmpeg 패키지를 설치할 수 있습니다.</value>
+  </data>
+  <data name="ToolsWingetSourceFallback" xml:space="preserve">
+    <value>WinGet 소스가 응답하지 않았습니다. gyan.dev에서 대신 다운로드할 수 있습니다.</value>
+  </data>
+  <data name="ToolsNoWingetFallback" xml:space="preserve">
+    <value>WinGet을 사용할 수 없습니다. gyan.dev에서 대신 다운로드할 수 있습니다.</value>
+  </data>
+  <data name="ToolsInstallSourcesUnavailable" xml:space="preserve">
+    <value>설치 소스에 연결할 수 없습니다. 인터넷 연결을 확인하고 다시 시도하세요</value>
+  </data>
+  <data name="ToolsMacBrewOption" xml:space="preserve">
+    <value>터미널에서 brew install ffmpeg를 실행한 다음 '다시 확인'을 선택하세요. 이 앱은 Homebrew를 실행하지 않으며 macOS 바이너리 직접 다운로드를 지원하지 않습니다. 또는 https://ffmpeg.org/download.html을 참고해 경로를 직접 지정하세요.</value>
+  </data>
+  <data name="ToolsMacNoBrewOption" xml:space="preserve">
+    <value>Homebrew를 찾을 수 없습니다. https://brew.sh에서 설치하고 brew install ffmpeg를 실행하거나 경로를 직접 지정하세요. macOS 바이너리 자동 다운로드는 지원하지 않습니다.</value>
+  </data>
+  <data name="ToolsLinuxManagerOption" xml:space="preserve">
+    <value>터미널에서 {0}을 실행한 다음 '다시 확인'을 선택하세요. 패키지 제공 여부는 배포판 저장소에 따라 다릅니다. 패키지가 없으면 https://ffmpeg.org/download.html을 참고하거나 경로를 직접 지정하세요. Linux 전체에 적용되는 범용 직접 다운로드는 없습니다.</value>
+  </data>
+  <data name="ToolsLinuxNoManagerOption" xml:space="preserve">
+    <value>지원되는 패키지 관리자를 찾을 수 없습니다. https://ffmpeg.org/download.html에서 배포판과 아키텍처에 맞는 패키지를 선택하고 경로를 직접 지정하세요. Linux 전체에 적용되는 범용 직접 다운로드는 없습니다.</value>
+  </data>
+  <data name="ToolsManualInstallOption" xml:space="preserve">
+    <value>FFmpeg를 수동으로 설치한 다음 '다시 확인'을 선택하세요.</value>
+  </data>
+  <data name="ToolsAlreadyInstalled" xml:space="preserve">
+    <value>FFmpeg와 FFprobe가 이미 설치되어 정상 작동합니다. 다시 설치할 필요가 없습니다.</value>
+  </data>
+  <data name="ToolsWingetUnavailable" xml:space="preserve">
+    <value>WinGet을 사용할 수 없습니다.</value>
+  </data>
+  <data name="ToolsVerifiedReady" xml:space="preserve">
+    <value>FFmpeg와 FFprobe 확인이 완료되었으며 사용할 수 있습니다.</value>
+  </data>
+  <data name="ToolsWingetExitFailure" xml:space="preserve">
+    <value>WinGet이 FFmpeg를 설치하지 못했습니다(종료 코드 {0}).</value>
+  </data>
+  <data name="ToolsWingetMissingAfterInstall" xml:space="preserve">
+    <value>WinGet은 완료되었지만 정상 작동하는 두 도구를 모두 찾지 못했습니다. 앱을 다시 시작한 후 다시 확인할 수 있습니다.</value>
+  </data>
+  <data name="ToolsWingetTimeout" xml:space="preserve">
+    <value>WinGet 작업 시간이 초과되었습니다. 다시 확인하세요.</value>
+  </data>
+  <data name="ToolsWingetInstallFailed" xml:space="preserve">
+    <value>WinGet 설치를 완료할 수 없습니다. 권한을 확인하거나 대체 방법을 시도하세요.</value>
+  </data>
+  <data name="ToolsDirectDownloadAdvice" xml:space="preserve">
+    <value> 사용자 데이터 폴더로 gyan.dev에서 다운로드하는 대체 방법을 사용할 수 있습니다. PATH는 변경되지 않습니다.</value>
+  </data>
+  <data name="ToolsFailureWithAdvice" xml:space="preserve">
+    <value>{0}{1}</value>
+  </data>
+  <data name="ToolsManualArchitectureAdvice" xml:space="preserve">
+    <value> 직접 다운로드는 Windows 10/11 x64에서만 지원됩니다. 이 아키텍처와 호환되는 도구를 직접 지정하세요: https://ffmpeg.org/download.html.</value>
+  </data>
+  <data name="ToolsExecutableExitFailure" xml:space="preserve">
+    <value>{0}: 실행 실패(종료 코드 {1}).</value>
+  </data>
+  <data name="ToolsWrongExecutable" xml:space="preserve">
+    <value>{0}: 올바르지 않은 실행 파일입니다. -version 응답으로 예상 도구인지 확인할 수 없습니다.</value>
+  </data>
+  <data name="ToolsVersionTimeout" xml:space="preserve">
+    <value>{0}: 5초 안에 응답하지 않았습니다.</value>
+  </data>
+  <data name="ToolsLaunchFailed" xml:space="preserve">
+    <value>{0}: 시작할 수 없습니다. 파일 권한과 호환성을 확인하세요.</value>
+  </data>
+  <data name="ToolsDirectDownloadWindowsOnly" xml:space="preserve">
+    <value>직접 다운로드는 Windows 10/11 x64에서만 지원됩니다. 호환되는 도구를 직접 지정하세요.</value>
+  </data>
+  <data name="ToolsAlreadyDownloaded" xml:space="preserve">
+    <value>FFmpeg와 FFprobe가 이미 설치되어 정상 작동합니다. 다시 다운로드할 필요가 없습니다.</value>
+  </data>
+  <data name="ToolsDownloadingChecksum" xml:space="preserve">
+    <value>gyan.dev에서 체크섬 다운로드 중…</value>
+  </data>
+  <data name="ToolsDownloadingArchive" xml:space="preserve">
+    <value>gyan.dev에서 FFmpeg 및 FFprobe 다운로드 중…</value>
+  </data>
+  <data name="ToolsCheckingChecksum" xml:space="preserve">
+    <value>SHA-256 체크섬 확인 중…</value>
+  </data>
+  <data name="ToolsExtractingArchive" xml:space="preserve">
+    <value>압축 파일을 안전하게 해제하는 중…</value>
+  </data>
+  <data name="ToolsCheckingDownloadedExecutables" xml:space="preserve">
+    <value>설치된 FFmpeg 및 FFprobe 실행 파일 확인 중…</value>
+  </data>
+  <data name="ToolsDownloadedReady" xml:space="preserve">
+    <value>FFmpeg와 FFprobe가 사용자 데이터 폴더에 설치되어 Track Extractor에서 사용할 수 있습니다. PATH에 추가되지 않았으므로 터미널에서 짧은 명령으로는 찾을 수 없습니다.</value>
+  </data>
+  <data name="ToolsDownloadTimeout" xml:space="preserve">
+    <value>다운로드 또는 설치가 20분을 초과해 시간 초과되었습니다. 연결을 확인하고 다시 시도하세요.</value>
+  </data>
+  <data name="ToolsDownloadHttpFailure" xml:space="preserve">
+    <value>다운로드 서버를 현재 사용할 수 없습니다(HTTP {0}). 나중에 다시 시도하세요.</value>
+  </data>
+  <data name="ToolsDownloadNetworkFailure" xml:space="preserve">
+    <value>다운로드 서버에 연결할 수 없거나 연결이 끊겼습니다. 연결을 확인하고 다시 시도하세요.</value>
+  </data>
+  <data name="ToolsDownloadChecksumFailure" xml:space="preserve">
+    <value>압축 파일의 SHA-256 체크섬을 확인하지 못했습니다. 다운로드된 파일은 실행하지 않았습니다. 다시 다운로드하세요.</value>
+  </data>
+  <data name="ToolsDownloadArchiveFailure" xml:space="preserve">
+    <value>다운로드한 압축 파일이 손상되었거나 불완전하거나 안전하지 않습니다. 다운로드된 파일은 실행하지 않았습니다. 다시 다운로드하세요.</value>
+  </data>
+  <data name="ToolsDownloadWriteFailure" xml:space="preserve">
+    <value>사용자 데이터 폴더에 파일을 쓸 수 없습니다. 여유 공간과 권한을 확인하세요.</value>
+  </data>
+  <data name="ToolsDownloadComplete" xml:space="preserve">
+    <value>다운로드 완료.</value>
+  </data>
+  <data name="ToolsDownloadProgressOf" xml:space="preserve">
+    <value>{1:F1} MB 중 {0:F1} MB 다운로드됨</value>
+  </data>
+  <data name="ToolsDownloadProgress" xml:space="preserve">
+    <value>{0:F1} MB 다운로드됨</value>
+  </data>
+  <data name="MainPath" xml:space="preserve">
+    <value>경로:</value>
+  </data>
+  <data name="MainAudioFormat" xml:space="preserve">
+    <value>오디오 형식</value>
+  </data>
+  <data name="MainColumnLanguage" xml:space="preserve">
+    <value>언어</value>
+  </data>
+  <data name="MainClose" xml:space="preserve">
+    <value>닫기</value>
+  </data>
+  <data name="MainColumnDetails" xml:space="preserve">
+    <value>채널 / 해상도</value>
+  </data>
+  <data name="MainColumnBitrate" xml:space="preserve">
+    <value>비트 전송률</value>
+  </data>
+  <data name="MainSaveLog" xml:space="preserve">
+    <value>로그 저장</value>
+  </data>
+  <data name="MainSaveFolder" xml:space="preserve">
+    <value>출력 폴더</value>
+  </data>
+  <data name="MainClear" xml:space="preserve">
+    <value>지우기</value>
+  </data>
+  <data name="MainGroupLanguages" xml:space="preserve">
+    <value>언어별로 그룹화(하위 폴더 생성)</value>
+  </data>
+  <data name="MainColumnType" xml:space="preserve">
+    <value>유형</value>
+  </data>
+  <data name="MainSaveMetadata" xml:space="preserve">
+    <value>메타데이터 유지</value>
+  </data>
+  <data name="MainSelectAll" xml:space="preserve">
+    <value>모든 스트림 선택 또는 선택 해제</value>
+  </data>
+  <data name="MainColumnCodec" xml:space="preserve">
+    <value>코덱</value>
+  </data>
+  <data name="MainSubtitleFormat" xml:space="preserve">
+    <value>자막 형식</value>
+  </data>
+  <data name="MainDropReplace" xml:space="preserve">
+    <value>다른 파일을 여기에 놓으면 교체됩니다</value>
+  </data>
+  <data name="MainVideo" xml:space="preserve">
+    <value>비디오:</value>
+  </data>
+  <data name="MainBrowse" xml:space="preserve">
+    <value>찾아보기</value>
+  </data>
+  <data name="MainFileLoaded" xml:space="preserve">
+    <value>파일을 성공적으로 불러왔습니다</value>
+  </data>
+  <data name="MainAudio" xml:space="preserve">
+    <value>오디오:</value>
+  </data>
+  <data name="MainColumnStatus" xml:space="preserve">
+    <value>상태</value>
+  </data>
+  <data name="MainMinimize" xml:space="preserve">
+    <value>최소화</value>
+  </data>
+  <data name="MainFileInfo" xml:space="preserve">
+    <value>파일 정보</value>
+  </data>
+  <data name="MainOpenFolder" xml:space="preserve">
+    <value>폴더 열기</value>
+  </data>
+  <data name="MainChooseFile" xml:space="preserve">
+    <value>파일 선택</value>
+  </data>
+  <data name="MainSubtitles" xml:space="preserve">
+    <value>자막:</value>
+  </data>
+  <data name="MainColumnIndex" xml:space="preserve">
+    <value>인덱스</value>
+  </data>
+  <data name="MainFormat" xml:space="preserve">
+    <value>형식:</value>
+  </data>
+  <data name="MainExportSettings" xml:space="preserve">
+    <value>내보내기 설정</value>
+  </data>
+  <data name="MainEventLog" xml:space="preserve">
+    <value>이벤트 로그</value>
+  </data>
+  <data name="MainSourceFolder" xml:space="preserve">
+    <value>원본 파일 이름으로 폴더 만들기</value>
+  </data>
+  <data name="MainDuration" xml:space="preserve">
+    <value>길이:</value>
+  </data>
+  <data name="MainConfigure" xml:space="preserve">
+    <value>구성</value>
+  </data>
+  <data name="MainVideoFormat" xml:space="preserve">
+    <value>비디오 형식</value>
+  </data>
+  <data name="MainMaximizeRestore" xml:space="preserve">
+    <value>최대화 또는 복원</value>
+  </data>
+  <data name="MainSize" xml:space="preserve">
+    <value>크기:</value>
+  </data>
+  <data name="MainDropFile" xml:space="preserve">
+    <value>비디오 파일을 여기에 놓으세요</value>
+  </data>
+  <data name="MainChooseFolder" xml:space="preserve">
+    <value>폴더 선택</value>
+  </data>
+  <data name="MainStreamProperties" xml:space="preserve">
+    <value>속성</value>
+  </data>
+  <data name="MainSourceFile" xml:space="preserve">
+    <value>원본 파일</value>
+  </data>
+  <data name="MainClearSelectedFile" xml:space="preserve">
+    <value>선택한 파일 지우기</value>
+  </data>
+  <data name="MainFutureAttachments" xml:space="preserve">
+    <value>MKV 첨부 파일 추출 — 향후 버전에서 지원 예정</value>
+  </data>
+  <data name="MainSupportedFormats" xml:space="preserve">
+    <value>지원 형식: MP4, MKV, MOV, AVI, WebM 등.</value>
+  </data>
+  <data name="MainNoFile" xml:space="preserve">
+    <value>선택한 파일 없음</value>
+  </data>
+  <data name="MainSelectFolderAndTracks" xml:space="preserve">
+    <value>출력 폴더와 스트림을 선택하세요.</value>
+  </data>
+  <data name="MainTracksHeading" xml:space="preserve">
+    <value>발견된 미디어 스트림({0})</value>
+  </data>
+  <data name="MainSelectedCount" xml:space="preserve">
+    <value>선택됨: {0}</value>
+  </data>
+  <data name="MainProcess" xml:space="preserve">
+    <value>처리</value>
+  </data>
+  <data name="MainExtract" xml:space="preserve">
+    <value>추출</value>
+  </data>
+  <data name="MainCheckingDependencies" xml:space="preserve">
+    <value>필수 구성 요소 확인 중…</value>
+  </data>
+  <data name="MainNeedTools" xml:space="preserve">
+    <value>FFmpeg와 FFprobe가 필요합니다</value>
+  </data>
+  <data name="MainAnalyzingFile" xml:space="preserve">
+    <value>파일 분석 중…</value>
+  </data>
+  <data name="MainProcessing" xml:space="preserve">
+    <value>처리 중…</value>
+  </data>
+  <data name="MainAnalysisError" xml:space="preserve">
+    <value>분석 실패</value>
+  </data>
+  <data name="MainReady" xml:space="preserve">
+    <value>준비 완료</value>
+  </data>
+  <data name="MainChooseOrDropFile" xml:space="preserve">
+    <value>파일을 선택하거나 왼쪽 영역에 끌어다 놓으세요</value>
+  </data>
+  <data name="MainBytesExact" xml:space="preserve">
+    <value>{0:N0}바이트</value>
+  </data>
+  <data name="MainSelectFileAndTracks" xml:space="preserve">
+    <value>파일과 스트림을 선택하세요.</value>
+  </data>
+  <data name="MainStopBeforeFile" xml:space="preserve">
+    <value>현재 추출 작업을 중지하거나 완료하세요.</value>
+  </data>
+  <data name="MainInstallBeforeFile" xml:space="preserve">
+    <value>파일을 선택하기 전에 FFmpeg와 FFprobe를 설치하세요.</value>
+  </data>
+  <data name="MainAnalyzing" xml:space="preserve">
+    <value>분석 중</value>
+  </data>
+  <data name="MainDone" xml:space="preserve">
+    <value>완료</value>
+  </data>
+  <data name="MainAnalysisCancelled" xml:space="preserve">
+    <value>분석 취소됨</value>
+  </data>
+  <data name="MainFileNotFound" xml:space="preserve">
+    <value>파일을 찾을 수 없습니다. 다른 파일을 선택하세요.</value>
+  </data>
+  <data name="MainFileAccessDenied" xml:space="preserve">
+    <value>파일 또는 FFprobe에 대한 접근이 거부되었습니다.</value>
+  </data>
+  <data name="MainProbeLaunchFailed" xml:space="preserve">
+    <value>FFprobe를 시작할 수 없습니다. 필수 구성 요소를 다시 확인하세요.</value>
+  </data>
+  <data name="MainFileReadFailed" xml:space="preserve">
+    <value>파일을 읽을 수 없습니다. 접근 권한을 확인하고 다시 시도하세요.</value>
+  </data>
+  <data name="MainFileDamaged" xml:space="preserve">
+    <value>파일이 손상되었거나 지원되지 않을 수 있습니다.</value>
+  </data>
+  <data name="MainInvalidOutputFolder" xml:space="preserve">
+    <value>출력 폴더 경로가 잘못되었습니다.</value>
+  </data>
+  <data name="MainOutputFolderMissingChoose" xml:space="preserve">
+    <value>출력 폴더를 찾을 수 없습니다. 다른 폴더를 선택하세요.</value>
+  </data>
+  <data name="MainOutputFolderSelected" xml:space="preserve">
+    <value>폴더가 선택되었습니다. 이름이 겹치는 파일에는 번호를 붙이며 기존 파일은 유지됩니다.</value>
+  </data>
+  <data name="LogOutputFolderChanged" xml:space="preserve">
+    <value>출력 폴더가 변경되었습니다.</value>
+  </data>
+  <data name="MainExportRequirements" xml:space="preserve">
+    <value>사용 가능한 스트림과 출력 폴더를 선택하고 FFmpeg와 FFprobe가 준비되었는지 확인하세요.</value>
+  </data>
+  <data name="MainPreparingExport" xml:space="preserve">
+    <value>처리 준비 중…</value>
+  </data>
+  <data name="MainStatusWithTime" xml:space="preserve">
+    <value>{0} 경과 시간: {1}</value>
+  </data>
+  <data name="MainAwaitingExtraction" xml:space="preserve">
+    <value>추출 대기 중.</value>
+  </data>
+  <data name="MainGroupedProgress" xml:space="preserve">
+    <value>{0}({3}개 중 {1}~{2}개)</value>
+  </data>
+  <data name="MainStreamProgress" xml:space="preserve">
+    <value>스트림 #{0}({2}개 중 {1}개)</value>
+  </data>
+  <data name="MainStatusWithTotalTime" xml:space="preserve">
+    <value>{0} 총 소요 시간: {1}</value>
+  </data>
+  <data name="MainExportComplete" xml:space="preserve">
+    <value>선택한 모든 스트림의 처리가 완료되었습니다.</value>
+  </data>
+  <data name="MainExportCancelled" xml:space="preserve">
+    <value>추출이 중지되었습니다. 완료된 파일은 보존되었습니다.</value>
+  </data>
+  <data name="MainExportPartial" xml:space="preserve">
+    <value>처리가 오류와 함께 종료되었습니다. 완료된 파일은 보존되었습니다.</value>
+  </data>
+  <data name="MainExtractionCancelled" xml:space="preserve">
+    <value>추출이 취소되었습니다.</value>
+  </data>
+  <data name="MainExportStartFailed" xml:space="preserve">
+    <value>추출을 시작할 수 없습니다.</value>
+  </data>
+  <data name="MainSourceMissing" xml:space="preserve">
+    <value>원본 파일을 찾을 수 없습니다.</value>
+  </data>
+  <data name="MainOutputFolderMissing" xml:space="preserve">
+    <value>출력 폴더를 찾을 수 없습니다.</value>
+  </data>
+  <data name="MainOutputFolderAccessDenied" xml:space="preserve">
+    <value>출력 폴더에 접근할 수 없습니다.</value>
+  </data>
+  <data name="MainExtractionError" xml:space="preserve">
+    <value>추출 실패.</value>
+  </data>
+  <data name="MainExportErrorAdvice" xml:space="preserve">
+    <value>추출에 실패했습니다. 로그를 확인하고 다시 시도하세요.</value>
+  </data>
+  <data name="MainEmptyStreams" xml:space="preserve">
+    <value>파일을 추가하면 스트림이 표시됩니다.</value>
+  </data>
+  <data name="MainToolsCheckFailed" xml:space="preserve">
+    <value>도구를 확인할 수 없습니다: {0}</value>
+  </data>
+  <data name="MainFormatMp4" xml:space="preserve">
+    <value>MP4 — 폭넓은 호환성</value>
+  </data>
+  <data name="MainFormatMkv" xml:space="preserve">
+    <value>MKV — 유연한 컨테이너</value>
+  </data>
+  <data name="MainFormatMov" xml:space="preserve">
+    <value>MOV — QuickTime 비디오</value>
+  </data>
+  <data name="MainFormatAvi" xml:space="preserve">
+    <value>AVI — 기존 컨테이너</value>
+  </data>
+  <data name="MainFormatWebm" xml:space="preserve">
+    <value>WebM — 웹 비디오</value>
+  </data>
+  <data name="MainFormatMp3" xml:space="preserve">
+    <value>MP3 — 작은 용량의 오디오</value>
+  </data>
+  <data name="MainFormatWav" xml:space="preserve">
+    <value>WAV — 비압축 오디오</value>
+  </data>
+  <data name="MainFormatFlac" xml:space="preserve">
+    <value>FLAC — 무손실 오디오</value>
+  </data>
+  <data name="MainFormatAac" xml:space="preserve">
+    <value>AAC — 작은 용량의 오디오</value>
+  </data>
+  <data name="MainFormatAc3" xml:space="preserve">
+    <value>AC3 — 다채널 오디오</value>
+  </data>
+  <data name="MainFormatOgg" xml:space="preserve">
+    <value>OGG — 개방형 컨테이너</value>
+  </data>
+  <data name="MainFormatOpus" xml:space="preserve">
+    <value>Opus — 효율적인 압축</value>
+  </data>
+  <data name="MainFormatSrt" xml:space="preserve">
+    <value>SRT — 텍스트 자막</value>
+  </data>
+  <data name="MainFormatAss" xml:space="preserve">
+    <value>ASS — 스타일 자막</value>
+  </data>
+  <data name="MainFormatWebvtt" xml:space="preserve">
+    <value>WebVTT — 웹 자막</value>
+  </data>
+  <data name="MainOriginalSubtitles" xml:space="preserve">
+    <value>{0} — 원본 텍스트 자막</value>
+  </data>
+  <data name="MainOriginalCompressedAudio" xml:space="preserve">
+    <value>{0} — 원본 압축 오디오</value>
+  </data>
+  <data name="MainOriginalMultichannelAudio" xml:space="preserve">
+    <value>{0} — 원본 다채널 오디오</value>
+  </data>
+  <data name="MainOriginalAudio" xml:space="preserve">
+    <value>{0} — 원본 오디오</value>
+  </data>
+  <data name="MainOriginalVideo" xml:space="preserve">
+    <value>{0} — 원본 비디오; .{1} 파일</value>
+  </data>
+  <data name="MainOriginalNoTranscode" xml:space="preserve">
+    <value>원본 — 트랜스코딩 없음</value>
+  </data>
+  <data name="MainSourceFormatOriginal" xml:space="preserve">
+    <value>{0} — 원본</value>
+  </data>
+  <data name="MainSourceCustomFormat" xml:space="preserve"><value>{0} — 원본 — 사용자 지정 설정</value></data>
+  <data name="MainOriginalShort" xml:space="preserve">
+    <value>원본</value>
+  </data>
+  <data name="MainMixedFormatsOriginal" xml:space="preserve">
+    <value>혼합 형식 — 원본</value>
+  </data>
+  <data name="MainFormatsReadFailed" xml:space="preserve">
+    <value>FFmpeg 출력 형식을 읽을 수 없습니다.</value>
+  </data>
+  <data name="MainConversionUnavailable" xml:space="preserve">
+    <value>선택한 스트림은 변환할 수 없습니다.</value>
+  </data>
+  <data name="MainNoSuitableEncoder" xml:space="preserve">
+    <value>이 형식에 적합한 인코더가 없습니다.</value>
+  </data>
+  <data name="MainCustomFormat" xml:space="preserve">
+    <value>{0} — 사용자 지정 설정</value>
+  </data>
+  <data name="MainPickMediaFile" xml:space="preserve">
+    <value>미디어 파일 선택</value>
+  </data>
+  <data name="MainFilePickFailed" xml:space="preserve">
+    <value>파일을 선택할 수 없습니다. 접근 권한을 확인하고 다시 시도하세요.</value>
+  </data>
+  <data name="MainDropOneLocalFile" xml:space="preserve">
+    <value>로컬 파일 하나만 놓으세요.</value>
+  </data>
+  <data name="MainDropOpenFailed" xml:space="preserve">
+    <value>놓은 파일을 열 수 없습니다.</value>
+  </data>
+  <data name="MainPickLocalFile" xml:space="preserve">
+    <value>로컬 파일을 선택하세요.</value>
+  </data>
+  <data name="MainPickSaveFolder" xml:space="preserve">
+    <value>출력 폴더 선택</value>
+  </data>
+  <data name="MainPickLocalFolder" xml:space="preserve">
+    <value>로컬 출력 폴더를 선택하세요.</value>
+  </data>
+  <data name="MainFolderPickFailed" xml:space="preserve">
+    <value>폴더를 선택할 수 없습니다. 접근 권한을 확인하세요.</value>
+  </data>
+  <data name="MainResultFolderMissing" xml:space="preserve">
+    <value>결과 폴더를 찾을 수 없습니다. 존재하는 폴더를 선택하세요.</value>
+  </data>
+  <data name="MainResultFolderOpenFailed" xml:space="preserve">
+    <value>결과 폴더를 열 수 없습니다. 접근 권한을 확인하세요.</value>
+  </data>
+  <data name="MainSizeGiB" xml:space="preserve">
+    <value>{0:0.##} GiB</value>
+  </data>
+  <data name="MainSizeMiB" xml:space="preserve">
+    <value>{0:0.##} MiB</value>
+  </data>
+  <data name="MainSizeKiB" xml:space="preserve">
+    <value>{0:0.##} KiB</value>
+  </data>
+  <data name="MainSizeBytes" xml:space="preserve">
+    <value>{0}바이트</value>
+  </data>
+  <data name="MainStreamSummary" xml:space="preserve">
+    <value>{0}({1})</value>
+  </data>
+  <data name="MainTrackOne" xml:space="preserve">
+    <value>스트림</value>
+  </data>
+  <data name="MainTrackFew" xml:space="preserve">
+    <value>스트림</value>
+  </data>
+  <data name="MainTrackMany" xml:space="preserve">
+    <value>스트림</value>
+  </data>
+  <data name="MainBitrateMbps" xml:space="preserve">
+    <value>{0:0.##} Mbps</value>
+  </data>
+  <data name="MainBitrateKbps" xml:space="preserve">
+    <value>{0:0.##} kbps</value>
+  </data>
+  <data name="MainBitrateBps" xml:space="preserve">
+    <value>{0} bps</value>
+  </data>
+  <data name="MainConversionAfterSetup" xml:space="preserve">
+    <value>설정을 완료하면 변환할 수 있습니다.</value>
+  </data>
+  <data name="MainUnavailableReason" xml:space="preserve">
+    <value>사용할 수 없음: {0}</value>
+  </data>
+  <data name="MainNotSelected" xml:space="preserve">
+    <value>선택되지 않음</value>
+  </data>
+  <data name="MainModeExtract" xml:space="preserve">
+    <value>추출</value>
+  </data>
+  <data name="MainModeConvert" xml:space="preserve">
+    <value>변환</value>
+  </data>
+  <data name="MainCopyPreview" xml:space="preserve">
+    <value>.{0} · 스트림 복사</value>
+  </data>
+  <data name="MainCopyFormatUnknown" xml:space="preserve">
+    <value>사용 가능한 추출 형식이 없습니다</value>
+  </data>
+  <data name="MainConvertingTo" xml:space="preserve">
+    <value>{0} 형식으로 변환 중({1}).</value>
+  </data>
+  <data name="MainCopyingTo" xml:space="preserve">
+    <value>{0} 형식으로 트랜스코딩 없이 복사합니다.</value>
+  </data>
+  <data name="MainTypeCover" xml:space="preserve">
+    <value>커버 아트</value>
+  </data>
+  <data name="MainTypeImage" xml:space="preserve">
+    <value>이미지</value>
+  </data>
+  <data name="MainTypeAnimation" xml:space="preserve">
+    <value>애니메이션</value>
+  </data>
+  <data name="MainTypeVideo" xml:space="preserve">
+    <value>비디오</value>
+  </data>
+  <data name="MainTypeAudio" xml:space="preserve">
+    <value>오디오</value>
+  </data>
+  <data name="MainTypeSubtitle" xml:space="preserve">
+    <value>자막</value>
+  </data>
+  <data name="MainTypeAttachment" xml:space="preserve">
+    <value>첨부 파일</value>
+  </data>
+  <data name="MainTypeOther" xml:space="preserve">
+    <value>기타</value>
+  </data>
+  <data name="MainMediaSummary" xml:space="preserve">
+    <value>{0}
+{1}
+크기: {2:N0}바이트; 컨테이너: {3}; 길이: {4}; 비트 전송률: {5}
+비디오: {6}; 이미지: {7}; 애니메이션: {8}; 오디오: {9}; 자막: {10}; 알 수 없는 시각 스트림: {11}; 전체 스트림: {12}</value>
+  </data>
+  <data name="MainDescriptionResolutionUnknown" xml:space="preserve">
+    <value>해상도: —</value>
+  </data>
+  <data name="MainDescriptionFps" xml:space="preserve">
+    <value>{0:0.##} fps</value>
+  </data>
+  <data name="MainDescriptionFpsUnknown" xml:space="preserve">
+    <value>FPS: —</value>
+  </data>
+  <data name="MainDescriptionDuration" xml:space="preserve">
+    <value>길이: {0}</value>
+  </data>
+  <data name="MainDescriptionChannels" xml:space="preserve">
+    <value>{0}채널 오디오</value>
+  </data>
+  <data name="MainDescriptionChannelsUnknown" xml:space="preserve">
+    <value>채널: —</value>
+  </data>
+  <data name="MainDescriptionSampleRate" xml:space="preserve">
+    <value>{0} Hz</value>
+  </data>
+  <data name="MainDescriptionSampleRateUnknown" xml:space="preserve">
+    <value>샘플링 주파수: —</value>
+  </data>
+  <data name="MainDescriptionText" xml:space="preserve">
+    <value>텍스트</value>
+  </data>
+  <data name="MainDescriptionGraphic" xml:space="preserve">
+    <value>비트맵</value>
+  </data>
+  <data name="MainDescriptionCover" xml:space="preserve">
+    <value>이미지(커버 아트)</value>
+  </data>
+  <data name="MainDescriptionUnknownVisual" xml:space="preserve">
+    <value>알 수 없는 시각 스트림</value>
+  </data>
+  <data name="MainDescriptionUnknownType" xml:space="preserve">
+    <value>알 수 없는 유형</value>
+  </data>
+  <data name="MainChannelOne" xml:space="preserve">
+    <value>채널</value>
+  </data>
+  <data name="MainChannelFew" xml:space="preserve">
+    <value>채널</value>
+  </data>
+  <data name="MainChannelMany" xml:space="preserve">
+    <value>채널</value>
+  </data>
+  <data name="MainChannelsUnknown" xml:space="preserve">
+    <value>채널: —</value>
+  </data>
+  <data name="MainSubtitleText" xml:space="preserve">
+    <value>텍스트</value>
+  </data>
+  <data name="MainSubtitleGraphic" xml:space="preserve">
+    <value>비트맵</value>
+  </data>
+  <data name="MainStatusUnavailable" xml:space="preserve">
+    <value>사용할 수 없음</value>
+  </data>
+  <data name="MainStatusExtracting" xml:space="preserve">
+    <value>추출 중</value>
+  </data>
+  <data name="MainStatusConverting" xml:space="preserve">
+    <value>변환 중</value>
+  </data>
+  <data name="MainStatusExtracted" xml:space="preserve">
+    <value>추출됨</value>
+  </data>
+  <data name="MainStatusConverted" xml:space="preserve">
+    <value>변환됨</value>
+  </data>
+  <data name="MainStatusCancelled" xml:space="preserve">
+    <value>취소됨</value>
+  </data>
+  <data name="MainStatusConversionAvailable" xml:space="preserve">
+    <value>변환 가능</value>
+  </data>
+  <data name="MainStatusAvailable" xml:space="preserve">
+    <value>사용 가능</value>
+  </data>
+  <data name="MainStatusNeedsSetup" xml:space="preserve">
+    <value>설정 필요</value>
+  </data>
+  <data name="MainReasonNoStreamIndex" xml:space="preserve">
+    <value>FFprobe에서 스트림 인덱스를 반환하지 않았습니다.</value>
+  </data>
+  <data name="MainReasonUnknownCodec" xml:space="preserve">
+    <value>코덱을 알 수 없어 안전하게 스트림을 복사할 형식을 결정할 수 없습니다.</value>
+  </data>
+  <data name="MainReasonAnimation" xml:space="preserve">
+    <value>현재 애니메이션은 분석만 지원하며 추출 기능은 별도로 추가될 예정입니다.</value>
+  </data>
+  <data name="MainReasonUnknownVisual" xml:space="preserve">
+    <value>비디오와 정지 이미지를 확실하게 구별할 수 없습니다.</value>
+  </data>
+  <data name="MainReasonUnknownAttachmentFormat" xml:space="preserve">
+    <value>첨부 이미지 형식이 스트림 복사 추출을 지원하는지 확인되지 않았습니다.</value>
+  </data>
+  <data name="MainReasonStandaloneImage" xml:space="preserve">
+    <value>이것은 미디어 컨테이너 안의 스트림이 아닌 독립된 이미지입니다.</value>
+  </data>
+  <data name="MainReasonUnsupportedStreamType" xml:space="preserve">
+    <value>이 스트림 유형은 현재 트랜스코딩 없이 추출할 수 없습니다.</value>
+  </data>
+  <data name="MainReasonUnsupportedCodec" xml:space="preserve">
+    <value>코덱 {0}의 스트림을 별도 파일로 복사할 수 있는 검증된 방법이 없습니다.</value>
+  </data>
+  <data name="MainProgressExtractingTo" xml:space="preserve">
+    <value>스트림 #{0}: {1} 형식으로 추출 중</value>
+  </data>
+  <data name="MainProgressConvertingTo" xml:space="preserve">
+    <value>스트림 #{0}: {1} 형식으로 변환 중</value>
+  </data>
+  <data name="MainProgressFfmpegPosition" xml:space="preserve">
+    <value>스트림 #{0}: FFmpeg 처리 위치 {1}</value>
+  </data>
+  <data name="MainProgressStream" xml:space="preserve">
+    <value>스트림 #{0}</value>
+  </data>
+  <data name="MainProgressWithPercent" xml:space="preserve">
+    <value>{0} · {1:0.#}%</value>
+  </data>
+  <data name="MainProgressAttachment" xml:space="preserve">
+    <value>스트림 #{0}: Matroska 첨부 파일 복사 중, {1:P0}</value>
+  </data>
+  <data name="MainResultSaved" xml:space="preserve">
+    <value>저장됨: {0}; {1}; {2}</value>
+  </data>
+  <data name="MainResultCancelledAfter" xml:space="preserve">
+    <value>{0} 후 처리가 취소되었습니다.</value>
+  </data>
+  <data name="MainResultCancelled" xml:space="preserve">
+    <value>처리가 취소되었습니다.</value>
+  </data>
+  <data name="MainResultTimeout" xml:space="preserve">
+    <value>{0} 후 추출 시간이 초과되었습니다.</value>
+  </data>
+  <data name="MainResultOutputAccessDenied" xml:space="preserve">
+    <value>출력 폴더 또는 파일에 대한 접근이 거부되었습니다.</value>
+  </data>
+  <data name="MainResultWriteFailed" xml:space="preserve">
+    <value>파일을 쓸 수 없습니다. 여유 공간과 권한을 확인하세요.</value>
+  </data>
+  <data name="MainResultFfmpegLaunchFailed" xml:space="preserve">
+    <value>FFmpeg를 시작할 수 없습니다. 필수 구성 요소를 다시 확인하세요.</value>
+  </data>
+  <data name="MainResultUnexpectedFailure" xml:space="preserve">
+    <value>스트림을 추출할 수 없습니다. 경과 시간: {0}. 로그를 확인하고 다시 시도하세요.</value>
+  </data>
+  <data name="MainResultNotStartedCancelled" xml:space="preserve">
+    <value>작업이 취소되어 시작되지 않았습니다.</value>
+  </data>
+  <data name="MainAllTracksExtracted" xml:space="preserve">
+    <value>모든 스트림이 추출되었습니다.</value>
+  </data>
+  <data name="MainProgressSharedPass" xml:space="preserve">
+    <value>스트림 #{0}: 공유 FFmpeg 처리 과정</value>
+  </data>
+  <data name="MainProgressStreams" xml:space="preserve">
+    <value>스트림 {0}</value>
+  </data>
+  <data name="MainResultSaveStreamFailed" xml:space="preserve">
+    <value>스트림 #{0} 저장 실패. 경과 시간: {1}.</value>
+  </data>
+  <data name="MainResultExtractionCancelledAfter" xml:space="preserve">
+    <value>{0} 후 추출이 취소되었습니다.</value>
+  </data>
+  <data name="MainResultFfmpegTimeout" xml:space="preserve">
+    <value>{0} 후 FFmpeg 응답 시간이 초과되었습니다.</value>
+  </data>
+  <data name="MainResultSizeGb" xml:space="preserve">
+    <value>{0:0.##} GB</value>
+  </data>
+  <data name="MainResultSizeMb" xml:space="preserve">
+    <value>{0:0.##} MB</value>
+  </data>
+  <data name="MainResultSizeKb" xml:space="preserve">
+    <value>{0:0.##} KB</value>
+  </data>
+  <data name="MainResultFfmpegExitCode" xml:space="preserve">
+    <value>FFmpeg 실행이 종료되었습니다(종료 코드 {0}).</value>
+  </data>
+  <data name="MainResultTechnicalDetail" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="MainResultEmptyOutput" xml:space="preserve">
+    <value>내용이 있는 스트림 파일이 생성되지 않았습니다.</value>
+  </data>
+  <data name="MainResultFailureWithTime" xml:space="preserve">
+    <value>{0} 경과 시간: {1}.</value>
+  </data>
+  <data name="MainValidationUnsupportedType" xml:space="preserve">
+    <value>선택한 형식은 이 스트림 유형을 지원하지 않습니다.</value>
+  </data>
+  <data name="MainValidationInvalidName" xml:space="preserve">
+    <value>출력 형식 또는 인코더 이름이 잘못되었습니다.</value>
+  </data>
+  <data name="MainValidationGraphicSubtitle" xml:space="preserve">
+    <value>OCR 없이 비트맵 자막을 텍스트로 변환할 수 없습니다.</value>
+  </data>
+  <data name="MainValidationSubtitleEncoder" xml:space="preserve">
+    <value>선택한 인코더는 텍스트 자막을 생성하지 않습니다.</value>
+  </data>
+  <data name="MainValidationOutOfRange" xml:space="preserve">
+    <value>변환 매개변수가 허용 범위를 벗어났습니다.</value>
+  </data>
+  <data name="MainValidationWrongTypeParameters" xml:space="preserve">
+    <value>이 매개변수는 해당 스트림 유형에 적용되지 않습니다.</value>
+  </data>
+  <data name="ConversionOriginalTextStream" xml:space="preserve"><value>LRC 텍스트 스트림</value></data>
+  <data name="ConversionSourceEncoder" xml:space="preserve"><value>{0} — 원본</value></data>
+  <data name="ConversionCopyIncompatible" xml:space="preserve"><value>원본 코덱을 선택한 컨테이너로 복사할 수 없습니다.</value></data>
+  <data name="MainValidationUnsupportedOutputFormat" xml:space="preserve">
+    <value>출력 형식은 이 스트림 유형을 지원하지 않습니다.</value>
+  </data>
+  <data name="MainValidationProbeFileFailed" xml:space="preserve">
+    <value>FFmpeg 목록에 인코더 {0}가 표시되지만 {1} 형식의 테스트 파일을 생성하지 못했습니다(FFmpeg 종료 코드: {2}).</value>
+  </data>
+  <data name="MainValidationEncoderTimeout" xml:space="preserve">
+    <value>인코더 {0} 확인 시간이 초과되었습니다.</value>
+  </data>
+  <data name="MainValidationEncoderCheckFailed" xml:space="preserve">
+    <value>형식 {1}에 대한 인코더 {0} 검증에 실패했습니다.</value>
+  </data>
+  <data name="ConversionBitrate" xml:space="preserve">
+    <value>비트 전송률(kbps)</value>
+  </data>
+  <data name="ConversionVideoOptions" xml:space="preserve">
+    <value>비디오 매개변수</value>
+  </data>
+  <data name="ConversionWidth" xml:space="preserve">
+    <value>너비(px)</value>
+  </data>
+  <data name="ConversionFindHardware" xml:space="preserve">
+    <value>하드웨어 인코더</value>
+  </data>
+  <data name="ConversionFindCompatible" xml:space="preserve">
+    <value>인코더 더 찾기</value>
+  </data>
+  <data name="ConversionChannels" xml:space="preserve">
+    <value>채널</value>
+  </data>
+  <data name="ConversionAutomatic" xml:space="preserve">
+    <value>자동</value>
+  </data>
+  <data name="ConversionCancel" xml:space="preserve">
+    <value>취소</value>
+  </data>
+  <data name="ConversionOutputFormat" xml:space="preserve">
+    <value>출력 컨테이너 / 형식</value>
+  </data>
+  <data name="ConversionAudioOptions" xml:space="preserve">
+    <value>오디오 매개변수</value>
+  </data>
+  <data name="ConversionFrameRate" xml:space="preserve">
+    <value>프레임 속도(fps)</value>
+  </data>
+  <data name="ConversionWindowTitle" xml:space="preserve">
+    <value>고급 변환 설정</value>
+  </data>
+  <data name="ConversionCrf" xml:space="preserve">
+    <value>품질 / CRF</value>
+  </data>
+  <data name="ConversionHeight" xml:space="preserve">
+    <value>높이(px)</value>
+  </data>
+  <data name="ConversionApply" xml:space="preserve">
+    <value>적용</value>
+  </data>
+  <data name="ConversionEncoder" xml:space="preserve">
+    <value>인코더</value>
+  </data>
+  <data name="ConversionSampleRate" xml:space="preserve">
+    <value>샘플링 주파수(Hz)</value>
+  </data>
+  <data name="ConversionQuality" xml:space="preserve">
+    <value>품질(0–10)</value>
+  </data>
+  <data name="ConversionSeparateFilesHint" xml:space="preserve">
+    <value>각 스트림은 별도의 파일로 저장됩니다. 자동 설정을 사용하려면 입력란을 비워 두세요.</value>
+  </data>
+  <data name="ConversionHeadingVideo" xml:space="preserve">
+    <value>비디오 변환 설정</value>
+  </data>
+  <data name="ConversionHeadingAudio" xml:space="preserve">
+    <value>오디오 변환 설정</value>
+  </data>
+  <data name="ConversionHeadingSubtitles" xml:space="preserve">
+    <value>자막 변환 설정</value>
+  </data>
+  <data name="ConversionCopyEncoderDescription" xml:space="preserve">
+    <value>트랜스코딩 없이 복사</value>
+  </data>
+  <data name="ConversionOriginalCopyCodec" xml:space="preserve">
+    <value>원본(트랜스코딩 없이 복사) — {0}</value>
+  </data>
+  <data name="ConversionForceReencode" xml:space="preserve">
+    <value>재인코딩 강제</value>
+  </data>
+  <data name="ConversionCopyNote" xml:space="preserve">
+    <value>원본 스트림이 트랜스코딩 없이 복사됩니다.</value>
+  </data>
+  <data name="ConversionOtherEncodersHint" xml:space="preserve">
+    <value>선택한 형식에 대해 추가 인코더를 확인할 수 있습니다.</value>
+  </data>
+  <data name="ConversionCheckingAdditional" xml:space="preserve">
+    <value>추가 인코더 확인 중…</value>
+  </data>
+  <data name="ConversionConfirmedCompatibleCount" xml:space="preserve">
+    <value>호환성 확인된 인코더: {0}.</value>
+  </data>
+  <data name="ConversionAdditionalCancelled" xml:space="preserve">
+    <value>인코더 확인이 취소되었습니다.</value>
+  </data>
+  <data name="ConversionAdditionalFailed" xml:space="preserve">
+    <value>추가 인코더를 확인할 수 없습니다.</value>
+  </data>
+  <data name="ConversionCheckingHardware" xml:space="preserve">
+    <value>하드웨어 인코더 확인 중…</value>
+  </data>
+  <data name="ConversionHardwareSearchFailedDetails" xml:space="preserve">
+    <value>하드웨어 인코더 확인을 완료할 수 없습니다. 자세한 내용은 진단 로그를 확인하세요.</value>
+  </data>
+  <data name="ConversionHardwareFoundCount" xml:space="preserve">
+    <value>사용 가능한 하드웨어 인코더: {0}.</value>
+  </data>
+  <data name="ConversionHardwareNotFound" xml:space="preserve">
+    <value>사용 가능한 하드웨어 인코더를 찾지 못했습니다.</value>
+  </data>
+  <data name="ConversionHardwareCancelled" xml:space="preserve">
+    <value>하드웨어 인코더 확인이 취소되었습니다.</value>
+  </data>
+  <data name="ConversionHardwareFailed" xml:space="preserve">
+    <value>하드웨어 인코더를 확인할 수 없습니다.</value>
+  </data>
+  <data name="ConversionSelectFormatAndEncoder" xml:space="preserve">
+    <value>출력 형식과 인코더를 선택하세요.</value>
+  </data>
+  <data name="ConversionCheckingCompatibility" xml:space="preserve">
+    <value>인코더와 출력 형식의 호환성 확인 중…</value>
+  </data>
+  <data name="ConversionNumbersOrEmpty" xml:space="preserve">
+    <value>숫자를 입력하거나 입력란을 비워 두세요.</value>
+  </data>
+  <data name="ConversionNumberTooLarge" xml:space="preserve">
+    <value>숫자 값이 너무 큽니다.</value>
+  </data>
+  <data name="ConversionCheckCancelled" xml:space="preserve">
+    <value>확인이 취소되었습니다.</value>
+  </data>
+  <data name="ConversionCheckParametersFailed" xml:space="preserve">
+    <value>매개변수를 확인할 수 없습니다. FFmpeg를 사용할 수 있는지 확인하세요.</value>
+  </data>
+  <data name="StreamPropertiesTitle" xml:space="preserve">
+    <value>속성</value>
+  </data>
+  <data name="StreamPropertiesHeading" xml:space="preserve"><value>스트림 속성</value></data>
+  <data name="StreamHeaderVideo" xml:space="preserve"><value>비디오 스트림</value></data>
+  <data name="StreamHeaderAudio" xml:space="preserve"><value>오디오 스트림</value></data>
+  <data name="StreamHeaderSubtitle" xml:space="preserve"><value>자막</value></data>
+  <data name="StreamHeaderImage" xml:space="preserve"><value>이미지</value></data>
+  <data name="StreamHeaderCover" xml:space="preserve"><value>이미지(커버 아트)</value></data>
+  <data name="StreamHeaderAnimation" xml:space="preserve"><value>애니메이션</value></data>
+  <data name="StreamHeaderAttachment" xml:space="preserve"><value>첨부 파일</value></data>
+  <data name="StreamHeaderOther" xml:space="preserve"><value>기타 스트림</value></data>
+  <data name="StreamSummaryChannels" xml:space="preserve"><value>채널: {0}</value></data>
+  <data name="StreamSectionBasic" xml:space="preserve"><value>일반</value></data>
+  <data name="StreamSectionAudio" xml:space="preserve"><value>오디오 속성</value></data>
+  <data name="StreamSectionVideo" xml:space="preserve"><value>비디오 속성</value></data>
+  <data name="StreamSectionImage" xml:space="preserve"><value>이미지 속성</value></data>
+  <data name="StreamSectionTiming" xml:space="preserve"><value>시간 정보</value></data>
+  <data name="StreamSectionIdentification" xml:space="preserve"><value>식별 정보</value></data>
+  <data name="StreamSectionOther" xml:space="preserve"><value>기타 속성</value></data>
+  <data name="StreamNotSpecified" xml:space="preserve">
+    <value>지정되지 않음</value>
+  </data>
+  <data name="StreamUnknownLanguage" xml:space="preserve">
+    <value>알 수 없는 언어</value>
+  </data>
+  <data name="StreamSourceIndex" xml:space="preserve">
+    <value>원본 인덱스</value>
+  </data>
+  <data name="StreamTitle" xml:space="preserve">
+    <value>제목</value>
+  </data>
+  <data name="StreamDuration" xml:space="preserve">
+    <value>길이</value>
+  </data>
+  <data name="StreamBitRateValue" xml:space="preserve">
+    <value>{0:N0} bps</value>
+  </data>
+  <data name="StreamResolution" xml:space="preserve">
+    <value>해상도</value>
+  </data>
+  <data name="StreamResolutionValue" xml:space="preserve">
+    <value>{0} × {1}</value>
+  </data>
+  <data name="StreamFrameRate" xml:space="preserve">
+    <value>프레임 속도</value>
+  </data>
+  <data name="StreamFrameRateValue" xml:space="preserve">
+    <value>{0:0.###} fps</value>
+  </data>
+  <data name="StreamProfile" xml:space="preserve">
+    <value>프로파일</value>
+  </data>
+  <data name="StreamPixelFormat" xml:space="preserve">
+    <value>픽셀 형식</value>
+  </data>
+  <data name="StreamSampleRate" xml:space="preserve">
+    <value>샘플링 주파수</value>
+  </data>
+  <data name="StreamSampleRateValue" xml:space="preserve">
+    <value>{0:N0} Hz</value>
+  </data>
+  <data name="StreamChannelLayout" xml:space="preserve">
+    <value>채널 레이아웃</value>
+  </data>
+  <data name="StreamFrameCount" xml:space="preserve">
+    <value>프레임 수</value>
+  </data>
+  <data name="StreamFrameCountValue" xml:space="preserve">
+    <value>{0:N0}</value>
+  </data>
+  <data name="StreamImageFormat" xml:space="preserve">
+    <value>이미지 형식</value>
+  </data>
+  <data name="StreamTag" xml:space="preserve">
+    <value>태그: {0}</value>
+  </data>
+  <data name="StreamFlag" xml:space="preserve">
+    <value>플래그: {0}</value>
+  </data>
+  <data name="StreamYes" xml:space="preserve">
+    <value>예</value>
+  </data>
+  <data name="StreamNo" xml:space="preserve">
+    <value>아니요</value>
+  </data>
+  <data name="StreamCodecLongName" xml:space="preserve">
+    <value>코덱 전체 이름</value>
+  </data>
+  <data name="StreamCodecTagString" xml:space="preserve">
+    <value>코덱 식별자</value>
+  </data>
+  <data name="StreamCodecTag" xml:space="preserve">
+    <value>코덱 태그</value>
+  </data>
+  <data name="StreamLevel" xml:space="preserve">
+    <value>레벨</value>
+  </data>
+  <data name="StreamSampleFormat" xml:space="preserve">
+    <value>샘플 형식</value>
+  </data>
+  <data name="StreamDisplayAspectRatio" xml:space="preserve">
+    <value>화면 종횡비</value>
+  </data>
+  <data name="StreamSampleAspectRatio" xml:space="preserve">
+    <value>픽셀 종횡비</value>
+  </data>
+  <data name="StreamColorRange" xml:space="preserve">
+    <value>색 범위</value>
+  </data>
+  <data name="StreamColorSpace" xml:space="preserve">
+    <value>색 공간</value>
+  </data>
+  <data name="StreamColorTransfer" xml:space="preserve">
+    <value>색 전달 특성</value>
+  </data>
+  <data name="StreamColorPrimaries" xml:space="preserve">
+    <value>색 원색</value>
+  </data>
+  <data name="DiagnosticPreviewTitle" xml:space="preserve">
+    <value>진단 보고서</value>
+  </data>
+  <data name="DiagnosticPreviewSave" xml:space="preserve">
+    <value>저장</value>
+  </data>
+  <data name="DiagnosticPreviewSaveTitle" xml:space="preserve">
+    <value>진단 보고서 저장</value>
+  </data>
+  <data name="DiagnosticPreviewSaveFailed" xml:space="preserve">
+    <value>로그를 저장할 수 없습니다. 선택한 파일의 접근 권한을 확인하세요.</value>
+  </data>
+  <data name="DiagnosticPreviewReadFailed" xml:space="preserve">
+    <value>진단 로그를 읽을 수 없습니다.</value>
+  </data>
+  <data name="LogCheckingTool" xml:space="preserve">
+    <value>{0} 확인 중…</value>
+  </data>
+  <data name="LogToolUnavailable" xml:space="preserve">
+    <value>도구 {0}을 찾을 수 없거나 정상 작동하지 않습니다. 경로를 확인하거나 설정에서 설치하세요.</value>
+  </data>
+  <data name="LogToolReadyVersion" xml:space="preserve">
+    <value>도구 {0} 버전 {1} 확인 완료. 사용할 수 있습니다.</value>
+  </data>
+  <data name="LogToolReady" xml:space="preserve">
+    <value>도구 {0} 확인 완료. 사용할 수 있습니다.</value>
+  </data>
+  <data name="LogAnalysisCompleteCount" xml:space="preserve">
+    <value>분석 완료. 발견된 미디어 스트림: {0}</value>
+  </data>
+  <data name="LogAnalysisComplete" xml:space="preserve">
+    <value>분석 완료.</value>
+  </data>
+  <data name="LogAnalysisStarted" xml:space="preserve">
+    <value>파일 분석을 시작했습니다.</value>
+  </data>
+  <data name="LogAnalysisTimeout" xml:space="preserve">
+    <value>FFprobe가 정해진 시간 안에 응답하지 않았습니다. 파일을 다시 분석하세요.</value>
+  </data>
+  <data name="LogAnalysisCancelled" xml:space="preserve">
+    <value>파일 분석이 취소되었습니다. 필요한 경우 파일을 다시 여세요.</value>
+  </data>
+  <data name="LogAnalysisFailed" xml:space="preserve">
+    <value>파일을 분석할 수 없습니다.</value>
+  </data>
+  <data name="LogPreviewReady" xml:space="preserve">
+    <value>미리 보기 준비 완료.</value>
+  </data>
+  <data name="LogPreviewUnavailable" xml:space="preserve">
+    <value>미리 보기 이미지를 생성할 수 없습니다.</value>
+  </data>
+  <data name="LogPreviewCancelled" xml:space="preserve">
+    <value>이전 미리 보기가 취소되었습니다.</value>
+  </data>
+  <data name="LogProcessingStartedCount" xml:space="preserve">
+    <value>처리 시작. 스트림: {0}.</value>
+  </data>
+  <data name="LogProcessingStarted" xml:space="preserve">
+    <value>처리 시작.</value>
+  </data>
+  <data name="LogConvertingStreamFormat" xml:space="preserve">
+    <value>스트림 #{0}의 {1} 형식 변환을 시작했습니다.</value>
+  </data>
+  <data name="LogExtractingStreamFormat" xml:space="preserve">
+    <value>스트림 #{0}의 {1} 형식 추출을 시작했습니다.</value>
+  </data>
+  <data name="LogConvertingStream" xml:space="preserve">
+    <value>스트림 #{0} 변환을 시작했습니다.</value>
+  </data>
+  <data name="LogExtractingStream" xml:space="preserve">
+    <value>스트림 #{0} 추출을 시작했습니다.</value>
+  </data>
+  <data name="LogStreamStarted" xml:space="preserve">
+    <value>스트림 처리를 시작했습니다.</value>
+  </data>
+  <data name="LogStreamConverted" xml:space="preserve">
+    <value>스트림 #{0} 변환 완료{1}{2}.</value>
+  </data>
+  <data name="LogStreamExtracted" xml:space="preserve">
+    <value>스트림 #{0} 추출 완료{1}{2}.</value>
+  </data>
+  <data name="LogProcessingComplete" xml:space="preserve">
+    <value>처리 완료.</value>
+  </data>
+  <data name="LogProcessingCancelled" xml:space="preserve">
+    <value>처리가 중지되었습니다. 완료되지 않은 스트림은 다시 처리할 수 있습니다.</value>
+  </data>
+  <data name="LogProcessingErrors" xml:space="preserve">
+    <value>처리가 오류와 함께 종료되었습니다.</value>
+  </data>
+  <data name="LogErrorOutputAccess" xml:space="preserve">
+    <value>출력 폴더 접근 거부됨</value>
+  </data>
+  <data name="LogErrorWrite" xml:space="preserve">
+    <value>파일 쓰기 실패</value>
+  </data>
+  <data name="LogErrorFfmpegLaunch" xml:space="preserve">
+    <value>FFmpeg를 시작할 수 없음</value>
+  </data>
+  <data name="LogStreamFailed" xml:space="preserve">
+    <value>스트림 #{0} 추출 실패: {1}.</value>
+  </data>
+  <data name="LogStreamConversionFailed" xml:space="preserve">
+    <value>스트림 #{0} 변환 실패: {1}.</value>
+  </data>
+  <data name="LogStreamCancelled" xml:space="preserve">
+    <value>스트림 #{0} 처리가 취소되었습니다. 필요한 경우 다시 시작하세요.</value>
+  </data>
+  <data name="LogStreamTimeout" xml:space="preserve">
+    <value>스트림 #{0} 처리 시간이 초과되었습니다.</value>
+  </data>
+  <data name="MainResultAttachmentFailed" xml:space="preserve">
+    <value>Matroska 첨부 파일을 읽을 수 없습니다. 자세한 내용은 진단 보고서를 확인하세요.</value>
+  </data>
+  <data name="OutputLanguageUnspecified" xml:space="preserve">
+    <value>언어 미지정</value>
+  </data>
+  <data name="LogCompatibleFoundCount" xml:space="preserve">
+    <value>호환 인코더 발견: {0}.</value>
+  </data>
+  <data name="LogHardwareSearchStarted" xml:space="preserve">
+    <value>하드웨어 인코더 검색 중.</value>
+  </data>
+  <data name="LogCompatibleSearchStarted" xml:space="preserve">
+    <value>호환 인코더 검색 중.</value>
+  </data>
+  <data name="LogCompatibleNotFound" xml:space="preserve">
+    <value>호환 인코더를 찾을 수 없습니다.</value>
+  </data>
+  <data name="LogHardwareSearchCancelled" xml:space="preserve">
+    <value>하드웨어 인코더 검색이 취소되었습니다. 필요한 경우 다시 검색하세요.</value>
+  </data>
+  <data name="LogCompatibleSearchCancelled" xml:space="preserve">
+    <value>호환 인코더 검색이 취소되었습니다. 필요한 경우 다시 검색하세요.</value>
+  </data>
+  <data name="LogHardwareSearchFailed" xml:space="preserve">
+    <value>하드웨어 인코더 검색을 완료할 수 없습니다.</value>
+  </data>
+  <data name="LogCompatibleSearchFailed" xml:space="preserve">
+    <value>호환 인코더 검색을 완료할 수 없습니다.</value>
+  </data>
+  <data name="LogSearchStale" xml:space="preserve">
+    <value>출력 형식이 변경되어 검색 결과가 적용되지 않았습니다. 새 형식으로 다시 검색하세요.</value>
+  </data>
+  <data name="GuideWindowTitle" xml:space="preserve">
+    <value>미디어 형식 가이드</value>
+  </data>
+  <data name="GuideSearchPlaceholder" xml:space="preserve">
+    <value>미디어 형식 가이드 검색</value>
+  </data>
+  <data name="GuideClearSearch" xml:space="preserve">
+    <value>지우기</value>
+  </data>
+  <data name="GuidePrevious" xml:space="preserve">
+    <value>이전</value>
+  </data>
+  <data name="GuideNext" xml:space="preserve">
+    <value>다음</value>
+  </data>
+  <data name="GuideContents" xml:space="preserve">
+    <value>목차</value>
+  </data>
+  <data name="GuideSearchResults" xml:space="preserve">
+    <value>검색 결과</value>
+  </data>
+  <data name="GuideNoResults" xml:space="preserve">
+    <value>일치하는 항목 없음</value>
+  </data>
+  <data name="GuideArticleCount" xml:space="preserve">
+    <value>문서: {0}</value>
+  </data>
+  <data name="GuideNavigationUnavailable" xml:space="preserve">
+    <value>탐색할 수 없음</value>
+  </data>
+  <data name="GuideLoadFailed" xml:space="preserve">
+    <value>미디어 형식 가이드를 불러올 수 없습니다: {0}</value>
+  </data>
+  <data name="GuideRussianOriginalNotice" xml:space="preserve">
+    <value>미디어 형식 가이드가 선택한 언어로 아직 번역되지 않았습니다. 러시아어 원본이 표시됩니다.</value>
+  </data>
+  <data name="ViewNotFound" xml:space="preserve">
+    <value>보기를 찾을 수 없음: {0}</value>
+  </data>
+  <data name="MainImageFormat" xml:space="preserve"><value>이미지 형식</value></data>
+  <data name="MainAnimationFormat" xml:space="preserve"><value>애니메이션 형식</value></data>
+  <data name="MainOriginalImage" xml:space="preserve"><value>{0} — 원본 이미지, 재인코딩 없음; .{1} 파일</value></data>
+  <data name="MainOriginalAnimation" xml:space="preserve"><value>{0} — 원본 애니메이션, 재인코딩 없음; .{1} 파일</value></data>
+  <data name="ConversionHeadingImage" xml:space="preserve"><value>이미지 변환 설정</value></data>
+  <data name="ConversionHeadingAnimation" xml:space="preserve"><value>애니메이션 변환 설정</value></data>
+  <data name="ConversionAnimationOutputsHint" xml:space="preserve"><value>애니메이션은 애니메이션 또는 비디오 형식으로 저장할 수 있습니다. 단일 정지 프레임 내보내기는 지원하지 않습니다.</value></data>
+  <data name="ConversionImageOutputsHint" xml:space="preserve"><value>이미지는 이미지 형식으로만 저장할 수 있습니다.</value></data>
+  <data name="LogVisualExtractionStarted" xml:space="preserve"><value>스트림 #{0}에서 이미지 또는 애니메이션을 {1} 형식으로 추출 중.</value></data>
+  <data name="LogVisualConversionStarted" xml:space="preserve"><value>스트림 #{0}의 이미지 또는 애니메이션을 {1} 형식으로 변환 중.</value></data>
+  <data name="LogVisualExtractionCompleted" xml:space="preserve"><value>스트림 #{0}에서 이미지 또는 애니메이션 추출 완료: {1}, {2}.</value></data>
+  <data name="LogVisualConversionCompleted" xml:space="preserve"><value>스트림 #{0}의 이미지 또는 애니메이션 변환 완료: {1}, {2}.</value></data>
+  <data name="MainAttachments" xml:space="preserve"><value>첨부 파일</value></data>
+  <data name="MainAttachmentCount" xml:space="preserve"><value>발견됨: {0}</value></data>
+  <data name="AttachmentView" xml:space="preserve"><value>보기</value></data>
+  <data name="AttachmentExtractAll" xml:space="preserve"><value>모두 추출</value></data>
+  <data name="AttachmentWindowTitle" xml:space="preserve"><value>MKV 첨부 파일</value></data>
+  <data name="AttachmentName" xml:space="preserve"><value>이름</value></data>
+  <data name="AttachmentType" xml:space="preserve"><value>유형</value></data>
+  <data name="AttachmentMime" xml:space="preserve"><value>MIME</value></data>
+  <data name="AttachmentFoundCount" xml:space="preserve"><value>발견된 첨부 파일: {0}</value></data>
+  <data name="AttachmentSize" xml:space="preserve"><value>크기</value></data>
+  <data name="AttachmentDescription" xml:space="preserve"><value>설명</value></data>
+  <data name="AttachmentApply" xml:space="preserve"><value>적용</value></data>
+  <data name="AttachmentSelectedCount" xml:space="preserve"><value>선택됨: {1}개 중 {0}개</value></data>
+  <data name="LogAttachmentsFound" xml:space="preserve"><value>MKV 첨부 파일 발견: {0}.</value></data>
+  <data name="LogAttachmentsExportAll" xml:space="preserve"><value>모든 MKV 첨부 파일 추출 중: {0}.</value></data>
+  <data name="MainProgressListedAttachment" xml:space="preserve"><value>첨부 파일 {0} 추출 중</value></data>
+  <data name="MainProgressListedAttachmentPercent" xml:space="preserve"><value>첨부 파일 {0}: {1:P0}</value></data>
+  <data name="LogAttachmentStarted" xml:space="preserve"><value>첨부 파일 {0} 추출을 시작했습니다.</value></data>
+  <data name="LogAttachmentCompleted" xml:space="preserve"><value>첨부 파일 {0} 추출 완료: {1}.</value></data>
+  <data name="LogAttachmentFailed" xml:space="preserve"><value>첨부 파일 {0} 추출 실패: {1}.</value></data>
+  <data name="LogAttachmentsReadFailed" xml:space="preserve"><value>MKV 첨부 파일 목록을 읽을 수 없습니다. 다른 스트림은 계속 사용할 수 있습니다. 필요한 경우 파일을 확인하고 다시 여세요.</value></data>
+  <data name="LogOutputFolderAccessDenied" xml:space="preserve"><value>출력 폴더에 쓸 수 없습니다. 파일을 저장할 수 있는 다른 폴더를 선택하세요.</value></data>
+  <data name="LogAviH264Copy" xml:space="preserve"><value>AVI 호환성: 재인코딩 없이 비디오 비트스트림을 조정했습니다. 일부 앱에서는 재생이 제한될 수 있습니다. 호환성을 높이려면 적절한 비디오 인코더로 변환하세요.</value></data>
+  <data name="LogMxfUnofficialCopy" xml:space="preserve"><value>MXF 호환성: FFmpeg의 비공식 모드가 원본 프레임 속도를 유지했습니다. 일부 앱에서는 재생이 제한될 수 있습니다. 호환성을 높이려면 표준 MXF 프레임 속도로 변환하세요.</value></data>
+  <data name="LogSpecialCopyFailed" xml:space="preserve"><value>재인코딩 없이 비디오를 추출할 수 없습니다. 변환에 사용할 호환 인코더를 선택하세요: {0}</value></data>
+  <data name="LogVideoCopyCodecError" xml:space="preserve"><value>비디오를 {0} 형식으로 추출할 수 없습니다. 컨테이너가 해당 비디오 코덱을 지원하지 않습니다. 호환 인코더를 선택하세요.</value></data>
+  <data name="LogVideoCopyProfileError" xml:space="preserve"><value>비디오를 {0} 형식으로 추출할 수 없습니다. 해당 코덱 프로파일을 지원하지 않습니다. 호환 인코더 또는 프로파일을 선택하세요.</value></data>
+  <data name="LogVideoCopyFrameRateError" xml:space="preserve"><value>비디오를 {0} 형식으로 추출할 수 없습니다. 원본 프레임 속도가 지원되지 않습니다. 호환 형식 또는 인코더를 선택하세요.</value></data>
+  <data name="LogVideoCopyResolutionError" xml:space="preserve"><value>비디오를 {0} 형식으로 추출할 수 없습니다. 해상도가 지원되지 않습니다. 호환 형식을 선택하거나 변환 설정을 조정하세요.</value></data>
+  <data name="LogVideoCopyPixelFormatError" xml:space="preserve"><value>비디오를 {0} 형식으로 추출할 수 없습니다. 픽셀 형식이 지원되지 않습니다. 호환 인코더를 선택하세요.</value></data>
+  <data name="LogVideoCopyTimestampsError" xml:space="preserve"><value>비디오를 {0} 형식으로 추출할 수 없습니다. 타임스탬프가 잘못되었습니다. 진단 보고서를 확인하고 변환을 고려하세요.</value></data>
+  <data name="LogVideoCopyHeadersError" xml:space="preserve"><value>비디오를 {0} 형식으로 추출할 수 없습니다. 비디오 스트림 헤더가 없거나 손상되었습니다. 진단 보고서를 확인하세요.</value></data>
+  <data name="LogVideoCopyBitstreamError" xml:space="preserve"><value>비디오를 {0} 형식으로 추출할 수 없습니다. 비디오 비트스트림이 올바르지 않습니다. 진단 보고서를 확인하고 변환을 고려하세요.</value></data>
+  <data name="LogVideoCopyUnknownError" xml:space="preserve"><value>비디오를 {0} 형식으로 추출할 수 없습니다. 원인을 알 수 없습니다. 진단 보고서를 확인하고 인코더를 사용한 변환을 고려하세요.</value></data>
+  <data name="InstallerRepairFfmpeg" xml:space="preserve"><value>FFmpeg 복구</value></data>
+  <data name="ToolsWingetRepairNeeded" xml:space="preserve"><value>FFmpeg가 Windows에 등록되어 있지만 필요한 파일이 없거나 사용할 수 없습니다. 복구하려면 다시 설치해야 합니다.</value></data>
+  <data name="ToolsWingetRepairStarted" xml:space="preserve"><value>WinGet으로 FFmpeg 복구 중.</value></data>
+  <data name="ToolsWingetRepairComplete" xml:space="preserve"><value>FFmpeg 복구 및 확인 완료.</value></data>
+  <data name="ToolsWingetRepairFailed" xml:space="preserve"><value>WinGet이 FFmpeg를 복구하지 못했습니다. 자세한 내용은 진단 보고서를 확인하세요.</value></data>
+  <data name="ToolsLocalRepairNeeded" xml:space="preserve"><value>앱에서 관리하는 FFmpeg 복사본이 손상되었습니다. 다시 다운로드하여 복구하세요.</value></data>
+  <data name="ToolsLocalRepairStarted" xml:space="preserve"><value>앱에서 관리하는 FFmpeg 복사본 복구 중.</value></data>
+  <data name="ToolsLocalRepairComplete" xml:space="preserve"><value>앱에서 관리하는 FFmpeg 복사본 복구 및 확인 완료.</value></data>
+  <data name="DiagnosticPreviewClear" xml:space="preserve"><value>지우기</value></data>
+  <data name="DiagnosticPreviewClearFailed" xml:space="preserve"><value>진단 로그를 지울 수 없습니다.</value></data>
+  <data name="DiagnosticEventsCount" xml:space="preserve"><value>이벤트: {0}</value></data>
+  <data name="DiagnosticWarningsCount" xml:space="preserve"><value>경고: {0}</value></data>
+  <data name="DiagnosticErrorsCount" xml:space="preserve"><value>오류: {0}</value></data>
+</root>
