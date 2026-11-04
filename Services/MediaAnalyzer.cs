@@ -234,6 +234,21 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
             "sample_aspect_ratio", "field_order", "color_range", "color_space", "color_transfer",
             "color_primaries", "chroma_location", "start_time" })
             if (ReadString(Property(item, key)) is { } text) extra[key] = text;
+        foreach (var field in item.EnumerateObject())
+        {
+            if (field.Name is "index" or "codec_type" or "codec_name" or "profile" or "width" or "height"
+                or "avg_frame_rate" or "bit_rate" or "pix_fmt" or "duration" or "sample_rate"
+                or "channels" or "channel_layout" or "tags" or "disposition" or "nb_frames"
+                or "side_data_list" || extra.ContainsKey(field.Name)) continue;
+            var value = field.Value.ValueKind switch
+            {
+                JsonValueKind.String or JsonValueKind.Number => ReadString(field.Value),
+                JsonValueKind.True or JsonValueKind.False or JsonValueKind.Object or JsonValueKind.Array
+                    => field.Value.GetRawText(),
+                _ => null
+            };
+            if (value is not null) extra[field.Name] = value;
+        }
         var sideData = Property(item, "side_data_list");
         if (sideData.ValueKind == JsonValueKind.Array)
         {

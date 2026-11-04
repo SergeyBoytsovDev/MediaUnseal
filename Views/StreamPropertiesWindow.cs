@@ -19,53 +19,195 @@ internal static class StreamPropertiesWindow
     {
         var window = new Window
         {
-            Title = L.Format("StreamPropertiesTitle", stream.Index?.ToString(CultureInfo.InvariantCulture) ?? "—"),
-            Width = 570, Height = 610, MinWidth = 390, MinHeight = 300,
+            Title = L.Get("StreamPropertiesTitle"),
+            Width = 650, Height = 620, MinWidth = 480, MinHeight = 360,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Background = Resource("PanelBackground"), Foreground = Resource("MainTextBrush")
         };
-        var rows = new StackPanel { Spacing = 0, Margin = new Thickness(15) };
-        void Refresh()
+        var layout = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
+        var heading = new Border { Padding = new Thickness(16, 14), BorderBrush = Resource("LineBrush"),
+            BorderThickness = new Thickness(0, 0, 0, 1) };
+        layout.Children.Add(heading);
+        var cards = new Grid { Margin = new Thickness(10, 8) };
+        var scroll = new ScrollViewer { Content = cards,
+            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
+            AllowAutoHide = false };
+        Grid.SetRow(scroll, 1);
+        layout.Children.Add(scroll);
+        var footer = new Border { Padding = new Thickness(16, 10), BorderBrush = Resource("LineBrush"),
+            BorderThickness = new Thickness(0, 1, 0, 0) };
+        var close = new Button { Content = L.Get("MainClose"), MinWidth = 100,
+            HorizontalAlignment = HorizontalAlignment.Right };
+        close.Click += (_, _) => window.Close();
+        footer.Child = close;
+        Grid.SetRow(footer, 2);
+        layout.Children.Add(footer);
+        window.Content = layout;
+        List<Border> sectionCards = [];
+        bool? twoColumns = null;
+        void ArrangeCards()
         {
-            window.Title = L.Format("StreamPropertiesTitle", stream.Index?.ToString(CultureInfo.InvariantCulture) ?? "—");
-            rows.Children.Clear();
-            foreach (var (label, value) in Properties(stream))
+            var wide = window.Bounds.Width >= 620;
+            if (twoColumns == wide && cards.Children.Count == sectionCards.Count) return;
+            twoColumns = wide;
+            var columns = wide ? 2 : 1;
+            cards.Children.Clear();
+            cards.RowDefinitions.Clear();
+            cards.ColumnDefinitions = new ColumnDefinitions(wide ? "*,*" : "*");
+            for (var i = 0; i < (sectionCards.Count + columns - 1) / columns; i++)
+                cards.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            for (var i = 0; i < sectionCards.Count; i++)
             {
-                var row = new Grid { ColumnDefinitions = new ColumnDefinitions("170,*"), MinHeight = 29 };
-                row.Children.Add(new TextBlock { Text = label, Foreground = Resource("MutedTextBrush"),
-                    TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 3, 10, 3) });
-                var content = new TextBlock { Text = value, TextWrapping = TextWrapping.Wrap,
-                    Margin = new Thickness(0, 3) };
-                Grid.SetColumn(content, 1);
-                row.Children.Add(content);
-                rows.Children.Add(row);
+                Grid.SetRow(sectionCards[i], i / columns);
+                Grid.SetColumn(sectionCards[i], i % columns);
+                cards.Children.Add(sectionCards[i]);
             }
         }
-        Refresh();
-        var close = new Button { Content = L.Get("MainClose"), Width = 100,
-            HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(12) };
-        close.Click += (_, _) => window.Close();
+        void Refresh()
+        {
+            window.Title = L.Get("StreamPropertiesTitle");
+            heading.Child = BuildHeading(stream);
+            sectionCards = BuildCards(stream).ToList();
+            cards.Children.Clear();
+            twoColumns = null;
+            ArrangeCards();
+            close.Content = L.Get("MainClose");
+        }
         void OnLanguageChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
         {
             if (args.PropertyName != "Item[]") return;
             Refresh();
-            close.Content = L.Get("MainClose");
         }
         L.PropertyChanged += OnLanguageChanged;
         window.Closed += (_, _) => L.PropertyChanged -= OnLanguageChanged;
-        var layout = new DockPanel();
-        DockPanel.SetDock(close, Dock.Bottom);
-        layout.Children.Add(close);
-        layout.Children.Add(new ScrollViewer { Content = rows,
-            VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto,
-            HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled,
-            AllowAutoHide = false });
-        window.Content = layout;
+        window.SizeChanged += (_, _) => ArrangeCards();
+        Refresh();
         window.Show(owner);
         return window;
     }
 
     private static IBrush? Resource(string key) => Application.Current?.Resources[key] as IBrush;
+
+    private static Control BuildHeading(MediaStreamInfo stream)
+    {
+        var (icon, title) = stream.VisualKind switch
+        {
+            VisualKind.Video => ("▣", L.Get("StreamHeaderVideo")),
+            VisualKind.Image => ("▧", L.Get(stream.IsCoverArt ? "StreamHeaderCover" : "StreamHeaderImage")),
+            VisualKind.Animation => ("◇", L.Get("StreamHeaderAnimation")),
+            _ => stream.CodecType switch
+            {
+                "audio" => ("♫", L.Get("StreamHeaderAudio")),
+                "subtitle" => ("≡", L.Get("StreamHeaderSubtitle")),
+                "attachment" => ("▤", L.Get("StreamHeaderAttachment")),
+                _ => ("•", L.Get("StreamHeaderOther"))
+            }
+        };
+        var heading = new Grid { ColumnDefinitions = new ColumnDefinitions("46,*,Auto"), ColumnSpacing = 9 };
+        heading.Children.Add(new TextBlock { Text = icon, FontSize = 34,
+            Foreground = Resource("AccentBrush"), VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center });
+        var description = new StackPanel { Spacing = 4 };
+        description.Children.Add(new TextBlock { Text = L.Get("StreamPropertiesTitle"),
+            FontSize = 12, Foreground = Resource("MutedTextBrush") });
+        description.Children.Add(new TextBlock { Text = title, FontSize = 22,
+            FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.WrapWithOverflow });
+        var summary = new List<string>();
+        if (stream.Width is { } width && stream.Height is { } height)
+            summary.Add(L.Format("StreamResolutionValue", width, height));
+        if (stream.CodecType == "audio")
+        {
+            if (stream.SampleRate is { } sampleRate) summary.Add(L.Format("StreamSampleRateValue", sampleRate));
+            if (stream.Channels is { } channels) summary.Add(L.Format("StreamSummaryChannels", channels));
+        }
+        else if (stream.VisualKind is VisualKind.Video or VisualKind.Animation && stream.FrameRate is { } rate)
+            summary.Add(L.Format("StreamFrameRateValue", rate));
+        if (stream.Language is { } language)
+            summary.Add(language == "und" ? L.Get("StreamUnknownLanguage") : language);
+        if (summary.Count > 0) description.Children.Add(new TextBlock
+        {
+            Text = string.Join(" · ", summary), Foreground = Resource("MutedTextBrush"),
+            TextWrapping = TextWrapping.WrapWithOverflow
+        });
+        Grid.SetColumn(description, 1);
+        heading.Children.Add(description);
+        if (!string.IsNullOrWhiteSpace(stream.Codec))
+        {
+            var badge = new Border { Padding = new Thickness(9, 5),
+                Margin = new Thickness(8, 0, 0, 0), BorderBrush = Resource("LineBrush"),
+                BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(4),
+                VerticalAlignment = VerticalAlignment.Center,
+                Child = new TextBlock { Text = stream.Codec, MaxWidth = 100,
+                    TextWrapping = TextWrapping.WrapWithOverflow, Foreground = Resource("AccentBrush") } };
+            Grid.SetColumn(badge, 2);
+            heading.Children.Add(badge);
+        }
+        return heading;
+    }
+
+    private static IEnumerable<Border> BuildCards(MediaStreamInfo stream)
+    {
+        var properties = Properties(stream).ToArray();
+        var isVisual = stream.VisualKind is VisualKind.Video or VisualKind.Image or VisualKind.Animation;
+        var sections = new[]
+        {
+            ("basic", "StreamSectionBasic", "▣"),
+            ("audio", "StreamSectionAudio", "♫"),
+            ("visual", stream.VisualKind is VisualKind.Image or VisualKind.Animation
+                ? "StreamSectionImage" : "StreamSectionVideo", "▧"),
+            ("timing", "StreamSectionTiming", "◷"),
+            ("identity", "StreamSectionIdentification", "#"),
+            ("other", "StreamSectionOther", "⋯")
+        };
+        foreach (var (section, title, icon) in sections)
+        {
+            var values = properties.Where(item => SectionFor(item.Label, stream, isVisual) == section).ToArray();
+            if (values.Length == 0) continue;
+            var body = new StackPanel { Spacing = 6 };
+            body.Children.Add(new TextBlock { Text = icon + "  " + L.Get(title),
+                FontSize = 14, FontWeight = FontWeight.SemiBold,
+                Foreground = Resource("AccentBrush"), Margin = new Thickness(0, 0, 0, 4) });
+            foreach (var (label, value) in values)
+            {
+                var pair = new Grid { ColumnDefinitions = new ColumnDefinitions("118,*"), ColumnSpacing = 7,
+                    MinHeight = 20 };
+                pair.Children.Add(new TextBlock { Text = label + ":",
+                    Foreground = Resource("MutedTextBrush"), TextWrapping = TextWrapping.WrapWithOverflow });
+                var content = new TextBlock { Text = value, TextWrapping = TextWrapping.WrapWithOverflow };
+                Grid.SetColumn(content, 1);
+                pair.Children.Add(content);
+                body.Children.Add(pair);
+            }
+            yield return new Border { Child = body, Background = Resource("PanelAltBackground"),
+                BorderBrush = Resource("LineBrush"), BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(5), Padding = new Thickness(11),
+                Margin = new Thickness(4, 4, 4, 7) };
+        }
+    }
+
+    private static string SectionFor(string label, MediaStreamInfo stream, bool isVisual)
+    {
+        if (label == L.Get("MainColumnType") || label == L.Get("StreamSourceIndex")
+            || label == L.Get("MainColumnCodec") || label == L.Get("StreamCodecLongName")
+            || label == L.Get("MainColumnLanguage") || label == L.Get("StreamTitle")) return "basic";
+        if (label == L.Get("StreamCodecTagString") || label == L.Get("StreamCodecTag")) return "identity";
+        if (label == L.Get("StreamDuration") || label == L.Get("StreamFrameRate")
+            || label == L.Get("StreamFrameCount") || label is "time_base" or "start_time"
+                or "avg_frame_rate" or "r_frame_rate") return "timing";
+        if (stream.CodecType == "audio" && (label == L.Get("MainColumnBitrate")
+            || label == L.Get("StreamSampleRate") || label == L.Get("ConversionChannels")
+            || label == L.Get("StreamChannelLayout") || label == L.Get("StreamSampleFormat")
+            || label is "bits_per_sample" or "bits_per_raw_sample")) return "audio";
+        if (isVisual && (label == L.Get("MainColumnBitrate") || label == L.Get("StreamResolution")
+            || label == L.Get("StreamProfile") || label == L.Get("StreamPixelFormat")
+            || label == L.Get("StreamImageFormat") || label == L.Get("StreamLevel")
+            || label == L.Get("StreamDisplayAspectRatio") || label == L.Get("StreamSampleAspectRatio")
+            || label == L.Get("StreamColorRange") || label == L.Get("StreamColorSpace")
+            || label == L.Get("StreamColorTransfer") || label == L.Get("StreamColorPrimaries")
+            || label is "field_order" or "chroma_location")) return "visual";
+        return "other";
+    }
 
     internal static IEnumerable<(string Label, string Value)> Properties(MediaStreamInfo stream)
     {

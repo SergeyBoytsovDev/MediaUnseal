@@ -19,14 +19,22 @@ public partial class AttachmentsWindow : Window
     public AttachmentsWindow(IReadOnlyList<AttachmentFile> files, IEnumerable<ulong> selected)
     {
         InitializeComponent();
+        Height = Math.Clamp(210 + Math.Min(files.Count, 9) * 37, 300, 550);
         var chosen = selected.ToHashSet();
         _choices = files.Select(file => new AttachmentChoiceViewModel(file, chosen.Contains(file.Uid))).ToArray();
         foreach (var choice in _choices) choice.PropertyChanged += ChoiceChanged;
         FilesList.ItemsSource = _choices;
         RefreshCount();
         LocalizationManager.Active.PropertyChanged += LocalizationChanged;
-        Closed += (_, _) => LocalizationManager.Active.PropertyChanged -= LocalizationChanged;
+        Closed += (_, _) =>
+        {
+            LocalizationManager.Active.PropertyChanged -= LocalizationChanged;
+            foreach (var choice in _choices) choice.PropertyChanged -= ChoiceChanged;
+        };
     }
+
+    public HashSet<ulong> SelectedAttachmentUids =>
+        _choices.Where(choice => choice.IsSelected).Select(choice => choice.File.Uid).ToHashSet();
 
     private void ChoiceChanged(object? sender, PropertyChangedEventArgs e) => RefreshCount();
     private void LocalizationChanged(object? sender, PropertyChangedEventArgs e)
@@ -35,9 +43,11 @@ public partial class AttachmentsWindow : Window
         foreach (var choice in _choices) choice.RefreshLocalization();
         RefreshCount();
     }
-    private void RefreshCount() => SelectionCount.Text = LocalizationManager.Active.Format(
-        "AttachmentSelectedCount", _choices.Count(choice => choice.IsSelected), _choices.Length);
-    private void Cancel_Click(object? sender, RoutedEventArgs e) => Close(null);
-    private void Apply_Click(object? sender, RoutedEventArgs e) =>
-        Close(_choices.Where(choice => choice.IsSelected).Select(choice => choice.File.Uid).ToHashSet());
+    private void RefreshCount()
+    {
+        FoundCount.Text = LocalizationManager.Active.Format("AttachmentFoundCount", _choices.Length);
+        SelectionCount.Text = LocalizationManager.Active.Format(
+            "AttachmentSelectedCount", _choices.Count(choice => choice.IsSelected), _choices.Length);
+    }
+    private void Close_Click(object? sender, RoutedEventArgs e) => Close();
 }

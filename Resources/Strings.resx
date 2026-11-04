@@ -198,7 +198,7 @@
   <data name="MainSize" xml:space="preserve"><value>Размер:</value></data>
   <data name="MainDropFile" xml:space="preserve"><value>Перетащите сюда видеофайл</value></data>
   <data name="MainChooseFolder" xml:space="preserve"><value>Выберите папку</value></data>
-  <data name="MainStreamProperties" xml:space="preserve"><value>Свойства потока</value></data>
+  <data name="MainStreamProperties" xml:space="preserve"><value>Свойства</value></data>
   <data name="MainSourceFile" xml:space="preserve"><value>Исходный файл</value></data>
   <data name="MainClearSelectedFile" xml:space="preserve"><value>Очистить выбранный файл</value></data>
   <data name="MainFutureAttachments" xml:space="preserve"><value>Извлекать вложения MKV — в будущих версиях</value></data>
@@ -439,7 +439,23 @@
   <data name="ConversionNumberTooLarge" xml:space="preserve"><value>Числовое значение слишком велико.</value></data>
   <data name="ConversionCheckCancelled" xml:space="preserve"><value>Проверка отменена.</value></data>
   <data name="ConversionCheckParametersFailed" xml:space="preserve"><value>Не удалось проверить параметры. Проверьте доступность FFmpeg.</value></data>
-  <data name="StreamPropertiesTitle" xml:space="preserve"><value>Свойства потока #{0}</value></data>
+  <data name="StreamPropertiesTitle" xml:space="preserve"><value>Свойства</value></data>
+  <data name="StreamHeaderVideo" xml:space="preserve"><value>Видеопоток</value></data>
+  <data name="StreamHeaderAudio" xml:space="preserve"><value>Аудиопоток</value></data>
+  <data name="StreamHeaderSubtitle" xml:space="preserve"><value>Субтитры</value></data>
+  <data name="StreamHeaderImage" xml:space="preserve"><value>Изображение</value></data>
+  <data name="StreamHeaderCover" xml:space="preserve"><value>Изображение (обложка)</value></data>
+  <data name="StreamHeaderAnimation" xml:space="preserve"><value>Анимация</value></data>
+  <data name="StreamHeaderAttachment" xml:space="preserve"><value>Вложение</value></data>
+  <data name="StreamHeaderOther" xml:space="preserve"><value>Другой поток</value></data>
+  <data name="StreamSummaryChannels" xml:space="preserve"><value>Каналов: {0}</value></data>
+  <data name="StreamSectionBasic" xml:space="preserve"><value>Основные сведения</value></data>
+  <data name="StreamSectionAudio" xml:space="preserve"><value>Параметры аудио</value></data>
+  <data name="StreamSectionVideo" xml:space="preserve"><value>Параметры видео</value></data>
+  <data name="StreamSectionImage" xml:space="preserve"><value>Параметры изображения</value></data>
+  <data name="StreamSectionTiming" xml:space="preserve"><value>Временные параметры</value></data>
+  <data name="StreamSectionIdentification" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="StreamSectionOther" xml:space="preserve"><value>Другие параметры</value></data>
   <data name="StreamNotSpecified" xml:space="preserve"><value>Не указан</value></data>
   <data name="StreamUnknownLanguage" xml:space="preserve"><value>Неизвестный язык</value></data>
   <data name="StreamSourceIndex" xml:space="preserve"><value>Исходный индекс</value></data>
@@ -552,7 +568,9 @@
   <data name="AttachmentExtractAll" xml:space="preserve"><value>Извлечь все</value></data>
   <data name="AttachmentWindowTitle" xml:space="preserve"><value>Вложения MKV</value></data>
   <data name="AttachmentName" xml:space="preserve"><value>Имя</value></data>
-  <data name="AttachmentType" xml:space="preserve"><value>Тип / MIME</value></data>
+  <data name="AttachmentType" xml:space="preserve"><value>Тип</value></data>
+  <data name="AttachmentMime" xml:space="preserve"><value>MIME</value></data>
+  <data name="AttachmentFoundCount" xml:space="preserve"><value>Найдено вложений: {0}</value></data>
   <data name="AttachmentSize" xml:space="preserve"><value>Размер</value></data>
   <data name="AttachmentDescription" xml:space="preserve"><value>Описание</value></data>
   <data name="AttachmentApply" xml:space="preserve"><value>Применить</value></data>

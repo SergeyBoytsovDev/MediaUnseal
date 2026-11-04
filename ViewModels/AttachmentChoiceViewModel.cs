@@ -11,7 +11,8 @@ public sealed class AttachmentChoiceViewModel(AttachmentFile file, bool selected
     public bool IsSelected { get => _selected; set => SetProperty(ref _selected, value); }
     public string Name => File.Name;
     public string TypeDisplay => string.IsNullOrWhiteSpace(Path.GetExtension(File.Name))
-        ? File.Mime : $"{Path.GetExtension(File.Name).TrimStart('.').ToUpperInvariant()} · {File.Mime}";
+        ? "—" : Path.GetExtension(File.Name).TrimStart('.').ToUpperInvariant();
+    public string MimeDisplay => string.IsNullOrWhiteSpace(File.Mime) ? "—" : File.Mime;
     public string SizeDisplay => TrackExporter.FormatByteSize(File.Size);
     public string Description => File.Description ?? "—";
     public void RefreshLocalization() => OnPropertyChanged(nameof(SizeDisplay));

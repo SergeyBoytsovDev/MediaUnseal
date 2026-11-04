@@ -595,7 +595,7 @@
     <value>Ordner auswählen</value>
   </data>
   <data name="MainStreamProperties" xml:space="preserve">
-    <value>Stream-Eigenschaften</value>
+    <value>Eigenschaften</value>
   </data>
   <data name="MainSourceFile" xml:space="preserve">
     <value>Quelldatei</value>
@@ -1313,8 +1313,24 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
     <value>Die Parameter konnten nicht geprüft werden. Stellen Sie sicher, dass FFmpeg verfügbar ist.</value>
   </data>
   <data name="StreamPropertiesTitle" xml:space="preserve">
-    <value>Eigenschaften von Stream #{0}</value>
+    <value>Eigenschaften</value>
   </data>
+  <data name="StreamHeaderVideo" xml:space="preserve"><value>Videostream</value></data>
+  <data name="StreamHeaderAudio" xml:space="preserve"><value>Audiostream</value></data>
+  <data name="StreamHeaderSubtitle" xml:space="preserve"><value>Untertitel</value></data>
+  <data name="StreamHeaderImage" xml:space="preserve"><value>Bild</value></data>
+  <data name="StreamHeaderCover" xml:space="preserve"><value>Bild (Cover)</value></data>
+  <data name="StreamHeaderAnimation" xml:space="preserve"><value>Animation</value></data>
+  <data name="StreamHeaderAttachment" xml:space="preserve"><value>Anhang</value></data>
+  <data name="StreamHeaderOther" xml:space="preserve"><value>Anderer Stream</value></data>
+  <data name="StreamSummaryChannels" xml:space="preserve"><value>Kanäle: {0}</value></data>
+  <data name="StreamSectionBasic" xml:space="preserve"><value>Allgemeine Angaben</value></data>
+  <data name="StreamSectionAudio" xml:space="preserve"><value>Audioeigenschaften</value></data>
+  <data name="StreamSectionVideo" xml:space="preserve"><value>Videoeigenschaften</value></data>
+  <data name="StreamSectionImage" xml:space="preserve"><value>Bildeigenschaften</value></data>
+  <data name="StreamSectionTiming" xml:space="preserve"><value>Zeitangaben</value></data>
+  <data name="StreamSectionIdentification" xml:space="preserve"><value>Identifikation</value></data>
+  <data name="StreamSectionOther" xml:space="preserve"><value>Weitere Eigenschaften</value></data>
   <data name="StreamNotSpecified" xml:space="preserve">
     <value>Nicht angegeben</value>
   </data>
@@ -1615,7 +1631,9 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
   <data name="AttachmentExtractAll" xml:space="preserve"><value>Alle extrahieren</value></data>
   <data name="AttachmentWindowTitle" xml:space="preserve"><value>MKV-Anhänge</value></data>
   <data name="AttachmentName" xml:space="preserve"><value>Name</value></data>
-  <data name="AttachmentType" xml:space="preserve"><value>Typ / MIME</value></data>
+  <data name="AttachmentType" xml:space="preserve"><value>Typ</value></data>
+  <data name="AttachmentMime" xml:space="preserve"><value>MIME</value></data>
+  <data name="AttachmentFoundCount" xml:space="preserve"><value>Gefundene Anhänge: {0}</value></data>
   <data name="AttachmentSize" xml:space="preserve"><value>Größe</value></data>
   <data name="AttachmentDescription" xml:space="preserve"><value>Beschreibung</value></data>
   <data name="AttachmentApply" xml:space="preserve"><value>Übernehmen</value></data>

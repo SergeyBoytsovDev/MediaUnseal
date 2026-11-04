@@ -3,41 +3,90 @@
         xmlns:vm="using:TrackExtractor.ViewModels"
         x:Class="TrackExtractor.Views.AttachmentsWindow"
         Title="{DynamicResource Loc_AttachmentWindowTitle}" Icon="/Assets/Icons/TrackExtractor-256.png"
-        Width="740" Height="480" MinWidth="500" MinHeight="320" CanResize="True"
+        Width="920" Height="500" MinWidth="720" MinHeight="300" CanResize="True"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
         FontFamily="Inter" FontSize="14">
  <Window.Styles>
-  <Style Selector="Button"><Setter Property="Background" Value="{DynamicResource PanelAltBackground}"/><Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/><Setter Property="BorderBrush" Value="{DynamicResource LineBrush}"/></Style>
-  <Style Selector="Button.primary"><Setter Property="Background" Value="{DynamicResource AccentBrush}"/><Setter Property="Foreground" Value="White"/></Style>
+  <Style Selector="ListBoxItem">
+   <Setter Property="Padding" Value="0"/>
+   <Setter Property="MinHeight" Value="0"/>
+   <Setter Property="Background" Value="Transparent"/>
+  </Style>
+  <Style Selector="ListBoxItem:pointerover">
+   <Setter Property="Background" Value="{DynamicResource PanelBackground}"/>
+  </Style>
+  <Style Selector="ListBoxItem:selected">
+   <Setter Property="Background" Value="Transparent"/>
+  </Style>
+  <Style Selector="Border.attachment-row.selected">
+   <Setter Property="Background" Value="{DynamicResource PanelBackground}"/>
+   <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+   <Setter Property="BorderThickness" Value="2,0,0,0"/>
+  </Style>
  </Window.Styles>
- <Grid RowDefinitions="Auto,*,Auto" Margin="16" RowSpacing="10">
-  <TextBlock Text="{DynamicResource Loc_AttachmentWindowTitle}" FontSize="18" FontWeight="SemiBold"/>
-  <Grid Grid.Row="1" RowDefinitions="Auto,*">
-   <Grid ColumnDefinitions="32,2*,*,110,2*" ColumnSpacing="8" Margin="6,0,6,5">
-    <TextBlock Grid.Column="1" Text="{DynamicResource Loc_AttachmentName}" FontWeight="SemiBold"/>
-    <TextBlock Grid.Column="2" Text="{DynamicResource Loc_AttachmentType}" FontWeight="SemiBold"/>
-    <TextBlock Grid.Column="3" Text="{DynamicResource Loc_AttachmentSize}" FontWeight="SemiBold"/>
-    <TextBlock Grid.Column="4" Text="{DynamicResource Loc_AttachmentDescription}" FontWeight="SemiBold"/>
+ <Grid RowDefinitions="Auto,*,Auto">
+  <Border Grid.Row="0" Padding="18,15" Background="{DynamicResource PanelAltBackground}"
+          BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1">
+   <Grid ColumnDefinitions="38,*" ColumnSpacing="11">
+    <TextBlock Text="▤" FontSize="27" Foreground="{DynamicResource AccentBrush}"
+               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <StackPanel Grid.Column="1" Spacing="3">
+     <TextBlock Text="{DynamicResource Loc_AttachmentWindowTitle}" FontSize="19" FontWeight="SemiBold"/>
+     <TextBlock x:Name="FoundCount" FontSize="12" Foreground="{DynamicResource MutedTextBrush}"/>
+    </StackPanel>
    </Grid>
-   <ListBox x:Name="FilesList" Grid.Row="1" ScrollViewer.AllowAutoHide="False">
-    <ListBox.ItemTemplate>
-     <DataTemplate x:DataType="vm:AttachmentChoiceViewModel">
-      <Grid ColumnDefinitions="32,2*,*,110,2*" ColumnSpacing="8" MinHeight="31">
-       <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}" VerticalAlignment="Center"/>
-       <TextBlock Grid.Column="1" Text="{Binding Name}" ToolTip.Tip="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
-       <TextBlock Grid.Column="2" Text="{Binding TypeDisplay}" ToolTip.Tip="{Binding TypeDisplay}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
-       <TextBlock Grid.Column="3" Text="{Binding SizeDisplay}" VerticalAlignment="Center"/>
-       <TextBlock Grid.Column="4" Text="{Binding Description}" ToolTip.Tip="{Binding Description}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
-      </Grid>
-     </DataTemplate>
-    </ListBox.ItemTemplate>
-   </ListBox>
-  </Grid>
-  <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-   <TextBlock x:Name="SelectionCount" VerticalAlignment="Center" Foreground="{DynamicResource MutedTextBrush}"/>
-   <Button Grid.Column="1" Content="{DynamicResource Loc_ConversionCancel}" Click="Cancel_Click" MinWidth="100"/>
-   <Button Grid.Column="2" Classes="primary" Content="{DynamicResource Loc_AttachmentApply}" Click="Apply_Click" MinWidth="100"/>
-  </Grid>
+  </Border>
+  <Border Grid.Row="1" Margin="16,13" Background="{DynamicResource PanelAltBackground}"
+          BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="5">
+   <Grid RowDefinitions="Auto,*">
+    <Border Grid.Row="0" Padding="12,10" Background="{DynamicResource PanelBackground}"
+            BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1">
+     <Grid ColumnDefinitions="38,2*,100,150,85,2*" ColumnSpacing="8">
+      <TextBlock Grid.Column="1" Text="{DynamicResource Loc_AttachmentName}" FontWeight="SemiBold"/>
+      <TextBlock Grid.Column="2" Text="{DynamicResource Loc_AttachmentType}" FontWeight="SemiBold"/>
+      <TextBlock Grid.Column="3" Text="{DynamicResource Loc_AttachmentMime}" FontWeight="SemiBold"/>
+      <TextBlock Grid.Column="4" Text="{DynamicResource Loc_AttachmentSize}" FontWeight="SemiBold"
+                 HorizontalAlignment="Right"/>
+      <TextBlock Grid.Column="5" Text="{DynamicResource Loc_AttachmentDescription}" FontWeight="SemiBold"/>
+     </Grid>
+    </Border>
+    <ListBox x:Name="FilesList" Grid.Row="1" Background="Transparent" BorderThickness="0"
+             ScrollViewer.AllowAutoHide="False"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+     <ListBox.ItemTemplate>
+      <DataTemplate x:DataType="vm:AttachmentChoiceViewModel">
+       <Border Classes="attachment-row" Classes.selected="{Binding IsSelected}" Padding="12,4"
+               MinHeight="37">
+        <Grid ColumnDefinitions="38,2*,100,150,85,2*" ColumnSpacing="8">
+         <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                   VerticalAlignment="Center" HorizontalAlignment="Center"/>
+         <TextBlock Grid.Column="1" Text="{Binding Name}" ToolTip.Tip="{Binding Name}"
+                    TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+         <TextBlock Grid.Column="2" Text="{Binding TypeDisplay}" ToolTip.Tip="{Binding TypeDisplay}"
+                    TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+         <TextBlock Grid.Column="3" Text="{Binding MimeDisplay}" ToolTip.Tip="{Binding MimeDisplay}"
+                    TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+         <TextBlock Grid.Column="4" Text="{Binding SizeDisplay}" VerticalAlignment="Center"
+                    HorizontalAlignment="Right"/>
+         <TextBlock Grid.Column="5" Text="{Binding Description}" ToolTip.Tip="{Binding Description}"
+                    TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+        </Grid>
+       </Border>
+      </DataTemplate>
+     </ListBox.ItemTemplate>
+    </ListBox>
+   </Grid>
+  </Border>
+  <Border Grid.Row="2" Padding="16,10" Background="{DynamicResource PanelAltBackground}"
+          BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
+   <Grid ColumnDefinitions="*,Auto">
+    <TextBlock x:Name="SelectionCount" VerticalAlignment="Center"
+               Foreground="{DynamicResource MutedTextBrush}"/>
+    <Button x:Name="CloseButton" Grid.Column="1" Content="{DynamicResource Loc_MainClose}"
+            Click="Close_Click" MinWidth="110" MinHeight="36"
+            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+   </Grid>
+  </Border>
  </Grid>
 </Window>

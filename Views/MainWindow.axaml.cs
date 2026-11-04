@@ -286,9 +286,9 @@ public partial class MainWindow : Window
         var media = viewModel.SelectedMedia;
         var dialog = new AttachmentsWindow(viewModel.AttachmentFiles,
             viewModel.AttachmentRow?.SelectedAttachmentUids ?? []);
-        var selection = await dialog.ShowDialog<HashSet<ulong>?>(this);
-        if (selection is not null && ReferenceEquals(viewModel.SelectedMedia, media))
-            viewModel.SetAttachmentSelection(selection);
+        await dialog.ShowDialog(this);
+        if (ReferenceEquals(viewModel.SelectedMedia, media))
+            viewModel.SetAttachmentSelection(dialog.SelectedAttachmentUids);
     }
 
     private async void ExtractAllAttachments_Click(object? sender, RoutedEventArgs e)
