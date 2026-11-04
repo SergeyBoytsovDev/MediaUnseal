@@ -151,29 +151,57 @@
     <value>Development</value>
   </data>
   <data name="SettingsAboutSummary" xml:space="preserve">
-    <value>Mediendateien analysieren und Video, Audio, Untertitel sowie Anhänge extrahieren.</value>
+    <value>Mediendateien analysieren sowie Video, Audio, Untertitel, Bilder und Anhänge extrahieren oder konvertieren.</value>
   </data>
   <data name="SettingsCheckUpdates" xml:space="preserve">
-    <value>Nach Updates suchen</value>
+    <value>Auf Update prüfen</value>
   </data>
   <data name="SettingsGeneralInformation" xml:space="preserve">
     <value>Allgemeine Informationen</value>
   </data>
   <data name="SettingsDeveloper" xml:space="preserve">
-    <value>Entwickler: Sergey Boitcov</value>
+    <value>Entwickler</value>
   </data>
+  <data name="SettingsDeveloperName" xml:space="preserve"><value>Sergey Boitcov</value></data>
+  <data name="SettingsPlatformsLabel" xml:space="preserve"><value>Plattformen</value></data>
   <data name="SettingsPlatforms" xml:space="preserve">
-    <value>Plattformen: Windows 10/11, Linux; macOS geplant</value>
+    <value>Windows, Linux, macOS</value>
   </data>
+  <data name="SettingsTechnologyLabel" xml:space="preserve"><value>Technologien</value></data>
   <data name="SettingsTechnology" xml:space="preserve">
-    <value>Technologien: .NET 10, Avalonia UI 12.1.4</value>
+    <value>.NET {0}, Avalonia UI {1}</value>
   </data>
   <data name="SettingsMediaComponents" xml:space="preserve">
-    <value>Multimedia-Komponenten</value>
+    <value>Systemkomponenten</value>
   </data>
   <data name="SettingsFfmpegRights" xml:space="preserve">
-    <value>Die Rechte an FFmpeg und FFprobe liegen bei den jeweiligen Rechteinhabern; der Anbieter vorkompilierter Binärdateien kann variieren.</value>
+    <value>Die Rechte an FFmpeg und FFprobe liegen bei den jeweiligen Rechteinhabern. Die Nutzungsbedingungen hängen von der Lizenz der konkreten Version ab.</value>
   </data>
+  <data name="SettingsUpdateCurrent" xml:space="preserve"><value>Sie verwenden die neueste Version</value></data>
+  <data name="SettingsUpdateAvailable" xml:space="preserve"><value>Version 1.0.1 ist verfügbar</value></data>
+  <data name="SettingsInstallUpdate" xml:space="preserve"><value>Update installieren</value></data>
+  <data name="SettingsLicenses" xml:space="preserve"><value>Lizenzen</value></data>
+  <data name="SettingsFfmpegLicense" xml:space="preserve"><value>Bedingungen hängen von der Version ab</value></data>
+  <data name="SettingsOpenLicense" xml:space="preserve"><value>Lizenz öffnen</value></data>
+  <data name="SettingsReportBug" xml:space="preserve"><value>Fehler melden</value></data>
+  <data name="SettingsEmailLabel" xml:space="preserve"><value>E-Mail</value></data>
+  <data name="SettingsTelegramLabel" xml:space="preserve"><value>Telegram-Kanal</value></data>
+  <data name="SettingsAboutFooter" xml:space="preserve"><value>© {0} · {1} {2}</value></data>
+  <data name="SettingsSupportDeveloper" xml:space="preserve"><value>Entwickler unterstützen</value></data>
+  <data name="SettingsOpenLinkFailed" xml:space="preserve"><value>Der Link konnte nicht in der Systemanwendung geöffnet werden.</value></data>
+  <data name="SupportDescription" xml:space="preserve"><value>{0} ist ein unabhängiges Projekt. Wenn das Programm für Sie nützlich ist, können Sie seine Entwicklung freiwillig unterstützen.</value></data>
+  <data name="SupportCrypto" xml:space="preserve"><value>Kryptowährung</value></data>
+  <data name="SupportCryptoDescription" xml:space="preserve"><value>Wallet-Adresse und QR-Code</value></data>
+  <data name="SupportCryptoNetwork" xml:space="preserve"><value>USDT · TRON-Netzwerk (TRC20)</value></data>
+  <data name="SupportCopyAddress" xml:space="preserve"><value>Adresse kopieren</value></data>
+  <data name="SupportAddressCopied" xml:space="preserve"><value>Adresse kopiert.</value></data>
+  <data name="SupportSbp" xml:space="preserve"><value>Schnellzahlungssystem</value></data>
+  <data name="SupportSbpDescription" xml:space="preserve"><value>Zahlungsdaten und QR-Code</value></data>
+  <data name="SupportSbpInstruction" xml:space="preserve"><value>Scannen Sie den QR-Code in Ihrer Banking-App oder verwenden Sie die Telefonnummer.</value></data>
+  <data name="SupportSbpBank" xml:space="preserve"><value>Sberbank</value></data>
+  <data name="SupportCopyDetails" xml:space="preserve"><value>Nummer kopieren</value></data>
+  <data name="SupportDetailsCopied" xml:space="preserve"><value>Nummer kopiert.</value></data>
+  <data name="SupportCopyFailed" xml:space="preserve"><value>Die Daten konnten nicht kopiert werden.</value></data>
   <data name="SettingsThirdParty" xml:space="preserve">
     <value>Drittanbieterkomponenten und Lizenzen</value>
   </data>

@@ -151,29 +151,57 @@
     <value>Development</value>
   </data>
   <data name="SettingsAboutSummary" xml:space="preserve">
-    <value>Analyze media files and extract video, audio, subtitles, and attachments.</value>
+    <value>Analyze media files, and extract or convert video, audio, subtitles, images, and attachments.</value>
   </data>
   <data name="SettingsCheckUpdates" xml:space="preserve">
-    <value>Check for updates</value>
+    <value>Check for update</value>
   </data>
   <data name="SettingsGeneralInformation" xml:space="preserve">
     <value>General information</value>
   </data>
   <data name="SettingsDeveloper" xml:space="preserve">
-    <value>Developer: Sergey Boitcov</value>
+    <value>Developer</value>
   </data>
+  <data name="SettingsDeveloperName" xml:space="preserve"><value>Sergey Boitcov</value></data>
+  <data name="SettingsPlatformsLabel" xml:space="preserve"><value>Platforms</value></data>
   <data name="SettingsPlatforms" xml:space="preserve">
-    <value>Platforms: Windows 10/11, Linux; macOS planned</value>
+    <value>Windows, Linux, macOS</value>
   </data>
+  <data name="SettingsTechnologyLabel" xml:space="preserve"><value>Technology</value></data>
   <data name="SettingsTechnology" xml:space="preserve">
-    <value>Technology: .NET 10, Avalonia UI 12.1.4</value>
+    <value>.NET {0}, Avalonia UI {1}</value>
   </data>
   <data name="SettingsMediaComponents" xml:space="preserve">
-    <value>Media components</value>
+    <value>System components</value>
   </data>
   <data name="SettingsFfmpegRights" xml:space="preserve">
-    <value>FFmpeg and FFprobe belong to their respective rights holders; the provider of the prebuilt binaries may vary.</value>
+    <value>Rights to FFmpeg and FFprobe belong to their respective owners. Terms of use depend on the license of the particular build.</value>
   </data>
+  <data name="SettingsUpdateCurrent" xml:space="preserve"><value>You have the latest version</value></data>
+  <data name="SettingsUpdateAvailable" xml:space="preserve"><value>Version 1.0.1 is available</value></data>
+  <data name="SettingsInstallUpdate" xml:space="preserve"><value>Install update</value></data>
+  <data name="SettingsLicenses" xml:space="preserve"><value>Licenses</value></data>
+  <data name="SettingsFfmpegLicense" xml:space="preserve"><value>Terms depend on the build</value></data>
+  <data name="SettingsOpenLicense" xml:space="preserve"><value>Open license</value></data>
+  <data name="SettingsReportBug" xml:space="preserve"><value>Report a Bug</value></data>
+  <data name="SettingsEmailLabel" xml:space="preserve"><value>Email</value></data>
+  <data name="SettingsTelegramLabel" xml:space="preserve"><value>Telegram channel</value></data>
+  <data name="SettingsAboutFooter" xml:space="preserve"><value>© {0} · {1} {2}</value></data>
+  <data name="SettingsSupportDeveloper" xml:space="preserve"><value>Support the developer</value></data>
+  <data name="SettingsOpenLinkFailed" xml:space="preserve"><value>Could not open the link in the system application.</value></data>
+  <data name="SupportDescription" xml:space="preserve"><value>{0} is an independent project. If you find it useful, you can support its development voluntarily.</value></data>
+  <data name="SupportCrypto" xml:space="preserve"><value>Cryptocurrency</value></data>
+  <data name="SupportCryptoDescription" xml:space="preserve"><value>Wallet address and QR code</value></data>
+  <data name="SupportCryptoNetwork" xml:space="preserve"><value>USDT · TRON network (TRC20)</value></data>
+  <data name="SupportCopyAddress" xml:space="preserve"><value>Copy address</value></data>
+  <data name="SupportAddressCopied" xml:space="preserve"><value>Address copied.</value></data>
+  <data name="SupportSbp" xml:space="preserve"><value>Fast Payments System</value></data>
+  <data name="SupportSbpDescription" xml:space="preserve"><value>Payment details and QR code</value></data>
+  <data name="SupportSbpInstruction" xml:space="preserve"><value>Scan the QR code in your banking app or use the phone number.</value></data>
+  <data name="SupportSbpBank" xml:space="preserve"><value>Sberbank</value></data>
+  <data name="SupportCopyDetails" xml:space="preserve"><value>Copy number</value></data>
+  <data name="SupportDetailsCopied" xml:space="preserve"><value>Number copied.</value></data>
+  <data name="SupportCopyFailed" xml:space="preserve"><value>Could not copy the details.</value></data>
   <data name="SettingsThirdParty" xml:space="preserve">
     <value>Third-party components and licenses</value>
   </data>

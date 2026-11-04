@@ -50,14 +50,42 @@
   <data name="SettingsOpenGuide" xml:space="preserve"><value>Открыть справочник</value></data>
   <data name="SettingsProductName" xml:space="preserve"><value>Track Extractor</value></data>
   <data name="SettingsDevelopmentBadge" xml:space="preserve"><value>Development</value></data>
-  <data name="SettingsAboutSummary" xml:space="preserve"><value>Анализ мультимедийных файлов и извлечение видео, аудио, субтитров и вложений.</value></data>
-  <data name="SettingsCheckUpdates" xml:space="preserve"><value>Проверить обновления</value></data>
+  <data name="SettingsAboutSummary" xml:space="preserve"><value>Анализ мультимедийных файлов, извлечение и преобразование видео, аудио, субтитров, изображений и вложений.</value></data>
+  <data name="SettingsCheckUpdates" xml:space="preserve"><value>Проверить обновление</value></data>
   <data name="SettingsGeneralInformation" xml:space="preserve"><value>Общие сведения</value></data>
-  <data name="SettingsDeveloper" xml:space="preserve"><value>Разработчик: Sergey Boitcov</value></data>
-  <data name="SettingsPlatforms" xml:space="preserve"><value>Платформы: Windows 10/11, Linux; macOS — планируется</value></data>
-  <data name="SettingsTechnology" xml:space="preserve"><value>Технологии: .NET 10, Avalonia UI 12.1.4</value></data>
-  <data name="SettingsMediaComponents" xml:space="preserve"><value>Мультимедийные компоненты</value></data>
-  <data name="SettingsFfmpegRights" xml:space="preserve"><value>Права на FFmpeg и FFprobe принадлежат их правообладателям; поставщик готовой сборки может отличаться.</value></data>
+  <data name="SettingsDeveloper" xml:space="preserve"><value>Разработчик</value></data>
+  <data name="SettingsDeveloperName" xml:space="preserve"><value>Sergey Boitcov</value></data>
+  <data name="SettingsPlatformsLabel" xml:space="preserve"><value>Платформы</value></data>
+  <data name="SettingsPlatforms" xml:space="preserve"><value>Windows, Linux, macOS</value></data>
+  <data name="SettingsTechnologyLabel" xml:space="preserve"><value>Технологии</value></data>
+  <data name="SettingsTechnology" xml:space="preserve"><value>.NET {0}, Avalonia UI {1}</value></data>
+  <data name="SettingsMediaComponents" xml:space="preserve"><value>Системные компоненты</value></data>
+  <data name="SettingsFfmpegRights" xml:space="preserve"><value>Права на FFmpeg и FFprobe принадлежат соответствующим правообладателям. Условия использования зависят от лицензии конкретной сборки.</value></data>
+  <data name="SettingsUpdateCurrent" xml:space="preserve"><value>У вас последняя версия</value></data>
+  <data name="SettingsUpdateAvailable" xml:space="preserve"><value>Доступна версия 1.0.1</value></data>
+  <data name="SettingsInstallUpdate" xml:space="preserve"><value>Установить обновление</value></data>
+  <data name="SettingsLicenses" xml:space="preserve"><value>Лицензии</value></data>
+  <data name="SettingsFfmpegLicense" xml:space="preserve"><value>Условия зависят от сборки</value></data>
+  <data name="SettingsOpenLicense" xml:space="preserve"><value>Открыть лицензию</value></data>
+  <data name="SettingsReportBug" xml:space="preserve"><value>Сообщить об ошибке</value></data>
+  <data name="SettingsEmailLabel" xml:space="preserve"><value>Электронная почта</value></data>
+  <data name="SettingsTelegramLabel" xml:space="preserve"><value>Telegram-канал</value></data>
+  <data name="SettingsAboutFooter" xml:space="preserve"><value>© {0} · {1} {2}</value></data>
+  <data name="SettingsSupportDeveloper" xml:space="preserve"><value>Поддержать разработчика</value></data>
+  <data name="SettingsOpenLinkFailed" xml:space="preserve"><value>Не удалось открыть ссылку в системном приложении.</value></data>
+  <data name="SupportDescription" xml:space="preserve"><value>{0} развивается как независимый проект. Если программа оказалась полезной, вы можете добровольно поддержать её разработку.</value></data>
+  <data name="SupportCrypto" xml:space="preserve"><value>Криптовалюта</value></data>
+  <data name="SupportCryptoDescription" xml:space="preserve"><value>Адрес кошелька и QR-код</value></data>
+  <data name="SupportCryptoNetwork" xml:space="preserve"><value>USDT · сеть TRON (TRC20)</value></data>
+  <data name="SupportCopyAddress" xml:space="preserve"><value>Копировать адрес</value></data>
+  <data name="SupportAddressCopied" xml:space="preserve"><value>Адрес скопирован.</value></data>
+  <data name="SupportSbp" xml:space="preserve"><value>Система быстрых платежей</value></data>
+  <data name="SupportSbpDescription" xml:space="preserve"><value>Реквизиты и QR-код</value></data>
+  <data name="SupportSbpInstruction" xml:space="preserve"><value>Отсканируйте QR-код в банковском приложении или используйте номер телефона.</value></data>
+  <data name="SupportSbpBank" xml:space="preserve"><value>Сбербанк</value></data>
+  <data name="SupportCopyDetails" xml:space="preserve"><value>Копировать номер</value></data>
+  <data name="SupportDetailsCopied" xml:space="preserve"><value>Номер скопирован.</value></data>
+  <data name="SupportCopyFailed" xml:space="preserve"><value>Не удалось скопировать данные.</value></data>
   <data name="SettingsThirdParty" xml:space="preserve"><value>Сторонние компоненты и лицензии</value></data>
   <data name="SettingsAvalonia" xml:space="preserve"><value>Avalonia UI — интерфейс приложения.</value></data>
   <data name="SettingsMvvm" xml:space="preserve"><value>CommunityToolkit.Mvvm — поддержка MVVM.</value></data>

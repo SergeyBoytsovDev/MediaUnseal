@@ -1,0 +1,53 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="TrackExtractor.Views.SupportWindow"
+        Title="{DynamicResource Loc_SettingsSupportDeveloper}"
+        Icon="/Assets/Icons/TrackExtractor-256.png"
+        Width="600" Height="600" MinWidth="490" MinHeight="440"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
+        FontFamily="Inter" FontSize="14">
+ <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="20" RowSpacing="14">
+  <StackPanel Orientation="Horizontal" Spacing="10">
+   <TextBlock Text="♥" FontSize="27" Foreground="{DynamicResource ErrorBrush}" VerticalAlignment="Center"/>
+   <TextBlock Text="{DynamicResource Loc_SettingsSupportDeveloper}" FontSize="20"
+              FontWeight="SemiBold" VerticalAlignment="Center"/>
+  </StackPanel>
+  <TextBlock x:Name="SupportDescription" Grid.Row="1" TextWrapping="Wrap"
+             Foreground="{DynamicResource MutedTextBrush}"/>
+  <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+   <Grid x:Name="SupportMethodsGrid" ColumnDefinitions="*,*" ColumnSpacing="12">
+    <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}"
+            BorderThickness="1" CornerRadius="5" Padding="12">
+     <StackPanel Spacing="10" HorizontalAlignment="Stretch">
+      <TextBlock Text="{DynamicResource Loc_SupportCrypto}" FontWeight="SemiBold" FontSize="16"
+                 TextAlignment="Center"/>
+      <TextBlock Text="{DynamicResource Loc_SupportCryptoNetwork}" Foreground="{DynamicResource MutedTextBrush}"
+                 TextWrapping="Wrap" TextAlignment="Center"/>
+      <Image Source="avares://TrackExtractor/Assets/usdtqr.png" Width="190" Height="190"
+             Stretch="Uniform" HorizontalAlignment="Center"/>
+      <TextBlock x:Name="CryptoAddressText" TextWrapping="WrapWithOverflow"
+                 HorizontalAlignment="Center" TextAlignment="Center"/>
+      <Button Content="{DynamicResource Loc_SupportCopyAddress}" Click="CopyCrypto_Click"
+              HorizontalAlignment="Center"/>
+     </StackPanel>
+    </Border>
+    <Border x:Name="SbpCard" Grid.Column="1" Background="{DynamicResource PanelAltBackground}"
+            BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="5" Padding="12">
+     <StackPanel Spacing="10">
+      <TextBlock Text="{DynamicResource Loc_SupportSbp}" FontWeight="SemiBold" FontSize="16"
+                 TextWrapping="Wrap" TextAlignment="Center"/>
+      <Image Source="avares://TrackExtractor/Assets/sbpqr.jpg" Width="190" Height="190"
+             Stretch="Uniform" HorizontalAlignment="Center"/>
+     </StackPanel>
+    </Border>
+   </Grid>
+  </ScrollViewer>
+  <Grid Grid.Row="3" ColumnDefinitions="*,Auto">
+   <TextBlock x:Name="SupportStatus" VerticalAlignment="Center"
+              Foreground="{DynamicResource MutedTextBrush}" TextWrapping="Wrap"/>
+   <Button Grid.Column="1" Content="{DynamicResource Loc_MainClose}" Click="Close_Click"
+           MinWidth="110" HorizontalContentAlignment="Center"/>
+  </Grid>
+ </Grid>
+</Window>

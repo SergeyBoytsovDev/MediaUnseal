@@ -154,6 +154,8 @@ public class MainViewModel : ViewModelBase
     public string FFprobeStatus { get => _ffprobeStatus; private set => SetProperty(ref _ffprobeStatus, value); }
     public string FFmpegBriefStatus { get => _ffmpegBriefStatus; private set => SetProperty(ref _ffmpegBriefStatus, value); }
     public string FFprobeBriefStatus { get => _ffprobeBriefStatus; private set => SetProperty(ref _ffprobeBriefStatus, value); }
+    public string? FFmpegExecutablePath => _lastFFmpegToolStatus?.IsReady == true ? _lastFFmpegToolStatus.Path : null;
+    public string? FFprobeExecutablePath => _lastFFprobeToolStatus?.IsReady == true ? _lastFFprobeToolStatus.Path : null;
     public string KnownBuildSource { get => _knownBuildSource; private set { if (SetProperty(ref _knownBuildSource, value)) OnPropertyChanged(nameof(HasKnownBuildSource)); } }
     public bool HasKnownBuildSource => !string.IsNullOrEmpty(KnownBuildSource);
     public bool FFmpegReady => _ffmpegState == DependencyState.Ready;
@@ -1273,6 +1275,7 @@ public class MainViewModel : ViewModelBase
     {
         if (ffmpeg) _lastFFmpegToolStatus = status;
         else _lastFFprobeToolStatus = status;
+        OnPropertyChanged(ffmpeg ? nameof(FFmpegExecutablePath) : nameof(FFprobeExecutablePath));
         var state = status is null ? DependencyState.Checking : status.IsReady ? DependencyState.Ready
             : status.IsMissing
                 ? DependencyState.Missing : DependencyState.Error;

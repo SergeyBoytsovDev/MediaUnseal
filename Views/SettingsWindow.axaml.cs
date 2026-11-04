@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using TrackExtractor.Services;
 using TrackExtractor.ViewModels;
 
@@ -18,6 +19,10 @@ public partial class SettingsWindow : Window
     private readonly UiAppearance _appearance;
     private readonly DependencyPanel _installer;
     private readonly LocalizationManager _localization;
+    private int _demoUpdateState;
+    private string? _licensePaths;
+    private string? _detectedLicense;
+    private CancellationTokenSource? _licenseCancellation;
 
     public SettingsWindow() : this(new MainViewModel(), new UiAppearance(), CancellationToken.None) { }
 
@@ -33,7 +38,13 @@ public partial class SettingsWindow : Window
         InstallerHost.Content = _installer;
         UpdateVersionText();
         _localization.PropertyChanged += Localization_PropertyChanged;
-        Closed += (_, _) => _localization.PropertyChanged -= Localization_PropertyChanged;
+        _viewModel.PropertyChanged += ViewModel_PropertyChanged;
+        Closed += (_, _) =>
+        {
+            _localization.PropertyChanged -= Localization_PropertyChanged;
+            _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            _licenseCancellation?.Cancel();
+        };
         AddAdditionalLanguageCards();
         foreach (var card in LanguageOptions.Children.OfType<Border>())
         {
@@ -113,6 +124,7 @@ public partial class SettingsWindow : Window
         FormatsSection.IsVisible = index == 3;
         AboutSection.IsVisible = index == 4;
         SettingsContentScroll.Offset = default;
+        if (index == 4) RefreshFfmpegLicense();
     }
 
     internal void SetShowContinue(bool value) => _installer.SetShowContinue(value);
@@ -130,8 +142,78 @@ public partial class SettingsWindow : Window
         }
     }
 
-    private void UpdateVersionText() => VersionText.Text = _localization.Format("VersionFormat",
-        typeof(App).Assembly.GetName().Version?.ToString() ?? _localization.Get("VersionUnspecified"));
+    private void UpdateVersionText()
+    {
+        var version = typeof(App).Assembly.GetName().Version?.ToString(3)
+            ?? _localization.Get("VersionUnspecified");
+        VersionText.Text = _localization.Format("VersionFormat", version);
+        TechnologyText.Text = _localization.Format("SettingsTechnology",
+            Environment.Version.Major, typeof(Application).Assembly.GetName().Version?.ToString(3) ?? "—");
+        AboutFooterText.Text = _localization.Format("SettingsAboutFooter",
+            _localization.Get("SettingsDeveloperName"), _localization.Get("SettingsProductName"), version);
+        UpdateButton.Content = _localization.Get(_demoUpdateState == 2
+            ? "SettingsInstallUpdate" : "SettingsCheckUpdates");
+        UpdateCurrentStatus.IsVisible = _demoUpdateState == 1;
+        UpdateAvailableStatus.IsVisible = _demoUpdateState == 2;
+        if (AboutActionError.IsVisible)
+            AboutActionError.Text = _localization.Get("SettingsOpenLinkFailed");
+        FfmpegLicenseText.Text = _detectedLicense ?? _localization.Get("SettingsFfmpegLicense");
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(MainViewModel.FFmpegExecutablePath)
+            or nameof(MainViewModel.FFprobeExecutablePath))
+            Dispatcher.UIThread.Post(() => { if (AboutSection.IsVisible) RefreshFfmpegLicense(); });
+    }
+
+    private async void RefreshFfmpegLicense()
+    {
+        var ffmpegPath = _viewModel.FFmpegExecutablePath;
+        var ffprobePath = _viewModel.FFprobeExecutablePath;
+        var paths = $"{ffmpegPath}\n{ffprobePath}";
+        if (paths == _licensePaths) return;
+        _licensePaths = paths;
+        _licenseCancellation?.Cancel();
+        _detectedLicense = null;
+        FfmpegLicenseText.Text = _localization.Get("SettingsFfmpegLicense");
+        if (ffmpegPath is null || ffprobePath is null) return;
+        var cancellation = new CancellationTokenSource();
+        _licenseCancellation = cancellation;
+        try
+        {
+            var labels = await Task.WhenAll(
+                FfmpegLicenseDetector.DetectAsync(ffmpegPath, cancellation.Token),
+                FfmpegLicenseDetector.DetectAsync(ffprobePath, cancellation.Token));
+            if (cancellation.IsCancellationRequested || labels[0] is null || labels[1] is null) return;
+            _detectedLicense = labels[0] == labels[1] ? labels[0]
+                : $"FFmpeg: {labels[0]} · FFprobe: {labels[1]}";
+            FfmpegLicenseText.Text = _detectedLicense;
+        }
+        finally
+        {
+            if (ReferenceEquals(_licenseCancellation, cancellation)) _licenseCancellation = null;
+            cancellation.Dispose();
+        }
+    }
+
+    private void UpdateButton_Click(object? sender, RoutedEventArgs e)
+    {
+        _demoUpdateState = _demoUpdateState == 2 ? 1 : _demoUpdateState + 1;
+        UpdateVersionText();
+    }
+
+    private async void ExternalLink_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string target }
+            || !Uri.TryCreate(target, UriKind.Absolute, out var uri)) return;
+        AboutActionError.IsVisible = false;
+        if (await ExternalLinkLauncher.TryOpenAsync(uri)) return;
+        AboutActionError.Text = _localization.Get("SettingsOpenLinkFailed");
+        AboutActionError.IsVisible = true;
+    }
+
+    private void Support_Click(object? sender, RoutedEventArgs e) => new SupportWindow().Show(this);
 
     private void OpenGuide_Click(object? sender, RoutedEventArgs e) => new MediaGuideWindow().Show(this);
 

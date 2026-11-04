@@ -13,6 +13,36 @@
   <Style Selector="ListBoxItem:selected"><Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/></Style>
   <Style Selector="RadioButton"><Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/></Style>
   <Style Selector="Button"><Setter Property="Background" Value="{DynamicResource PanelAltBackground}"/><Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/><Setter Property="BorderBrush" Value="{DynamicResource LineBrush}"/></Style>
+  <Style Selector="Button.about-link">
+   <Setter Property="Padding" Value="0"/><Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="Template">
+    <ControlTemplate>
+     <ContentPresenter Content="{TemplateBinding Content}"/>
+    </ControlTemplate>
+   </Setter>
+  </Style>
+  <Style Selector="Button.about-link TextBlock"><Setter Property="Foreground" Value="{DynamicResource InfoBrush}"/></Style>
+  <Style Selector="Button.about-link:pointerover TextBlock"><Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/><Setter Property="TextDecorations" Value="Underline"/></Style>
+  <Style Selector="Button.about-link:focus TextBlock"><Setter Property="TextDecorations" Value="Underline"/></Style>
+  <Style Selector="Button.license-link">
+   <Setter Property="Width" Value="30"/><Setter Property="Height" Value="30"/>
+   <Setter Property="Padding" Value="0"/><Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="Background" Value="{DynamicResource PanelBackground}"/>
+   <Setter Property="Template">
+    <ControlTemplate>
+     <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+             BorderThickness="1" CornerRadius="5">
+      <Path Data="M11 3 L19 3 L19 11 M19 3 L9 13 M17 13 L17 17 Q17 19 15 19 L5 19 Q3 19 3 17 L3 7 Q3 5 5 5 L9 5"
+            Stroke="{DynamicResource MainTextBrush}" StrokeThickness="1.7"
+            StrokeLineCap="Round" Width="18" Height="18"
+            Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+     </Border>
+    </ControlTemplate>
+   </Setter>
+  </Style>
+  <Style Selector="Button.license-link:pointerover"><Setter Property="BorderBrush" Value="{DynamicResource InfoBrush}"/><Setter Property="Background" Value="{DynamicResource PanelAltBackground}"/></Style>
+  <Style Selector="Button.license-link:pointerover Path"><Setter Property="Stroke" Value="{DynamicResource InfoBrush}"/></Style>
+  <Style Selector="Button.license-link:focus"><Setter Property="BorderBrush" Value="{DynamicResource InfoBrush}"/></Style>
   <Style Selector="Border.theme-card"><Setter Property="Background" Value="{DynamicResource PanelAltBackground}"/><Setter Property="BorderBrush" Value="{DynamicResource LineBrush}"/></Style>
   <Style Selector="Border.theme-card.selected"><Setter Property="Background" Value="{DynamicResource PanelBackground}"/><Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/></Style>
   <Style Selector="Border.theme-card:pointerover"><Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/></Style>
@@ -141,47 +171,121 @@
       <TextBlock Text="{DynamicResource Loc_SettingsGuideDescription2}" TextWrapping="Wrap"/>
       <Button Content="{DynamicResource Loc_SettingsOpenGuide}" Click="OpenGuide_Click" HorizontalAlignment="Left" Margin="0,18,0,0"/>
      </StackPanel>
-     <StackPanel x:Name="AboutSection" Margin="24,16" Spacing="5" IsVisible="False">
-      <StackPanel Orientation="Horizontal" Spacing="14">
-       <Image Source="avares://TrackExtractor/Assets/Icons/TrackExtractor-128.png" Width="54" Height="54" Stretch="Uniform"/>
-       <StackPanel VerticalAlignment="Center" Spacing="2">
-        <TextBlock Text="{DynamicResource Loc_SettingsProductName}" FontSize="21" FontWeight="SemiBold"/>
-        <StackPanel Orientation="Horizontal" Spacing="9">
-         <TextBlock x:Name="VersionText" Classes="secondary" VerticalAlignment="Center"/>
-         <Border BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" Padding="5,1"><TextBlock Text="{DynamicResource Loc_SettingsDevelopmentBadge}" FontSize="11" Foreground="{DynamicResource AccentBrush}"/></Border>
+     <StackPanel x:Name="AboutSection" Margin="22,18" Spacing="14" IsVisible="False">
+      <Grid ColumnDefinitions="64,*" ColumnSpacing="13">
+       <Image Source="avares://TrackExtractor/Assets/Icons/TrackExtractor-128.png" Width="60" Height="60" Stretch="Uniform"/>
+       <StackPanel Grid.Column="1" Spacing="7" VerticalAlignment="Center">
+        <TextBlock Text="{DynamicResource Loc_SettingsProductName}" FontSize="23" FontWeight="SemiBold"/>
+        <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+         <TextBlock x:Name="VersionText" Classes="secondary" VerticalAlignment="Center" FontSize="12"/>
+         <Button x:Name="UpdateButton" Click="UpdateButton_Click" Height="28" Padding="8,2"
+                 HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="12"/>
+         <TextBlock x:Name="UpdateCurrentStatus" Text="{DynamicResource Loc_SettingsUpdateCurrent}"
+                    Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center" FontSize="12" IsVisible="False"/>
+         <TextBlock x:Name="UpdateAvailableStatus" Text="{DynamicResource Loc_SettingsUpdateAvailable}"
+                    Foreground="{DynamicResource WarningBrush}" VerticalAlignment="Center" FontSize="12" IsVisible="False"/>
         </StackPanel>
        </StackPanel>
-      </StackPanel>
-      <TextBlock Text="{DynamicResource Loc_SettingsAboutSummary}" TextWrapping="Wrap"/>
-      <Button IsEnabled="False" HorizontalAlignment="Left" Padding="9,5">
-       <StackPanel Orientation="Horizontal" Spacing="7">
-        <Path Data="M 20,7 L 20,2 L 15,2 M 20,2 C 17,0 13,0 10,1 C 5,3 3,7 3,11 M 4,17 L 4,22 L 9,22 M 4,22 C 7,24 11,24 14,23 C 19,21 21,17 21,13" Stroke="{DynamicResource MainTextBrush}" StrokeThickness="1.7" Width="15" Height="15" Stretch="Uniform" VerticalAlignment="Center"/>
-        <TextBlock Text="{DynamicResource Loc_SettingsCheckUpdates}" VerticalAlignment="Center"/>
+      </Grid>
+      <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}"
+              BorderThickness="1" CornerRadius="5" Padding="12">
+       <Grid ColumnDefinitions="143,1,*" ColumnSpacing="13">
+        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center" HorizontalAlignment="Center">
+         <TextBlock Text="▶" FontSize="27" Foreground="{DynamicResource AccentBrush}"/>
+         <TextBlock Text="♫" FontSize="25" Foreground="{DynamicResource InfoBrush}"/>
+         <TextBlock Text="▧" FontSize="26" Foreground="{DynamicResource SuccessBrush}"/>
+        </StackPanel>
+        <Border Grid.Column="1" Background="{DynamicResource LineBrush}"/>
+        <TextBlock Grid.Column="2" Text="{DynamicResource Loc_SettingsAboutSummary}" TextWrapping="Wrap"
+                   VerticalAlignment="Center"/>
+       </Grid>
+      </Border>
+      <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}"
+              BorderThickness="1" CornerRadius="5" Padding="13">
+       <StackPanel Spacing="10">
+        <TextBlock Text="{DynamicResource Loc_SettingsGeneralInformation}" FontWeight="SemiBold" FontSize="16"/>
+        <Grid ColumnDefinitions="125,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="7" ColumnSpacing="10">
+         <TextBlock Text="{DynamicResource Loc_SettingsDeveloper}" Classes="secondary"/>
+         <TextBlock Grid.Column="1" Text="{DynamicResource Loc_SettingsDeveloperName}"/>
+         <TextBlock Grid.Row="1" Text="{DynamicResource Loc_SettingsPlatformsLabel}" Classes="secondary"/>
+         <TextBlock Grid.Row="1" Grid.Column="1" Text="{DynamicResource Loc_SettingsPlatforms}" TextWrapping="Wrap"/>
+         <TextBlock Grid.Row="2" Text="{DynamicResource Loc_SettingsTechnologyLabel}" Classes="secondary"/>
+         <TextBlock x:Name="TechnologyText" Grid.Row="2" Grid.Column="1" TextWrapping="Wrap"/>
+        </Grid>
        </StackPanel>
-      </Button>
-      <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Margin="0,3"/>
-      <TextBlock Text="{DynamicResource Loc_SettingsGeneralInformation}" FontWeight="SemiBold"/>
-      <TextBlock Text="{DynamicResource Loc_SettingsDeveloper}"/>
-      <TextBlock Text="{DynamicResource Loc_SettingsPlatforms}" TextWrapping="Wrap"/>
-      <TextBlock Text="{DynamicResource Loc_SettingsTechnology}"/>
-      <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Margin="0,3"/>
-      <TextBlock Text="{DynamicResource Loc_SettingsMediaComponents}" FontWeight="SemiBold"/>
-      <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" Padding="9,5">
-       <Grid ColumnDefinitions="80,*"><TextBlock Text="FFmpeg" FontWeight="SemiBold"/><TextBlock Grid.Column="1" Text="{Binding FFmpegBriefStatus}" TextWrapping="Wrap"/></Grid>
       </Border>
-      <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" Padding="9,5">
-       <Grid ColumnDefinitions="80,*"><TextBlock Text="FFprobe" FontWeight="SemiBold"/><TextBlock Grid.Column="1" Text="{Binding FFprobeBriefStatus}" TextWrapping="Wrap"/></Grid>
+      <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}"
+              BorderThickness="1" CornerRadius="5" Padding="13">
+       <StackPanel Spacing="8">
+        <TextBlock Text="{DynamicResource Loc_SettingsMediaComponents}" FontWeight="SemiBold" FontSize="16"/>
+        <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0"/>
+        <Grid ColumnDefinitions="95,*" ColumnSpacing="10" ToolTip.Tip="{Binding FFmpegExecutablePath}">
+         <TextBlock Text="FFmpeg" FontWeight="SemiBold"/>
+         <TextBlock Grid.Column="1" Text="{Binding FFmpegBriefStatus}" TextWrapping="Wrap"/>
+        </Grid>
+        <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0"/>
+        <Grid ColumnDefinitions="95,*" ColumnSpacing="10" ToolTip.Tip="{Binding FFprobeExecutablePath}">
+         <TextBlock Text="FFprobe" FontWeight="SemiBold"/>
+         <TextBlock Grid.Column="1" Text="{Binding FFprobeBriefStatus}" TextWrapping="Wrap"/>
+        </Grid>
+        <TextBlock Text="{DynamicResource Loc_SettingsFfmpegRights}" Classes="secondary"
+                   FontSize="12" TextWrapping="Wrap" Margin="0,5,0,0"/>
+       </StackPanel>
       </Border>
-      <TextBlock Text="{Binding KnownBuildSource}" IsVisible="{Binding HasKnownBuildSource}" Classes="secondary" FontSize="12"/>
-      <TextBlock Text="{DynamicResource Loc_SettingsFfmpegRights}" Classes="secondary" FontSize="12" TextWrapping="Wrap"/>
-      <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Margin="0,3"/>
-      <TextBlock Text="{DynamicResource Loc_SettingsThirdParty}" FontWeight="SemiBold"/>
-      <TextBlock Text="{DynamicResource Loc_SettingsAvalonia}"/>
-      <TextBlock Text="{DynamicResource Loc_SettingsMvvm}"/>
-      <TextBlock Text="{DynamicResource Loc_SettingsExternalTools}" TextWrapping="Wrap"/>
-      <TextBlock Text="{DynamicResource Loc_SettingsMatroskaTitle}" FontWeight="SemiBold" Margin="0,6,0,0"/>
-      <TextBlock Text="{DynamicResource Loc_SettingsMatroskaDescription}" TextWrapping="Wrap"/>
-      <TextBlock Text="{DynamicResource Loc_SettingsLicensePending}" Classes="secondary" FontSize="12" Margin="0,3,0,0"/>
+      <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}"
+              BorderThickness="1" CornerRadius="5" Padding="13">
+       <StackPanel Spacing="7">
+        <TextBlock Text="{DynamicResource Loc_SettingsLicenses}" FontWeight="SemiBold" FontSize="16"/>
+        <Grid ColumnDefinitions="150,*,30" ColumnSpacing="8">
+         <TextBlock Text="{DynamicResource Loc_SettingsProductName}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+         <TextBlock Grid.Column="1" Text="Proprietary License (Source available)" VerticalAlignment="Center" Classes="secondary" TextWrapping="Wrap"/>
+         <Button Grid.Column="2" Classes="license-link" Tag="https://github.com/SergeyBoitcov/TrackExtractor/blob/main/LICENSE.md"
+                 Click="ExternalLink_Click" ToolTip.Tip="{DynamicResource Loc_SettingsOpenLicense}"/>
+        </Grid>
+        <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0"/>
+        <Grid ColumnDefinitions="150,*,30" ColumnSpacing="8">
+         <TextBlock Text="FFmpeg / FFprobe" VerticalAlignment="Center" FontWeight="SemiBold"/>
+         <TextBlock x:Name="FfmpegLicenseText" Grid.Column="1" Text="{DynamicResource Loc_SettingsFfmpegLicense}" VerticalAlignment="Center"
+                    Classes="secondary" TextWrapping="Wrap"/>
+         <Button Grid.Column="2" Classes="license-link" Tag="https://ffmpeg.org/legal.html"
+                 Click="ExternalLink_Click" ToolTip.Tip="{DynamicResource Loc_SettingsOpenLicense}"/>
+        </Grid>
+        <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0"/>
+        <Grid ColumnDefinitions="150,*,30" ColumnSpacing="8">
+         <TextBlock Text="Avalonia UI" VerticalAlignment="Center" FontWeight="SemiBold"/>
+         <TextBlock Grid.Column="1" Text="MIT License" VerticalAlignment="Center" Classes="secondary"/>
+         <Button Grid.Column="2" Classes="license-link" Tag="https://github.com/AvaloniaUI/Avalonia/blob/main/licence.md"
+                 Click="ExternalLink_Click" ToolTip.Tip="{DynamicResource Loc_SettingsOpenLicense}"/>
+        </Grid>
+       </StackPanel>
+      </Border>
+      <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}"
+              BorderThickness="1" CornerRadius="5" Padding="13">
+       <StackPanel Spacing="8">
+        <TextBlock Text="{DynamicResource Loc_SettingsReportBug}" FontWeight="SemiBold" FontSize="16"/>
+        <Grid ColumnDefinitions="145,*" RowDefinitions="Auto,Auto" RowSpacing="5">
+         <TextBlock Text="{DynamicResource Loc_SettingsEmailLabel}" Classes="secondary"/>
+         <Button Grid.Column="1" Classes="about-link" Tag="mailto:sergjoyce@gmail.com"
+                 Click="ExternalLink_Click" HorizontalAlignment="Left"><TextBlock Text="sergjoyce@gmail.com"/></Button>
+         <TextBlock Grid.Row="1" Text="{DynamicResource Loc_SettingsTelegramLabel}" Classes="secondary"/>
+         <Button Grid.Row="1" Grid.Column="1" Classes="about-link"
+                 Tag="https://t.me/SergeyBoytsov" Click="ExternalLink_Click"
+                 HorizontalAlignment="Left"><TextBlock Text="@SergeyBoytsov"/></Button>
+        </Grid>
+       </StackPanel>
+      </Border>
+      <TextBlock x:Name="AboutActionError" Foreground="{DynamicResource ErrorBrush}"
+                 IsVisible="False" TextWrapping="Wrap"/>
+      <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,0">
+       <TextBlock x:Name="AboutFooterText" Classes="secondary" FontSize="12"
+                  VerticalAlignment="Center" TextWrapping="Wrap"/>
+       <Button Grid.Column="1" Classes="about-link" Click="Support_Click" FontSize="12">
+        <StackPanel Orientation="Horizontal" Spacing="5">
+         <TextBlock Text="♥"/>
+         <TextBlock Text="{DynamicResource Loc_SettingsSupportDeveloper}"/>
+        </StackPanel>
+       </Button>
+      </Grid>
      </StackPanel>
     </Grid>
    </ScrollViewer>
