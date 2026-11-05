@@ -6,10 +6,10 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
-using TrackExtractor.Services;
-using TrackExtractor.ViewModels;
+using MediaUnseal.Services;
+using MediaUnseal.ViewModels;
 
-namespace TrackExtractor.Views;
+namespace MediaUnseal.Views;
 
 public partial class DependencyPanel : UserControl
 {

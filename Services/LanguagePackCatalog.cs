@@ -9,12 +9,12 @@ using System.Resources;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 internal static class LanguagePackCatalog
 {
     private static readonly Assembly Assembly = typeof(LocalizationManager).Assembly;
-    private static readonly ResourceManager Strings = new("TrackExtractor.Resources.Strings", Assembly);
+    private static readonly ResourceManager Strings = new("MediaUnseal.Resources.Strings", Assembly);
     private static readonly Lazy<IReadOnlyDictionary<string, string>> BaseStrings = new(() =>
         Read(Strings.GetResourceSet(CultureInfo.InvariantCulture, true, true)
             ?? throw new MissingManifestResourceException("Base localization is missing.")));
@@ -59,9 +59,9 @@ internal static class LanguagePackCatalog
     {
         resources ??= GuideResources.Value;
         var guideName = cultureCode == LocalizationManager.DefaultLanguage
-            ? "TrackExtractor.docs.track-extractor-media-guide.md"
-            : $"TrackExtractor.docs.track-extractor-media-guide.{cultureCode}.md";
-        var diagramsName = $"TrackExtractor.docs.media-guide-diagrams.{cultureCode}.json";
+            ? "MediaUnseal.docs.media-unseal-media-guide.md"
+            : $"MediaUnseal.docs.media-unseal-media-guide.{cultureCode}.md";
+        var diagramsName = $"MediaUnseal.docs.media-guide-diagrams.{cultureCode}.json";
         var problems = new List<string>();
         if (!resources.Contains(guideName)) problems.Add("missing-guide");
         if (!resources.Contains(diagramsName)) problems.Add("missing-diagrams");

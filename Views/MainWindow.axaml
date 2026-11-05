@@ -1,8 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- xmlns:vm="using:TrackExtractor.ViewModels"
- x:Class="TrackExtractor.Views.MainWindow" x:DataType="vm:MainViewModel"
- Title="{DynamicResource Loc_SettingsProductName}" Icon="/Assets/Icons/TrackExtractor-256.png" Width="1280" Height="900" MinWidth="1000" MinHeight="700"
+ xmlns:vm="using:MediaUnseal.ViewModels"
+ x:Class="MediaUnseal.Views.MainWindow" x:DataType="vm:MainViewModel"
+ Title="{DynamicResource Loc_SettingsProductName}" Icon="/Assets/Icons/MediaUnseal-256.png" Width="1280" Height="900" MinWidth="1000" MinHeight="700"
  WindowStartupLocation="CenterScreen" WindowDecorations="None" CanResize="True"
  Background="{DynamicResource AppBackground}" Foreground="{DynamicResource MainTextBrush}" FontFamily="{DynamicResource InterfaceFont}" FontSize="14">
  <Window.Styles>
@@ -64,7 +64,7 @@
   <Border Grid.Row="0" Background="{DynamicResource HeaderBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1">
    <Grid ColumnDefinitions="Auto,*,Auto" Margin="14,0,4,0">
     <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center" PointerPressed="TitleBar_PointerPressed">
-     <Image Source="avares://TrackExtractor/Assets/Icons/TrackExtractor-24.png" Width="23" Height="23" Stretch="Uniform"/>
+     <Image Source="avares://MediaUnseal/Assets/Icons/MediaUnseal-24.png" Width="23" Height="23" Stretch="Uniform"/>
      <TextBlock Text="{DynamicResource Loc_SettingsProductName}" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/>
     </StackPanel>
     <Border Grid.Column="1" Background="Transparent" PointerPressed="TitleBar_PointerPressed"/>

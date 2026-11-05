@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 public enum DiagnosticLevel { Info, Warn, Error }
 

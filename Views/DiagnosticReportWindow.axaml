@@ -1,6 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="TrackExtractor.Views.DiagnosticReportWindow"
+        x:Class="MediaUnseal.Views.DiagnosticReportWindow"
         x:CompileBindings="False"
         Title="{DynamicResource Loc_DiagnosticPreviewTitle}"
         Width="760" Height="540" WindowStartupLocation="CenterOwner"

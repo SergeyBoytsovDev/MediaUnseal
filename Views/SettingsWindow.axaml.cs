@@ -8,10 +8,10 @@ using Avalonia.Controls;
 using Avalonia;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
-using TrackExtractor.Services;
-using TrackExtractor.ViewModels;
+using MediaUnseal.Services;
+using MediaUnseal.ViewModels;
 
-namespace TrackExtractor.Views;
+namespace MediaUnseal.Views;
 
 public partial class SettingsWindow : Window
 {

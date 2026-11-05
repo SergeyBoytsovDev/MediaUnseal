@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
-using TrackExtractor.Models;
-using TrackExtractor.Services;
+using MediaUnseal.Models;
+using MediaUnseal.Services;
 
-namespace TrackExtractor.Views;
+namespace MediaUnseal.Views;
 
 public partial class ConversionWindow : Window
 {

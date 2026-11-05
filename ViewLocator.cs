@@ -2,10 +2,10 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using TrackExtractor.Services;
-using TrackExtractor.ViewModels;
+using MediaUnseal.Services;
+using MediaUnseal.ViewModels;
 
-namespace TrackExtractor;
+namespace MediaUnseal;
 
 /// <summary>
 /// Given a view model, returns the corresponding view if possible.

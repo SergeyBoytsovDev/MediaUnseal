@@ -4,11 +4,11 @@ using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using TrackExtractor.Models;
-using TrackExtractor.Services;
-using TrackExtractor.ViewModels;
+using MediaUnseal.Models;
+using MediaUnseal.Services;
+using MediaUnseal.ViewModels;
 
-namespace TrackExtractor.Views;
+namespace MediaUnseal.Views;
 
 public partial class AttachmentsWindow : Window
 {

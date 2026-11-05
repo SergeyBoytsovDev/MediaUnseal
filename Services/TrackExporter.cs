@@ -8,9 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TrackExtractor.Models;
+using MediaUnseal.Models;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 public enum ExportState { Pending, Running, Completed, Failed, Cancelled }
 
@@ -227,7 +227,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         if (options.CreateSourceFolder)
             directory = Path.Combine(directory, SafeFolderName(Path.GetFileNameWithoutExtension(media.Name)));
         Directory.CreateDirectory(directory);
-        var stage = Path.Combine(directory, ".trackextractor-" + Guid.NewGuid().ToString("N"));
+        var stage = Path.Combine(directory, ".mediaunseal-" + Guid.NewGuid().ToString("N"));
         var results = new List<TrackExportResult>();
         var reserved = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
         var cancelled = false;

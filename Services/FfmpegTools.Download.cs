@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 public sealed partial class FfmpegTools
 {
@@ -51,7 +51,7 @@ public sealed partial class FfmpegTools
                 ? new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
                 : new HttpClient(_httpHandler, disposeHandler: false);
             http.Timeout = Timeout.InfiniteTimeSpan;
-            http.DefaultRequestHeaders.UserAgent.ParseAdd("TrackExtractor/1.0");
+            http.DefaultRequestHeaders.UserAgent.ParseAdd("MediaUnseal/1.0");
 
             progress?.Report(new InstallProgress(L.Get("ToolsDownloadingChecksum"))
             { LocalizedMessage = new("ToolsDownloadingChecksum") });

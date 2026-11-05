@@ -17,11 +17,11 @@ using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using TrackExtractor.Services;
-using TrackExtractor.Models;
-using TrackExtractor.ViewModels;
+using MediaUnseal.Services;
+using MediaUnseal.Models;
+using MediaUnseal.ViewModels;
 
-namespace TrackExtractor.Views;
+namespace MediaUnseal.Views;
 
 public partial class MainWindow : Window
 {

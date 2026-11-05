@@ -145,7 +145,7 @@
     <value>Ouvrir le guide des médias</value>
   </data>
   <data name="SettingsProductName" xml:space="preserve">
-    <value>Track Extractor</value>
+    <value>Media Unseal</value>
   </data>
   <data name="SettingsDevelopmentBadge" xml:space="preserve">
     <value>Développement</value>
@@ -165,7 +165,7 @@
   <data name="SettingsDeveloperName" xml:space="preserve"><value>Sergey Boitcov</value></data>
   <data name="SettingsPlatformsLabel" xml:space="preserve"><value>Plateformes</value></data>
   <data name="SettingsPlatforms" xml:space="preserve">
-    <value>Windows, Linux, macOS</value>
+    <value>Windows, Linux</value>
   </data>
   <data name="SettingsTechnologyLabel" xml:space="preserve"><value>Technologies</value></data>
   <data name="SettingsTechnology" xml:space="preserve">
@@ -479,7 +479,7 @@
     <value>Vérification des exécutables FFmpeg et FFprobe installés…</value>
   </data>
   <data name="ToolsDownloadedReady" xml:space="preserve">
-    <value>FFmpeg et FFprobe sont installés dans votre dossier de données utilisateur et accessibles à Track Extractor. Ils n’ont pas été ajoutés à PATH : les commandes courtes dans un terminal ne les trouveront pas.</value>
+    <value>FFmpeg et FFprobe sont installés dans votre dossier de données utilisateur et accessibles à Media Unseal. Ils n’ont pas été ajoutés à PATH : les commandes courtes dans un terminal ne les trouveront pas.</value>
   </data>
   <data name="ToolsDownloadTimeout" xml:space="preserve">
     <value>Délai de téléchargement ou d’installation dépassé après 20 minutes. Vérifiez votre connexion et réessayez.</value>

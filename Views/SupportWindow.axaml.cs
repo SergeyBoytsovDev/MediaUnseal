@@ -3,9 +3,9 @@ using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using TrackExtractor.Services;
+using MediaUnseal.Services;
 
-namespace TrackExtractor.Views;
+namespace MediaUnseal.Views;
 
 public partial class SupportWindow : Window
 {

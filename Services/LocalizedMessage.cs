@@ -1,6 +1,6 @@
 using System.Linq;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 // A display value can be rendered again after the interface culture changes.
 public sealed record LocalizedMessage(string Key, params object?[] Arguments)

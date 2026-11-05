@@ -145,7 +145,7 @@
     <value>Abrir guia de formatos multimédia</value>
   </data>
   <data name="SettingsProductName" xml:space="preserve">
-    <value>Track Extractor</value>
+    <value>Media Unseal</value>
   </data>
   <data name="SettingsDevelopmentBadge" xml:space="preserve">
     <value>Desenvolvimento</value>
@@ -165,7 +165,7 @@
   <data name="SettingsDeveloperName" xml:space="preserve"><value>Sergey Boitcov</value></data>
   <data name="SettingsPlatformsLabel" xml:space="preserve"><value>Plataformas</value></data>
   <data name="SettingsPlatforms" xml:space="preserve">
-    <value>Windows, Linux, macOS</value>
+    <value>Windows, Linux</value>
   </data>
   <data name="SettingsTechnologyLabel" xml:space="preserve"><value>Tecnologias</value></data>
   <data name="SettingsTechnology" xml:space="preserve">
@@ -479,7 +479,7 @@
     <value>A verificar os executáveis FFmpeg e FFprobe instalados…</value>
   </data>
   <data name="ToolsDownloadedReady" xml:space="preserve">
-    <value>O FFmpeg e o FFprobe estão instalados na pasta de dados do utilizador e disponíveis para o Track Extractor. Não foram adicionados a PATH, pelo que os comandos curtos no terminal não os encontrarão.</value>
+    <value>O FFmpeg e o FFprobe estão instalados na pasta de dados do utilizador e disponíveis para o Media Unseal. Não foram adicionados a PATH, pelo que os comandos curtos no terminal não os encontrarão.</value>
   </data>
   <data name="ToolsDownloadTimeout" xml:space="preserve">
     <value>O tempo limite da transferência ou instalação foi excedido após 20 minutos. Verifique a ligação e tente novamente.</value>

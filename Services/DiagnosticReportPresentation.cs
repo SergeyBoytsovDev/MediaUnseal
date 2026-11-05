@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 internal sealed record DiagnosticReportRow(string Kind, string Time, string Level, string Category,
     string Message, string Timestamp)
@@ -49,7 +49,7 @@ internal static class DiagnosticReportPresentation
             var category = match.Groups["category"].Value;
             var message = match.Groups["message"].Value;
             if (category == "Startup" && message == "Application dependency check started.")
-                rows.Add(new("startup", time, "", "", "▶ Запуск Track Extractor · " + time,
+                rows.Add(new("startup", time, "", "", "▶ Запуск Media Unseal · " + time,
                     match.Groups["stamp"].Value));
             rows.Add(new("entry", time, match.Groups["level"].Value, category, message,
                 match.Groups["stamp"].Value));

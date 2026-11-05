@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Avalonia.Platform;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 internal sealed record MediaGuideArticle(string Title, string Markdown, int SourceStart, int SourceLength);
 internal sealed record MediaGuideSection(string Title, IReadOnlyList<MediaGuideArticle> Articles);
@@ -28,8 +28,8 @@ internal sealed class MediaGuideContent
         if (LanguagePackCatalog.ValidateGuideFiles(language).Count != 0)
             throw new InvalidDataException($"Недоступен язык медиасправочника: {language}.");
         var name = language == LocalizationManager.DefaultLanguage
-            ? "track-extractor-media-guide.md" : $"track-extractor-media-guide.{language}.md";
-        using var stream = AssetLoader.Open(new Uri($"avares://TrackExtractor/docs/{name}"));
+            ? "media-unseal-media-guide.md" : $"media-unseal-media-guide.{language}.md";
+        using var stream = AssetLoader.Open(new Uri($"avares://MediaUnseal/docs/{name}"));
         using var reader = new StreamReader(stream);
         return Parse(reader.ReadToEnd());
     }

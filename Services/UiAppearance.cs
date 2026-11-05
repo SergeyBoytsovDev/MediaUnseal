@@ -6,7 +6,7 @@ using System.Text.Json;
 using Avalonia;
 using Avalonia.Media;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 internal sealed class UiPreferences
 {
@@ -116,14 +116,13 @@ internal sealed class UiAppearance
     private static string UserConfigDirectory()
     {
         if (OperatingSystem.IsWindows())
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TrackExtractor");
+            return AppDirectories.Resolve(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ui.json");
         if (OperatingSystem.IsMacOS())
-            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                "Library", "Application Support", "TrackExtractor");
+            return AppDirectories.Resolve(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "Library", "Application Support"), "ui.json");
         var xdg = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
-        return Path.Combine(!string.IsNullOrWhiteSpace(xdg) && Path.IsPathRooted(xdg)
-            ? xdg : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config"),
-            "TrackExtractor");
+        return AppDirectories.Resolve(!string.IsNullOrWhiteSpace(xdg) && Path.IsPathRooted(xdg)
+            ? xdg : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config"), "ui.json");
     }
 
     internal static string DefaultOutputDirectory()

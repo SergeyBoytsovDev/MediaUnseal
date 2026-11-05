@@ -46,7 +46,7 @@
     {
       "id": "components", "width": 820, "height": 220,
       "nodes": [
-        { "id": "app", "label": "Track Extractor", "x": 10, "y": 70, "width": 155, "height": 80 },
+        { "id": "app", "label": "Media Unseal", "x": 10, "y": 70, "width": 155, "height": 80 },
         { "id": "probe", "label": "FFprobe · анализ файла", "x": 245, "y": 18, "width": 190, "height": 75 },
         { "id": "table", "label": "Информация и таблица потоков", "x": 565, "y": 18, "width": 245, "height": 75 },
         { "id": "ffmpeg", "label": "FFmpeg · предпросмотр и обработка", "x": 245, "y": 127, "width": 190, "height": 75 },

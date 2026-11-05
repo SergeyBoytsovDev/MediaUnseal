@@ -4,7 +4,7 @@ using System.Linq;
 using ColorDocument.Avalonia;
 using ColorDocument.Avalonia.DocumentElements;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 internal sealed record MediaGuideMatch(
     MediaGuideSection Section, MediaGuideArticle Article, int BlockIndex,

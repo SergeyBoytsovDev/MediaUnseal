@@ -7,13 +7,13 @@ using System.Resources;
 using System.Collections.Generic;
 using Avalonia;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 internal sealed class LocalizationManager : INotifyPropertyChanged
 {
     internal const string DefaultLanguage = "ru";
     internal static string[] AvailableLanguages => LanguagePackCatalog.AvailableLanguages;
-    private static readonly ResourceManager Strings = new("TrackExtractor.Resources.Strings", typeof(LocalizationManager).Assembly);
+    private static readonly ResourceManager Strings = new("MediaUnseal.Resources.Strings", typeof(LocalizationManager).Assembly);
     private static readonly LocalizationManager Fallback = new();
     internal static LocalizationManager Active => (Application.Current as App)?.Localization ?? Fallback;
     private CultureInfo _culture = CultureInfo.GetCultureInfo(DefaultLanguage);

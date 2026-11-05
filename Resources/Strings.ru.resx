@@ -48,7 +48,7 @@
   <data name="SettingsGuideDescription1" xml:space="preserve"><value>Справочник форматов содержит информацию о мультимедийных контейнерах, видео- и аудиокодеках, форматах субтитров и изображений.</value></data>
   <data name="SettingsGuideDescription2" xml:space="preserve"><value>Здесь вы сможете узнать об особенностях различных форматов, их совместимости, назначении и использовании при извлечении и конвертации медиапотоков.</value></data>
   <data name="SettingsOpenGuide" xml:space="preserve"><value>Открыть справочник</value></data>
-  <data name="SettingsProductName" xml:space="preserve"><value>Track Extractor</value></data>
+  <data name="SettingsProductName" xml:space="preserve"><value>Media Unseal</value></data>
   <data name="SettingsDevelopmentBadge" xml:space="preserve"><value>Development</value></data>
   <data name="SettingsAboutSummary" xml:space="preserve"><value>Анализ мультимедийных файлов, извлечение и преобразование видео, аудио, субтитров, изображений и вложений.</value></data>
   <data name="SettingsCheckUpdates" xml:space="preserve"><value>Проверить обновление</value></data>
@@ -56,7 +56,7 @@
   <data name="SettingsDeveloper" xml:space="preserve"><value>Разработчик</value></data>
   <data name="SettingsDeveloperName" xml:space="preserve"><value>Sergey Boitcov</value></data>
   <data name="SettingsPlatformsLabel" xml:space="preserve"><value>Платформы</value></data>
-  <data name="SettingsPlatforms" xml:space="preserve"><value>Windows, Linux, macOS</value></data>
+  <data name="SettingsPlatforms" xml:space="preserve"><value>Windows, Linux</value></data>
   <data name="SettingsTechnologyLabel" xml:space="preserve"><value>Технологии</value></data>
   <data name="SettingsTechnology" xml:space="preserve"><value>.NET {0}, Avalonia UI {1}</value></data>
   <data name="SettingsMediaComponents" xml:space="preserve"><value>Системные компоненты</value></data>
@@ -178,7 +178,7 @@
   <data name="ToolsCheckingChecksum" xml:space="preserve"><value>Проверка SHA-256…</value></data>
   <data name="ToolsExtractingArchive" xml:space="preserve"><value>Безопасная распаковка архива…</value></data>
   <data name="ToolsCheckingDownloadedExecutables" xml:space="preserve"><value>Проверка установленных FFmpeg и FFprobe…</value></data>
-  <data name="ToolsDownloadedReady" xml:space="preserve"><value>FFmpeg и FFprobe установлены в пользовательский каталог и доступны Track Extractor. В PATH они не добавлены, поэтому короткие команды в терминале не работают.</value></data>
+  <data name="ToolsDownloadedReady" xml:space="preserve"><value>FFmpeg и FFprobe установлены в пользовательский каталог и доступны Media Unseal. В PATH они не добавлены, поэтому короткие команды в терминале не работают.</value></data>
   <data name="ToolsDownloadTimeout" xml:space="preserve"><value>Истекло время загрузки или установки (20 минут). Проверьте сеть и повторите попытку.</value></data>
   <data name="ToolsDownloadHttpFailure" xml:space="preserve"><value>Сервер загрузки сейчас недоступен (HTTP {0}). Повторите попытку позже.</value></data>
   <data name="ToolsDownloadNetworkFailure" xml:space="preserve"><value>Соединение с сервером загрузки прервалось или не установлено. Проверьте сеть и повторите попытку.</value></data>

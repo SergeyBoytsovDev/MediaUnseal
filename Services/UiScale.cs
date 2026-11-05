@@ -4,7 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 internal static class UiScale
 {
@@ -20,7 +20,7 @@ internal static class UiScale
 
     internal static void Attach(Window window)
     {
-        if (Application.Current is not TrackExtractor.App app || window.Content is not Control content)
+        if (Application.Current is not MediaUnseal.App app || window.Content is not Control content)
             return;
         var transform = new ScaleTransform(1, 1);
         window.Content = null;

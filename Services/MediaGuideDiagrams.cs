@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Avalonia.Platform;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 internal sealed class MediaGuideDiagramCatalog
 {
@@ -33,7 +33,7 @@ internal sealed class MediaGuideDiagramCatalog
     {
         if (LanguagePackCatalog.ValidateGuideFiles(language).Count != 0)
             throw new InvalidDataException($"Недоступен язык схем медиасправочника: {language}.");
-        using var stream = AssetLoader.Open(new Uri($"avares://TrackExtractor/docs/media-guide-diagrams.{language}.json"));
+        using var stream = AssetLoader.Open(new Uri($"avares://MediaUnseal/docs/media-guide-diagrams.{language}.json"));
         var data = JsonSerializer.Deserialize<MediaGuideDiagramFile>(stream,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         if (data?.Diagrams is null) throw new InvalidDataException("Не удалось загрузить схемы медиасправочника.");

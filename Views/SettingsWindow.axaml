@@ -1,9 +1,9 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:TrackExtractor.ViewModels"
-        x:Class="TrackExtractor.Views.SettingsWindow"
+        xmlns:vm="using:MediaUnseal.ViewModels"
+        x:Class="MediaUnseal.Views.SettingsWindow"
         x:DataType="vm:MainViewModel"
-        Title="{DynamicResource Loc_SettingsTitle}" Icon="/Assets/Icons/TrackExtractor-256.png"
+        Title="{DynamicResource Loc_SettingsTitle}" Icon="/Assets/Icons/MediaUnseal-256.png"
         Width="770" Height="570" MinWidth="740" MinHeight="500"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
@@ -185,7 +185,7 @@
      </StackPanel>
      <StackPanel x:Name="AboutSection" Margin="22,18" Spacing="14" IsVisible="False">
       <Grid ColumnDefinitions="64,*" ColumnSpacing="13">
-       <Image Source="avares://TrackExtractor/Assets/Icons/TrackExtractor-128.png" Width="60" Height="60" Stretch="Uniform"/>
+       <Image Source="avares://MediaUnseal/Assets/Icons/MediaUnseal-128.png" Width="60" Height="60" Stretch="Uniform"/>
        <StackPanel Grid.Column="1" Spacing="7" VerticalAlignment="Center">
         <TextBlock Text="{DynamicResource Loc_SettingsProductName}" FontSize="23" FontWeight="SemiBold"/>
         <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
@@ -251,7 +251,7 @@
         <Grid ColumnDefinitions="150,*,30" ColumnSpacing="8">
          <TextBlock Text="{DynamicResource Loc_SettingsProductName}" VerticalAlignment="Center" FontWeight="SemiBold"/>
          <TextBlock Grid.Column="1" Text="Proprietary License (Source available)" VerticalAlignment="Center" Classes="secondary" TextWrapping="Wrap"/>
-         <Button Grid.Column="2" Classes="license-link" Tag="https://github.com/SergeyBoitcov/TrackExtractor/blob/main/LICENSE.md"
+         <Button Grid.Column="2" Classes="license-link" Tag="https://github.com/SergeyBoytsovDev/MediaUnseal/blob/main/LICENSE.md"
                  Click="ExternalLink_Click" ToolTip.Tip="{DynamicResource Loc_SettingsOpenLicense}"/>
         </Grid>
         <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0"/>

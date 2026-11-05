@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using TrackExtractor.Models;
-using TrackExtractor.Services;
-namespace TrackExtractor.ViewModels;
+using MediaUnseal.Models;
+using MediaUnseal.Services;
+namespace MediaUnseal.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
@@ -821,7 +821,7 @@ public class MainViewModel : ViewModelBase
         }
         try
         {
-            var probePath = Path.Combine(normalized, ".trackextractor-" + Guid.NewGuid().ToString("N") + ".tmp");
+            var probePath = Path.Combine(normalized, ".mediaunseal-" + Guid.NewGuid().ToString("N") + ".tmp");
             using var probe = new FileStream(probePath, FileMode.CreateNew, FileAccess.Write,
                 FileShare.None, 1, FileOptions.DeleteOnClose);
         }

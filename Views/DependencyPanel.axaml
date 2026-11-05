@@ -1,7 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:TrackExtractor.ViewModels"
-             x:Class="TrackExtractor.Views.DependencyPanel"
+             xmlns:vm="using:MediaUnseal.ViewModels"
+             x:Class="MediaUnseal.Views.DependencyPanel"
              x:DataType="vm:MainViewModel">
  <UserControl.Styles>
   <Style Selector="TextBlock.muted"><Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/></Style>

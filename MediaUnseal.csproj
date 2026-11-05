@@ -1,26 +1,28 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>MediaUnseal</AssemblyName>
+    <RootNamespace>MediaUnseal</RootNamespace>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>Assets\Icons\TrackExtractor.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\Icons\MediaUnseal.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
-    <AvaloniaResource Include="docs\track-extractor-media-guide*.md" />
+    <AvaloniaResource Include="docs\media-unseal-media-guide*.md" />
     <AvaloniaResource Include="docs\media-guide-diagrams.*.json" />
-    <EmbeddedResource Include="docs\track-extractor-media-guide*.md" WithCulture="false" />
+    <EmbeddedResource Include="docs\media-unseal-media-guide*.md" WithCulture="false" />
     <EmbeddedResource Include="docs\media-guide-diagrams.*.json" WithCulture="false" />
     <EmbeddedResource Update="Resources\Strings.ru.resx" WithCulture="false"
-                      LogicalName="TrackExtractor.Resources.Strings.resources" />
+                      LogicalName="MediaUnseal.Resources.Strings.resources" />
     <Compile Remove="Tests/**/*.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="TrackExtractor.SmokeTests" />
+    <InternalsVisibleTo Include="MediaUnseal.SmokeTests" />
   </ItemGroup>
 
   <ItemGroup>

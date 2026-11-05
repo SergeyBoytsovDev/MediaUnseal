@@ -145,7 +145,7 @@
     <value>미디어 형식 가이드 열기</value>
   </data>
   <data name="SettingsProductName" xml:space="preserve">
-    <value>Track Extractor</value>
+    <value>Media Unseal</value>
   </data>
   <data name="SettingsDevelopmentBadge" xml:space="preserve">
     <value>개발 중</value>
@@ -165,7 +165,7 @@
   <data name="SettingsDeveloperName" xml:space="preserve"><value>Sergey Boitcov</value></data>
   <data name="SettingsPlatformsLabel" xml:space="preserve"><value>지원 플랫폼</value></data>
   <data name="SettingsPlatforms" xml:space="preserve">
-    <value>Windows, Linux, macOS</value>
+    <value>Windows, Linux</value>
   </data>
   <data name="SettingsTechnologyLabel" xml:space="preserve"><value>기술</value></data>
   <data name="SettingsTechnology" xml:space="preserve">
@@ -479,7 +479,7 @@
     <value>설치된 FFmpeg 및 FFprobe 실행 파일 확인 중…</value>
   </data>
   <data name="ToolsDownloadedReady" xml:space="preserve">
-    <value>FFmpeg와 FFprobe가 사용자 데이터 폴더에 설치되어 Track Extractor에서 사용할 수 있습니다. PATH에 추가되지 않았으므로 터미널에서 짧은 명령으로는 찾을 수 없습니다.</value>
+    <value>FFmpeg와 FFprobe가 사용자 데이터 폴더에 설치되어 Media Unseal에서 사용할 수 있습니다. PATH에 추가되지 않았으므로 터미널에서 짧은 명령으로는 찾을 수 없습니다.</value>
   </data>
   <data name="ToolsDownloadTimeout" xml:space="preserve">
     <value>다운로드 또는 설치가 20분을 초과해 시간 초과되었습니다. 연결을 확인하고 다시 시도하세요.</value>

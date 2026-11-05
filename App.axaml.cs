@@ -3,11 +3,11 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
-using TrackExtractor.Services;
-using TrackExtractor.ViewModels;
-using TrackExtractor.Views;
+using MediaUnseal.Services;
+using MediaUnseal.ViewModels;
+using MediaUnseal.Views;
 
-namespace TrackExtractor;
+namespace MediaUnseal;
 
 public partial class App : Application
 {

@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TrackExtractor.Models;
+using MediaUnseal.Models;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 internal static class MediaPreview
 {
@@ -143,7 +143,7 @@ internal static class MediaPreview
         bool seek, CancellationToken cancellationToken, Action<string>? report, string? mapOverride = null)
     {
         var watch = Stopwatch.StartNew();
-        var directory = Path.Combine(Path.GetTempPath(), "TrackExtractor-preview-" + Guid.NewGuid().ToString("N"));
+        var directory = Path.Combine(Path.GetTempPath(), "MediaUnseal-preview-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         var output = Path.Combine(directory, "frame.png");
         try

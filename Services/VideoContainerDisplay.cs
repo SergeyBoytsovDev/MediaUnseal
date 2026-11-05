@@ -1,9 +1,9 @@
 using System;
 using System.IO;
 using System.Linq;
-using TrackExtractor.Models;
+using MediaUnseal.Models;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 internal static class VideoContainerDisplay
 {

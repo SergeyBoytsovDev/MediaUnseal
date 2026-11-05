@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -145,7 +145,7 @@
     <value>Open media guide</value>
   </data>
   <data name="SettingsProductName" xml:space="preserve">
-    <value>Track Extractor</value>
+    <value>Media Unseal</value>
   </data>
   <data name="SettingsDevelopmentBadge" xml:space="preserve">
     <value>Development</value>
@@ -165,7 +165,7 @@
   <data name="SettingsDeveloperName" xml:space="preserve"><value>Sergey Boitcov</value></data>
   <data name="SettingsPlatformsLabel" xml:space="preserve"><value>Platforms</value></data>
   <data name="SettingsPlatforms" xml:space="preserve">
-    <value>Windows, Linux, macOS</value>
+    <value>Windows, Linux</value>
   </data>
   <data name="SettingsTechnologyLabel" xml:space="preserve"><value>Technology</value></data>
   <data name="SettingsTechnology" xml:space="preserve">
@@ -479,7 +479,7 @@
     <value>Checking the installed FFmpeg and FFprobe executables…</value>
   </data>
   <data name="ToolsDownloadedReady" xml:space="preserve">
-    <value>FFmpeg and FFprobe are installed in your user data folder and available to Track Extractor. They were not added to PATH, so short commands in a terminal will not find them.</value>
+    <value>FFmpeg and FFprobe are installed in your user data folder and available to Media Unseal. They were not added to PATH, so short commands in a terminal will not find them.</value>
   </data>
   <data name="ToolsDownloadTimeout" xml:space="preserve">
     <value>Download or installation timed out after 20 minutes. Check your connection and try again.</value>

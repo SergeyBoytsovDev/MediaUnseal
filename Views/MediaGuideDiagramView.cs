@@ -5,9 +5,9 @@ using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Layout;
 using Avalonia.Media;
-using TrackExtractor.Services;
+using MediaUnseal.Services;
 
-namespace TrackExtractor.Views;
+namespace MediaUnseal.Views;
 
 internal static class MediaGuideDiagramView
 {

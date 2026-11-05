@@ -1,7 +1,7 @@
-﻿using Avalonia;
+using Avalonia;
 using System;
 
-namespace TrackExtractor;
+namespace MediaUnseal;
 
 sealed class Program
 {

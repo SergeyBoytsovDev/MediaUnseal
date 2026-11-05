@@ -1,8 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="TrackExtractor.Views.SupportWindow"
+        x:Class="MediaUnseal.Views.SupportWindow"
         Title="{DynamicResource Loc_SettingsSupportDeveloper}"
-        Icon="/Assets/Icons/TrackExtractor-256.png"
+        Icon="/Assets/Icons/MediaUnseal-256.png"
         Width="600" Height="600" MinWidth="490" MinHeight="440"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
@@ -24,7 +24,7 @@
                  TextAlignment="Center"/>
       <TextBlock Text="{DynamicResource Loc_SupportCryptoNetwork}" Foreground="{DynamicResource MutedTextBrush}"
                  TextWrapping="Wrap" TextAlignment="Center" MinHeight="36"/>
-      <Image Source="avares://TrackExtractor/Assets/usdtqr.png" Width="190" Height="190"
+      <Image Source="avares://MediaUnseal/Assets/usdtqr.png" Width="190" Height="190"
              Stretch="Uniform" HorizontalAlignment="Center"/>
       <TextBlock x:Name="CryptoAddressText" TextWrapping="WrapWithOverflow"
                  HorizontalAlignment="Center" TextAlignment="Center"/>
@@ -39,7 +39,7 @@
                  TextWrapping="Wrap" TextAlignment="Center"/>
       <TextBlock Text="{DynamicResource Loc_SupportSbpBank}" Foreground="{DynamicResource MutedTextBrush}"
                  TextAlignment="Center" MinHeight="36"/>
-      <Image Source="avares://TrackExtractor/Assets/sbpqr.jpg" Width="190" Height="190"
+      <Image Source="avares://MediaUnseal/Assets/sbpqr.jpg" Width="190" Height="190"
              Stretch="Uniform" HorizontalAlignment="Center"/>
      </StackPanel>
     </Border>

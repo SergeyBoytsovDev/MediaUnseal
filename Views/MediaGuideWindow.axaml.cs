@@ -9,9 +9,9 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using ColorTextBlock.Avalonia;
-using TrackExtractor.Services;
+using MediaUnseal.Services;
 
-namespace TrackExtractor.Views;
+namespace MediaUnseal.Views;
 
 public partial class MediaGuideWindow : Window
 {

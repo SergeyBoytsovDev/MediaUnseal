@@ -9,9 +9,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using TrackExtractor.Models;
+using MediaUnseal.Models;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
 {

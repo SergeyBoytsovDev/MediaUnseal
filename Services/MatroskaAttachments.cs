@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TrackExtractor.Models;
+using MediaUnseal.Models;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 // A bounded reader of Segment/Attachments only. Media payloads are skipped by their
 // EBML sizes, never searched for byte signatures. FFprobe indexes are not FileUIDs.

@@ -1,8 +1,8 @@
 using System.IO;
-using TrackExtractor.Models;
-using TrackExtractor.Services;
+using MediaUnseal.Models;
+using MediaUnseal.Services;
 
-namespace TrackExtractor.ViewModels;
+namespace MediaUnseal.ViewModels;
 
 public sealed class AttachmentChoiceViewModel(AttachmentFile file, bool selected) : ViewModelBase
 {

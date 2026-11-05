@@ -145,7 +145,7 @@
     <value>Medienhandbuch öffnen</value>
   </data>
   <data name="SettingsProductName" xml:space="preserve">
-    <value>Track Extractor</value>
+    <value>Media Unseal</value>
   </data>
   <data name="SettingsDevelopmentBadge" xml:space="preserve">
     <value>Development</value>
@@ -165,7 +165,7 @@
   <data name="SettingsDeveloperName" xml:space="preserve"><value>Sergey Boitcov</value></data>
   <data name="SettingsPlatformsLabel" xml:space="preserve"><value>Plattformen</value></data>
   <data name="SettingsPlatforms" xml:space="preserve">
-    <value>Windows, Linux, macOS</value>
+    <value>Windows, Linux</value>
   </data>
   <data name="SettingsTechnologyLabel" xml:space="preserve"><value>Technologien</value></data>
   <data name="SettingsTechnology" xml:space="preserve">
@@ -479,7 +479,7 @@
     <value>Installierte ausführbare Dateien von FFmpeg und FFprobe werden geprüft…</value>
   </data>
   <data name="ToolsDownloadedReady" xml:space="preserve">
-    <value>FFmpeg und FFprobe wurden in Ihrem Benutzerdatenordner installiert und stehen Track Extractor zur Verfügung. Sie wurden nicht zu PATH hinzugefügt und sind daher im Terminal nicht über ihre Kurznamen aufrufbar.</value>
+    <value>FFmpeg und FFprobe wurden in Ihrem Benutzerdatenordner installiert und stehen Media Unseal zur Verfügung. Sie wurden nicht zu PATH hinzugefügt und sind daher im Terminal nicht über ihre Kurznamen aufrufbar.</value>
   </data>
   <data name="ToolsDownloadTimeout" xml:space="preserve">
     <value>Zeitüberschreitung beim Download oder bei der Installation (20 Minuten). Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.</value>

@@ -12,7 +12,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 public sealed record ToolStatus(string Name, bool IsReady, string Details, string? Path = null, bool IsMissing = false)
 {
@@ -70,8 +70,8 @@ public sealed partial class FfmpegTools
     {
         _appDirectory = appDirectory ?? AppContext.BaseDirectory;
         _searchPathOverride = searchPathOverride;
-        _dataDirectory = Path.GetFullPath(dataDirectory ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrackExtractor"));
+        _dataDirectory = Path.GetFullPath(dataDirectory ?? AppDirectories.Resolve(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)));
         Diagnostics = new DiagnosticLog(Path.Combine(_dataDirectory, "logs"));
         _httpHandler = httpHandler;
         var settingsDirectory = OperatingSystem.IsWindows()
@@ -81,7 +81,7 @@ public sealed partial class FfmpegTools
                 : Environment.GetEnvironmentVariable("XDG_CONFIG_HOME") is { Length: > 0 } xdg && Path.IsPathRooted(xdg)
                     ? xdg
                     : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config");
-        _settingsPath = settingsPath ?? Path.Combine(settingsDirectory, "TrackExtractor", "settings.json");
+        _settingsPath = settingsPath ?? Path.Combine(AppDirectories.Resolve(settingsDirectory, "settings.json"), "settings.json");
         try
         {
             if (File.Exists(_settingsPath))

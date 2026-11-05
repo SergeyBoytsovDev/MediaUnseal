@@ -6,10 +6,10 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
-using TrackExtractor.Services;
-using TrackExtractor.Models;
+using MediaUnseal.Services;
+using MediaUnseal.Models;
 
-namespace TrackExtractor.Views;
+namespace MediaUnseal.Views;
 
 internal static class StreamPropertiesWindow
 {

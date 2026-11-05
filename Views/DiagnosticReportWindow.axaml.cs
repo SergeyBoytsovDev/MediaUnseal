@@ -10,9 +10,9 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using TrackExtractor.Services;
+using MediaUnseal.Services;
 
-namespace TrackExtractor.Views;
+namespace MediaUnseal.Views;
 
 public partial class DiagnosticReportWindow : Window
 {
@@ -81,7 +81,7 @@ public partial class DiagnosticReportWindow : Window
             var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
                 Title = LocalizationManager.Active.Get("DiagnosticPreviewSaveTitle"),
-                SuggestedFileName = "TrackExtractor-diagnostic.txt",
+                SuggestedFileName = "MediaUnseal-diagnostic.txt",
                 FileTypeChoices = [new FilePickerFileType("TXT") { Patterns = ["*.txt"] }]
             });
             if (file is null) return;

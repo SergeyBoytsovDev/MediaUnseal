@@ -9,9 +9,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using TrackExtractor.Models;
+using MediaUnseal.Models;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 public sealed record ConversionFormat(string Muxer, string Extension, string Description,
     string? VideoCodec, string? AudioCodec, string? SubtitleCodec, bool Original = false)
@@ -222,7 +222,7 @@ public sealed class FfmpegConversionCatalog
         // Video copy is decided from existing FFprobe metadata; the actual muxer checks
         // compatibility during export. Do not create and decode a disposable video file.
         if (stream?.VisualKind == VisualKind.Video) return true;
-        var directory = Path.Combine(Path.GetTempPath(), "trackextractor-copy-" + Guid.NewGuid().ToString("N"));
+        var directory = Path.Combine(Path.GetTempPath(), "mediaunseal-copy-" + Guid.NewGuid().ToString("N"));
         var output = Path.Combine(directory, "output." + format.Extension);
         try
         {
@@ -308,7 +308,7 @@ public sealed class FfmpegConversionCatalog
             || !IsEncoderSuitable(format, encoder)
             || settings is not null && (settings.Format != format || settings.Encoder != encoder))
             return (false, L.Get("MainValidationUnsupportedOutputFormat"), false);
-        var directory = Path.Combine(Path.GetTempPath(), "trackextractor-probe-" + Guid.NewGuid().ToString("N"));
+        var directory = Path.Combine(Path.GetTempPath(), "mediaunseal-probe-" + Guid.NewGuid().ToString("N"));
         var output = Path.Combine(directory, "output." + format.Extension);
         try
         {

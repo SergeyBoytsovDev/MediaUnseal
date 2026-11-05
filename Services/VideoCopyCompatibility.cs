@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using TrackExtractor.Models;
+using MediaUnseal.Models;
 
-namespace TrackExtractor.Services;
+namespace MediaUnseal.Services;
 
 internal enum VideoCopyOutcome { Standard, Adapted, Error }
 internal enum VideoCopyError { Unknown, Codec, Profile, FrameRate, Resolution, PixelFormat, Timestamps, Headers, Bitstream }
