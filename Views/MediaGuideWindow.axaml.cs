@@ -317,7 +317,7 @@ public partial class MediaGuideWindow : Window
     {
         var lastY = Math.Max(0, (int)Math.Ceiling(block.Bounds.Height) - 1);
         if (PrefixAt(block, block.Bounds.Width, lastY) <= start)
-            throw new InvalidOperationException("Не удалось определить строку совпадения.");
+            throw new InvalidOperationException("Could not locate the matching row.");
         var low = 0;
         var high = lastY;
         while (low < high)
@@ -329,7 +329,7 @@ public partial class MediaGuideWindow : Window
         var y = low;
         var lastX = Math.Max(0, (int)Math.Ceiling(block.Bounds.Width));
         if (PrefixAt(block, lastX, y) <= start)
-            throw new InvalidOperationException("Не удалось определить положение совпадения в строке.");
+            throw new InvalidOperationException("Could not locate the match within its row.");
         low = 0;
         high = lastX;
         while (low < high)

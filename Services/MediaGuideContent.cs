@@ -26,7 +26,7 @@ internal sealed class MediaGuideContent
     internal static MediaGuideContent Load(string language = LocalizationManager.DefaultLanguage)
     {
         if (LanguagePackCatalog.ValidateGuideFiles(language).Count != 0)
-            throw new InvalidDataException($"Недоступен язык медиасправочника: {language}.");
+            throw new InvalidDataException($"Media guide language is unavailable: {language}.");
         var name = language == LocalizationManager.DefaultLanguage
             ? "media-unseal-media-guide.md" : $"media-unseal-media-guide.{language}.md";
         using var stream = AssetLoader.Open(new Uri($"avares://MediaUnseal/docs/{name}"));
@@ -82,7 +82,7 @@ internal sealed class MediaGuideContent
         FinishArticle(source.Length);
         FinishSection();
         if (sections.Count == 0 || sections.Any(section => section.Articles.Count == 0))
-            throw new InvalidDataException("Медиасправочник не содержит ожидаемые разделы и статьи.");
+            throw new InvalidDataException("The media guide does not contain the expected sections and articles.");
         return new MediaGuideContent(source, sections);
     }
 }

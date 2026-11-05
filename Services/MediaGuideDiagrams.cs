@@ -19,24 +19,24 @@ internal sealed class MediaGuideDiagramCatalog
         foreach (var diagram in _diagrams.Values)
         {
             if (diagram.Width <= 0 || diagram.Height <= 0 || diagram.Nodes.Count == 0)
-                throw new InvalidDataException($"Неверная геометрия схемы {diagram.Id}.");
+                throw new InvalidDataException($"Invalid geometry in diagram {diagram.Id}.");
             var ids = diagram.Nodes.Select(node => node.Id).ToHashSet(StringComparer.Ordinal);
             if (ids.Count != diagram.Nodes.Count || diagram.Links.Any(link => !ids.Contains(link.From) || !ids.Contains(link.To)))
-                throw new InvalidDataException($"Неверные связи схемы {diagram.Id}.");
+                throw new InvalidDataException($"Invalid links in diagram {diagram.Id}.");
             if (diagram.Nodes.Any(node => string.IsNullOrWhiteSpace(node.Label) || node.Width <= 0 || node.Height <= 0 ||
                 node.X < 0 || node.Y < 0 || node.X + node.Width > diagram.Width || node.Y + node.Height > diagram.Height))
-                throw new InvalidDataException($"Неверные блоки схемы {diagram.Id}.");
+                throw new InvalidDataException($"Invalid nodes in diagram {diagram.Id}.");
         }
     }
 
     internal static MediaGuideDiagramCatalog Load(string language = LocalizationManager.DefaultLanguage)
     {
         if (LanguagePackCatalog.ValidateGuideFiles(language).Count != 0)
-            throw new InvalidDataException($"Недоступен язык схем медиасправочника: {language}.");
+            throw new InvalidDataException($"Media guide diagram language is unavailable: {language}.");
         using var stream = AssetLoader.Open(new Uri($"avares://MediaUnseal/docs/media-guide-diagrams.{language}.json"));
         var data = JsonSerializer.Deserialize<MediaGuideDiagramFile>(stream,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        if (data?.Diagrams is null) throw new InvalidDataException("Не удалось загрузить схемы медиасправочника.");
+        if (data?.Diagrams is null) throw new InvalidDataException("Could not load the media guide diagrams.");
         return new MediaGuideDiagramCatalog(data.Diagrams);
     }
 
@@ -47,7 +47,7 @@ internal sealed class MediaGuideDiagramCatalog
     }
 
     internal MediaGuideDiagram Get(string id) => _diagrams.TryGetValue(id, out var diagram)
-        ? diagram : throw new InvalidDataException($"Неизвестная схема медиасправочника: {id}.");
+        ? diagram : throw new InvalidDataException($"Unknown media guide diagram: {id}.");
 }
 
 internal sealed class MediaGuideDiagramFile

@@ -264,7 +264,7 @@ public sealed class FfmpegConversionCatalog
         var encoders = await catalog.RunAsync(["-hide_banner", "-encoders"], token).ConfigureAwait(false);
         var muxers = await catalog.RunAsync(["-hide_banner", "-muxers"], token).ConfigureAwait(false);
         if (encoders.ExitCode != 0 || muxers.ExitCode != 0)
-            throw new InvalidDataException("Не удалось получить возможности установленного FFmpeg.");
+            throw new InvalidDataException("Could not query the installed FFmpeg capabilities.");
         catalog._encoders.AddRange(ParseEncoders(encoders.Output));
         var names = ParseMuxerNames(muxers.Output).ToArray();
         using var gate = new SemaphoreSlim(4);
@@ -434,18 +434,18 @@ public sealed class FfmpegConversionCatalog
         };
         foreach (var arg in args) start.ArgumentList.Add(arg);
         using var process = new Process { StartInfo = start };
-        if (!process.Start()) throw new Win32Exception("FFmpeg не запустился.");
+        if (!process.Start()) throw new Win32Exception("FFmpeg could not be started.");
         try
         {
             var stdout = process.StandardOutput.ReadToEndAsync(deadline.Token);
             var stderr = process.StandardError.ReadToEndAsync(deadline.Token);
             await process.WaitForExitAsync(deadline.Token).ConfigureAwait(false);
             var output = await stdout.ConfigureAwait(false) + await stderr.ConfigureAwait(false);
-            if (output.Length > 2_000_000) throw new InvalidDataException("Ответ FFmpeg слишком велик.");
+            if (output.Length > 2_000_000) throw new InvalidDataException("FFmpeg returned an excessively large response.");
             return (process.ExitCode, output);
         }
         catch (OperationCanceledException) when (!token.IsCancellationRequested)
-        { throw new TimeoutException("FFmpeg слишком долго отвечает на запрос возможностей."); }
+        { throw new TimeoutException("FFmpeg timed out while reporting its capabilities."); }
         finally
         {
             if (!process.HasExited)

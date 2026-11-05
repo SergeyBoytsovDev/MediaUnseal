@@ -63,7 +63,7 @@ public sealed partial class FfmpegTools
             if (!hashMatch.Success)
             {
                 checksumFailure = true;
-                throw new InvalidDataException("Источник не предоставил корректную SHA-256. Файлы не будут запущены.");
+                throw new InvalidDataException("The source did not provide a valid SHA-256 checksum. The files will not be run.");
             }
             var expected = Convert.FromHexString(hashMatch.Groups[1].Value);
 
@@ -80,7 +80,7 @@ public sealed partial class FfmpegTools
                 if (!CryptographicOperations.FixedTimeEquals(expected, actual))
                 {
                     checksumFailure = true;
-                    throw new InvalidDataException("Контрольная сумма SHA-256 не совпала. Архив удалён; повторите загрузку. Файлы не были запущены.");
+                    throw new InvalidDataException("The SHA-256 checksum does not match. The archive was removed; retry the download. The files were not run.");
                 }
             }
             Log("Archive downloaded and verified with SHA-256.", operation: "SHA-256");
@@ -95,7 +95,7 @@ public sealed partial class FfmpegTools
             var ffmpeg = FindDownloadedTool(installed, "ffmpeg.exe");
             var ffprobe = FindDownloadedTool(installed, "ffprobe.exe");
             if (!string.Equals(Path.GetDirectoryName(ffmpeg), Path.GetDirectoryName(ffprobe), StringComparison.OrdinalIgnoreCase))
-                throw new InvalidDataException("Архив не содержит согласованную пару FFmpeg и FFprobe.");
+                throw new InvalidDataException("The archive does not contain a matching FFmpeg and FFprobe pair.");
             VerifyWindowsX64(ffmpeg);
             VerifyWindowsX64(ffprobe);
 
@@ -104,7 +104,7 @@ public sealed partial class FfmpegTools
             var ffmpegStatus = await CheckCandidateAsync("ffmpeg", ffmpeg, token);
             var ffprobeStatus = await CheckCandidateAsync("ffprobe", ffprobe, token);
             if (!ffmpegStatus.IsReady || !ffprobeStatus.IsReady)
-                throw new InvalidDataException($"Установленные утилиты не прошли проверку: {ffmpegStatus.Details}; {ffprobeStatus.Details}");
+                throw new InvalidDataException($"The installed tools failed verification: {ffmpegStatus.Details}; {ffprobeStatus.Details}");
 
             var existing = await CheckCoreAsync(token, saveRecoveredPaths: false);
             await SavePathsAsync(repairingLocal ? new(ffmpeg, ffprobe) : new(
@@ -171,7 +171,7 @@ public sealed partial class FfmpegTools
     {
         using var response = await GetTrustedResponseAsync(http, uri, cancellationToken);
         var length = response.Content.Headers.ContentLength;
-        if (length is > 0 && length > limit) throw new InvalidDataException("Файл превышает допустимый размер.");
+        if (length is > 0 && length > limit) throw new InvalidDataException("The file exceeds the allowed size.");
         progress?.Report(DownloadProgress(0, length));
         await using var input = await response.Content.ReadAsStreamAsync(cancellationToken);
         var buffer = new byte[81920];
@@ -181,7 +181,7 @@ public sealed partial class FfmpegTools
         while ((count = await input.ReadAsync(buffer, cancellationToken)) != 0)
         {
             total += count;
-            if (total > limit) throw new InvalidDataException("Файл превышает допустимый размер.");
+            if (total > limit) throw new InvalidDataException("The file exceeds the allowed size.");
             await destination.WriteAsync(buffer.AsMemory(0, count), cancellationToken);
             if (Environment.TickCount64 - lastProgress >= 100)
             {
@@ -189,7 +189,7 @@ public sealed partial class FfmpegTools
                 lastProgress = Environment.TickCount64;
             }
         }
-        if (total == 0 || (length.HasValue && total != length)) throw new InvalidDataException("Загрузка завершилась не полностью.");
+        if (total == 0 || (length.HasValue && total != length)) throw new InvalidDataException("The download is incomplete.");
         progress?.Report(DownloadProgress(total, length));
         progress?.Report(new InstallProgress(L.Get("ToolsDownloadComplete"), 100)
         { LocalizedMessage = new("ToolsDownloadComplete") });
@@ -218,28 +218,28 @@ public sealed partial class FfmpegTools
             {
                 var location = response.Headers.Location;
                 response.Dispose();
-                if (location is null) throw new HttpRequestException("Источник вернул перенаправление без адреса.");
+                if (location is null) throw new HttpRequestException("The source returned a redirect without a destination.");
                 uri = new Uri(uri, location);
                 continue;
             }
             try { response.EnsureSuccessStatusCode(); return response; }
             catch { response.Dispose(); throw; }
         }
-        throw new HttpRequestException("Слишком много перенаправлений источника.");
+        throw new HttpRequestException("The source returned too many redirects.");
     }
 
     private static void ValidateDownloadUri(Uri uri)
     {
         if (!uri.IsAbsoluteUri || uri.Scheme != Uri.UriSchemeHttps || uri.Host != "www.gyan.dev" ||
             !uri.IsDefaultPort || uri.UserInfo.Length != 0 || !uri.AbsolutePath.StartsWith("/ffmpeg/builds/", StringComparison.Ordinal))
-            throw new InvalidDataException("Загрузка остановлена: адрес не принадлежит разрешённому HTTPS-источнику gyan.dev.");
+            throw new InvalidDataException("Download stopped: the address is not an approved gyan.dev HTTPS source.");
     }
 
     private static async Task ExtractAsync(string archivePath, string destination, CancellationToken cancellationToken)
     {
         Directory.CreateDirectory(destination);
         using var archive = ZipFile.OpenRead(archivePath);
-        if (archive.Entries.Count == 0 || archive.Entries.Count > 4096) throw new InvalidDataException("Недопустимое количество файлов в ZIP.");
+        if (archive.Entries.Count == 0 || archive.Entries.Count > 4096) throw new InvalidDataException("The ZIP archive contains an invalid number of entries.");
         long expanded = 0;
         var root = Path.GetFullPath(destination) + Path.DirectorySeparatorChar;
         foreach (var entry in archive.Entries)
@@ -252,10 +252,10 @@ public sealed partial class FfmpegTools
                     Regex.IsMatch(s, @"\A(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|\z)", RegexOptions.IgnoreCase)) ||
                 ((entry.ExternalAttributes >> 16) & 0xF000) == 0xA000 ||
                 (entry.ExternalAttributes & (int)FileAttributes.ReparsePoint) != 0)
-                throw new InvalidDataException("Небезопасный путь или ссылка внутри ZIP.");
+                throw new InvalidDataException("The ZIP archive contains an unsafe path or link.");
             var target = Path.GetFullPath(Path.Combine(destination, name));
-            if (!target.StartsWith(root, StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("Путь ZIP выходит за каталог установки.");
-            if (entry.Length > ExpandedLimit - expanded) throw new InvalidDataException("Распакованный архив слишком велик.");
+            if (!target.StartsWith(root, StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("A ZIP entry path escapes the installation directory.");
+            if (entry.Length > ExpandedLimit - expanded) throw new InvalidDataException("The extracted archive is too large.");
             expanded += entry.Length;
             if (name.EndsWith('/')) { Directory.CreateDirectory(target); continue; }
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
@@ -267,17 +267,17 @@ public sealed partial class FfmpegTools
             while ((count = await input.ReadAsync(buffer, cancellationToken)) != 0)
             {
                 written += count;
-                if (written > entry.Length) throw new InvalidDataException("Размер файла ZIP не соответствует описанию.");
+                if (written > entry.Length) throw new InvalidDataException("A ZIP entry exceeds its declared size.");
                 await output.WriteAsync(buffer.AsMemory(0, count), cancellationToken);
             }
-            if (written != entry.Length) throw new InvalidDataException("Файл ZIP повреждён.");
+            if (written != entry.Length) throw new InvalidDataException("The ZIP entry is corrupt.");
         }
     }
 
     private static string FindDownloadedTool(string directory, string name)
     {
         var matches = Directory.GetFiles(directory, name, SearchOption.AllDirectories);
-        if (matches.Length != 1) throw new InvalidDataException($"В архиве должна быть ровно одна утилита {name}.");
+        if (matches.Length != 1) throw new InvalidDataException($"The archive must contain exactly one {name} executable.");
         return matches[0];
     }
 
@@ -288,23 +288,23 @@ public sealed partial class FfmpegTools
         {
             using var pe = new PEReader(file);
             if (pe.PEHeaders.CoffHeader.Machine != Machine.Amd64 || pe.PEHeaders.PEHeader is null)
-                throw new InvalidDataException("Архив содержит несовместимый исполняемый файл; требуется Windows x64.");
+                throw new InvalidDataException("The archive contains an incompatible executable; Windows x64 is required.");
         }
-        catch (BadImageFormatException ex) { throw new InvalidDataException("Некорректный исполняемый файл в архиве.", ex); }
+        catch (BadImageFormatException ex) { throw new InvalidDataException("The archive contains an invalid executable.", ex); }
     }
 
     private static void EnsureNoLinks(string path)
     {
         for (var directory = new DirectoryInfo(path); directory is not null; directory = directory.Parent)
             if (directory.Exists && (directory.Attributes & FileAttributes.ReparsePoint) != 0)
-                throw new IOException("Каталог установки содержит ссылку. Выберите пути к утилитам вручную.");
+                throw new IOException("The installation directory contains a link. Select the tool paths manually.");
     }
 
     private static async Task DeleteInstallationDirectoryAsync(string path, string root)
     {
         if (!Directory.Exists(path)) return;
         if (!Path.GetFullPath(path).StartsWith(Path.GetFullPath(root) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
-            throw new IOException("Небезопасный путь очистки временных файлов.");
+            throw new IOException("Unsafe temporary file cleanup path.");
         EnsureNoLinks(path);
         for (var attempt = 0; ; attempt++)
         {
@@ -312,7 +312,7 @@ public sealed partial class FfmpegTools
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
                 if (!Directory.Exists(path)) return;
-                if (attempt == 3) throw new IOException($"Не удалось очистить каталог {path}. Закройте использующие его процессы и удалите этот каталог вручную.", ex);
+                if (attempt == 3) throw new IOException($"Could not clean up directory {path}. Close any processes using it and remove the directory manually.", ex);
                 // Cleanup must finish even when the original operation has been cancelled.
                 await Task.Delay(100 * (attempt + 1));
             }

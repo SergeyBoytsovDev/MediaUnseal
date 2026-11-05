@@ -280,7 +280,7 @@ public sealed partial class FfmpegTools
     public async Task<string?> SetManualPathAsync(string name, string path, CancellationToken cancellationToken)
     {
         if (name is not ("ffmpeg" or "ffprobe"))
-            throw new ArgumentException("Неизвестная утилита.", nameof(name));
+            throw new ArgumentException("Unknown tool.", nameof(name));
 
         var result = await CheckCandidateAsync(name, path, cancellationToken);
         if (!result.IsReady)
@@ -734,7 +734,7 @@ public sealed partial class FfmpegTools
         }
         using var wait = new CancellationTokenSource(TimeSpan.FromSeconds(2));
         try { await process.WaitForExitAsync(wait.Token); }
-        catch (OperationCanceledException) { throw new IOException("Не удалось завершить дочерний процесс. Закройте его вручную перед повторной попыткой."); }
+        catch (OperationCanceledException) { throw new IOException("Could not stop the child process. Close it manually before retrying."); }
         catch (InvalidOperationException) { }
     }
 

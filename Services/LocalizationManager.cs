@@ -38,10 +38,10 @@ internal sealed class LocalizationManager : INotifyPropertyChanged
     {
         if (_testPacks.TryGetValue(_culture.Name, out var testPack))
             return testPack.TryGetValue(key, out var testValue) ? testValue
-                : throw new MissingManifestResourceException($"Отсутствует строка локализации: {key}.");
+                : throw new MissingManifestResourceException($"Missing localization string: {key}.");
         var value = _culture.Name == DefaultLanguage ? Strings.GetString(key, _culture)
             : Strings.GetResourceSet(_culture, true, false)?.GetString(key);
-        return value ?? throw new MissingManifestResourceException($"Отсутствует строка локализации: {key}.");
+        return value ?? throw new MissingManifestResourceException($"Missing localization string: {key}.");
     }
 
     internal string Format(string key, params object?[] arguments) =>
@@ -57,7 +57,7 @@ internal sealed class LocalizationManager : INotifyPropertyChanged
             return;
         }
         var set = Strings.GetResourceSet(_culture, true, _culture.Name == DefaultLanguage)
-            ?? throw new MissingManifestResourceException("Отсутствуют ресурсы языка интерфейса.");
+            ?? throw new MissingManifestResourceException("Interface language resources are missing.");
         foreach (DictionaryEntry entry in set)
             if (entry.Key is string key && entry.Value is string value)
                 Application.Current.Resources["Loc_" + key] = value;

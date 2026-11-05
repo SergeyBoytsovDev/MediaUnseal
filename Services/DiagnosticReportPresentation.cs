@@ -49,7 +49,7 @@ internal static class DiagnosticReportPresentation
             var category = match.Groups["category"].Value;
             var message = match.Groups["message"].Value;
             if (category == "Startup" && message == "Application dependency check started.")
-                rows.Add(new("startup", time, "", "", "▶ Запуск Media Unseal · " + time,
+                rows.Add(new("startup", time, "", "", "▶ Media Unseal started · " + time,
                     match.Groups["stamp"].Value));
             rows.Add(new("entry", time, match.Groups["level"].Value, category, message,
                 match.Groups["stamp"].Value));

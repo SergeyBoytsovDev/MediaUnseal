@@ -197,10 +197,10 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         ExportOptions? options = null)
     {
         options ??= new ExportOptions();
-        if (selected.Count == 0) throw new ArgumentException("Выберите хотя бы одну дорожку.", nameof(selected));
+        if (selected.Count == 0) throw new ArgumentException("Select at least one track.", nameof(selected));
         if (TimeoutPerTrack <= TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(TimeoutPerTrack));
-        if (!Directory.Exists(outputDirectory)) throw new DirectoryNotFoundException("Выбранная папка сохранения не найдена.");
-        if (!File.Exists(media.FullPath)) throw new FileNotFoundException("Исходный файл больше не найден.", media.FullPath);
+        if (!Directory.Exists(outputDirectory)) throw new DirectoryNotFoundException("The selected output directory was not found.");
+        if (!File.Exists(media.FullPath)) throw new FileNotFoundException("The source file was not found.", media.FullPath);
         if (selected.Any(p => p.AttachmentFile is null
                 ? p.Stream.Index is not >= 0 || !media.Streams.Contains(p.Stream)
                 : !MatroskaAttachments.IsMatroska(media) || p.Stream.Index is not < 0
@@ -210,11 +210,11 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     || string.IsNullOrWhiteSpace(p.AttachmentFile.Mime)
                     || !System.Text.RegularExpressions.Regex.IsMatch(p.Extension, @"\A[a-zA-Z0-9]{1,10}\z")) ||
             selected.Select(p => p.Stream.Index).Distinct().Count() != selected.Count)
-            throw new ArgumentException("Выбор потоков устарел или содержит повторения.", nameof(selected));
+            throw new ArgumentException("The stream selection is stale or contains duplicates.", nameof(selected));
         if (selected.Where(p => p.AttachmentFile is not null)
             .Select(p => p.AttachmentFile!.Uid).Distinct().Count()
             != selected.Count(p => p.AttachmentFile is not null))
-            throw new ArgumentException("Выбор вложений содержит повторения.", nameof(selected));
+            throw new ArgumentException("The attachment selection contains duplicates.", nameof(selected));
         if (selected.Any(p => p.AttachmentFile is not null ? false : p.Conversion is { } conversion
             ? conversion.Validate(p.Stream) is not null || p.Extension != conversion.Format.Extension
                 || p.Muxer != conversion.Format.Muxer || p.Attachment || p.StillImage
@@ -222,7 +222,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 !System.Text.RegularExpressions.Regex.IsMatch(p.Extension, @"\A[a-zA-Z0-9]{1,10}\z") ||
                 !System.Text.RegularExpressions.Regex.IsMatch(p.Muxer, @"\A[a-zA-Z0-9_]{1,64}\z")
               : Decide(media, p.Stream).Plan is not { } supported || supported != p))
-            throw new ArgumentException("Один из выбранных форматов несовместим с потоком.", nameof(selected));
+            throw new ArgumentException("A selected output format is incompatible with its stream.", nameof(selected));
         var directory = Path.GetFullPath(outputDirectory);
         if (options.CreateSourceFolder)
             directory = Path.Combine(directory, SafeFolderName(Path.GetFileNameWithoutExtension(media.Name)));
@@ -240,11 +240,11 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             userMessageKey: "LogProcessingStartedCount", userMessageArgs: [selected.Count]);
         try
         {
-            if (Directory.Exists(stage)) throw new IOException("Временный каталог уже существует.");
+            if (Directory.Exists(stage)) throw new IOException("The temporary directory already exists.");
             Directory.CreateDirectory(stage);
             createdStage = true;
             if ((File.GetAttributes(stage) & FileAttributes.ReparsePoint) != 0)
-                throw new IOException("Временный каталог не должен быть ссылкой.");
+                throw new IOException("The temporary directory must not be a link.");
             for (var i = 0; i < selected.Count; i++)
             {
                 if (cancellationToken.IsCancellationRequested) { cancelled = true; break; }
@@ -995,7 +995,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             var target = Path.Combine(directory, filename);
             if (!File.Exists(target) && !Directory.Exists(target) && reserved.Add(target)) return target;
         }
-        throw new IOException("Не удалось подобрать свободное имя выходного файла.");
+        throw new IOException("Could not find an available output file name.");
     }
 
     private static string MoveWithoutOverwrite(string temp, string target, HashSet<string> reserved)
@@ -1014,7 +1014,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             }
             catch (IOException) when (File.Exists(candidate) || Directory.Exists(candidate)) { }
         }
-        throw new IOException("Не удалось подобрать свободное имя выходного файла.");
+        throw new IOException("Could not find an available output file name.");
     }
 
     private static async Task<bool> DeleteOwnTempAsync(string path)
@@ -1065,7 +1065,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         var started = false;
         try
         {
-            if (!process.Start()) throw new Win32Exception("FFmpeg не запустился.");
+            if (!process.Start()) throw new Win32Exception("FFmpeg could not be started.");
             started = true;
             var output = DrainAsync(process.StandardOutput, cancellationToken);
             var errors = ReadProgressAsync(process.StandardError, progress, onError, cancellationToken);

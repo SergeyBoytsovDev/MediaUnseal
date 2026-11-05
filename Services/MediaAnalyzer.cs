@@ -24,7 +24,7 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (string.IsNullOrWhiteSpace(path) || Uri.IsWellFormedUriString(path, UriKind.Absolute))
-            throw new ArgumentException("Выберите локальный файл.", nameof(path));
+            throw new ArgumentException("Select a local file.", nameof(path));
         var fullPath = Path.GetFullPath(path);
         if (Timeout <= TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(Timeout));
         var watch = Stopwatch.StartNew();
@@ -37,7 +37,7 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
         deadline.CancelAfter(Timeout);
         try
         {
-            if (!File.Exists(fullPath)) throw new FileNotFoundException("Файл не найден. Выберите другой файл.", fullPath);
+            if (!File.Exists(fullPath)) throw new FileNotFoundException("File not found. Select another file.", fullPath);
             var size = new FileInfo(fullPath).Length;
             var heifFile = IsHeifPath(fullPath);
             var arguments = heifFile
@@ -47,7 +47,7 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
                 ? await RunProbeAsync(ffprobePath, arguments, deadline.Token).ConfigureAwait(false)
                 : await ProcessRunner(ffprobePath, arguments, deadline.Token).WaitAsync(deadline.Token).ConfigureAwait(false);
             if (result.ExitCode != 0)
-                throw new InvalidDataException($"FFprobe завершился с кодом {result.ExitCode}. Файл может быть повреждён или не поддерживается.");
+                throw new InvalidDataException($"FFprobe exited with code {result.ExitCode}. The file may be damaged or unsupported.");
             var media = ParseJson(result.Stdout, fullPath, size, inspectFileSignature: true);
             if (heifFile)
                 diagnostics.Record(DiagnosticLevel.Info, "Analysis",
@@ -72,7 +72,7 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
         {
             diagnostics.Record(DiagnosticLevel.Warn, "Analysis", $"FFprobe timed out after {watch.Elapsed.TotalSeconds:F1} s.", fileDetails,
                 userMessageKey: "LogAnalysisTimeout");
-            throw new TimeoutException("FFprobe не завершил анализ за отведённое время.");
+            throw new TimeoutException("FFprobe did not complete the analysis within the allowed time.");
         }
         catch (OperationCanceledException)
         {
@@ -96,11 +96,11 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
         {
             using var document = JsonDocument.Parse(json);
             var root = document.RootElement;
-            if (root.ValueKind != JsonValueKind.Object) throw new InvalidDataException("FFprobe вернул неверный JSON.");
+            if (root.ValueKind != JsonValueKind.Object) throw new InvalidDataException("FFprobe returned invalid JSON.");
             var format = Property(root, "format");
             var streamsJson = Property(root, "streams");
             if (format.ValueKind != JsonValueKind.Object && streamsJson.ValueKind != JsonValueKind.Array)
-                throw new InvalidDataException("FFprobe не вернул сведения о файле и потоках.");
+                throw new InvalidDataException("FFprobe did not return file or stream information.");
             var formatName = ReadString(Property(format, "format_name"));
             var formatTags = ReadTags(Property(format, "tags"));
             var formatDuration = ReadDuration(Property(format, "duration"));
@@ -113,7 +113,7 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
                 foreach (var item in streamsJson.EnumerateArray())
                 {
                     if (item.ValueKind != JsonValueKind.Object)
-                        throw new InvalidDataException("FFprobe вернул неверное описание потока.");
+                        throw new InvalidDataException("FFprobe returned an invalid stream description.");
                     var tags = ReadTags(Property(item, "tags"));
                     var disposition = ReadDisposition(Property(item, "disposition"));
                     var type = ReadString(Property(item, "codec_type"));
@@ -151,7 +151,7 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
                 recognizedHeif ? Path.GetExtension(path)[1..].ToUpperInvariant() : formatName, formatDuration,
                 ReadLong(Property(format, "bit_rate")), formatTags, streams);
         }
-        catch (JsonException ex) { throw new InvalidDataException("FFprobe вернул повреждённый JSON.", ex); }
+        catch (JsonException ex) { throw new InvalidDataException("FFprobe returned malformed JSON.", ex); }
     }
 
     private static JsonElement Property(JsonElement item, string name) =>
@@ -484,7 +484,7 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
         using var readers = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         try
         {
-            if (!process.Start()) throw new Win32Exception("FFprobe не запустился.");
+            if (!process.Start()) throw new Win32Exception("FFprobe could not be started.");
             started = true;
             var stdout = ReadAndCancelOnFailure(process.StandardOutput, OutputLimit);
             var stderr = ReadAndCancelOnFailure(process.StandardError, ErrorLimit);
@@ -517,7 +517,7 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
         int count;
         while ((count = await reader.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
         {
-            if (text.Length + count > limit) throw new InvalidDataException("FFprobe вернул слишком большой ответ.");
+            if (text.Length + count > limit) throw new InvalidDataException("FFprobe returned an excessively large response.");
             text.Append(buffer, 0, count);
         }
         return text.ToString();
