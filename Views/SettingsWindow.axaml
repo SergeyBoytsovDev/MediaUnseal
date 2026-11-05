@@ -190,7 +190,7 @@
         <TextBlock Text="{DynamicResource Loc_SettingsProductName}" FontSize="23" FontWeight="SemiBold"/>
         <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
          <TextBlock x:Name="VersionText" Classes="secondary" VerticalAlignment="Center" FontSize="12"/>
-         <Button x:Name="UpdateButton" Click="UpdateButton_Click" Height="28" Padding="8,2"
+         <Button x:Name="UpdateButton" Click="UpdateButton_Click" IsEnabled="False" Opacity="0.5" Height="28" Padding="8,2"
                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="12"/>
          <TextBlock x:Name="UpdateCurrentStatus" Text="{DynamicResource Loc_SettingsUpdateCurrent}"
                     Foreground="{DynamicResource SuccessBrush}" VerticalAlignment="Center" FontSize="12" IsVisible="False"/>

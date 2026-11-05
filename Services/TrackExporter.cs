@@ -227,6 +227,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         if (options.CreateSourceFolder)
             directory = Path.Combine(directory, SafeFolderName(Path.GetFileNameWithoutExtension(media.Name)));
         Directory.CreateDirectory(directory);
+        if (options.CreateSourceFolder && (File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
+            throw new IOException("The generated output directory must not be a link.");
         var stage = Path.Combine(directory, ".mediaunseal-" + Guid.NewGuid().ToString("N"));
         var results = new List<TrackExportResult>();
         var reserved = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
@@ -981,6 +983,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             ? L.Get("OutputLanguageUnspecified") : plan.Stream.Language);
         var target = Path.Combine(root, language);
         Directory.CreateDirectory(target);
+        if ((File.GetAttributes(target) & FileAttributes.ReparsePoint) != 0)
+            throw new IOException("The generated language directory must not be a link.");
         return target;
     }
 

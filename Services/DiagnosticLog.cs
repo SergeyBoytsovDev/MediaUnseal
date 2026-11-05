@@ -27,9 +27,11 @@ public sealed class DiagnosticLog
     public void Record(DiagnosticLevel level, string operation, string message, string? details = null,
         string? userMessageKey = null, object?[]? userMessageArgs = null, bool userSuccess = false)
     {
-        var entry = new DiagnosticEvent(DateTimeOffset.Now, level, Clean(operation),
-            Clean(message), details is null ? null : Clean(details), userMessageKey, userMessageArgs, userSuccess);
-        EventRecorded?.Invoke(entry);
+        var entry = new DiagnosticEvent(DateTimeOffset.Now, level, RedactPersonalPaths(Clean(operation)),
+            RedactPersonalPaths(Clean(message)), details is null ? null : RedactPersonalPaths(Clean(details)),
+            userMessageKey, userMessageArgs, userSuccess);
+        try { EventRecorded?.Invoke(entry); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { }
         var line = Format(entry) + Environment.NewLine;
         try
         {
@@ -104,7 +106,9 @@ public sealed class DiagnosticLog
     {
         value = value.Replace('\r', ' ').Replace('\n', ' ');
         value = Regex.Replace(value, @"(?i)\bBearer\s+\S+", "Bearer [redacted]");
-        value = Regex.Replace(value, @"(?i)(authorization|bearer|token|password|secret|api[_-]?key)\s*[:=]\s*\S+", "$1=[redacted]");
+        value = Regex.Replace(value,
+            @"(?i)(authorization|bearer|token|password|secret|api[_-]?key)\s*[:=]\s*(?:""[^""]*""|'[^']*'|\S+)",
+            "$1=[redacted]");
         return value.Length > 1000 ? value[..1000] + "…" : value;
     }
 
@@ -112,10 +116,21 @@ public sealed class DiagnosticLog
     {
         text = Regex.Replace(text, @"(?im)((?:Путь результата|Output path):\s*)[^\r\n]+", "$1[redacted]");
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        if (!string.IsNullOrWhiteSpace(home))
-            text = text.Replace(home, "[home directory]", StringComparison.OrdinalIgnoreCase)
-                .Replace(home.Replace('\\', '/'), "[home directory]", StringComparison.OrdinalIgnoreCase);
-        text = Regex.Replace(text, @"(?i)(?:[A-Z]:[/\\]Users[/\\]|/home/|/Users/)[^/\\\s]+", "[home directory]");
+        string Mask(string path)
+        {
+            var normalized = path.Replace('\\', '/');
+            var normalizedHome = home.Replace('\\', '/').TrimEnd('/');
+            return normalizedHome.Length > 0 && normalized.StartsWith(normalizedHome,
+                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)
+                && (normalized.Length == normalizedHome.Length || normalized[normalizedHome.Length] == '/')
+                ? "[home directory]" : "[path]";
+        }
+        text = Regex.Replace(text,
+            @"(?<quote>[""'])(?<path>(?:[A-Za-z]:[/\\]|\\\\|/(?!/))[^""'\r\n]*?)\k<quote>",
+            match => match.Groups["quote"].Value + Mask(match.Groups["path"].Value) + match.Groups["quote"].Value);
+        text = Regex.Replace(text,
+            @"(?<![A-Za-z0-9:/\\])(?:[A-Za-z]:[/\\]|\\\\[^/\\\s]+[/\\][^/\\\s]+(?:[/\\]|\b)|/(?!/))[^;|\r\n]*?(?=\s*;\s*|\s+\|\s+|:\s|$)",
+            match => Mask(match.Value.TrimEnd()), RegexOptions.Multiline);
         return text;
     }
 }
