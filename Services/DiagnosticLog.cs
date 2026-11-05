@@ -55,16 +55,20 @@ public sealed class DiagnosticLog
 
     public string ExportReport()
     {
+        var text = new StringBuilder();
+        foreach (var line in ReadReportLines()) text.AppendLine(line);
+        return text.ToString();
+    }
+
+    internal System.Collections.Generic.IEnumerable<string> ReadReportLines()
+    {
         lock (_gate)
         {
             Prune();
-            var text = new StringBuilder();
             foreach (var file in ManagedFiles().OrderBy(file => file.Name == CurrentFile ? DateTime.MaxValue
                 : file.LastWriteTimeUtc).ThenBy(file => file.Name, StringComparer.Ordinal))
-            {
-                text.Append(File.ReadAllText(file.FullName));
-            }
-            return RedactPersonalPaths(text.ToString());
+                foreach (var line in File.ReadLines(file.FullName))
+                    yield return RedactPersonalPaths(line);
         }
     }
 
@@ -109,7 +113,9 @@ public sealed class DiagnosticLog
         value = Regex.Replace(value,
             @"(?i)(authorization|bearer|token|password|secret|api[_-]?key)\s*[:=]\s*(?:""[^""]*""|'[^']*'|\S+)",
             "$1=[redacted]");
-        return value.Length > 1000 ? value[..1000] + "…" : value;
+        return value.Length > 1000
+            ? value[..700] + $"…[{value.Length - 950} characters omitted]…" + value[^250..]
+            : value;
     }
 
     internal static string RedactPersonalPaths(string text)

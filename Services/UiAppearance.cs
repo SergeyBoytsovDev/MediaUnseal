@@ -13,11 +13,11 @@ internal sealed class UiPreferences
     public string Theme { get; set; } = UiAppearance.DefaultTheme;
     public string Language { get; set; } = LocalizationManager.DefaultLanguage;
     public int InterfaceScale { get; set; } = 0;
-    public double Width { get; set; } = 1280;
-    public double Height { get; set; } = 900;
+    public double Width { get; set; } = 1355;
+    public double Height { get; set; } = 1026;
     public int? X { get; set; }
     public int? Y { get; set; }
-    public double[] ColumnWidths { get; set; } = [36, 86, 54, 150, 115, 104, 163, 129];
+    public double[] ColumnWidths { get; set; } = [36,103,54,150,115,104,171,188];
     public string? OutputDirectory { get; set; }
     public string? LastSourceDirectory { get; set; }
 }

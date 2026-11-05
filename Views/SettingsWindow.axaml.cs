@@ -161,8 +161,7 @@ public partial class SettingsWindow : Window
         VersionText.Text = _localization.Format("VersionFormat", version);
         TechnologyText.Text = _localization.Format("SettingsTechnology",
             Environment.Version.Major, typeof(Application).Assembly.GetName().Version?.ToString(3) ?? "—");
-        AboutFooterText.Text = _localization.Format("SettingsAboutFooter",
-            _localization.Get("SettingsDeveloperName"), _localization.Get("SettingsProductName"), version);
+        AboutFooterText.Text = _localization.Get("SettingsAboutFooter");
         UpdateButton.Content = _localization.Get(_demoUpdateState == 2
             ? "SettingsInstallUpdate" : "SettingsCheckUpdates");
         UpdateCurrentStatus.IsVisible = _demoUpdateState == 1;

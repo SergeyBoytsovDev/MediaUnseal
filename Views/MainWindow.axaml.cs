@@ -886,8 +886,7 @@ public partial class MainWindow : Window
         if (DataContext is not MainViewModel viewModel) return;
         try
         {
-            var report = await Task.Run(viewModel.DiagnosticReport);
-            var rows = await Task.Run(() => DiagnosticReportPresentation.Parse(report));
+            var rows = await Task.Run(() => DiagnosticReportPresentation.Parse(viewModel.Diagnostics.ReadReportLines()));
             new DiagnosticReportWindow(rows, viewModel.Diagnostics, viewModel.ReportError).Show(this);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

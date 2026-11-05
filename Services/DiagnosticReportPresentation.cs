@@ -25,10 +25,13 @@ internal static class DiagnosticReportPresentation
         RegexOptions.Compiled | RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100));
 
     internal static IReadOnlyList<DiagnosticReportRow> Parse(string report)
+        => Parse(report.Split('\n'));
+
+    internal static IReadOnlyList<DiagnosticReportRow> Parse(IEnumerable<string> lines)
     {
         var rows = new List<DiagnosticReportRow>();
         DateOnly? day = null;
-        foreach (var line in report.Split('\n'))
+        foreach (var line in lines)
         {
             if (line.Length == 0 || line == "\r") continue;
             var source = line.TrimEnd('\r');
@@ -60,18 +63,23 @@ internal static class DiagnosticReportPresentation
     internal static string ToText(IReadOnlyList<DiagnosticReportRow> rows)
     {
         var result = new StringBuilder();
+        foreach (var line in TextLines(rows)) result.AppendLine(line);
+        return result.ToString();
+    }
+
+    internal static IEnumerable<string> TextLines(IReadOnlyList<DiagnosticReportRow> rows)
+    {
         var categoryWidth = Math.Max(18, rows.Where(row => row.IsEntry).Select(row => row.Category.Length)
             .DefaultIfEmpty(0).Max());
         foreach (var row in rows)
         {
-            if (row.IsDate) result.AppendLine("──────────── " + row.Message + " ────────────");
-            else if (row.IsStartup) result.AppendLine(row.Message + " ──────────────");
+            if (row.IsDate) yield return "──────────── " + row.Message + " ────────────";
+            else if (row.IsStartup) yield return row.Message + " ──────────────";
             else
             {
                 var prefix = $"{row.Time,-8}  {row.Level,-5}  {row.Category.PadRight(categoryWidth)}  ";
-                result.Append(prefix).AppendLine(row.Message);
+                yield return prefix + row.Message;
             }
         }
-        return result.ToString();
     }
 }

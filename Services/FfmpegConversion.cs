@@ -437,9 +437,9 @@ public sealed class FfmpegConversionCatalog
         if (!process.Start()) throw new Win32Exception("FFmpeg could not be started.");
         try
         {
-            var stdout = process.StandardOutput.ReadToEndAsync(deadline.Token);
-            var stderr = process.StandardError.ReadToEndAsync(deadline.Token);
-            await process.WaitForExitAsync(deadline.Token).ConfigureAwait(false);
+            var stdout = ReadBoundedOutputAsync(process.StandardOutput, deadline.Token);
+            var stderr = ReadBoundedOutputAsync(process.StandardError, deadline.Token);
+            await Task.WhenAll(stdout, stderr, process.WaitForExitAsync(deadline.Token)).ConfigureAwait(false);
             var output = await stdout.ConfigureAwait(false) + await stderr.ConfigureAwait(false);
             if (output.Length > 2_000_000) throw new InvalidDataException("FFmpeg returned an excessively large response.");
             return (process.ExitCode, output);
@@ -454,5 +454,20 @@ public sealed class FfmpegConversionCatalog
                 await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false);
             }
         }
+    }
+
+    internal static async Task<string> ReadBoundedOutputAsync(StreamReader reader, CancellationToken token)
+    {
+        const int limit = 2_000_000;
+        var text = new StringBuilder();
+        var buffer = new char[8192];
+        int count;
+        while ((count = await reader.ReadAsync(buffer, token).ConfigureAwait(false)) != 0)
+        {
+            if (text.Length + count > limit)
+                throw new InvalidDataException("FFmpeg returned an excessively large response.");
+            text.Append(buffer, 0, count);
+        }
+        return text.ToString();
     }
 }

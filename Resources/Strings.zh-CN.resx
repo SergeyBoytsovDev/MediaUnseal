@@ -186,7 +186,7 @@
   <data name="SettingsReportBug" xml:space="preserve"><value>报告问题</value></data>
   <data name="SettingsEmailLabel" xml:space="preserve"><value>电子邮箱</value></data>
   <data name="SettingsTelegramLabel" xml:space="preserve"><value>Telegram 频道</value></data>
-  <data name="SettingsAboutFooter" xml:space="preserve"><value>© {0} · {1} {2}</value></data>
+  <data name="SettingsAboutFooter" xml:space="preserve"><value>Copyright © 2026 Sergey Boytsov&#10;All rights reserved.</value></data>
   <data name="SettingsSupportDeveloper" xml:space="preserve"><value>支持开发者</value></data>
   <data name="SettingsOpenLinkFailed" xml:space="preserve"><value>无法使用系统应用打开链接。</value></data>
   <data name="SupportDescription" xml:space="preserve"><value>{0} 是一个独立项目。如果它对您有所帮助，欢迎自愿支持其开发。</value></data>

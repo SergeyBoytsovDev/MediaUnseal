@@ -210,8 +210,17 @@ internal static class MediaPreview
         }
         finally
         {
-            try { Directory.Delete(directory, recursive: true); }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            for (var attempt = 0; attempt < 3; attempt++)
+            {
+                try { Directory.Delete(directory, recursive: true); break; }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    if (attempt == 2)
+                        report?.Invoke($"FFmpeg preview temporary cleanup failed: {ex.GetType().Name}.");
+                    else
+                        await Task.Delay(100).ConfigureAwait(false);
+                }
+            }
         }
     }
 }

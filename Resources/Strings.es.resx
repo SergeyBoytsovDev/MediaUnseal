@@ -186,7 +186,7 @@
   <data name="SettingsReportBug" xml:space="preserve"><value>Informar de un error</value></data>
   <data name="SettingsEmailLabel" xml:space="preserve"><value>Correo electrónico</value></data>
   <data name="SettingsTelegramLabel" xml:space="preserve"><value>Canal de Telegram</value></data>
-  <data name="SettingsAboutFooter" xml:space="preserve"><value>© {0} · {1} {2}</value></data>
+  <data name="SettingsAboutFooter" xml:space="preserve"><value>Copyright © 2026 Sergey Boytsov&#10;All rights reserved.</value></data>
   <data name="SettingsSupportDeveloper" xml:space="preserve"><value>Apoyar al desarrollador</value></data>
   <data name="SettingsOpenLinkFailed" xml:space="preserve"><value>No se pudo abrir el enlace en la aplicación del sistema.</value></data>
   <data name="SupportDescription" xml:space="preserve"><value>{0} es un proyecto independiente. Si te resulta útil, puedes apoyar voluntariamente su desarrollo.</value></data>

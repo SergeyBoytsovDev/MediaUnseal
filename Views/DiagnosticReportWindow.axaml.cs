@@ -88,7 +88,8 @@ public partial class DiagnosticReportWindow : Window
             await using var stream = await file.OpenWriteAsync();
             stream.SetLength(0);
             await using var writer = new StreamWriter(stream);
-            await writer.WriteAsync(DiagnosticReportPresentation.ToText(_rows));
+            foreach (var line in DiagnosticReportPresentation.TextLines(_rows))
+                await writer.WriteLineAsync(line);
             Close();
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)

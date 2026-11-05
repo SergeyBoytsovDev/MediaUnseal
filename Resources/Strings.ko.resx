@@ -186,7 +186,7 @@
   <data name="SettingsReportBug" xml:space="preserve"><value>버그 신고</value></data>
   <data name="SettingsEmailLabel" xml:space="preserve"><value>이메일</value></data>
   <data name="SettingsTelegramLabel" xml:space="preserve"><value>Telegram 채널</value></data>
-  <data name="SettingsAboutFooter" xml:space="preserve"><value>© {0} · {1} {2}</value></data>
+  <data name="SettingsAboutFooter" xml:space="preserve"><value>Copyright © 2026 Sergey Boytsov&#10;All rights reserved.</value></data>
   <data name="SettingsSupportDeveloper" xml:space="preserve"><value>개발자 후원하기</value></data>
   <data name="SettingsOpenLinkFailed" xml:space="preserve"><value>시스템 앱에서 링크를 열 수 없습니다.</value></data>
   <data name="SupportDescription" xml:space="preserve"><value>{0} 프로젝트는 독립적으로 개발됩니다. 유용하게 사용하셨다면 자발적인 후원으로 개발을 지원할 수 있습니다.</value></data>
