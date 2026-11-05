@@ -7,7 +7,7 @@
         Width="1100" Height="760" MinWidth="820" MinHeight="540"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
-        FontFamily="Inter" FontSize="14">
+        FontFamily="{DynamicResource InterfaceFont}" FontSize="14">
  <Window.Styles>
   <Style Selector="TreeViewItem:selected">
    <Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/>

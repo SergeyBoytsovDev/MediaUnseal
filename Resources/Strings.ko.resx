@@ -1701,4 +1701,6 @@
   <data name="DiagnosticEventsCount" xml:space="preserve"><value>이벤트: {0}</value></data>
   <data name="DiagnosticWarningsCount" xml:space="preserve"><value>경고: {0}</value></data>
   <data name="DiagnosticErrorsCount" xml:space="preserve"><value>오류: {0}</value></data>
+  <data name="SettingsInterfaceScale" xml:space="preserve"><value>인터페이스 배율</value></data>
+  <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>자동</value></data>
 </root>

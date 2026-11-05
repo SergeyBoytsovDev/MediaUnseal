@@ -1701,4 +1701,6 @@
   <data name="DiagnosticEventsCount" xml:space="preserve"><value>イベント：{0}</value></data>
   <data name="DiagnosticWarningsCount" xml:space="preserve"><value>警告：{0}</value></data>
   <data name="DiagnosticErrorsCount" xml:space="preserve"><value>エラー：{0}</value></data>
+  <data name="SettingsInterfaceScale" xml:space="preserve"><value>インターフェースの倍率</value></data>
+  <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>自動</value></data>
 </root>

@@ -1,6 +1,8 @@
+using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using TrackExtractor.Services;
 using TrackExtractor.ViewModels;
 using TrackExtractor.Views;
@@ -9,11 +11,14 @@ namespace TrackExtractor;
 
 public partial class App : Application
 {
+    internal static readonly FontFamily InterfaceFont = new(
+        OperatingSystem.IsWindows() ? "Inter" : "fonts:Inter#Inter");
     internal UiAppearance Appearance { get; } = new();
     internal LocalizationManager Localization { get; } = new();
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+        Resources["InterfaceFont"] = InterfaceFont;
     }
 
     public override void OnFrameworkInitializationCompleted()

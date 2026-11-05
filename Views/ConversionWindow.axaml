@@ -6,7 +6,7 @@
         Width="620" SizeToContent="Height" CanResize="False"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
-        FontFamily="Inter" FontSize="14">
+        FontFamily="{DynamicResource InterfaceFont}" FontSize="14">
  <Window.Styles>
   <Style Selector="TextBlock.muted"><Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/></Style>
   <Style Selector="Button"><Setter Property="Background" Value="{DynamicResource PanelAltBackground}"/><Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/><Setter Property="BorderBrush" Value="{DynamicResource LineBrush}"/></Style>

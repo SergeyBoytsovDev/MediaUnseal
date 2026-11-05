@@ -6,7 +6,7 @@
         Width="600" Height="600" MinWidth="490" MinHeight="440"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
-        FontFamily="Inter" FontSize="14">
+        FontFamily="{DynamicResource InterfaceFont}" FontSize="14">
  <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="20" RowSpacing="14">
   <StackPanel Orientation="Horizontal" Spacing="10">
    <TextBlock Text="♥" FontSize="27" Foreground="{DynamicResource ErrorBrush}" VerticalAlignment="Center"/>
@@ -23,7 +23,7 @@
       <TextBlock Text="{DynamicResource Loc_SupportCrypto}" FontWeight="SemiBold" FontSize="16"
                  TextAlignment="Center"/>
       <TextBlock Text="{DynamicResource Loc_SupportCryptoNetwork}" Foreground="{DynamicResource MutedTextBrush}"
-                 TextWrapping="Wrap" TextAlignment="Center"/>
+                 TextWrapping="Wrap" TextAlignment="Center" MinHeight="36"/>
       <Image Source="avares://TrackExtractor/Assets/usdtqr.png" Width="190" Height="190"
              Stretch="Uniform" HorizontalAlignment="Center"/>
       <TextBlock x:Name="CryptoAddressText" TextWrapping="WrapWithOverflow"
@@ -38,7 +38,7 @@
       <TextBlock Text="{DynamicResource Loc_SupportSbp}" FontWeight="SemiBold" FontSize="16"
                  TextWrapping="Wrap" TextAlignment="Center"/>
       <TextBlock Text="{DynamicResource Loc_SupportSbpBank}" Foreground="{DynamicResource MutedTextBrush}"
-                 TextAlignment="Center"/>
+                 TextAlignment="Center" MinHeight="36"/>
       <Image Source="avares://TrackExtractor/Assets/sbpqr.jpg" Width="190" Height="190"
              Stretch="Uniform" HorizontalAlignment="Center"/>
      </StackPanel>

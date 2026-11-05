@@ -6,7 +6,7 @@
         Width="820" Height="500" MinWidth="720" MinHeight="300" CanResize="True"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
-        FontFamily="Inter" FontSize="14">
+        FontFamily="{DynamicResource InterfaceFont}" FontSize="14">
  <Window.Styles>
   <Style Selector="ListBoxItem">
    <Setter Property="Padding" Value="0"/>

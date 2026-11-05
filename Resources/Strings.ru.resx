@@ -82,7 +82,7 @@
   <data name="SupportSbp" xml:space="preserve"><value>СБП</value></data>
   <data name="SupportSbpDescription" xml:space="preserve"><value>Реквизиты и QR-код</value></data>
   <data name="SupportSbpInstruction" xml:space="preserve"><value>Отсканируйте QR-код в банковском приложении или используйте номер телефона.</value></data>
-  <data name="SupportSbpBank" xml:space="preserve"><value>Сбер</value></data>
+  <data name="SupportSbpBank" xml:space="preserve"><value>SBER</value></data>
   <data name="SupportCopyDetails" xml:space="preserve"><value>Копировать номер</value></data>
   <data name="SupportDetailsCopied" xml:space="preserve"><value>Номер скопирован.</value></data>
   <data name="SupportCopyFailed" xml:space="preserve"><value>Не удалось скопировать данные.</value></data>
@@ -638,4 +638,6 @@
   <data name="DiagnosticEventsCount" xml:space="preserve"><value>Событий: {0}</value></data>
   <data name="DiagnosticWarningsCount" xml:space="preserve"><value>Предупреждений: {0}</value></data>
   <data name="DiagnosticErrorsCount" xml:space="preserve"><value>Ошибок: {0}</value></data>
+  <data name="SettingsInterfaceScale" xml:space="preserve"><value>Масштаб интерфейса</value></data>
+  <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>Автоматически</value></data>
 </root>

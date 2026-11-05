@@ -1701,4 +1701,6 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
   <data name="DiagnosticEventsCount" xml:space="preserve"><value>Ereignisse: {0}</value></data>
   <data name="DiagnosticWarningsCount" xml:space="preserve"><value>Warnungen: {0}</value></data>
   <data name="DiagnosticErrorsCount" xml:space="preserve"><value>Fehler: {0}</value></data>
+  <data name="SettingsInterfaceScale" xml:space="preserve"><value>Oberflächenskalierung</value></data>
+  <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>Automatisch</value></data>
 </root>

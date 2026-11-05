@@ -58,6 +58,7 @@ public partial class ConversionWindow : Window
     public ConversionWindow()
     {
         InitializeComponent();
+        UiScale.Attach(this);
         CrfBox.ItemsSource = new[] { "18", "20", "23", "28", "32" };
         VideoBitrateBox.ItemsSource = new[] { "1000", "2500", "5000", "8000", "12000", "20000" };
         WidthBox.ItemsSource = new[] { "640", "1280", "1920", "2560", "3840" };

@@ -23,6 +23,7 @@ public partial class DiagnosticReportWindow : Window
     public DiagnosticReportWindow()
     {
         AvaloniaXamlLoader.Load(this);
+        UiScale.Attach(this);
         LocalizationManager.Active.PropertyChanged += Localization_PropertyChanged;
         Opened += (_, _) => Dispatcher.UIThread.Post(ScrollToLatest, DispatcherPriority.Loaded);
         Closed += (_, _) => LocalizationManager.Active.PropertyChanged -= Localization_PropertyChanged;

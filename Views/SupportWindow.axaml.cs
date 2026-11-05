@@ -15,6 +15,7 @@ public partial class SupportWindow : Window
     public SupportWindow()
     {
         InitializeComponent();
+        UiScale.Attach(this);
         CryptoAddressText.Text = CryptoAddress;
         RefreshLocalizedText();
         LocalizationManager.Active.PropertyChanged += LocalizationChanged;

@@ -7,7 +7,7 @@
         Width="770" Height="570" MinWidth="740" MinHeight="500"
         WindowStartupLocation="CenterOwner"
         Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
-        FontFamily="Inter" FontSize="14">
+        FontFamily="{DynamicResource InterfaceFont}" FontSize="14">
  <Window.Styles>
   <Style Selector="TextBlock.secondary"><Setter Property="Foreground" Value="{DynamicResource MutedTextBrush}"/></Style>
   <Style Selector="ListBoxItem:selected"><Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/></Style>
@@ -128,6 +128,18 @@
          </Grid>
         </RadioButton>
        </Border>
+      </StackPanel>
+      <StackPanel Spacing="6">
+       <TextBlock Text="{DynamicResource Loc_SettingsInterfaceScale}" FontWeight="SemiBold"/>
+       <ComboBox x:Name="InterfaceScaleBox" SelectionChanged="InterfaceScale_SelectionChanged" HorizontalAlignment="Left" MinWidth="145">
+        <ComboBoxItem Tag="0" Content="{DynamicResource Loc_SettingsInterfaceScaleAuto}"/>
+        <ComboBoxItem Tag="75" Content="75%"/><ComboBoxItem Tag="80" Content="80%"/>
+        <ComboBoxItem Tag="85" Content="85%"/><ComboBoxItem Tag="90" Content="90%"/>
+        <ComboBoxItem Tag="95" Content="95%"/><ComboBoxItem Tag="100" Content="100%"/>
+        <ComboBoxItem Tag="105" Content="105%"/><ComboBoxItem Tag="110" Content="110%"/>
+        <ComboBoxItem Tag="115" Content="115%"/><ComboBoxItem Tag="120" Content="120%"/>
+        <ComboBoxItem Tag="125" Content="125%"/>
+       </ComboBox>
       </StackPanel>
      </StackPanel>
      <StackPanel x:Name="LanguageSection" Margin="24" Spacing="12" IsVisible="False">

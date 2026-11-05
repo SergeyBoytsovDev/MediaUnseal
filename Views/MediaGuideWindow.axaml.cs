@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -31,6 +31,7 @@ public partial class MediaGuideWindow : Window
     public MediaGuideWindow()
     {
         InitializeComponent();
+        UiScale.Attach(this);
         L.PropertyChanged += Localization_PropertyChanged;
         Closed += (_, _) => L.PropertyChanged -= Localization_PropertyChanged;
         try

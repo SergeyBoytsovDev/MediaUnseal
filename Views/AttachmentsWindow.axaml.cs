@@ -19,6 +19,7 @@ public partial class AttachmentsWindow : Window
     public AttachmentsWindow(IReadOnlyList<AttachmentFile> files, IEnumerable<ulong> selected)
     {
         InitializeComponent();
+        UiScale.Attach(this);
         Height = Math.Clamp(210 + Math.Min(files.Count, 9) * 37, 300, 550);
         var chosen = selected.ToHashSet();
         _choices = files.Select(file => new AttachmentChoiceViewModel(file, chosen.Contains(file.Uid))).ToArray();

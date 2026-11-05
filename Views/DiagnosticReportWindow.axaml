@@ -51,10 +51,14 @@
     <TextBlock x:Name="WarningsCount" Foreground="{DynamicResource WarningBrush}"/>
     <TextBlock x:Name="ErrorsCount" Foreground="{DynamicResource ErrorBrush}"/>
    </StackPanel>
-   <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-    <Button x:Name="ClearButton" Content="{DynamicResource Loc_DiagnosticPreviewClear}" Click="Clear_Click"/>
-    <Button x:Name="SaveButton" Content="{DynamicResource Loc_DiagnosticPreviewSave}" Click="Save_Click"/>
-   </StackPanel>
+   <Grid Grid.Column="1" ColumnSpacing="8" Grid.IsSharedSizeScope="True">
+    <Grid.ColumnDefinitions>
+     <ColumnDefinition Width="Auto" SharedSizeGroup="DiagnosticActions"/>
+     <ColumnDefinition Width="Auto" SharedSizeGroup="DiagnosticActions"/>
+    </Grid.ColumnDefinitions>
+    <Button x:Name="ClearButton" MinWidth="80" Content="{DynamicResource Loc_DiagnosticPreviewClear}" Click="Clear_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+    <Button x:Name="SaveButton" Grid.Column="1" MinWidth="80" Content="{DynamicResource Loc_DiagnosticPreviewSave}" Click="Save_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+   </Grid>
   </Grid>
  </Grid>
 </Window>

@@ -1701,4 +1701,6 @@ Vídeo: {6}; imagens: {7}; animações: {8}; áudio: {9}; legendas: {10}; fluxos
   <data name="DiagnosticEventsCount" xml:space="preserve"><value>Eventos: {0}</value></data>
   <data name="DiagnosticWarningsCount" xml:space="preserve"><value>Avisos: {0}</value></data>
   <data name="DiagnosticErrorsCount" xml:space="preserve"><value>Erros: {0}</value></data>
+  <data name="SettingsInterfaceScale" xml:space="preserve"><value>Escala da interface</value></data>
+  <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>Automático</value></data>
 </root>

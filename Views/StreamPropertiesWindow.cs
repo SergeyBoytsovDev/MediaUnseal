@@ -85,6 +85,7 @@ internal static class StreamPropertiesWindow
         window.Closed += (_, _) => L.PropertyChanged -= OnLanguageChanged;
         window.SizeChanged += (_, _) => ArrangeCards();
         Refresh();
+        UiScale.Attach(window);
         window.Show(owner);
         return window;
     }

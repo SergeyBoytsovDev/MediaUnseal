@@ -49,6 +49,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        UiScale.Attach(this);
         UpdateWindowStateIcon();
         PropertyChanged += (_, args) =>
         {
@@ -204,8 +205,8 @@ public partial class MainWindow : Window
         if (Appearance is not { } appearance) return;
         if (WindowState == WindowState.Normal)
         {
-            appearance.Preferences.Width = Width;
-            appearance.Preferences.Height = Height;
+            appearance.Preferences.Width = Width / UiScale.Current(this);
+            appearance.Preferences.Height = Height / UiScale.Current(this);
             appearance.Preferences.X = Position.X;
             appearance.Preferences.Y = Position.Y;
         }
@@ -225,8 +226,8 @@ public partial class MainWindow : Window
         if (screen is null) return;
         var area = screen.WorkingArea;
         var scale = screen.Scaling;
-        Width = Math.Min(preferences.Width, area.Width / scale);
-        Height = Math.Min(preferences.Height, area.Height / scale);
+        Width = Math.Min(preferences.Width * UiScale.Current(this), area.Width / scale);
+        Height = Math.Min(preferences.Height * UiScale.Current(this), area.Height / scale);
         MinWidth = Math.Min(MinWidth, Width);
         MinHeight = Math.Min(MinHeight, Height);
         var width = (int)Math.Ceiling(Width * scale);

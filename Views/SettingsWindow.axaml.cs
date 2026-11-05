@@ -23,14 +23,19 @@ public partial class SettingsWindow : Window
     private string? _licensePaths;
     private string? _detectedLicense;
     private CancellationTokenSource? _licenseCancellation;
+    private bool _scaleSelectionReady;
 
     public SettingsWindow() : this(new MainViewModel(), new UiAppearance(), CancellationToken.None) { }
 
     internal SettingsWindow(MainViewModel viewModel, UiAppearance appearance, CancellationToken cancellationToken)
     {
         InitializeComponent();
+        UiScale.Attach(this);
         _viewModel = viewModel;
         _appearance = appearance;
+        InterfaceScaleBox.SelectedIndex = appearance.Preferences.InterfaceScale == 0 ? 0
+            : Math.Clamp((appearance.Preferences.InterfaceScale - 75 + 2) / 5 + 1, 1, 11);
+        _scaleSelectionReady = true;
         _localization = LocalizationManager.Active;
         DataContext = viewModel;
         _installer = new DependencyPanel(viewModel, cancellationToken);
@@ -82,6 +87,13 @@ public partial class SettingsWindow : Window
         }
         SelectSection(0);
         Closing += SettingsWindow_Closing;
+    }
+
+    private void InterfaceScale_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (!_scaleSelectionReady || InterfaceScaleBox.SelectedItem is not ComboBoxItem item
+            || item.Tag is not string text || !int.TryParse(text, out var percent)) return;
+        _appearance.SetInterfaceScale(percent);
     }
 
     private void AddAdditionalLanguageCards()
