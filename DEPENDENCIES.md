@@ -6,15 +6,15 @@
 
 This document identifies the third-party software used by Media Unseal. It distinguishes application-level NuGet dependencies, native assets, build/test tools, and independently installed tools. Licenses and notices are described in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). The license for Media Unseal's own code is in [LICENSE.md](LICENSE.md).
 
-> **Scope:** The package versions below are based on the application's audited .NET 10 dependency graph. NuGet's resolved graph is not identical to the contents of every Windows or Linux release: build-only, test-only, and platform-specific assets may be excluded. The contents of a distributed release package determine which notices must accompany that package. The audited Windows and Linux outputs were **framework-dependent** and are not necessarily identical to the eventual installers and archives.
+> **Scope:** The package versions below are based on the application's audited .NET 10 dependency graph. NuGet's resolved graph is not identical to the contents of every Windows or Linux release: build-only, test-only, and platform-specific assets may be excluded. The contents of a distributed release package determine which notices must accompany that package. The Media Unseal 1.0.0 Windows and Linux archives are **self-contained** and include the .NET 10.0.14 runtime.
 
 ## Application platform
 
 | Component | Version / role | License / distribution notes |
 | --- | --- | --- |
-| .NET | Target framework `net10.0` | Microsoft/.NET Foundation and contributors; licenses vary by file and distribution. The audited Windows/Linux publishes were framework-dependent. Self-contained packages require an updated inventory. |
+| .NET | Target framework `net10.0`; self-contained Windows/Linux release packages include runtime 10.0.14 | Microsoft/.NET Foundation and contributors; licenses vary by file and distribution. The packages include the applicable runtime license and third-party notices under `licenses/dotnet-10.0.14/`; the Windows package also includes the .NET Library License. |
 | Avalonia UI | 12.1.4 | MIT; cross-platform desktop interface. |
-| FFmpeg / FFprobe | External programs; version depends on installation | LGPL or GPL depending on the actual build. **Not included** in the audited application publish folders. See below. |
+| FFmpeg / FFprobe | External programs; version depends on installation | LGPL or GPL depending on the actual build. **Not included** in the 1.0.0 release packages. See below. |
 
 ## Direct NuGet dependencies
 
@@ -62,7 +62,7 @@ This document identifies the third-party software used by Media Unseal. It disti
 
 All package names above correspond to entries on [NuGet](https://www.nuget.org/). Declared package licenses do not necessarily describe separately packaged native binaries or fonts. The application graph lists **7 direct and 27 transitive packages**; it should not be interpreted as 34 independently redistributed binary components.
 
-## Confirmed components of the audited publish folders
+## Confirmed components of the 1.0.0 release archives
 
 | Component family | Windows (`win-x64`) | Linux (`linux-x64`) |
 | --- | --- | --- |
@@ -73,10 +73,11 @@ All package names above correspond to entries on [NuGet](https://www.nuget.org/)
 | ANGLE native `av_libglesv2.dll` | Included | Not included |
 | Inter font resources | Included via package | Included via package |
 | .NET application host | Included | Included |
-| Full .NET runtime / FFmpeg / FFprobe | Not included | Not included |
+| Full .NET 10.0.14 runtime | Included | Included |
+| FFmpeg / FFprobe | Not included | Not included |
 | AvaloniaUI.DiagnosticsSupport (Debug tooling) | Not included | Not included |
 
-The above reflects the **inspected Release outputs only**. Publishing as self-contained would change the distributed .NET payload.
+The Windows Installer uses the self-contained Windows Portable ZIP as its input and includes the same application payload.
 
 ## Fonts and native components
 
@@ -89,12 +90,12 @@ The above reflects the **inspected Release outputs only**. Publishing as self-co
 
 ## External FFmpeg / FFprobe
 
-Media Unseal starts FFmpeg and FFprobe **as separate processes**, without linking FFmpeg libraries into its application code. The audited `win-x64` and `linux-x64` publish directories did not bundle their executables.
+Media Unseal starts FFmpeg and FFprobe **as separate processes**, without linking FFmpeg libraries into its application code. The 1.0.0 Windows and Linux release packages do not bundle their executables.
 
 - An existing user-installed FFmpeg/FFprobe may be used.
 - On Windows the application can use WinGet (`Gyan.FFmpeg`) or download a third-party Gyan FFmpeg release archive as a separate installation path.
-- The FFmpeg build inspected in the audit was a **local sample**: Gyan `9.0.2 full_build`, reporting `GPL version 3 or later` for FFmpeg and FFprobe. That finding **must not** be generalized to other user-installed or automatically downloaded builds.
-- The licensing of a specific FFmpeg binary depends on its configuration and linked third-party code. See [FFmpeg's official legal page](https://ffmpeg.org/legal.html) and [Gyan's build information](https://www.gyan.dev/ffmpeg/builds/).
+- Gyan.dev states that its Windows builds, including the release essentials build used by the direct downloader, are GPLv3. WinGet selects a `Gyan.FFmpeg` package version at installation time. The locally inspected `9.0.2 full_build` reported `GPL version 3 or later` for FFmpeg and FFprobe. These findings do not establish the terms of arbitrary user-installed builds.
+- The licensing of a specific FFmpeg binary depends on its configuration and linked third-party code. See [FFmpeg's official legal page](https://ffmpeg.org/legal.html), the [GPLv3 text](https://www.gnu.org/licenses/gpl-3.0.html), and [Gyan's build and source-revision information](https://www.gyan.dev/ffmpeg/builds/). The general upstream source repository is not proof of corresponding source for any one downloaded binary.
 
 FFmpeg is **not** covered by the Media Unseal license. Anyone redistributing an FFmpeg build must separately satisfy its license, notice, and corresponding-source obligations.
 

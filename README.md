@@ -18,6 +18,8 @@ Media Unseal is a desktop application for inspecting media files, extracting ind
 
 - **Windows 10/11 (64-bit)** or **Linux (64-bit)**.
 - **FFmpeg and FFprobe** for media inspection and processing. On Linux, install them using your distribution's package manager.
+- On Linux, install ICU, Fontconfig, X11, ICE and SM system libraries. Debian: `sudo apt install libicu76 libfontconfig1 libx11-6 libice6 libsm6`. Fedora: `sudo dnf install libicu fontconfig libX11 libICE libSM`. An X11 session or XWayland is required for the current Avalonia backend.
+- For Chinese, Japanese and Korean text, Noto CJK fonts are recommended but optional (`fonts-noto-cjk` on Debian, `google-noto-sans-cjk-fonts` on Fedora).
 
 ## Getting Started
 

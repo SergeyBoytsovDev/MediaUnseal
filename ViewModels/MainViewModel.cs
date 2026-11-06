@@ -140,6 +140,7 @@ public class MainViewModel : ViewModelBase
             if (SetProperty(ref _isReady, value))
             {
                 OnPropertyChanged(nameof(NeedsTools));
+                OnPropertyChanged(nameof(HasGyanLicenseNotice));
                 OnPropertyChanged(nameof(CanExtract));
                 OnPropertyChanged(nameof(CanChooseFile));
                 OnPropertyChanged(nameof(FooterStatus));
@@ -188,6 +189,7 @@ public class MainViewModel : ViewModelBase
 
     internal void RefreshInstallerLocalization()
     {
+        OnPropertyChanged(nameof(GyanLicenseNotice));
         OnPropertyChanged(nameof(InstallButtonText));
         OnPropertyChanged(nameof(Message));
         OnPropertyChanged(nameof(InstallOption));
@@ -237,6 +239,8 @@ public class MainViewModel : ViewModelBase
         }
     }
     public bool HasInstallerNotice => !string.IsNullOrWhiteSpace(InstallerNotice);
+    public bool HasGyanLicenseNotice => OperatingSystem.IsWindows() && NeedsTools;
+    public string GyanLicenseNotice => L.Get("InstallerGyanLicenseNotice");
     public string InstallOption { get => _installOptionToken?.Resolve() ?? _installOption; private set { _installOptionToken = null; if (SetProperty(ref _installOption, value)) { OnPropertyChanged(nameof(InstallerNotice)); OnPropertyChanged(nameof(HasInstallerNotice)); } } }
     private void SetInstallOption(string value, LocalizedMessage? token)
     {

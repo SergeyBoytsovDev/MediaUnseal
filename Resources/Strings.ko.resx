@@ -1703,4 +1703,5 @@
   <data name="DiagnosticErrorsCount" xml:space="preserve"><value>오류: {0}</value></data>
   <data name="SettingsInterfaceScale" xml:space="preserve"><value>인터페이스 배율</value></data>
   <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>자동</value></data>
+  <data name="InstallerGyanLicenseNotice" xml:space="preserve"><value>자동 설치에는 GPLv3 라이선스가 적용되는 Gyan.dev 빌드를 사용합니다. 라이선스 및 소스 코드 정보: https://www.gyan.dev/ffmpeg/builds/</value></data>
 </root>

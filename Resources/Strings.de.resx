@@ -1703,4 +1703,5 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
   <data name="DiagnosticErrorsCount" xml:space="preserve"><value>Fehler: {0}</value></data>
   <data name="SettingsInterfaceScale" xml:space="preserve"><value>Oberflächenskalierung</value></data>
   <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>Automatisch</value></data>
+  <data name="InstallerGyanLicenseNotice" xml:space="preserve"><value>Die automatische Installation verwendet einen Gyan.dev-Build unter GPLv3. Lizenz und Quellcodeinformationen: https://www.gyan.dev/ffmpeg/builds/</value></data>
 </root>

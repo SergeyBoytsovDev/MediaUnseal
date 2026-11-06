@@ -12,6 +12,7 @@
   <ItemGroup>
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Remove="Assets\Icons\MediaUnseal.psd;Assets\avalonia-logo.ico" />
     <AvaloniaResource Include="docs\media-unseal-media-guide*.md" />
     <AvaloniaResource Include="docs\media-guide-diagrams.*.json" />
     <EmbeddedResource Include="docs\media-unseal-media-guide*.md" WithCulture="false" />

@@ -1703,4 +1703,5 @@
   <data name="DiagnosticErrorsCount" xml:space="preserve"><value>错误：{0}</value></data>
   <data name="SettingsInterfaceScale" xml:space="preserve"><value>界面缩放</value></data>
   <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>自动</value></data>
+  <data name="InstallerGyanLicenseNotice" xml:space="preserve"><value>自动安装使用 Gyan.dev 提供的 GPLv3 授权版本。许可和源代码信息：https://www.gyan.dev/ffmpeg/builds/</value></data>
 </root>

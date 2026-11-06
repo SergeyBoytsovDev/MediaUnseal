@@ -3109,12 +3109,14 @@ mozzconf.h is distributed under the MPL 1.1/GPL 2.0/LGPL 2.1 tri-license.
 
 Media Unseal targets .NET 10. The .NET application host and any .NET runtime components distributed with the application retain their respective licenses and notices. The applicable terms depend on the components included in a particular distribution.
 
+The self-contained Windows and Linux 1.0.0 packages include the original runtime `LICENSE.TXT` and `THIRD-PARTY-NOTICES.TXT` in `licenses/dotnet-10.0.14/`. The Windows package additionally includes the .NET Library License applicable to Windows product distributions.
+
 Official license information: [.NET license information](https://github.com/dotnet/core/blob/main/license-information.md), [.NET runtime license](https://github.com/dotnet/runtime/blob/main/LICENSE.TXT), and [.NET runtime third-party notices](https://github.com/dotnet/runtime/blob/main/THIRD-PARTY-NOTICES.TXT).
 
 ## 9. FFmpeg and FFprobe — external tools
 
-Media Unseal uses FFmpeg and FFprobe as separate external programs. Users may provide their own installed versions. On Windows, Media Unseal can also initiate installation through WinGet (`Gyan.FFmpeg`) or download an FFmpeg build from Gyan.dev.
+Media Unseal uses FFmpeg and FFprobe as separate external programs. Users may provide their own installed versions. On Windows, Media Unseal can also initiate installation through WinGet (`Gyan.FFmpeg`) or download the release essentials build directly from Gyan.dev. Gyan.dev states that its Windows FFmpeg builds, including the automatically downloaded build, are licensed under GPLv3. The exact version obtained through WinGet or the direct download can change. A user-provided FFmpeg build may have different terms.
 
 FFmpeg and FFprobe are not covered by the Media Unseal license. Their applicable LGPL or GPL terms depend on the specific build and its configuration. Any redistribution of FFmpeg binaries must comply separately with the license terms applicable to those binaries, including any required notices and corresponding-source obligations.
 
-Official references: [FFmpeg legal information](https://ffmpeg.org/legal.html), [FFmpeg license and source](https://github.com/FFmpeg/FFmpeg/blob/master/LICENSE.md), and [Gyan.dev FFmpeg builds](https://www.gyan.dev/ffmpeg/builds/).
+Official references: [Gyan.dev builds and build-specific source revision information](https://www.gyan.dev/ffmpeg/builds/), [GPLv3 license text](https://www.gnu.org/licenses/gpl-3.0.html), [FFmpeg legal information](https://ffmpeg.org/legal.html), and [FFmpeg source downloads](https://ffmpeg.org/download.html). A general FFmpeg repository link does not establish the exact corresponding source for a particular binary; match the installed build's version and configuration to its supplier's source information.

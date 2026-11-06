@@ -40,6 +40,8 @@
    <TextBlock Text="{DynamicResource Loc_InstallerAllReady}" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" IsVisible="{Binding IsReady}"/>
    <TextBlock Text="{Binding FallbackNotice}" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap" IsVisible="{Binding HasFallbackNotice}"/>
    <TextBlock Text="{Binding InstallerNotice}" TextWrapping="Wrap" IsVisible="{Binding HasInstallerNotice}" Classes.error="{Binding InstallFailed}"/>
+   <TextBlock x:Name="GyanLicenseNoticeText" Text="{Binding GyanLicenseNotice}" TextWrapping="Wrap"
+              IsVisible="{Binding HasGyanLicenseNotice}" Classes="muted" FontSize="12"/>
    <Grid Height="30" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
     <ProgressBar Grid.Column="0" Minimum="0" Maximum="100" Value="{Binding Progress}" IsIndeterminate="{Binding ProgressBarIndeterminate}" Height="7" VerticalAlignment="Center"/>
     <TextBlock Grid.Column="1" Text="{Binding ProgressPercentDisplay}" IsVisible="{Binding ProgressKnown}" VerticalAlignment="Center"/>
