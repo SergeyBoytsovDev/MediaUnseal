@@ -1,8 +1,27 @@
-**/bin/
-**/obj/
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# Internal tests and audits
+/Tests/
+/tests/
+/test/
+/audit/
+
+# Internal documentation
+/docs/localization-final-audit.md
+/docs/localization-preparation.md
+/docs/media-guide-capabilities-audit.md
+
+# Internal license materials
+/LICENSE_MATERIALS.zip
+
+# IDE and local files
 .vs/
-.idea/
+.vscode/
 *.user
 *.suo
+*.log
+.idea/
 *.userosscache
 *.sln.docstates

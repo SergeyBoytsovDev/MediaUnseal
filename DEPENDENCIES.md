@@ -1,70 +1,113 @@
-# Проверка и установка FFmpeg / FFprobe
+# Media Unseal — Dependencies
 
-При каждом запуске обе утилиты проверяются отдельно командой `-version` (тайм-аут 5 секунд). Порядок поиска: сохранённые пути, собственные завершённые установки, каталог приложения, PATH; в Windows дополнительно перечитывается пользовательский/системный PATH и проверяются каталоги WinGet. Наличие файла или код завершения установщика сами по себе не означают готовность.
+**Application version:** 1.0.0  
+**Application copyright:** © 2026 Sergey Boytsov
 
-Главное окно остаётся открытым при отсутствии утилит. Диалог зависимостей можно закрыть и снова открыть через «Настройки» → «FFmpeg и FFprobe». Кнопка «Выбрать файл» до готовности предлагает открыть настройки.
 
-После выбора или перетаскивания одного локального файла автоматически запускается проверенный FFprobe с `-show_format -show_streams -of json`. Временное окно показывает сведения о контейнере и все потоки с исходными индексами. Новый файл отменяет предыдущий анализ. По умолчанию ожидание ограничено пятью минутами.
+This document identifies the third-party software used by Media Unseal. It distinguishes application-level NuGet dependencies, native assets, build/test tools, and independently installed tools. Licenses and notices are described in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). The license for Media Unseal's own code is in [LICENSE.md](LICENSE.md).
 
-Визуальные потоки дополнительно разделяются на видео, неподвижные изображения и анимации по признакам FFprobe. Встроенные изображения учитываются отдельно от видеодорожек; неоднозначные случаи остаются неопределёнными. Исходный `codec_type`, индекс, частота кадров, длительность и теги сохраняются в модели, даже если условные значения неподвижного изображения скрыты во временном интерфейсе.
+> **Scope:** The package versions below are based on the application's audited .NET 10 dependency graph. NuGet's resolved graph is not identical to the contents of every Windows or Linux release: build-only, test-only, and platform-specific assets may be excluded. The contents of a distributed release package determine which notices must accompany that package. The audited Windows and Linux outputs were **framework-dependent** and are not necessarily identical to the eventual installers and archives.
 
-Для извлечения без перекодирования пользователь отмечает совместимые дорожки и выбирает папку, включая корень диска. Несколько подряд выбранных обычных потоков FFmpeg читает за один проход с отдельным выходным файлом для каждого; при ошибке общего процесса они повторяются по отдельности. Для обычных потоков применяется `-map 0:<индекс> -c copy`, для неподвижного изображения — дополнительно `-frames:v 1`, для потоков типа attachment в других контейнерах — `-dump_attachment:<индекс>` (исходные байты). Поддерживаются только явно перечисленные сочетания кодека и выходного формата; остальные потоки помечены причиной недоступности. Временные файлы создаются в выбранной папке и переносятся без перезаписи: при совпадении имени добавляется номер. Отмена и ошибка удаляют незавершённый файл, готовые результаты остаются. Время очереди и каждой дорожки измеряется монотонным таймером; при неизвестной длительности процент выполнения не оценивается. Длительность одиночного потока ограничена двумя часами, общего прохода — суммой лимитов его потоков. Конвертация и выбор иных форматов не реализованы. Ускорение на реальных файлах не измерялось.
+## Application platform
 
-## Вложения Matroska
+| Component | Version / role | License / distribution notes |
+| --- | --- | --- |
+| .NET | Target framework `net10.0` | Microsoft/.NET Foundation and contributors; licenses vary by file and distribution. The audited Windows/Linux publishes were framework-dependent. Self-contained packages require an updated inventory. |
+| Avalonia UI | 12.1.4 | MIT; cross-platform desktop interface. |
+| FFmpeg / FFprobe | External programs; version depends on installation | LGPL or GPL depending on the actual build. **Not included** in the audited application publish folders. See below. |
 
-Для подтверждённых JPEG/PNG-вложений MKV используется `MatroskaAttachments` на C#: проверяются EBML-заголовки и элементы `Attachments/AttachedFile`, затем потоково копируется `FileData` с буфером 64 КиБ. При наличии пригодного SeekHead смещение SeekPosition отсчитывается от начала данных Segment; целевой заголовок и границы проверяются до чтения вложения. Ближние элементы верхнего уровня дополнительно проверяются, чтобы не принять данные Cluster за Attachments. Поддерживаются ссылки на следующий SeekHead. При отсутствии или повреждении индекса используется последовательный обход заголовков Segment. Видеоданные пропускаются переходами по размерам элементов, без поиска сигнатур внутри блоков. Вложения могут находиться до, между или после кластеров. Поддержаны неопределённые размеры Segment и Cluster; у последнего читаются заголовки непосредственных дочерних элементов. Обычные дорожки и другие контейнеры продолжают использовать FFmpeg.
+## Direct NuGet dependencies
 
-Имя и MIME из FFprobe должны дать единственное совпадение и среди AttachedFile, и среди потоков FFprobe. Имя сравнивается точно, MIME — без учёта регистра. Дополнительно сверяется полный список вложений: демультиплексор FFmpeg создаёт их потоки в порядке AttachedFile. Несовпадение количества, порядка или метаданных блокирует извлечение; это защищает от перестановки метаданных через Matroska Tags. FileUID читается из контейнера и записывается отдельно от индекса FFprobe; ID MKVToolNix также не используется как индекс. Одинаковые пары имени/MIME, отсутствующие метаданные, несоответствие формата и повреждённая структура завершаются ошибкой без повторного извлечения через FFmpeg. Имя вложения не используется как путь назначения. Временный результат попадает в существующий механизм безопасного переноса и очистки.
+| Package | Version | Declared license / qualification |
+| --- | --- | --- |
+| [Avalonia](https://www.nuget.org/packages/Avalonia/12.1.4) | 12.1.4 | MIT |
+| [Avalonia.Desktop](https://www.nuget.org/packages/Avalonia.Desktop/12.1.4) | 12.1.4 | MIT |
+| [Avalonia.Themes.Fluent](https://www.nuget.org/packages/Avalonia.Themes.Fluent/12.1.4) | 12.1.4 | MIT |
+| [Avalonia.Fonts.Inter](https://www.nuget.org/packages/Avalonia.Fonts.Inter/12.1.4) | 12.1.4 | MIT (package); embedded Inter font under SIL OFL 1.1 |
+| [AvaloniaUI.DiagnosticsSupport](https://www.nuget.org/packages/AvaloniaUI.DiagnosticsSupport/2.2.3) | 2.2.3 | Licensing **not established** from available package metadata; used in Debug only and absent from audited Release publishes |
+| [CommunityToolkit.Mvvm](https://www.nuget.org/packages/CommunityToolkit.Mvvm/8.4.2) | 8.4.2 | MIT |
+| [Markdown.Avalonia.Tight](https://www.nuget.org/packages/Markdown.Avalonia.Tight/12.0.2) | 12.0.2 | MIT |
 
-Это специализированный читатель вложений, не валидатор всего MKV: он не декодирует изображения и не проверяет CRC содержимого/медиаблоки. Ускоренный путь доверяет проверенной ссылке SeekHead на заголовок Attachments и не обходит все прочие элементы Segment; полная проверка всей структуры файла для него невозможна без такого обхода. Сопоставление с полным списком вложений FFprobe остаётся обязательным. Ограничения: один Segment и один Attachments, не более 1024 вложений, 32 переходов SeekHead, 4096 записей Seek и 100000 прочитанных заголовков, строки до 4096 байт, суммарно до 1 МиБ прочитанных строк. Неподдерживаемые версии и неизвестная структура Cluster с неопределённым размером отклоняются. Если при большом числе блоков такого Cluster достигнут лимит, автоматического полного сканирования или перехода к FFmpeg нет.
+## Transitive NuGet dependencies
 
-Выбор механизма основан на [исходнике демультиплексора FFmpeg](https://github.com/FFmpeg/FFmpeg/blob/master/libavformat/matroskadec.c): распознанные изображения становятся attached pictures, остальные вложения используют extradata. Документированный [`-dump_attachment`](https://ffmpeg.org/ffmpeg.html) работает с extradata; на локальном MKV с JPEG он не создал файл. У [FFprobe](https://github.com/FFmpeg/FFmpeg/blob/master/fftools/ffprobe.c) проверка количества выбранных пакетов происходит после чтения следующего выбранного пакета, поэтому `-read_intervals %+#1` не гарантирует быстрый выход для единственной обложки. Формат читается по [спецификации Matroska](https://www.matroska.org/technical/elements.html).
+| Package | Version | Declared license / qualification |
+| --- | --- | --- |
+| Avalonia.Angle.Windows.Natives | 2.1.27548.20260419 | ANGLE's BSD-style license; nested native notices may apply |
+| Avalonia.BuildServices | 11.3.2 | MIT; build-time component |
+| Avalonia.FreeDesktop | 12.1.4 | MIT |
+| Avalonia.FreeDesktop.AtSpi | 12.1.4 | MIT |
+| Avalonia.HarfBuzz | 12.1.4 | MIT wrapper; HarfBuzz native terms also apply |
+| Avalonia.Native | 12.1.4 | MIT wrapper; native notices to verify |
+| Avalonia.Remote.Protocol | 12.1.4 | MIT |
+| Avalonia.Skia | 12.1.4 | MIT wrapper; Skia native terms also apply |
+| Avalonia.Win32 | 12.1.4 | MIT |
+| Avalonia.X11 | 12.1.4 | MIT |
+| ColorDocument.Avalonia | 12.0.2 | MIT |
+| ColorTextBlock.Avalonia | 12.0.2 | MIT |
+| HarfBuzzSharp | 8.3.1.3 | MIT wrapper; native HarfBuzz terms also apply |
+| HarfBuzzSharp.NativeAssets.Linux | 8.3.1.3 | MIT wrapper and native notices; Linux conditional |
+| HarfBuzzSharp.NativeAssets.macOS | 8.3.1.3 | MIT wrapper and native notices; not in audited Windows/Linux packages |
+| HarfBuzzSharp.NativeAssets.WebAssembly | 8.3.1.3 | MIT wrapper and native notices; not in audited desktop packages |
+| HarfBuzzSharp.NativeAssets.Win32 | 8.3.1.3 | MIT wrapper and native notices; Windows conditional |
+| MicroCom.Runtime | 0.11.6 | MIT |
+| Microsoft.Extensions.DependencyInjection.Abstractions | 8.0.0 | MIT |
+| Microsoft.Extensions.Logging.Abstractions | 8.0.0 | MIT |
+| Microsoft.IO.RecyclableMemoryStream | 3.0.1 | MIT |
+| SkiaSharp | 3.119.4 | MIT wrapper; Skia native terms also apply |
+| SkiaSharp.NativeAssets.Linux | 3.119.4 | MIT wrapper and bundled third-party notices; Linux conditional |
+| SkiaSharp.NativeAssets.macOS | 3.119.4 | MIT wrapper and native notices; not in audited Windows/Linux packages |
+| SkiaSharp.NativeAssets.WebAssembly | 3.119.4 | MIT wrapper and native notices; not in audited desktop packages |
+| SkiaSharp.NativeAssets.Win32 | 3.119.4 | MIT wrapper and native notices; Windows conditional |
+| Tmds.DBus.Protocol | 0.94.1 | MIT |
 
-Проверены синтетические EBML-фикстуры, в том числе индексированные и с разреженным Cluster свыше 2 ГиБ. Для малого MKV реальный FFprobe и C#-извлечение ранее дали точное совпадение исходных JPEG-байтов без запуска FFmpeg для экспорта. Производительность на пользовательском MKV размером 20 ГБ после изменения не измерялась; это остаётся ручной проверкой. Журнал показывает использование SeekHead, число переходов и заголовков, реально прочитанные байты и время поиска/копирования.
+All package names above correspond to entries on [NuGet](https://www.nuget.org/). Declared package licenses do not necessarily describe separately packaged native binaries or fonts. The application graph lists **7 direct and 27 transitive packages**; it should not be interpreted as 34 independently redistributed binary components.
 
-## Способы установки
+## Confirmed components of the audited publish folders
 
-- **Windows 10/11:** WinGet, пакет `Gyan.FFmpeg`, источник `winget`, область установки `user`. Если WinGet недоступен или обе утилиты после установки не прошли проверку, предлагается резервный способ. Он запускается только после нового нажатия «Установить».
-- **Windows 10/11 x64, резерв:** ZIP release essentials с [gyan.dev](https://www.gyan.dev/ffmpeg/builds/), поставщика из [официального списка FFmpeg](https://ffmpeg.org/download.html). HTTPS разрешён только для `www.gyan.dev/ffmpeg/builds/`, включая перенаправления. SHA-256 запрашивается у того же поставщика и проверяется до распаковки/запуска. Отсутствующая сумма, ошибка сети или несовпадение останавливают установку. Если поставщик обновил архив между запросами, нужно повторить попытку.
-- **Windows ARM64/x86:** проверка, WinGet при наличии совместимого пакета, ручные пути. Прямая загрузка не реализована для этих архитектур.
-- **Linux:** определяются APT, DNF, Pacman и Zypper; показывается команда для выполнения в терминале. Доступность пакета зависит от репозиториев дистрибутива. Привилегированные команды из приложения не запускаются. Альтернатива — подходящий пакет из официального списка FFmpeg и ручные пути; универсальной прямой загрузки нет.
+| Component family | Windows (`win-x64`) | Linux (`linux-x64`) |
+| --- | --- | --- |
+| Avalonia 12.1.4 and associated managed assemblies | Included | Included |
+| CommunityToolkit.Mvvm 8.4.2, Markdown.Avalonia family 12.0.2 | Included | Included |
+| SkiaSharp 3.119.4, HarfBuzzSharp 8.3.1.3 and associated managed components | Included | Included |
+| Native `libSkiaSharp` / `libHarfBuzzSharp` | `.dll` | `.so` |
+| ANGLE native `av_libglesv2.dll` | Included | Not included |
+| Inter font resources | Included via package | Included via package |
+| .NET application host | Included | Included |
+| Full .NET runtime / FFmpeg / FFprobe | Not included | Not included |
+| AvaloniaUI.DiagnosticsSupport (Debug tooling) | Not included | Not included |
 
-Резервная установка сохраняется в `%LOCALAPPDATA%/MediaUnseal/tools/`. Глобальный PATH не меняется. ZIP ограничен по размеру и числу записей; пути с выходом из каталога, ссылки, специальные имена и повторная запись файлов запрещены. Проверяется формат Windows x64 PE, затем запускаются обе утилиты. Существующие рабочие пути сохраняются. Неуспешная/отменённая попытка удаляется, предыдущая установка не перезаписывается.
+The above reflects the **inspected Release outputs only**. Publishing as self-contained would change the distributed .NET payload.
 
-Настройки записываются атомарно в `MediaUnseal/settings.json`: `%APPDATA%` в Windows, `$XDG_CONFIG_HOME` или `~/.config` в Linux. Для существующих пользователей приложение продолжает читать и сохранять настройки в прежнем каталоге, если он уже существует. Кнопка «Отменить» завершает текущую операцию; закрытие окна ждёт остановки процессов и очистки файлов.
+## Fonts and native components
 
-Краткая предварительная HTTPS-проверка источников ограничена тремя секундами на каждый. Если она не удалась, кнопка «Установить» остаётся доступной для явной повторной попытки; ручное указание путей также доступно. Во время резервной загрузки отображаются загруженные МБ и общий размер, когда сервер сообщает `Content-Length`.
+| Component | Role | License / notices |
+| --- | --- | --- |
+| [Inter](https://github.com/rsms/inter) | UI font (embedded via Avalonia.Fonts.Inter for non-Windows) | SIL Open Font License 1.1; Inter Project Authors |
+| [ANGLE](https://github.com/google/angle) | Windows rendering/native component | BSD-style license and any bundled subcomponent notices |
+| [Skia](https://github.com/google/skia) / [SkiaSharp](https://github.com/mono/SkiaSharp) | Rendering and managed bindings | Skia's BSD-style license; SkiaSharp's MIT license; nested native notices |
+| [HarfBuzz](https://github.com/harfbuzz/harfbuzz) / HarfBuzzSharp | Text shaping and managed bindings | HarfBuzz “Old MIT” and component notices; wrapper MIT |
 
-Диагностические события сохраняются в локальном каталоге данных `MediaUnseal/logs`: текущий и один предыдущий файл, не более 512 КиБ каждый. «Сохранить лог» показывает очищенный отчёт для просмотра и затем открывает стандартный диалог сохранения. При экспорте домашние каталоги заменяются меткой; токены и пароли в сообщениях очищаются до записи. Журнал не отправляется автоматически.
+## External FFmpeg / FFprobe
 
-## Автоматические проверки
+Media Unseal starts FFmpeg and FFprobe **as separate processes**, without linking FFmpeg libraries into its application code. The audited `win-x64` and `linux-x64` publish directories did not bundle their executables.
 
-```text
-dotnet restore Tests/MediaUnseal.SmokeTests.csproj
-dotnet build MediaUnseal.csproj --no-restore
-dotnet run --no-restore --project Tests/MediaUnseal.SmokeTests.csproj
-```
+- An existing user-installed FFmpeg/FFprobe may be used.
+- On Windows the application can use WinGet (`Gyan.FFmpeg`) or download a third-party Gyan FFmpeg release archive as a separate installation path.
+- The FFmpeg build inspected in the audit was a **local sample**: Gyan `9.0.2 full_build`, reporting `GPL version 3 or later` for FFmpeg and FFprobe. That finding **must not** be generalized to other user-installed or automatically downloaded builds.
+- The licensing of a specific FFmpeg binary depends on its configuration and linked third-party code. See [FFmpeg's official legal page](https://ffmpeg.org/legal.html) and [Gyan's build information](https://www.gyan.dev/ffmpeg/builds/).
 
-Тесты используют собственные временные файлы в каталоге сборки. Настоящие FFmpeg/FFprobe не скачиваются и не устанавливаются: HTTP и процессы установщиков имитируются. Проверки обнаружения запускают копии тестового приложения. Проверки установки Windows выполняются только на Windows, прямой загрузки — на Windows x64.
+FFmpeg is **not** covered by the Media Unseal license. Anyone redistributing an FFmpeg build must separately satisfy its license, notice, and corresponding-source obligations.
 
-## NU1900: результат проверки 26.10.2026
+## Build and test dependencies (not end-user components by default)
 
-Используется пользовательский `NuGet.Config` с источником `https://api.nuget.org/v3/index.json`; отдельный источник аудита не задан. В песочнице DNS-запросы к `api.nuget.org` и `data.nuget.org` не разрешались, HTTPS завершался ошибкой запрета доступа к сокету. В обычной среде оба адреса отвечали HTTP 200; использовался системный HTTP-прокси `127.0.0.1:10809` (переменные HTTP_PROXY/HTTPS_PROXY/ALL_PROXY не заданы).
+- .NET SDK (audit host: `10.0.403`) is a development tool, not the application's target version.
+- `Avalonia.Headless` 12.1.4 (MIT) is used by the test project.
+- Build-only generators, analyzers, and Debug-only tooling are not assumed to be shipped in Release packages.
 
-Повторный restore вне песочницы с `--force --no-http-cache` загрузил данные аудита и завершился без NU1900. Аудит основного и тестового проектов с `--vulnerable --include-transitive` не обнаружил известных уязвимых пакетов. Конфигурация проекта, NuGetAudit и предупреждения не изменялись.
+## Accompanying original legal materials
 
-Если предупреждение повторится, выполните в обычном терминале с доступом к сети:
+The audited local NuGet cache yielded five unique original notice/license files covering 13 cache occurrences. Those original texts have been incorporated, without substantive abbreviation, into [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md), alongside attribution and license texts for Avalonia, Inter, Markdown.Avalonia and other confirmed packages. See the notice document for upstream references and the scope of the supplied material.
 
-```powershell
-Resolve-DnsName api.nuget.org
-Resolve-DnsName data.nuget.org
-Invoke-WebRequest https://api.nuget.org/v3/index.json
-Invoke-WebRequest https://data.nuget.org/v3/index.json
-dotnet restore Tests/MediaUnseal.SmokeTests.csproj --force --no-http-cache
-dotnet list MediaUnseal.csproj package --vulnerable --include-transitive --no-restore
-dotnet list Tests/MediaUnseal.SmokeTests.csproj package --vulnerable --include-transitive --no-restore
-```
+## Release packaging and license scope
 
-При ошибке проверьте доступность системного прокси и разрешение сети для процесса .NET. Успешный restore из кэша сам по себе не подтверждает доступность аудита.
-
-Остались ручные проверки: реальная установка WinGet и резервная загрузка, выбор и перетаскивание реальных медиафайлов в GUI, отмена анализа при смене файла, извлечение реальных видеодорожек, аудио, субтитров и обложек через FFmpeg, отмена извлечения, работа на Linux и на разных архитектурах. Они не выполнялись в ходе разработки.
+The legally relevant component list is the content **actually included** in each published installer or archive. For example, self-contained .NET deployment embeds more .NET runtime components than a framework-dependent deployment; Windows and Linux packages have different native assets. Relevant license texts, copyright statements, and bundled third-party notices must accompany the shipped components. See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

@@ -1,81 +1,64 @@
-# [НАЗВАНИЕ ПРОГРАММЫ] — условия использования
+# Media Unseal — Software License
 
-> **DRAFT / ЧЕРНОВИК. НЕ ДЛЯ ПУБЛИЧНОГО РЕЛИЗА.**
-> Версия проекта документа: 0.1 (04.11.2026).
-> Название продукта, правообладатель, контакты и окончательная юридическая редакция ещё не утверждены.
+**License edition:** November 2026  
+**Applies to Media Unseal version 1.0.0**  
+**Copyright © 2026 Sergey Boytsov. All rights reserved.**
 
-**Модель:** Source Available / Freeware / All Rights Reserved  
-**Правообладатель:** [ИМЯ ИЛИ НАИМЕНОВАНИЕ ПРАВООБЛАДАТЕЛЯ — УТОЧНИТЬ]  
-**© 2026 [ПРАВООБЛАДАТЕЛЬ]. Все права защищены.**
+This license applies only to the original Media Unseal application, its original source code, documentation, artwork, and other materials to which Sergey Boytsov owns or controls the necessary rights (collectively, the **Application**). It does **not** replace or restrict the separate licenses of third-party components. See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) and [DEPENDENCIES.md](DEPENDENCIES.md).
 
-## 1. Область действия
+## 1. Free use
 
-Эти условия распространяются на оригинальные компоненты программы [НАЗВАНИЕ ПРОГРАММЫ], её официальные готовые сборки, оригинальный исходный код и собственные материалы правообладателя, если для отдельных материалов не установлены другие условия.
+You may download, install, run, and use the Application free of charge for personal, educational, professional, and commercial purposes. There are no fees or royalties for such use. Optional donations are voluntary and do not alter the permissions in this license.
 
-Публичная доступность исходного кода **не** означает, что программа распространяется как свободное ПО / Open Source, и **не** предоставляет общего разрешения на повторное использование кода.
+## 2. Redistribution of official, unmodified releases
 
-## 2. Использование готовой программы
+You may copy and redistribute **complete, unmodified official binary release packages** of Media Unseal, without charge, provided that:
 
-Правообладатель бесплатно предоставляет пользователю неисключительное разрешение устанавливать и использовать **официальные готовые сборки** программы в личной, образовательной, профессиональной и коммерческой деятельности.
+1. The executable files, package contents, and accompanying materials are not modified, removed, or replaced.
+2. This license, all included third-party license notices, and copyright attributions remain intact and accessible to recipients.
+3. Media Unseal is identified by its original name and credited to **Sergey Boytsov**; you do not claim to be the author or an official representative.
+4. You do not rebrand the Application, sell copies of it as a standalone product, or imply endorsement of your redistribution by the author.
+5. Any third-party components distributed with the package remain subject to their own licenses, including any additional redistribution obligations. Nothing in this condition restricts redistribution rights that those components independently grant.
 
-- Подписка, покупка лицензии и пожертвования не требуются.
-- Допускается установка на несколько устройств, а также создание технически необходимых копий для установки и резервного хранения.
-- Правообладатель не претендует на права на файлы пользователя или созданные с помощью программы результаты обработки только по факту использования программы.
-- Пользователь самостоятельно отвечает за правомерность обработки принадлежащих ему или полученных от третьих лиц материалов.
+An **official binary release package** means an unchanged installer or archive originally published by the copyright holder as a Media Unseal release. Permission to share an official package does not authorize distributing modified or independently rebuilt executables.
 
-Это разрешение касается готовой программы, а не самостоятельного использования её исходного кода.
+## 3. Source code access
 
-## 3. Доступность исходного кода
+Where source code is publicly available, you may view, read, and study it. You may download a copy and compile the **unmodified** Application for your own use, including use in a commercial workplace, subject to third-party license terms.
 
-Оригинальный исходный код может размещаться в публичном репозитории для ознакомления, изучения и проверки работы программы.
+Except as expressly permitted above or required by applicable law, **you may not**, without prior written permission from Sergey Boytsov:
 
-Просмотр, клонирование и создание форков допускаются **в пределах прав, которые непосредственно предоставляет платформа GitHub**, а также обязательных положений применимого законодательства. Наличие таких технических возможностей не означает выдачу лицензии на дальнейшее использование кода в сторонних проектах.
+- modify, adapt, or publish altered versions of the Application or its original source code;
+- redistribute the Application's source code as a separate product, or distribute independently built or modified binaries;
+- incorporate, copy, or reuse the Application's original source code or substantial portions of it in another project;
+- sublicense or offer rights in the Application beyond those granted here.
 
-## 4. Запрет повторного использования исходного кода
+Features and permissions necessarily provided by the hosting platform for public repositories (such as viewing and platform-supported forking) remain governed by that platform's terms. Those platform features do not grant an independent right to reuse the Application's original code outside the permissions in this license.
 
-Без предварительного письменного разрешения правообладателя **не разрешается**:
+## 4. Third-party components
 
-1. Использовать оригинальный код программы или его охраняемые части в собственных либо чужих проектах — коммерческих или некоммерческих.
-2. Включать, переносить, перерабатывать или распространять этот код в составе приложений, библиотек, расширений и других программных продуктов.
-3. Создавать и распространять модифицированные или производные версии программы, основанные на оригинальном коде.
-4. Компилировать исходный код и распространять неофициальные готовые сборки программы.
-5. Продавать исходный код, предоставлять сублицензии или выдавать чужую разработку за собственную.
-6. Удалять или искажать уведомления об авторстве и правах.
+This license covers **only material to which Sergey Boytsov holds the relevant rights**. Open-source and other third-party libraries, fonts, runtimes, and tools retain their own copyrights and licenses. Nothing in this license reduces permissions granted by their licensors or imposes these proprietary restrictions on their separately licensed code.
 
-Эти ограничения действуют **в той мере, в какой соответствующие права принадлежат правообладателю**. Они не отменяют законные исключения, условия GitHub и права, предоставленные независимыми лицензиями сторонних компонентов.
+Media Unseal may invoke FFmpeg and FFprobe as separate external programs. FFmpeg and FFprobe are **not licensed under this document**. Their applicable licenses depend on the specific build and distribution method; consult [FFmpeg's licensing information](https://ffmpeg.org/legal.html). Redistribution of FFmpeg binaries requires independent compliance with their terms.
 
-## 5. Распространение готовых сборок
+## 5. Name and attribution
 
-Официальные каналы загрузки определяет правообладатель. Свободно распространять ссылки на официальные страницы загрузки разрешается.
+The name **Media Unseal** and the author's name may be used to identify the unmodified Application and provide the attribution required by this license. This license does not grant permission to falsely imply sponsorship, affiliation, or endorsement, or any rights to third-party trademarks.
 
-Перепаковка, публикация изменённых сборок и распространение программы под чужим авторством без отдельного разрешения не допускаются, кроме случаев, обязательных по закону или вытекающих из сторонних лицензий.
+## 6. No warranty; limitation of liability
 
-## 6. Сторонние компоненты и будущие разработки
+THE APPLICATION IS PROVIDED **“AS IS”** AND **“AS AVAILABLE”**, WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT, TO THE EXTENT PERMITTED BY APPLICABLE LAW.
 
-FFmpeg, FFprobe, Avalonia UI и другие сторонние компоненты **не переходят под действие этой лицензии**. Их собственные лицензии и предоставленные ими права сохраняются в полном объёме. Перечень известных компонентов см. в `THIRD-PARTY-NOTICES.md`.
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, SERGEY BOYTSOV SHALL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR OTHER DAMAGES ARISING FROM THE USE OF, INABILITY TO USE, OR DISTRIBUTION OF THE APPLICATION, INCLUDING LOSS OF DATA OR BUSINESS INTERRUPTION. NOTHING HERE EXCLUDES LIABILITY THAT CANNOT LAWFULLY BE EXCLUDED.
 
-Независимые оригинальные модули правообладателя могут распространяться на настоящих условиях. Если в будущем собственный код будет встроен в FFmpeg или иное лицензируемое ПО в составе производного произведения, приоритет имеют применимые условия соответствующих сторонних лицензий.
+## 7. Termination and other rights
 
-## 7. Авторские права и отдельные разрешения
+Your permissions under this license terminate if you violate its conditions. Termination does not affect rights you independently hold under a third-party license or mandatory applicable law. Permissions may be restored by express written authorization from Sergey Boytsov.
 
-Все прямо не предоставленные права на оригинальные компоненты сохраняются за их правообладателем. Отдельные разрешения могут предоставляться письменно.
+To the extent a condition of this license conflicts with a mandatory right or an independent third-party license, it applies only to the original Media Unseal material that Sergey Boytsov may lawfully license.
 
-Запрет повторного использования кода не препятствует независимому созданию программ со сходными функциями без копирования охраняемого кода или других защищённых материалов.
-
-## 8. Отсутствие гарантий и ответственность
-
-Программа предоставляется «как есть» (AS IS), в максимально допустимой применимым законодательством мере, без обещаний безошибочной работы или пригодности для конкретной задачи.
-
-Ответственность правообладателя ограничивается только в той мере, в какой это допускает применимое законодательство. Императивные права пользователя не затрагиваются.
-
-## 9. Добровольная поддержка
-
-Пожертвования на развитие программы добровольны, не требуются для использования программы и не предоставляют дополнительных прав на исходный код или распространение сборок.
-
-## 10. Заключительные положения
-
-Эти условия применяются только к материалам, правообладатель которых вправе устанавливать такие ограничения. Для отдельных выпусков могут публиковаться новые редакции; ранее предоставленные права не отменяются автоматически задним числом.
+All rights not expressly granted are reserved. Any additional permission to modify, integrate, or redistribute the Application must be obtained from the copyright holder.
 
 ---
 
-**DRAFT: до релиза необходимо утвердить название программы, правообладателя, официальный язык лицензии и условия применения в выбранных юрисдикциях, а также проверить состав дистрибутива и лицензии зависимостей.**
+**License type:** Proprietary, source-available freeware with permission to redistribute unmodified official binaries. It is **not** an open-source license.
