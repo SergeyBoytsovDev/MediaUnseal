@@ -20,6 +20,7 @@ public sealed class DiagnosticLog
     private const string CurrentFile = "diagnostic.txt";
     private readonly string _directory;
     private readonly object _gate = new();
+    private string? _lastCleanupFailure;
     public event Action<DiagnosticEvent>? EventRecorded;
 
     public DiagnosticLog(string directory) => _directory = directory;
@@ -27,8 +28,8 @@ public sealed class DiagnosticLog
     public void Record(DiagnosticLevel level, string operation, string message, string? details = null,
         string? userMessageKey = null, object?[]? userMessageArgs = null, bool userSuccess = false)
     {
-        var entry = new DiagnosticEvent(DateTimeOffset.Now, level, RedactPersonalPaths(Clean(operation)),
-            RedactPersonalPaths(Clean(message)), details is null ? null : RedactPersonalPaths(Clean(details)),
+        var entry = new DiagnosticEvent(DateTimeOffset.Now, level, RedactSensitive(Clean(operation)),
+            RedactSensitive(Clean(message)), details is null ? null : RedactSensitive(Clean(details)),
             userMessageKey, userMessageArgs, userSuccess);
         try { EventRecorded?.Invoke(entry); }
         catch (Exception ex) when (ex is not OutOfMemoryException) { }
@@ -67,23 +68,51 @@ public sealed class DiagnosticLog
             Prune();
             foreach (var file in ManagedFiles().OrderBy(file => file.Name == CurrentFile ? DateTime.MaxValue
                 : file.LastWriteTimeUtc).ThenBy(file => file.Name, StringComparer.Ordinal))
-                foreach (var line in File.ReadLines(file.FullName))
-                    yield return RedactPersonalPaths(line);
+            {
+                StreamReader? reader;
+                try { reader = new StreamReader(file.FullName); }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                { ReportCleanupFailure("read", ex); continue; }
+                using (reader)
+                    while (true)
+                    {
+                        string? line;
+                        try { line = reader.ReadLine(); }
+                        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                        { ReportCleanupFailure("read", ex); break; }
+                        if (line is null) break;
+                        yield return RedactSensitive(line);
+                    }
+            }
         }
     }
 
     public void Clear()
     {
         lock (_gate)
-            foreach (var file in ManagedFiles()) file.Delete();
+        {
+            Exception? failure = null;
+            try
+            {
+                foreach (var file in ManagedFiles())
+                    try { file.Delete(); }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                    { failure ??= ex; }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            { failure ??= ex; }
+            if (failure is not null) ReportCleanupFailure("clear", failure);
+            else _lastCleanupFailure = null;
+        }
     }
 
     private FileInfo[] ManagedFiles()
     {
         if (!Directory.Exists(_directory)) return [];
         return new DirectoryInfo(_directory).EnumerateFiles("diagnostic*", SearchOption.TopDirectoryOnly)
-            .Where(file => file.Name is CurrentFile or "diagnostic.log" or "diagnostic.1.log"
+            .Where(file => (file.Name is CurrentFile or "diagnostic.log" or "diagnostic.1.log"
                 || Regex.IsMatch(file.Name, @"\Adiagnostic-\d{8}T\d{9}-[0-9a-f]{32}\.txt\z"))
+                && file.Exists && (file.Attributes & FileAttributes.ReparsePoint) == 0)
             .ToArray();
     }
 
@@ -91,15 +120,34 @@ public sealed class DiagnosticLog
     {
         var files = ManagedFiles();
         var cutoff = DateTime.UtcNow - Retention;
-        foreach (var file in files.Where(file => file.LastWriteTimeUtc < cutoff)) file.Delete();
+        foreach (var file in files.Where(file => file.LastWriteTimeUtc < cutoff))
+            try { file.Delete(); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            { ReportCleanupFailure("retention", ex); }
         files = ManagedFiles();
         var total = files.Sum(file => file.Length);
         foreach (var file in files.OrderBy(file => file.LastWriteTimeUtc).ThenBy(file => file.Name, StringComparer.Ordinal))
         {
             if (total <= MaxTotalBytes) break;
-            total -= file.Length;
-            file.Delete();
+            try { var length = file.Length; file.Delete(); total -= length; }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            { ReportCleanupFailure("size limit", ex); }
         }
+    }
+
+    private void ReportCleanupFailure(string action, Exception ex)
+    {
+        var signature = action + ex.GetType().Name + ex.HResult;
+        if (_lastCleanupFailure == signature) return;
+        _lastCleanupFailure = signature;
+        var entry = new DiagnosticEvent(DateTimeOffset.Now, DiagnosticLevel.Warn, "Diagnostic storage",
+            $"Log {action} failed: {ex.GetType().Name}; HResult 0x{ex.HResult:X8}.");
+        try
+        {
+            Directory.CreateDirectory(_directory);
+            File.AppendAllText(Path.Combine(_directory, CurrentFile), Format(entry) + Environment.NewLine, Encoding.UTF8);
+        }
+        catch (Exception writeError) when (writeError is IOException or UnauthorizedAccessException) { }
     }
 
     private static string Format(DiagnosticEvent entry) =>
@@ -109,13 +157,20 @@ public sealed class DiagnosticLog
     private static string Clean(string value)
     {
         value = value.Replace('\r', ' ').Replace('\n', ' ');
-        value = Regex.Replace(value, @"(?i)\bBearer\s+\S+", "Bearer [redacted]");
-        value = Regex.Replace(value,
-            @"(?i)(authorization|bearer|token|password|secret|api[_-]?key)\s*[:=]\s*(?:""[^""]*""|'[^']*'|\S+)",
-            "$1=[redacted]");
         return value.Length > 1000
             ? value[..700] + $"…[{value.Length - 950} characters omitted]…" + value[^250..]
             : value;
+    }
+
+    internal static string RedactSensitive(string text)
+    {
+        text = Regex.Replace(text, @"(?i)\bAuthorization\s*:\s*(?:Bearer|Basic)\s+\S+", "Authorization: [redacted]");
+        text = Regex.Replace(text, @"(?i)\bBearer\s+\S+", "Bearer [redacted]");
+        text = Regex.Replace(text,
+            @"(?i)\b(authorization|bearer|token|password|secret|api[_-]?key|access[_-]?key|client[_-]?secret|session(?:id)?|cookie|set-cookie|user(?:name)?|login|email)\s*[:=]\s*(?:""[^""]*""|'[^']*'|\S+)",
+            "$1=[redacted]");
+        text = Regex.Replace(text, @"(?i)\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", "[email redacted]");
+        return RedactPersonalPaths(text);
     }
 
     internal static string RedactPersonalPaths(string text)

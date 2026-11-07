@@ -1704,4 +1704,18 @@ Video: {6}; immagini: {7}; animazioni: {8}; audio: {9}; sottotitoli: {10}; fluss
   <data name="SettingsInterfaceScale" xml:space="preserve"><value>Scala dell’interfaccia</value></data>
   <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>Automatico</value></data>
   <data name="InstallerGyanLicenseNotice" xml:space="preserve"><value>L’installazione automatica usa una build di Gyan.dev con licenza GPLv3. Licenza e informazioni sul codice sorgente: https://www.gyan.dev/ffmpeg/builds/</value></data>
+  <data name="SettingsSaveFailed" xml:space="preserve"><value>Impossibile salvare le impostazioni. Le modifiche resteranno attive solo fino alla chiusura dell'applicazione. Verificare l'accesso al file delle impostazioni.</value></data>
+  <data name="SettingsSaveRecovered" xml:space="preserve"><value>Le impostazioni sono state salvate dopo l'errore precedente.</value></data>
+  <data name="UpdateAvailableJournal" xml:space="preserve"><value>Media Unseal {0} è disponibile. Aggiornalo in Impostazioni → Informazioni.</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>Verifica degli aggiornamenti…</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>Impossibile verificare gli aggiornamenti</value></data>
+  <data name="UpdateAvailableVersion" xml:space="preserve"><value>Versione {0} disponibile</value></data>
+  <data name="UpdateDownloadInstall" xml:space="preserve"><value>Scarica e aggiorna</value></data>
+  <data name="UpdateCancelDownload" xml:space="preserve"><value>Annulla download</value></data>
+  <data name="UpdateDownloadProgress" xml:space="preserve"><value>Download: {0:0}%</value></data>
+  <data name="UpdateManualInstall" xml:space="preserve"><value>Questa installazione richiede un aggiornamento manuale da GitHub Releases.</value></data>
+  <data name="UpdateInstallFailed" xml:space="preserve"><value>Impossibile installare l&apos;aggiornamento. Consulta il rapporto diagnostico.</value></data>
+  <data name="UpdateBusy" xml:space="preserve"><value>Attendi il completamento del processo in corso prima di aggiornare.</value></data>
 </root>
+
+

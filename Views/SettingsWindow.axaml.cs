@@ -2,6 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -19,15 +21,18 @@ public partial class SettingsWindow : Window
     private readonly UiAppearance _appearance;
     private readonly DependencyPanel _installer;
     private readonly LocalizationManager _localization;
-    private int _demoUpdateState;
+    private readonly UpdateService _updates;
+    private CancellationTokenSource? _downloadCancellation;
     private string? _licensePaths;
     private string? _detectedLicense;
     private CancellationTokenSource? _licenseCancellation;
     private bool _scaleSelectionReady;
+    private string? _aboutErrorKey;
 
     public SettingsWindow() : this(new MainViewModel(), new UiAppearance(), CancellationToken.None) { }
 
-    internal SettingsWindow(MainViewModel viewModel, UiAppearance appearance, CancellationToken cancellationToken)
+    internal SettingsWindow(MainViewModel viewModel, UiAppearance appearance, CancellationToken cancellationToken,
+        UpdateService? updates = null)
     {
         InitializeComponent();
         UiScale.Attach(this);
@@ -37,6 +42,8 @@ public partial class SettingsWindow : Window
             : Math.Clamp((appearance.Preferences.InterfaceScale - 75 + 2) / 5 + 1, 1, 11);
         _scaleSelectionReady = true;
         _localization = LocalizationManager.Active;
+        _updates = updates ?? (Application.Current as App)?.Updates ?? new UpdateService();
+        _updates.Changed += UpdateResultChanged;
         DataContext = viewModel;
         _installer = new DependencyPanel(viewModel, cancellationToken);
         _installer.ContinueRequested += (_, _) => Close();
@@ -49,6 +56,8 @@ public partial class SettingsWindow : Window
             _localization.PropertyChanged -= Localization_PropertyChanged;
             _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
             _licenseCancellation?.Cancel();
+            _downloadCancellation?.Cancel();
+            _updates.Changed -= UpdateResultChanged;
         };
         AddAdditionalLanguageCards();
         foreach (var card in LanguageOptions.Children.OfType<Border>())
@@ -162,12 +171,10 @@ public partial class SettingsWindow : Window
         TechnologyText.Text = _localization.Format("SettingsTechnology",
             Environment.Version.Major, typeof(Application).Assembly.GetName().Version?.ToString(3) ?? "—");
         AboutFooterText.Text = _localization.Get("SettingsAboutFooter");
-        UpdateButton.Content = _localization.Get(_demoUpdateState == 2
-            ? "SettingsInstallUpdate" : "SettingsCheckUpdates");
-        UpdateCurrentStatus.IsVisible = _demoUpdateState == 1;
-        UpdateAvailableStatus.IsVisible = _demoUpdateState == 2;
-        if (AboutActionError.IsVisible)
-            AboutActionError.Text = _localization.Get("SettingsOpenLinkFailed");
+        UpdateButton.Content = _localization.Get("SettingsCheckUpdates");
+        RefreshUpdateResult();
+        if (AboutActionError.IsVisible && _aboutErrorKey is { } key)
+            AboutActionError.Text = _localization.Get(key);
         FfmpegLicenseText.Text = _detectedLicense ?? _localization.Get("SettingsFfmpegLicense");
     }
 
@@ -208,10 +215,97 @@ public partial class SettingsWindow : Window
         }
     }
 
-    private void UpdateButton_Click(object? sender, RoutedEventArgs e)
+    private void UpdateResultChanged(UpdateCheckResult result) =>
+        Dispatcher.UIThread.Post(RefreshUpdateResult);
+
+    private void RefreshUpdateResult()
     {
-        _demoUpdateState = _demoUpdateState == 2 ? 1 : _demoUpdateState + 1;
-        UpdateVersionText();
+        var result = _updates.Result;
+        UpdateButton.IsEnabled = result.State != UpdateCheckState.Checking && _downloadCancellation is null;
+        UpdateCurrentStatus.IsVisible = result.State == UpdateCheckState.Current;
+        UpdateAvailableStatus.IsVisible = result.State == UpdateCheckState.Available;
+        UpdateCheckingStatus.IsVisible = result.State == UpdateCheckState.Checking;
+        UpdateErrorStatus.IsVisible = result.State == UpdateCheckState.Failed;
+        DownloadUpdateButton.IsVisible = result.State == UpdateCheckState.Available;
+        DownloadUpdateButton.IsEnabled = _downloadCancellation is null;
+        if (result.Manifest is { } manifest && result.State == UpdateCheckState.Available)
+            UpdateAvailableStatus.Text = _localization.Format("UpdateAvailableVersion", manifest.Version.ToString(3));
+    }
+
+    private async void UpdateButton_Click(object? sender, RoutedEventArgs e)
+    {
+        AboutActionError.IsVisible = false;
+        _aboutErrorKey = null;
+        var result = await _updates.CheckAsync();
+        if (result.State == UpdateCheckState.Failed)
+            _viewModel.Diagnostics.Record(DiagnosticLevel.Warn, "Updates", "Manual update check failed.", result.Error);
+    }
+
+    private void CancelUpdate_Click(object? sender, RoutedEventArgs e) => _downloadCancellation?.Cancel();
+
+    private async void DownloadUpdate_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_downloadCancellation is not null || _updates.Result.Manifest is not { } manifest ||
+            _updates.Result.State != UpdateCheckState.Available) return;
+        if (_viewModel.IsBusy || _viewModel.IsAnalyzing || _viewModel.IsExporting)
+        {
+            _aboutErrorKey = "UpdateBusy";
+            AboutActionError.Text = _localization.Get(_aboutErrorKey);
+            AboutActionError.IsVisible = true;
+            return;
+        }
+        var cancellation = new CancellationTokenSource();
+        _downloadCancellation = cancellation;
+        UpdateButton.IsEnabled = false;
+        DownloadUpdateButton.IsEnabled = false;
+        CancelUpdateButton.IsVisible = true;
+        UpdateProgress.IsVisible = true;
+        AboutActionError.IsVisible = false;
+        try
+        {
+            var kind = UpdateInstaller.DetectCurrentPackage();
+            if (kind != UpdatePackageKind.WindowsInstaller && !UpdateInstaller.CanReplaceCurrentInstallation())
+            {
+                _aboutErrorKey = "UpdateManualInstall";
+                AboutActionError.Text = _localization.Get(_aboutErrorKey);
+                await ExternalLinkLauncher.TryOpenAsync(new Uri(
+                    "https://github.com/SergeyBoytsovDev/MediaUnseal/releases/tag/" + manifest.Tag));
+                AboutActionError.IsVisible = true;
+                return;
+            }
+            var progress = new Progress<double>(value =>
+                UpdateProgress.Text = _localization.Format("UpdateDownloadProgress", value * 100));
+            var path = await _updates.DownloadAsync(manifest, kind, progress, cancellation.Token);
+            _viewModel.Diagnostics.Record(DiagnosticLevel.Info, "Updates",
+                "Update package downloaded and verified.", $"Release={manifest.Tag}; package={kind}.");
+            await UpdateInstaller.LaunchAsync(path, manifest, kind, cancellation.Token);
+            (Application.Current?.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.Shutdown();
+        }
+        catch (OperationCanceledException)
+        {
+            _viewModel.Diagnostics.Record(DiagnosticLevel.Info, "Updates", "Update download cancelled.");
+        }
+        catch (Exception ex)
+        {
+            var details = ex switch
+            {
+                HttpRequestException http => "HTTP request failed; status=" + http.StatusCode,
+                InvalidDataException invalid => invalid.Message,
+                _ => ex.GetType().Name + "; HResult 0x" + ex.HResult.ToString("X8")
+            };
+            _viewModel.Diagnostics.Record(DiagnosticLevel.Error, "Updates", "Update failed.", details);
+            _aboutErrorKey = "UpdateInstallFailed";
+            AboutActionError.Text = _localization.Get(_aboutErrorKey);
+            AboutActionError.IsVisible = true;
+        }
+        finally
+        {
+            cancellation.Dispose();
+            _downloadCancellation = null;
+            CancelUpdateButton.IsVisible = false;
+            UpdateProgress.IsVisible = false;
+            RefreshUpdateResult();
+        }
     }
 
     private async void ExternalLink_Click(object? sender, RoutedEventArgs e)
@@ -220,7 +314,8 @@ public partial class SettingsWindow : Window
             || !Uri.TryCreate(target, UriKind.Absolute, out var uri)) return;
         AboutActionError.IsVisible = false;
         if (await ExternalLinkLauncher.TryOpenAsync(uri)) return;
-        AboutActionError.Text = _localization.Get("SettingsOpenLinkFailed");
+        _aboutErrorKey = "SettingsOpenLinkFailed";
+        AboutActionError.Text = _localization.Get(_aboutErrorKey);
         AboutActionError.IsVisible = true;
     }
 
@@ -240,3 +335,12 @@ public partial class SettingsWindow : Window
         Close();
     }
 }
+
+
+
+
+
+
+
+
+

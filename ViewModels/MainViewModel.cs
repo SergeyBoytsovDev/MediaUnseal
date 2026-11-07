@@ -457,6 +457,20 @@ public class MainViewModel : ViewModelBase
     public Task WaitForExportAsync() => _exportIdle?.Task ?? Task.CompletedTask;
 
     public void ReportError(string message) => Message = message;
+    internal void ReportSettingsSaveFailure(Exception error)
+    {
+        _tools.Diagnostics.Record(DiagnosticLevel.Error, "Settings",
+            "UI preferences could not be saved.",
+            $"{error.GetType().Name}; HRESULT 0x{error.HResult:X8}.",
+            userMessageKey: "SettingsSaveFailed");
+    }
+
+    internal void ReportSettingsSaveRecovery()
+    {
+        _tools.Diagnostics.Record(DiagnosticLevel.Info, "Settings",
+            "UI preferences saved after a previous failure.",
+            userMessageKey: "SettingsSaveRecovered", userSuccess: true);
+    }
     public void ReportExportErrorKey(string key) => SetLocalizedExportStatus(() => L.Get(key));
     public void ReportExportError(string message)
     {

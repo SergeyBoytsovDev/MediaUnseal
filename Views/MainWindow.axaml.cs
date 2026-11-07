@@ -49,7 +49,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        UiScale.Attach(this);
+        UiScale.Attach(this, constrainPosition: false);
         UpdateWindowStateIcon();
         PropertyChanged += (_, args) =>
         {
@@ -184,6 +184,7 @@ public partial class MainWindow : Window
     {
         Opened -= MainWindow_Opened;
         RestoreWindowPosition();
+        Dispatcher.UIThread.Post(EnsureWindowAccessible);
         if (DataContext is not MainViewModel viewModel) return;
         try
         {
@@ -221,8 +222,12 @@ public partial class MainWindow : Window
     {
         if (Appearance?.Preferences is not { X: { } x, Y: { } y } preferences) return;
         var screen = Screens.All.FirstOrDefault(item =>
-            x >= item.WorkingArea.X && x < item.WorkingArea.Right &&
-            y >= item.WorkingArea.Y && y < item.WorkingArea.Bottom) ?? Screens.Primary;
+            IntersectsWorkingArea(x, y,
+                (int)Math.Ceiling(preferences.Width * UiScale.Current(this) * item.Scaling),
+                (int)Math.Ceiling(preferences.Height * UiScale.Current(this) * item.Scaling),
+                item.WorkingArea));
+        var positionAccessible = screen is not null;
+        screen ??= Screens.Primary;
         if (screen is null) return;
         var area = screen.WorkingArea;
         var scale = screen.Scaling;
@@ -232,9 +237,28 @@ public partial class MainWindow : Window
         MinHeight = Math.Min(MinHeight, Height);
         var width = (int)Math.Ceiling(Width * scale);
         var height = (int)Math.Ceiling(Height * scale);
-        Position = new Avalonia.PixelPoint(
-            Math.Clamp(x, area.X, Math.Max(area.X, area.Right - width)),
-            Math.Clamp(y, area.Y, Math.Max(area.Y, area.Bottom - height)));
+        Position = positionAccessible
+            ? new Avalonia.PixelPoint(x, y)
+            : new Avalonia.PixelPoint(area.X + Math.Max(0, (area.Width - width) / 2),
+                area.Y + Math.Max(0, (area.Height - height) / 2));
+    }
+
+    internal static bool IntersectsWorkingArea(int x, int y, int width, int height, Avalonia.PixelRect area) =>
+        (long)x < area.Right && (long)x + width > area.X &&
+        (long)y < area.Bottom && (long)y + height > area.Y;
+
+    private void EnsureWindowAccessible()
+    {
+        if (Screens.All.Any(screen => IntersectsWorkingArea(Position.X, Position.Y,
+                (int)Math.Ceiling(Width * screen.Scaling),
+                (int)Math.Ceiling(Height * screen.Scaling), screen.WorkingArea))) return;
+        var primary = Screens.Primary;
+        if (primary is null) return;
+        var area = primary.WorkingArea;
+        var width = (int)Math.Ceiling(Width * primary.Scaling);
+        var height = (int)Math.Ceiling(Height * primary.Scaling);
+        Position = new Avalonia.PixelPoint(area.X + Math.Max(0, (area.Width - width) / 2),
+            area.Y + Math.Max(0, (area.Height - height) / 2));
     }
 
     private void ClearFile_Click(object? sender, RoutedEventArgs e)
@@ -451,6 +475,7 @@ public partial class MainWindow : Window
         try
         {
             _conversionCatalog = await FfmpegConversionCatalog.DiscoverAsync(ffmpeg, _shutdown.Token);
+            _conversionCatalog.CleanupLog = (DataContext as MainViewModel)?.Diagnostics;
             _conversionCatalogPath = ffmpeg;
         }
         catch (OperationCanceledException) { }

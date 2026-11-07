@@ -1,4 +1,6 @@
-#define AppVersion "1.0.0"
+#ifndef AppVersion
+  #define AppVersion "1.1.0"
+#endif
 #ifndef ReleaseSource
   #error ReleaseSource must be supplied by Build-Installer.ps1
 #endif

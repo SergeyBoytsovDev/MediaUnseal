@@ -18,7 +18,7 @@ internal static class UiScale
         return Math.Clamp(0.6 + 0.4 * ratio, 0.75, 1.25);
     }
 
-    internal static void Attach(Window window)
+    internal static void Attach(Window window, bool constrainPosition = true)
     {
         if (Application.Current is not MediaUnseal.App app || window.Content is not Control content)
             return;
@@ -59,15 +59,18 @@ internal static class UiScale
             window.Width = Math.Min(window.Width, availableWidth - 16);
             if (window.SizeToContent == SizeToContent.Manual)
                 window.Height = Math.Min(window.Height, availableHeight - 16);
-            var area = screen.WorkingArea;
-            var widthPixels = (int)Math.Ceiling(window.Width * dpi);
-            var effectiveHeight = double.IsFinite(window.Height) ? window.Height : window.Bounds.Height;
-            var heightPixels = (int)Math.Ceiling(effectiveHeight * dpi);
-            var position = window.Position;
-            var x = Math.Clamp(position.X, area.X, Math.Max(area.X, area.Right - widthPixels));
-            var y = Math.Clamp(position.Y, area.Y, Math.Max(area.Y, area.Bottom - heightPixels));
-            if (x != position.X || y != position.Y)
-                window.Position = new PixelPoint(x, y);
+            if (constrainPosition)
+            {
+                var area = screen.WorkingArea;
+                var widthPixels = (int)Math.Ceiling(window.Width * dpi);
+                var effectiveHeight = double.IsFinite(window.Height) ? window.Height : window.Bounds.Height;
+                var heightPixels = (int)Math.Ceiling(effectiveHeight * dpi);
+                var position = window.Position;
+                var x = Math.Clamp(position.X, area.X, Math.Max(area.X, area.Right - widthPixels));
+                var y = Math.Clamp(position.Y, area.Y, Math.Max(area.Y, area.Bottom - heightPixels));
+                if (x != position.X || y != position.Y)
+                    window.Position = new PixelPoint(x, y);
+            }
         }
 
         var opened = false;

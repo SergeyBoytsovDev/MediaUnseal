@@ -1704,4 +1704,18 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
   <data name="SettingsInterfaceScale" xml:space="preserve"><value>Oberflächenskalierung</value></data>
   <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>Automatisch</value></data>
   <data name="InstallerGyanLicenseNotice" xml:space="preserve"><value>Die automatische Installation verwendet einen Gyan.dev-Build unter GPLv3. Lizenz und Quellcodeinformationen: https://www.gyan.dev/ffmpeg/builds/</value></data>
+  <data name="SettingsSaveFailed" xml:space="preserve"><value>Einstellungen konnten nicht gespeichert werden. Änderungen gelten nur bis zum Beenden der Anwendung. Prüfen Sie den Zugriff auf die Einstellungsdatei.</value></data>
+  <data name="SettingsSaveRecovered" xml:space="preserve"><value>Die Einstellungen wurden nach dem vorherigen Fehler erfolgreich gespeichert.</value></data>
+  <data name="UpdateAvailableJournal" xml:space="preserve"><value>Media Unseal {0} ist verfügbar. Aktualisieren Sie es unter Einstellungen → Über.</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>Updates werden gesucht…</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>Updates konnten nicht geprüft werden</value></data>
+  <data name="UpdateAvailableVersion" xml:space="preserve"><value>Version {0} ist verfügbar</value></data>
+  <data name="UpdateDownloadInstall" xml:space="preserve"><value>Herunterladen und aktualisieren</value></data>
+  <data name="UpdateCancelDownload" xml:space="preserve"><value>Download abbrechen</value></data>
+  <data name="UpdateDownloadProgress" xml:space="preserve"><value>Download: {0:0}%</value></data>
+  <data name="UpdateManualInstall" xml:space="preserve"><value>Diese Installation erfordert ein manuelles Update über GitHub Releases.</value></data>
+  <data name="UpdateInstallFailed" xml:space="preserve"><value>Das Update konnte nicht installiert werden. Details im Diagnosebericht.</value></data>
+  <data name="UpdateBusy" xml:space="preserve"><value>Warten Sie vor dem Update, bis der aktuelle Vorgang abgeschlossen ist.</value></data>
 </root>
+
+

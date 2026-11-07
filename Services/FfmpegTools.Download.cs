@@ -33,8 +33,10 @@ public sealed partial class FfmpegTools
         var repairingLocal = RequiredRepair == RepairSource.Local;
 
         var toolsRoot = Path.Combine(_dataDirectory, "tools");
-        var work = Path.Combine(toolsRoot, ".download-" + Guid.NewGuid().ToString("N"));
+        string? work = null;
+        TemporaryDirectory? workLease = null;
         string? installed = null;
+        TemporaryDirectory? installedLease = null;
         var committed = false;
         var checksumFailure = false;
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -46,7 +48,10 @@ public sealed partial class FfmpegTools
             Log("Fallback installation from gyan.dev started.", operation: "Download",
                 userMessageKey: repairingLocal ? "ToolsLocalRepairStarted" : "InstallerPreparingDirectDownload");
             EnsureNoLinks(toolsRoot);
-            Directory.CreateDirectory(work);
+            await TemporaryDirectory.RecoverAsync(toolsRoot, ".download-",
+                message => Diagnostics.Record(DiagnosticLevel.Warn, "Download", message));
+            workLease = TemporaryDirectory.Create(toolsRoot, ".download-");
+            work = workLease.Path;
             using var http = _httpHandler is null
                 ? new HttpClient(new HttpClientHandler { AllowAutoRedirect = false })
                 : new HttpClient(_httpHandler, disposeHandler: false);
@@ -87,7 +92,8 @@ public sealed partial class FfmpegTools
 
             // The saved paths are the activation point. Extract into a new, unreferenced directory
             // to avoid renaming an EXE directory while Windows/antivirus is inspecting its files.
-            installed = Path.Combine(toolsRoot, "ffmpeg-" + Guid.NewGuid().ToString("N"));
+            installedLease = TemporaryDirectory.Create(toolsRoot, "ffmpeg-");
+            installed = installedLease.Path;
             progress?.Report(new InstallProgress(L.Get("ToolsExtractingArchive"))
             { LocalizedMessage = new("ToolsExtractingArchive") });
             Log("Extraction into the user data directory started.", operation: "Extraction");
@@ -161,8 +167,20 @@ public sealed partial class FfmpegTools
         }
         finally
         {
-            try { await DeleteInstallationDirectoryAsync(work, toolsRoot); }
-            finally { if (!committed && installed is not null) await DeleteInstallationDirectoryAsync(installed, toolsRoot); }
+            workLease?.Dispose();
+            if (work is not null)
+                await TemporaryDirectory.DeleteAsync(work,
+                    message => Diagnostics.Record(DiagnosticLevel.Warn, "Download", message));
+            installedLease?.Dispose();
+            if (installed is not null)
+            {
+                if (committed && IsSavedInstallation(installed))
+                    await TemporaryDirectory.DeleteFileAsync(Path.Combine(installed, TemporaryDirectory.Marker),
+                        message => Diagnostics.Record(DiagnosticLevel.Warn, "Download", message));
+                else
+                    await TemporaryDirectory.DeleteAsync(installed,
+                        message => Diagnostics.Record(DiagnosticLevel.Warn, "Download", message));
+            }
         }
     }
 
@@ -300,22 +318,4 @@ public sealed partial class FfmpegTools
                 throw new IOException("The installation directory contains a link. Select the tool paths manually.");
     }
 
-    private static async Task DeleteInstallationDirectoryAsync(string path, string root)
-    {
-        if (!Directory.Exists(path)) return;
-        if (!Path.GetFullPath(path).StartsWith(Path.GetFullPath(root) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
-            throw new IOException("Unsafe temporary file cleanup path.");
-        EnsureNoLinks(path);
-        for (var attempt = 0; ; attempt++)
-        {
-            try { Directory.Delete(path, recursive: true); return; }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-                if (!Directory.Exists(path)) return;
-                if (attempt == 3) throw new IOException($"Could not clean up directory {path}. Close any processes using it and remove the directory manually.", ex);
-                // Cleanup must finish even when the original operation has been cancelled.
-                await Task.Delay(100 * (attempt + 1));
-            }
-        }
-    }
 }

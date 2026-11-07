@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media;
 
@@ -11,7 +12,7 @@ namespace MediaUnseal.Services;
 internal sealed class UiPreferences
 {
     public string Theme { get; set; } = UiAppearance.DefaultTheme;
-    public string Language { get; set; } = LocalizationManager.DefaultLanguage;
+    public string Language { get; set; } = UiAppearance.DefaultInterfaceLanguage;
     public int InterfaceScale { get; set; } = 0;
     public double Width { get; set; } = 1355;
     public double Height { get; set; } = 1026;
@@ -26,6 +27,7 @@ internal sealed class UiAppearance
 {
     internal event EventHandler? ScaleChanged;
     internal const string DefaultTheme = "Studio Dark";
+    internal const string DefaultInterfaceLanguage = "en";
     internal static readonly string[] ThemeNames =
     [
         DefaultTheme, "Resolve-inspired Workspace", "Adobe Clean Pro",
@@ -33,6 +35,14 @@ internal sealed class UiAppearance
     ];
 
     private readonly string _path;
+    private bool _saveFailed;
+    internal event Action<Exception>? SaveFailed;
+    internal event Action? SaveRecovered;
+    internal event Action<string>? TemporaryCleanupFailed;
+    internal bool HasSaveFailure => _saveFailed;
+    internal Task RecoverTemporaryFilesAsync(Action<string> report) =>
+        TemporaryDirectory.RecoverFilesAsync(Path.GetDirectoryName(_path)!,
+            Path.GetFileName(_path) + ".", report);
     internal UiPreferences Preferences { get; private set; }
 
     internal UiAppearance(string? path = null)
@@ -50,7 +60,7 @@ internal sealed class UiAppearance
         }
         if (Array.IndexOf(ThemeNames, Preferences.Theme) < 0) Preferences.Theme = DefaultTheme;
         if (Array.IndexOf(LocalizationManager.AvailableLanguages, Preferences.Language) < 0)
-            Preferences.Language = LocalizationManager.DefaultLanguage;
+            Preferences.Language = DefaultInterfaceLanguage;
         if (Preferences.InterfaceScale != 0 && Preferences.InterfaceScale is < 75 or > 125)
             Preferences.InterfaceScale = 0;
         if (!double.IsFinite(Preferences.Width) || Preferences.Width is < 960 or > 6000) Preferences.Width = 1280;
@@ -101,16 +111,46 @@ internal sealed class UiAppearance
         Save();
     }
 
-    internal void Save()
+    internal bool Save()
     {
+        string? temporary = null;
+        var recovered = false;
         try
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-            var temporary = _path + ".tmp";
-            File.WriteAllText(temporary, JsonSerializer.Serialize(Preferences));
-            File.Move(temporary, _path, true);
+            temporary = _path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+            var data = JsonSerializer.SerializeToUtf8Bytes(Preferences);
+            using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write,
+                       FileShare.None))
+            {
+                if (!OperatingSystem.IsWindows())
+                    File.SetUnixFileMode(temporary, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+                stream.Write(data);
+                stream.Flush(flushToDisk: true);
+            }
+            if (File.Exists(_path)) File.Replace(temporary, _path, null);
+            else File.Move(temporary, _path);
+            temporary = null;
+            recovered = _saveFailed;
+            _saveFailed = false;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
+        {
+            if (!_saveFailed)
+            {
+                _saveFailed = true;
+                SaveFailed?.Invoke(ex);
+            }
+            return false;
+        }
+        finally
+        {
+            if (temporary is not null)
+                TemporaryDirectory.DeleteFileAsync(temporary,
+                    message => TemporaryCleanupFailed?.Invoke(message)).GetAwaiter().GetResult();
+        }
+        if (recovered) SaveRecovered?.Invoke();
+        return true;
     }
 
     private static string UserConfigDirectory()

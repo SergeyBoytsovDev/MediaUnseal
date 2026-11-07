@@ -641,4 +641,18 @@
   <data name="SettingsInterfaceScale" xml:space="preserve"><value>Масштаб интерфейса</value></data>
   <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>Автоматически</value></data>
   <data name="InstallerGyanLicenseNotice" xml:space="preserve"><value>Автоматическая установка использует сборку Gyan.dev под лицензией GPLv3. Лицензия и сведения об исходном коде: https://www.gyan.dev/ffmpeg/builds/</value></data>
+  <data name="SettingsSaveFailed" xml:space="preserve"><value>Не удалось сохранить настройки. Изменения действуют только до закрытия программы. Проверьте доступ к файлу настроек.</value></data>
+  <data name="SettingsSaveRecovered" xml:space="preserve"><value>Настройки успешно сохранены после ошибки записи.</value></data>
+  <data name="UpdateAvailableJournal" xml:space="preserve"><value>Доступна новая версия Media Unseal {0}. Обновить программу можно в разделе «Настройки → О программе».</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>Проверка обновлений…</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>Не удалось проверить обновления</value></data>
+  <data name="UpdateAvailableVersion" xml:space="preserve"><value>Доступна версия {0}</value></data>
+  <data name="UpdateDownloadInstall" xml:space="preserve"><value>Скачать и обновить</value></data>
+  <data name="UpdateCancelDownload" xml:space="preserve"><value>Отменить загрузку</value></data>
+  <data name="UpdateDownloadProgress" xml:space="preserve"><value>Загрузка: {0:0}%</value></data>
+  <data name="UpdateManualInstall" xml:space="preserve"><value>Для этой установки доступна только ручная установка с GitHub Releases.</value></data>
+  <data name="UpdateInstallFailed" xml:space="preserve"><value>Не удалось установить обновление. Подробности в диагностическом отчёте.</value></data>
+  <data name="UpdateBusy" xml:space="preserve"><value>Дождитесь завершения текущей операции перед обновлением.</value></data>
 </root>
+
+

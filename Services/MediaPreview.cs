@@ -143,8 +143,8 @@ internal static class MediaPreview
         bool seek, CancellationToken cancellationToken, Action<string>? report, string? mapOverride = null)
     {
         var watch = Stopwatch.StartNew();
-        var directory = Path.Combine(Path.GetTempPath(), "MediaUnseal-preview-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(directory);
+        using var temporary = TemporaryDirectory.Create(Path.GetTempPath(), "MediaUnseal-preview-");
+        var directory = temporary.Path;
         var output = Path.Combine(directory, "frame.png");
         try
         {
@@ -182,6 +182,15 @@ internal static class MediaPreview
                 report?.Invoke($"FFmpeg frame extraction: {watch.Elapsed.TotalMilliseconds:0} ms; timed out.");
                 return new(null, true);
             }
+            finally
+            {
+                if (!process.HasExited)
+                {
+                    try { process.Kill(entireProcessTree: true); }
+                    catch (InvalidOperationException) { }
+                    await process.WaitForExitAsync(CancellationToken.None);
+                }
+            }
             if (process.ExitCode != 0 || !File.Exists(output))
             {
                 report?.Invoke($"FFmpeg frame extraction: {watch.Elapsed.TotalMilliseconds:0} ms; " +
@@ -210,17 +219,8 @@ internal static class MediaPreview
         }
         finally
         {
-            for (var attempt = 0; attempt < 3; attempt++)
-            {
-                try { Directory.Delete(directory, recursive: true); break; }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-                {
-                    if (attempt == 2)
-                        report?.Invoke($"FFmpeg preview temporary cleanup failed: {ex.GetType().Name}.");
-                    else
-                        await Task.Delay(100).ConfigureAwait(false);
-                }
-            }
+            temporary.Dispose();
+            await TemporaryDirectory.DeleteAsync(directory, report).ConfigureAwait(false);
         }
     }
 }

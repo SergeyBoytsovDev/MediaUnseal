@@ -1,4 +1,4 @@
-# Media Unseal 1.0.0 — Third-Party Notices
+# Media Unseal 1.1.0 — Third-Party Notices
 
 Copyright © 2026 Sergey Boytsov applies to the original portions of Media Unseal. The third-party software components listed in this document retain their respective copyrights, license permissions, and disclaimers. Nothing in the Media Unseal license or this document limits rights granted by the licensors of those components.
 
@@ -3109,7 +3109,7 @@ mozzconf.h is distributed under the MPL 1.1/GPL 2.0/LGPL 2.1 tri-license.
 
 Media Unseal targets .NET 10. The .NET application host and any .NET runtime components distributed with the application retain their respective licenses and notices. The applicable terms depend on the components included in a particular distribution.
 
-The self-contained Windows and Linux 1.0.0 packages include the original runtime `LICENSE.TXT` and `THIRD-PARTY-NOTICES.TXT` in `licenses/dotnet-10.0.14/`. The Windows package additionally includes the .NET Library License applicable to Windows product distributions.
+The self-contained Windows and Linux 1.1.0 packages include the original runtime `LICENSE.TXT` and `THIRD-PARTY-NOTICES.TXT` in `licenses/dotnet-10.0.14/`. The Windows package additionally includes the .NET Library License applicable to Windows product distributions.
 
 Official license information: [.NET license information](https://github.com/dotnet/core/blob/main/license-information.md), [.NET runtime license](https://github.com/dotnet/runtime/blob/main/LICENSE.TXT), and [.NET runtime third-party notices](https://github.com/dotnet/runtime/blob/main/THIRD-PARTY-NOTICES.TXT).
 

@@ -1,9 +1,11 @@
-param([string]$RelativePath = 'DEPENDENCIES.md')
+param([string]$RelativePath = 'DEPENDENCIES.md', [string]$Version)
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $project = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+if (-not $Version) { $Version = ([xml](Get-Content (Join-Path $project 'MediaUnseal.csproj') -Raw)).Project.PropertyGroup.Version }
+if ($Version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') { throw 'Invalid version.' }
 $packages = Join-Path $project 'bin\release-packages'
 if ([System.IO.Path]::IsPathRooted($RelativePath) -or
     $RelativePath.Replace('/', '\').Split('\') -contains '..') {
@@ -11,11 +13,11 @@ if ([System.IO.Path]::IsPathRooted($RelativePath) -or
 }
 $winStage = Join-Path (Join-Path $packages '_stage-win') $RelativePath
 $linuxStage = Join-Path (Join-Path $packages '_stage-linux') $RelativePath
-$zip = Join-Path $packages 'MediaUnseal-1.0.0-win-x64-portable.zip'
-$tar = Join-Path $packages 'MediaUnseal-1.0.0-linux-x64.tar.gz'
+$zip = Join-Path $packages ("MediaUnseal-$Version-win-x64-portable.zip")
+$tar = Join-Path $packages ("MediaUnseal-$Version-linux-x64.tar.gz")
 $entryPath = $RelativePath.Replace('\', '/')
-$zipEntry = 'MediaUnseal-1.0.0-win-x64-portable/' + $entryPath
-$tarEntry = 'MediaUnseal-1.0.0-linux-x64/' + $entryPath
+$zipEntry = ("MediaUnseal-$Version-win-x64-portable/") + $entryPath
+$tarEntry = ("MediaUnseal-$Version-linux-x64/") + $entryPath
 
 foreach ($path in @($winStage, $linuxStage, $zip, $tar)) {
     if (-not (Test-Path -LiteralPath $path)) { throw "Missing release input: $path" }

@@ -82,6 +82,8 @@ public sealed partial class FfmpegTools
                     ? xdg
                     : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config");
         _settingsPath = settingsPath ?? Path.Combine(AppDirectories.Resolve(settingsDirectory, "settings.json"), "settings.json");
+        _ = Task.Run(() => TemporaryDirectory.RecoverFilesAsync(Path.GetDirectoryName(_settingsPath)!,
+            ".settings-", message => Diagnostics.Record(DiagnosticLevel.Warn, "Temporary files", message)));
         try
         {
             if (File.Exists(_settingsPath))
@@ -92,6 +94,28 @@ public sealed partial class FfmpegTools
             SettingsError = L.Get("ToolsSavedPathsReadFailed");
             SettingsErrorMessage = new("ToolsSavedPathsReadFailed");
         }
+        _ = Task.Run(async () =>
+        {
+            var root = Path.Combine(_dataDirectory, "tools");
+            void Report(string message) => Diagnostics.Record(DiagnosticLevel.Warn, "Download", message);
+            await TemporaryDirectory.RecoverAsync(root, ".download-", Report);
+            await TemporaryDirectory.RecoverAsync(root, "ffmpeg-", Report, IsSavedInstallation);
+        });
+    }
+
+    private bool IsSavedInstallation(string directory)
+    {
+        var root = Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        foreach (var saved in new[] { _savedPaths.FFmpeg, _savedPaths.FFprobe })
+            if (!string.IsNullOrWhiteSpace(saved))
+                try
+                {
+                    if (Path.GetFullPath(saved).StartsWith(root,
+                        OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+                        return true;
+                }
+                catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException) { }
+        return false;
     }
 
     public string? SettingsError { get; private set; }
@@ -524,7 +548,11 @@ public sealed partial class FfmpegTools
             _savedPaths = paths;
             SettingsError = null;
         }
-        finally { if (File.Exists(temporary)) File.Delete(temporary); }
+        finally
+        {
+            await TemporaryDirectory.DeleteFileAsync(temporary,
+                message => Diagnostics.Record(DiagnosticLevel.Warn, "Temporary files", message));
+        }
     }
 
     private async Task<string> WorkingSavedPathAsync(string name, string? saved, string fallback, CancellationToken cancellationToken) =>

@@ -1704,4 +1704,18 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
   <data name="SettingsInterfaceScale" xml:space="preserve"><value>Interface scale</value></data>
   <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>Automatic</value></data>
   <data name="InstallerGyanLicenseNotice" xml:space="preserve"><value>Automatic installation uses a Gyan.dev build licensed under GPLv3. License and source information: https://www.gyan.dev/ffmpeg/builds/</value></data>
+  <data name="SettingsSaveFailed" xml:space="preserve"><value>Could not save settings. Changes will last only until you close the app. Check access to the settings file.</value></data>
+  <data name="SettingsSaveRecovered" xml:space="preserve"><value>Settings were saved successfully after the earlier failure.</value></data>
+  <data name="UpdateAvailableJournal" xml:space="preserve"><value>Media Unseal {0} is available. Update in Settings → About.</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>Checking for updates…</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>Could not check for updates</value></data>
+  <data name="UpdateAvailableVersion" xml:space="preserve"><value>Version {0} is available</value></data>
+  <data name="UpdateDownloadInstall" xml:space="preserve"><value>Download and update</value></data>
+  <data name="UpdateCancelDownload" xml:space="preserve"><value>Cancel download</value></data>
+  <data name="UpdateDownloadProgress" xml:space="preserve"><value>Downloading: {0:0}%</value></data>
+  <data name="UpdateManualInstall" xml:space="preserve"><value>This installation requires a manual update from GitHub Releases.</value></data>
+  <data name="UpdateInstallFailed" xml:space="preserve"><value>Could not install the update. See the Diagnostic Report.</value></data>
+  <data name="UpdateBusy" xml:space="preserve"><value>Wait for the current operation to finish before updating.</value></data>
 </root>
+
+

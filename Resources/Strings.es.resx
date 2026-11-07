@@ -1704,4 +1704,18 @@ Vídeo: {6}; imágenes: {7}; animaciones: {8}; audio: {9}; subtítulos: {10}; fl
   <data name="SettingsInterfaceScale" xml:space="preserve"><value>Escala de la interfaz</value></data>
   <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>Automático</value></data>
   <data name="InstallerGyanLicenseNotice" xml:space="preserve"><value>La instalación automática utiliza una compilación de Gyan.dev con licencia GPLv3. Licencia e información del código fuente: https://www.gyan.dev/ffmpeg/builds/</value></data>
+  <data name="SettingsSaveFailed" xml:space="preserve"><value>No se pudo guardar la configuración. Los cambios solo se mantendrán hasta cerrar la aplicación. Compruebe el acceso al archivo de configuración.</value></data>
+  <data name="SettingsSaveRecovered" xml:space="preserve"><value>La configuración se guardó correctamente después del error anterior.</value></data>
+  <data name="UpdateAvailableJournal" xml:space="preserve"><value>Media Unseal {0} está disponible. Actualízalo en Ajustes → Acerca de.</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>Buscando actualizaciones…</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>No se pudieron buscar actualizaciones</value></data>
+  <data name="UpdateAvailableVersion" xml:space="preserve"><value>Versión {0} disponible</value></data>
+  <data name="UpdateDownloadInstall" xml:space="preserve"><value>Descargar y actualizar</value></data>
+  <data name="UpdateCancelDownload" xml:space="preserve"><value>Cancelar descarga</value></data>
+  <data name="UpdateDownloadProgress" xml:space="preserve"><value>Descargando: {0:0} %</value></data>
+  <data name="UpdateManualInstall" xml:space="preserve"><value>Esta instalación requiere una actualización manual desde GitHub Releases.</value></data>
+  <data name="UpdateInstallFailed" xml:space="preserve"><value>No se pudo instalar la actualización. Consulta el informe de diagnóstico.</value></data>
+  <data name="UpdateBusy" xml:space="preserve"><value>Espera a que termine la operación actual antes de actualizar.</value></data>
 </root>
+
+

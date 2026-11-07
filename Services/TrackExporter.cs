@@ -224,16 +224,16 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
               : Decide(media, p.Stream).Plan is not { } supported || supported != p))
             throw new ArgumentException("A selected output format is incompatible with its stream.", nameof(selected));
         var directory = Path.GetFullPath(outputDirectory);
+        var pathGuard = new OutputPathGuard(directory);
         if (options.CreateSourceFolder)
             directory = Path.Combine(directory, SafeFolderName(Path.GetFileNameWithoutExtension(media.Name)));
         Directory.CreateDirectory(directory);
-        if (options.CreateSourceFolder && (File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
-            throw new IOException("The generated output directory must not be a link.");
-        var stage = Path.Combine(directory, ".mediaunseal-" + Guid.NewGuid().ToString("N"));
+        pathGuard.Validate(directory);
+        string? stage = null;
+        TemporaryDirectory? temporaryStage = null;
         var results = new List<TrackExportResult>();
         var reserved = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
         var cancelled = false;
-        var createdStage = false;
         var groupFallbackUntil = -1;
         var operationWatch = Stopwatch.StartNew();
         string? videoCopyFfmpegVersion = null;
@@ -242,11 +242,12 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             userMessageKey: "LogProcessingStartedCount", userMessageArgs: [selected.Count]);
         try
         {
-            if (Directory.Exists(stage)) throw new IOException("The temporary directory already exists.");
-            Directory.CreateDirectory(stage);
-            createdStage = true;
-            if ((File.GetAttributes(stage) & FileAttributes.ReparsePoint) != 0)
-                throw new IOException("The temporary directory must not be a link.");
+            pathGuard.Validate(directory);
+            await TemporaryDirectory.RecoverAsync(directory, ".mediaunseal-",
+                message => diagnostics.Record(DiagnosticLevel.Warn, "Export", message)).ConfigureAwait(false);
+            temporaryStage = TemporaryDirectory.Create(directory, ".mediaunseal-");
+            stage = temporaryStage.Path;
+            pathGuard.Validate(stage);
             for (var i = 0; i < selected.Count; i++)
             {
                 if (cancellationToken.IsCancellationRequested) { cancelled = true; break; }
@@ -254,7 +255,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     && p.Stream.VisualKind != VisualKind.Video).ToArray();
                 if (i > groupFallbackUntil && group.Length > 1)
                 {
-                    var grouped = await TryExportGroupAsync(media, group, directory, stage, ffmpegPath,
+                    var grouped = await TryExportGroupAsync(media, group, directory, stage, pathGuard, ffmpegPath,
                         reserved, results, progress, i, selected.Count, cancellationToken, options).ConfigureAwait(false);
                     if (grouped == GroupOutcome.Completed) { i += group.Length - 1; continue; }
                     if (grouped == GroupOutcome.Cancelled) { cancelled = true; break; }
@@ -270,7 +271,9 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 var ordinal = i;
                 var index = plan.Stream.Index!.Value;
                 var visualOutput = plan.Stream.VisualKind is VisualKind.Image or VisualKind.Animation;
-                var target = ReserveName(media, plan, TargetDirectory(directory, plan, options), reserved);
+                var targetDirectory = TargetDirectory(directory, plan, options);
+                pathGuard.Validate(targetDirectory);
+                var target = ReserveName(media, plan, targetDirectory, reserved);
                 var temp = Path.Combine(stage, $"{index}-{Guid.NewGuid():N}.{plan.Extension}");
                 var attachmentLabel = plan.AttachmentFile is { } namedAttachment
                     ? SafeAttachmentName(namedAttachment.Name) : null;
@@ -309,6 +312,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 var nativeCompleted = false;
                 try
                 {
+                    pathGuard.Validate(stage);
                     using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                     deadline.CancelAfter(TimeoutPerTrack);
                     var duration = plan.Stream.Duration ?? media.Duration;
@@ -461,7 +465,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         }
                         finally
                         {
-                            if (extractedCover is not null) await DeleteOwnTempAsync(extractedCover).ConfigureAwait(false);
+                            if (extractedCover is not null) await DeleteOwnTempAsync(extractedCover,
+                                message => diagnostics.Record(DiagnosticLevel.Warn, "Export", message)).ConfigureAwait(false);
                         }
                     }
                     if (!File.Exists(temp) || new FileInfo(temp).Length == 0)
@@ -475,7 +480,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         }
                         throw new InvalidDataException(L.Get("MainResultEmptyOutput"));
                     }
-                    target = MoveWithoutOverwrite(temp, target, reserved);
+                    target = MoveWithoutOverwrite(temp, target, reserved, pathGuard);
                     var bytes = new FileInfo(target).Length;
                     var result = new TrackExportResult(index, ExportState.Completed,
                         L.Format("MainResultSaved", Path.GetFileName(target), FormatElapsed(trackWatch.Elapsed), FormatByteSize(bytes)), target,
@@ -590,8 +595,15 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                             : $"FFmpeg for stream #{index}: elapsed {FormatElapsed(trackWatch.Elapsed)}, " +
                                 $"exit code {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "unknown")}, " +
                                 $"progress {(lastPosition is null ? "unavailable" : "received")}.");
-                    if (!await DeleteOwnTempAsync(temp).ConfigureAwait(false))
-                        diagnostics.Record(DiagnosticLevel.Warn, "Export", $"Failed to delete temporary file for stream #{index}.");
+                    try
+                    {
+                        pathGuard.Validate(stage);
+                        await DeleteOwnTempAsync(temp,
+                            message => diagnostics.Record(DiagnosticLevel.Warn, "Export", message)).ConfigureAwait(false);
+                    }
+                    catch (IOException ex)
+                    { diagnostics.Record(DiagnosticLevel.Warn, "Export",
+                        $"Temporary export cleanup skipped: output path changed; {ex.GetType().Name}."); }
                 }
             }
         }
@@ -604,13 +616,18 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         }
         finally
         {
-            var expectedRoot = Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-            if (createdStage && Path.GetFullPath(stage).StartsWith(expectedRoot,
-                    OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)
-                && Directory.Exists(stage))
+            if (temporaryStage is not null && stage is not null)
             {
-                if (!await DeleteOwnStageAsync(stage).ConfigureAwait(false))
-                    diagnostics.Record(DiagnosticLevel.Warn, "Export", "Temporary directory could not be deleted automatically.");
+                temporaryStage.Dispose();
+                try
+                {
+                    pathGuard.Validate(stage);
+                    await TemporaryDirectory.DeleteAsync(stage,
+                        message => diagnostics.Record(DiagnosticLevel.Warn, "Export", message)).ConfigureAwait(false);
+                }
+                catch (IOException ex)
+                { diagnostics.Record(DiagnosticLevel.Warn, "Export",
+                    $"Temporary export directory cleanup skipped: output path changed; {ex.GetType().Name}."); }
             }
         }
         if (cancelled)
@@ -639,7 +656,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
     private enum GroupOutcome { Completed, RetrySeparately, Cancelled }
 
     private async Task<GroupOutcome> TryExportGroupAsync(MediaInfo media, TrackExportPlan[] group,
-        string directory, string stage, string ffmpegPath, HashSet<string> reserved,
+        string directory, string stage, OutputPathGuard pathGuard, string ffmpegPath, HashSet<string> reserved,
         List<TrackExportResult> results, IProgress<ExportUpdate>? progress, int processed, int total,
         CancellationToken cancellationToken, ExportOptions options)
     {
@@ -660,6 +677,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             { LocalizedMessage = new("MainProgressSharedPass", plan.Stream.Index) });
         try
         {
+            pathGuard.Validate(stage);
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             var groupTicks = TimeoutPerTrack.Ticks > TimeSpan.MaxValue.Ticks / group.Length
                 ? TimeSpan.MaxValue.Ticks : TimeoutPerTrack.Ticks * group.Length;
@@ -696,7 +714,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 var index = group[j].Stream.Index!.Value;
                 try
                 {
-                    var target = MoveWithoutOverwrite(temps[j], targets[j], reserved);
+                    var target = MoveWithoutOverwrite(temps[j], targets[j], reserved, pathGuard);
                     var bytes = new FileInfo(target).Length;
                     var message = L.Format("MainResultSaved", Path.GetFileName(target), FormatElapsed(watch.Elapsed), FormatByteSize(bytes));
                     var savedMessage = SavedMessage(target, watch.Elapsed, bytes);
@@ -769,8 +787,15 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 $"exit code {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "unknown")}, " +
                 $"progress {(lastPosition is null ? "unavailable" : "received")}.");
             foreach (var temp in temps)
-                if (!await DeleteOwnTempAsync(temp).ConfigureAwait(false))
-                    diagnostics.Record(DiagnosticLevel.Warn, "Export", "Failed to delete temporary file from shared pass.");
+                try
+                {
+                    pathGuard.Validate(stage);
+                    await DeleteOwnTempAsync(temp,
+                        message => diagnostics.Record(DiagnosticLevel.Warn, "Export", message)).ConfigureAwait(false);
+                }
+                catch (IOException ex)
+                { diagnostics.Record(DiagnosticLevel.Warn, "Export",
+                    $"Temporary group cleanup skipped: output path changed; {ex.GetType().Name}."); }
             if (!completed)
                 foreach (var target in targets) reserved.Remove(target);
         }
@@ -960,7 +985,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
     {
         var name = Sanitize(value);
         if (name.Length > 100) name = name[..100].TrimEnd(' ', '.');
-        if (name is "CON" or "PRN" or "AUX" or "NUL") name = "_" + name;
+        if (IsWindowsDeviceName(name))
+            name = "_" + name;
         return name.Length == 0 ? "media" : name;
     }
 
@@ -969,12 +995,15 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         var leaf = name.Replace('\\', '/').Split('/').LastOrDefault() ?? "";
         var safe = Sanitize(leaf);
         if (safe.Length > 120) safe = safe[..120].TrimEnd(' ', '.');
-        var stem = Path.GetFileNameWithoutExtension(safe).ToUpperInvariant();
-        if (stem is "CON" or "PRN" or "AUX" or "NUL"
-            || System.Text.RegularExpressions.Regex.IsMatch(stem, @"\A(?:COM|LPT)[1-9]\z"))
+        if (IsWindowsDeviceName(safe))
             safe = "_" + safe;
         return safe.Length == 0 ? "attachment" : safe;
     }
+
+    private static bool IsWindowsDeviceName(string name) =>
+        System.Text.RegularExpressions.Regex.IsMatch(name.Split('.')[0],
+            @"\A(?:CON|PRN|AUX|NUL|CONIN\$|CONOUT\$|(?:COM|LPT)[1-9¹²³])\z",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
     private static string TargetDirectory(string root, TrackExportPlan plan, ExportOptions options)
     {
@@ -1002,7 +1031,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         throw new IOException("Could not find an available output file name.");
     }
 
-    private static string MoveWithoutOverwrite(string temp, string target, HashSet<string> reserved)
+    private static string MoveWithoutOverwrite(string temp, string target, HashSet<string> reserved,
+        OutputPathGuard pathGuard)
     {
         var stem = Path.GetFileNameWithoutExtension(target);
         var extension = Path.GetExtension(target);
@@ -1012,6 +1042,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             if (attempt > 1 && reserved.Contains(candidate)) continue;
             try
             {
+                pathGuard.Validate(Path.GetDirectoryName(temp)!);
+                pathGuard.Validate(Path.GetDirectoryName(candidate)!);
                 File.Move(temp, candidate, overwrite: false);
                 reserved.Add(candidate);
                 return candidate;
@@ -1021,7 +1053,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         throw new IOException("Could not find an available output file name.");
     }
 
-    private static async Task<bool> DeleteOwnTempAsync(string path)
+    private static async Task<bool> DeleteOwnTempAsync(string path, Action<string> report)
     {
         for (var attempt = 0; attempt < 6; attempt++)
         {
@@ -1029,27 +1061,11 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             try { File.Delete(path); return true; }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                if (attempt == 5) return false;
-                await Task.Delay(100).ConfigureAwait(false);
-            }
-        }
-        return false;
-    }
-
-    private static async Task<bool> DeleteOwnStageAsync(string path)
-    {
-        for (var attempt = 0; attempt < 6; attempt++)
-        {
-            if (!Directory.Exists(path)) return true;
-            try
-            {
-                if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0) return false;
-                Directory.Delete(path, recursive: false);
-                return true;
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-                if (attempt == 5) return false;
+                if (attempt == 5)
+                {
+                    report($"Temporary export file cleanup failed: {ex.GetType().Name}; HResult 0x{ex.HResult:X8}.");
+                    return false;
+                }
                 await Task.Delay(100).ConfigureAwait(false);
             }
         }

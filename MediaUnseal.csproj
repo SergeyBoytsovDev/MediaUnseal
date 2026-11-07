@@ -2,6 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
+    <Version>1.1.0</Version>
     <AssemblyName>MediaUnseal</AssemblyName>
     <RootNamespace>MediaUnseal</RootNamespace>
     <Nullable>enable</Nullable>
@@ -19,7 +20,7 @@
     <EmbeddedResource Include="docs\media-guide-diagrams.*.json" WithCulture="false" />
     <EmbeddedResource Update="Resources\Strings.ru.resx" WithCulture="false"
                       LogicalName="MediaUnseal.Resources.Strings.resources" />
-    <Compile Remove="Tests/**/*.cs" />
+    <Compile Remove="Tests/**/*.cs;Updater/**/*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -38,4 +39,14 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Markdown.Avalonia.Tight" Version="12.0.2" />
   </ItemGroup>
-</Project>
+  <Target Name="PublishUpdateHelper" AfterTargets="Publish"
+          Condition="'$(RuntimeIdentifier)' == 'win-x64' Or '$(RuntimeIdentifier)' == 'linux-x64'">
+    <Exec Command="dotnet publish &quot;$(MSBuildThisFileDirectory)Updater/MediaUnseal.Updater.csproj&quot; -c $(Configuration) -r $(RuntimeIdentifier) --self-contained true -p:PublishSingleFile=true -o &quot;$(MSBuildThisFileDirectory)obj/updater-$(RuntimeIdentifier)/&quot;" />
+    <PropertyGroup><UpdateHelperExtension Condition="'$(RuntimeIdentifier)' == 'win-x64'">.exe</UpdateHelperExtension></PropertyGroup>
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)obj/updater-$(RuntimeIdentifier)/MediaUnseal.Updater$(UpdateHelperExtension)"
+          DestinationFolder="$(PublishDir)" />
+  </Target></Project>
+
+
+
+

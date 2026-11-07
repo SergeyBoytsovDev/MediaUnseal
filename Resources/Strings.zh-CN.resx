@@ -1704,4 +1704,18 @@
   <data name="SettingsInterfaceScale" xml:space="preserve"><value>界面缩放</value></data>
   <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>自动</value></data>
   <data name="InstallerGyanLicenseNotice" xml:space="preserve"><value>自动安装使用 Gyan.dev 提供的 GPLv3 授权版本。许可和源代码信息：https://www.gyan.dev/ffmpeg/builds/</value></data>
+  <data name="SettingsSaveFailed" xml:space="preserve"><value>无法保存设置。更改仅在关闭应用前有效。请检查设置文件的访问权限。</value></data>
+  <data name="SettingsSaveRecovered" xml:space="preserve"><value>之前保存失败后，现已成功保存设置。</value></data>
+  <data name="UpdateAvailableJournal" xml:space="preserve"><value>Media Unseal {0} 已发布。可在“设置 → 关于”中更新。</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>正在检查更新…</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>无法检查更新</value></data>
+  <data name="UpdateAvailableVersion" xml:space="preserve"><value>版本 {0} 已发布</value></data>
+  <data name="UpdateDownloadInstall" xml:space="preserve"><value>下载并更新</value></data>
+  <data name="UpdateCancelDownload" xml:space="preserve"><value>取消下载</value></data>
+  <data name="UpdateDownloadProgress" xml:space="preserve"><value>下载中：{0:0}%</value></data>
+  <data name="UpdateManualInstall" xml:space="preserve"><value>此安装需要从 GitHub Releases 手动更新。</value></data>
+  <data name="UpdateInstallFailed" xml:space="preserve"><value>无法安装更新。详情请参阅诊断报告。</value></data>
+  <data name="UpdateBusy" xml:space="preserve"><value>请等待当前操作完成后再更新。</value></data>
 </root>
+
+

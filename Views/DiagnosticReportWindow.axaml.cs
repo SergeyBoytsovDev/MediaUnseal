@@ -66,12 +66,13 @@ public partial class DiagnosticReportWindow : Window
         try
         {
             await Task.Run(_log.Clear);
-            _rows = [];
+            _rows = await Task.Run(() => DiagnosticReportPresentation.Parse(_log.ReadReportLines()));
             this.FindControl<ListBox>("Entries")!.ItemsSource = _rows;
             UpdateCounts();
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        { _reportError(LocalizationManager.Active.Get("DiagnosticPreviewClearFailed")); }
+        { _log.Record(DiagnosticLevel.Warn, "Diagnostic storage",
+            $"Log clear refresh failed: {ex.GetType().Name}; HResult 0x{ex.HResult:X8}."); }
     }
 
     private async void Save_Click(object? sender, RoutedEventArgs e)

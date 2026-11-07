@@ -1704,4 +1704,18 @@
   <data name="SettingsInterfaceScale" xml:space="preserve"><value>インターフェースの倍率</value></data>
   <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>自動</value></data>
   <data name="InstallerGyanLicenseNotice" xml:space="preserve"><value>自動インストールでは、GPLv3 ライセンスの Gyan.dev 製ビルドを使用します。ライセンスとソースコードの情報: https://www.gyan.dev/ffmpeg/builds/</value></data>
+  <data name="SettingsSaveFailed" xml:space="preserve"><value>設定を保存できませんでした。変更はアプリを終了するまでのみ有効です。設定ファイルへのアクセス権を確認してください。</value></data>
+  <data name="SettingsSaveRecovered" xml:space="preserve"><value>前回のエラー後、設定を正常に保存しました。</value></data>
+  <data name="UpdateAvailableJournal" xml:space="preserve"><value>Media Unseal {0} を利用できます。「設定 → バージョン情報」から更新できます。</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>更新を確認中…</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>更新を確認できませんでした</value></data>
+  <data name="UpdateAvailableVersion" xml:space="preserve"><value>バージョン {0} を利用できます</value></data>
+  <data name="UpdateDownloadInstall" xml:space="preserve"><value>ダウンロードして更新</value></data>
+  <data name="UpdateCancelDownload" xml:space="preserve"><value>ダウンロードをキャンセル</value></data>
+  <data name="UpdateDownloadProgress" xml:space="preserve"><value>ダウンロード中: {0:0}%</value></data>
+  <data name="UpdateManualInstall" xml:space="preserve"><value>このインストールは GitHub Releases から手動で更新してください。</value></data>
+  <data name="UpdateInstallFailed" xml:space="preserve"><value>更新をインストールできませんでした。診断レポートを確認してください。</value></data>
+  <data name="UpdateBusy" xml:space="preserve"><value>現在の処理が完了してから更新してください。</value></data>
 </root>
+
+

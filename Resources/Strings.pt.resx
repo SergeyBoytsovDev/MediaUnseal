@@ -1704,4 +1704,18 @@ Vídeo: {6}; imagens: {7}; animações: {8}; áudio: {9}; legendas: {10}; fluxos
   <data name="SettingsInterfaceScale" xml:space="preserve"><value>Escala da interface</value></data>
   <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>Automático</value></data>
   <data name="InstallerGyanLicenseNotice" xml:space="preserve"><value>A instalação automática usa uma compilação da Gyan.dev sob a licença GPLv3. Licença e informações sobre o código-fonte: https://www.gyan.dev/ffmpeg/builds/</value></data>
+  <data name="SettingsSaveFailed" xml:space="preserve"><value>Não foi possível guardar as definições. As alterações só serão mantidas até fechar a aplicação. Verifique o acesso ao ficheiro de definições.</value></data>
+  <data name="SettingsSaveRecovered" xml:space="preserve"><value>As definições foram guardadas após a falha anterior.</value></data>
+  <data name="UpdateAvailableJournal" xml:space="preserve"><value>O Media Unseal {0} está disponível. Atualize em Configurações → Sobre.</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>Verificando atualizações…</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>Não foi possível verificar atualizações</value></data>
+  <data name="UpdateAvailableVersion" xml:space="preserve"><value>Versão {0} disponível</value></data>
+  <data name="UpdateDownloadInstall" xml:space="preserve"><value>Baixar e atualizar</value></data>
+  <data name="UpdateCancelDownload" xml:space="preserve"><value>Cancelar download</value></data>
+  <data name="UpdateDownloadProgress" xml:space="preserve"><value>Baixando: {0:0}%</value></data>
+  <data name="UpdateManualInstall" xml:space="preserve"><value>Esta instalação requer atualização manual pelo GitHub Releases.</value></data>
+  <data name="UpdateInstallFailed" xml:space="preserve"><value>Não foi possível instalar a atualização. Consulte o relatório de diagnóstico.</value></data>
+  <data name="UpdateBusy" xml:space="preserve"><value>Aguarde a conclusão da operação atual antes de atualizar.</value></data>
 </root>
+
+

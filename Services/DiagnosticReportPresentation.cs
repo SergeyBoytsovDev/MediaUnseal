@@ -34,7 +34,7 @@ internal static class DiagnosticReportPresentation
         foreach (var line in lines)
         {
             if (line.Length == 0 || line == "\r") continue;
-            var source = line.TrimEnd('\r');
+            var source = DiagnosticLog.RedactSensitive(line.TrimEnd('\r'));
             var match = Entry.Match(source);
             if (!match.Success || !DateTimeOffset.TryParseExact(match.Groups["stamp"].Value,
                 "yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture, DateTimeStyles.None, out var timestamp))

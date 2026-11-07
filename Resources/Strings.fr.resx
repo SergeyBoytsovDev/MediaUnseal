@@ -1704,4 +1704,18 @@ Vidéo : {6} ; images : {7} ; animations : {8} ; audio : {9} ; sous-titres : {10
   <data name="SettingsInterfaceScale" xml:space="preserve"><value>Échelle de l’interface</value></data>
   <data name="SettingsInterfaceScaleAuto" xml:space="preserve"><value>Automatique</value></data>
   <data name="InstallerGyanLicenseNotice" xml:space="preserve"><value>L’installation automatique utilise une version de Gyan.dev sous licence GPLv3. Licence et informations sur le code source : https://www.gyan.dev/ffmpeg/builds/</value></data>
+  <data name="SettingsSaveFailed" xml:space="preserve"><value>Impossible d’enregistrer les paramètres. Les modifications ne seront conservées que jusqu’à la fermeture de l’application. Vérifiez l’accès au fichier de paramètres.</value></data>
+  <data name="SettingsSaveRecovered" xml:space="preserve"><value>Les paramètres ont été enregistrés après l’échec précédent.</value></data>
+  <data name="UpdateAvailableJournal" xml:space="preserve"><value>Media Unseal {0} est disponible. Mise à jour dans Paramètres → À propos.</value></data>
+  <data name="UpdateChecking" xml:space="preserve"><value>Recherche de mises à jour…</value></data>
+  <data name="UpdateCheckFailed" xml:space="preserve"><value>Vérification impossible</value></data>
+  <data name="UpdateAvailableVersion" xml:space="preserve"><value>Version {0} disponible</value></data>
+  <data name="UpdateDownloadInstall" xml:space="preserve"><value>Télécharger et mettre à jour</value></data>
+  <data name="UpdateCancelDownload" xml:space="preserve"><value>Annuler le téléchargement</value></data>
+  <data name="UpdateDownloadProgress" xml:space="preserve"><value>Téléchargement : {0:0} %</value></data>
+  <data name="UpdateManualInstall" xml:space="preserve"><value>Cette installation nécessite une mise à jour manuelle depuis GitHub Releases.</value></data>
+  <data name="UpdateInstallFailed" xml:space="preserve"><value>Impossible d&apos;installer la mise à jour. Consultez le rapport de diagnostic.</value></data>
+  <data name="UpdateBusy" xml:space="preserve"><value>Attendez la fin du traitement en cours avant la mise à jour.</value></data>
 </root>
+
+

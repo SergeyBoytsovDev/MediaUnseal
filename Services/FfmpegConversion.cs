@@ -94,6 +94,7 @@ public sealed class FfmpegConversionCatalog
     private readonly Dictionary<ConversionFormat, IReadOnlyList<ConversionEncoder>> _confirmedHardware = new();
     private readonly Dictionary<(ConversionFormat Format, string Kind), IReadOnlyList<ConversionEncoder>> _confirmedAdditional = new();
     internal Func<string[], CancellationToken, Task<(int ExitCode, string Output)>>? CommandRunner { get; init; }
+    internal DiagnosticLog? CleanupLog { get; set; }
 
     private FfmpegConversionCatalog(string ffmpeg, List<ConversionFormat> formats, List<ConversionEncoder> encoders)
     { _ffmpeg = ffmpeg; _formats = formats; _encoders = encoders; }
@@ -222,11 +223,11 @@ public sealed class FfmpegConversionCatalog
         // Video copy is decided from existing FFprobe metadata; the actual muxer checks
         // compatibility during export. Do not create and decode a disposable video file.
         if (stream?.VisualKind == VisualKind.Video) return true;
-        var directory = Path.Combine(Path.GetTempPath(), "mediaunseal-copy-" + Guid.NewGuid().ToString("N"));
+        using var temporary = TemporaryDirectory.Create(Path.GetTempPath(), "mediaunseal-copy-");
+        var directory = temporary.Path;
         var output = Path.Combine(directory, "output." + format.Extension);
         try
         {
-            Directory.CreateDirectory(directory);
             var copyOptions = stream is null ? Array.Empty<string>() : TrackExporter.CopyVideoOptions(
                 new(stream, format.Extension, format.Muxer, false));
             var result = await RunAsync(["-hide_banner", "-loglevel", "error", "-nostdin", "-y",
@@ -242,8 +243,8 @@ public sealed class FfmpegConversionCatalog
             or TimeoutException or InvalidDataException) { return false; }
         finally
         {
-            try { File.Delete(output); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
-            try { Directory.Delete(directory, false); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            temporary.Dispose();
+            await TemporaryDirectory.DeleteAsync(directory, LogCleanupFailure).ConfigureAwait(false);
         }
     }
 
@@ -308,11 +309,11 @@ public sealed class FfmpegConversionCatalog
             || !IsEncoderSuitable(format, encoder)
             || settings is not null && (settings.Format != format || settings.Encoder != encoder))
             return (false, L.Get("MainValidationUnsupportedOutputFormat"), false);
-        var directory = Path.Combine(Path.GetTempPath(), "mediaunseal-probe-" + Guid.NewGuid().ToString("N"));
+        using var temporary = TemporaryDirectory.Create(Path.GetTempPath(), "mediaunseal-probe-");
+        var directory = temporary.Path;
         var output = Path.Combine(directory, "output." + format.Extension);
         try
         {
-            Directory.CreateDirectory(directory);
             string[] input;
             if (encoder.Kind == "video")
                 input = format.Muxer == "image2"
@@ -373,13 +374,13 @@ public sealed class FfmpegConversionCatalog
         }
         finally
         {
-            foreach (var file in new[] { Path.Combine(directory, "probe.srt"), output })
-                try { File.Delete(file); }
-                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
-            try { Directory.Delete(directory, recursive: false); }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+            temporary.Dispose();
+            await TemporaryDirectory.DeleteAsync(directory, LogCleanupFailure).ConfigureAwait(false);
         }
     }
+
+    private void LogCleanupFailure(string message) =>
+        CleanupLog?.Record(DiagnosticLevel.Warn, "Temporary files", message);
 
     internal static IEnumerable<ConversionEncoder> ParseEncoders(string output)
     {
