@@ -1,22 +1,22 @@
 
 {
-  "version": "1.2.0",
-  "tag": "v1.2.0",
+  "version": "1.2.1",
+  "tag": "v1.2.1",
   "packages": {
     "windowsInstaller": {
-      "name": "MediaUnseal-1.2.0-win-x64-setup.exe",
-      "size": 42347566,
-      "sha256": "1CD515A242B7EE97A662D8BBA60A23548E6809FB3144F9A7D6E7C836F298EE79"
+      "name": "MediaUnseal-1.2.1-win-x64-setup.exe",
+      "size": 42346473,
+      "sha256": "7BD6299EA365DD73F79FC0F7B7E0F7FA8F7385AD8FD71AA14CC87FDAD237913C"
     },
     "windowsPortable": {
-      "name": "MediaUnseal-1.2.0-win-x64-portable.zip",
-      "size": 58129135,
-      "sha256": "F635533427A3F313E22D16C4A1A08CF4AA8DA60E4A05BA17C44DE3F99FEDC73A"
+      "name": "MediaUnseal-1.2.1-win-x64-portable.zip",
+      "size": 58129753,
+      "sha256": "14CBFE272245F4D3886715A00809B65EC08CB802E21FCAEE8657D2AA834127B8"
     },
     "linuxX64": {
-      "name": "MediaUnseal-1.2.0-linux-x64.tar.gz",
-      "size": 55947832,
-      "sha256": "AE3760185D61C565DD1C31E00FEB7394D2C41FD4D629F74AF995FF7A1F13AAA8"
+      "name": "MediaUnseal-1.2.1-linux-x64.tar.gz",
+      "size": 55948110,
+      "sha256": "71C72A0642DA9F97EAB06043E140511F64C8519981E069C521876572A6B0B16C"
     }
   }
 }
