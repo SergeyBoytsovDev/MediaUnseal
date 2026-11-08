@@ -55,7 +55,8 @@ public partial class MediaGuideWindow : Window
             try { LoadGuide(language); }
             catch (Exception ex) { ArticleViewer.Markdown = L.Format("GuideLoadFailed", ex.Message); }
         }
-        GuideFallbackNotice.Text = L.Get("GuideRussianOriginalNotice");
+        GuideFallbackNotice.Text = L.Get(LanguagePackCatalog.GuideLanguageFor(language) == "en"
+            ? "GuideEnglishOriginalNotice" : "GuideRussianOriginalNotice");
         NavigationTitle.Text = string.IsNullOrWhiteSpace(SearchBox.Text)
             ? L.Get("GuideContents") : L.Get("GuideSearchResults");
         if (_currentMatchIndex < 0 && !string.IsNullOrWhiteSpace(SearchBox.Text))
@@ -100,7 +101,8 @@ public partial class MediaGuideWindow : Window
         }
         _search = new MediaGuideSearch(guide, diagrams);
         _loadedLanguage = language;
-        GuideFallbackNotice.Text = L.Get("GuideRussianOriginalNotice");
+        GuideFallbackNotice.Text = L.Get(guideLanguage == "en"
+            ? "GuideEnglishOriginalNotice" : "GuideRussianOriginalNotice");
         GuideFallbackNotice.IsVisible = guideLanguage != language;
         if (firstArticle is not null)
         {

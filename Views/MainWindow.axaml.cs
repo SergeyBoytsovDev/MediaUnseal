@@ -49,6 +49,11 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        if (OperatingSystem.IsWindows())
+        {
+            WindowDecorations = WindowDecorations.BorderOnly;
+            ExtendClientAreaToDecorationsHint = true;
+        }
         UiScale.Attach(this, constrainPosition: false);
         UpdateWindowStateIcon();
         PropertyChanged += (_, args) =>

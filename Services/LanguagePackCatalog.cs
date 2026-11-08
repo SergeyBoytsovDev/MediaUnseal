@@ -58,9 +58,7 @@ internal static class LanguagePackCatalog
         IReadOnlySet<string>? resources = null)
     {
         resources ??= GuideResources.Value;
-        var guideName = cultureCode == LocalizationManager.DefaultLanguage
-            ? "MediaUnseal.docs.media-unseal-media-guide.md"
-            : $"MediaUnseal.docs.media-unseal-media-guide.{cultureCode}.md";
+        var guideName = $"MediaUnseal.docs.media-unseal-media-guide.{cultureCode}.md";
         var diagramsName = $"MediaUnseal.docs.media-guide-diagrams.{cultureCode}.json";
         var problems = new List<string>();
         if (!resources.Contains(guideName)) problems.Add("missing-guide");
@@ -68,8 +66,13 @@ internal static class LanguagePackCatalog
         return problems;
     }
 
-    internal static string GuideLanguageFor(string language, IReadOnlySet<string>? resources = null) =>
-        ValidateGuideFiles(language, resources).Count == 0 ? language : LocalizationManager.DefaultLanguage;
+    internal static string GuideLanguageFor(string language, IReadOnlySet<string>? resources = null)
+    {
+        if (ValidateGuideFiles(language, resources).Count == 0) return language;
+        if (language != LocalizationManager.DefaultLanguage && ValidateGuideFiles("en", resources).Count == 0)
+            return "en";
+        return LocalizationManager.DefaultLanguage;
+    }
 
     private static int[] Placeholders(string template)
     {

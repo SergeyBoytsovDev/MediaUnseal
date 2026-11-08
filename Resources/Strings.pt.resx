@@ -1636,6 +1636,7 @@ Vídeo: {6}; imagens: {7}; animações: {8}; áudio: {9}; legendas: {10}; fluxos
   <data name="GuideLoadFailed" xml:space="preserve">
     <value>Não foi possível carregar o guia de formatos multimédia: {0}</value>
   </data>
+  <data name="GuideEnglishOriginalNotice" xml:space="preserve"><value>O guia de mídia ainda não está disponível no idioma selecionado. A versão em inglês é exibida.</value></data>
   <data name="GuideRussianOriginalNotice" xml:space="preserve">
     <value>O guia de formatos multimédia ainda não foi traduzido para o idioma selecionado. É apresentada a versão original em russo.</value>
   </data>

@@ -27,8 +27,7 @@ internal sealed class MediaGuideContent
     {
         if (LanguagePackCatalog.ValidateGuideFiles(language).Count != 0)
             throw new InvalidDataException($"Media guide language is unavailable: {language}.");
-        var name = language == LocalizationManager.DefaultLanguage
-            ? "media-unseal-media-guide.md" : $"media-unseal-media-guide.{language}.md";
+        var name = $"media-unseal-media-guide.{language}.md";
         using var stream = AssetLoader.Open(new Uri($"avares://MediaUnseal/docs/{name}"));
         using var reader = new StreamReader(stream);
         return Parse(reader.ReadToEnd());

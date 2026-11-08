@@ -1636,6 +1636,7 @@
   <data name="GuideLoadFailed" xml:space="preserve">
     <value>미디어 형식 가이드를 불러올 수 없습니다: {0}</value>
   </data>
+  <data name="GuideEnglishOriginalNotice" xml:space="preserve"><value>미디어 가이드는 선택한 언어로 아직 제공되지 않습니다. 영어 버전을 표시합니다.</value></data>
   <data name="GuideRussianOriginalNotice" xml:space="preserve">
     <value>미디어 형식 가이드가 선택한 언어로 아직 번역되지 않았습니다. 러시아어 원본이 표시됩니다.</value>
   </data>

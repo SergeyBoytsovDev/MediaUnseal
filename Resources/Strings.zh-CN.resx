@@ -1636,6 +1636,7 @@
   <data name="GuideLoadFailed" xml:space="preserve">
     <value>无法加载媒体格式指南：{0}</value>
   </data>
+  <data name="GuideEnglishOriginalNotice" xml:space="preserve"><value>媒体指南暂不支持所选语言，现显示英文版本。</value></data>
   <data name="GuideRussianOriginalNotice" xml:space="preserve">
     <value>媒体格式指南尚未翻译为所选语言。当前显示俄语原版。</value>
   </data>

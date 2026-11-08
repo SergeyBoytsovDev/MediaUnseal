@@ -1636,6 +1636,7 @@ Vidéo : {6} ; images : {7} ; animations : {8} ; audio : {9} ; sous-titres : {10
   <data name="GuideLoadFailed" xml:space="preserve">
     <value>Impossible de charger le guide des médias : {0}</value>
   </data>
+  <data name="GuideEnglishOriginalNotice" xml:space="preserve"><value>Le guide multimédia n'est pas encore disponible dans la langue sélectionnée. La version anglaise est affichée.</value></data>
   <data name="GuideRussianOriginalNotice" xml:space="preserve">
     <value>Le guide des médias n’a pas encore été traduit dans la langue sélectionnée. La version originale en russe est affichée.</value>
   </data>

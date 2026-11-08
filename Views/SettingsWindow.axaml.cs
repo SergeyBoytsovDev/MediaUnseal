@@ -27,6 +27,7 @@ public partial class SettingsWindow : Window
     private string? _detectedLicense;
     private CancellationTokenSource? _licenseCancellation;
     private bool _scaleSelectionReady;
+    private bool _manualUpdateCheckRequested;
     private string? _aboutErrorKey;
 
     public SettingsWindow() : this(new MainViewModel(), new UiAppearance(), CancellationToken.None) { }
@@ -222,21 +223,25 @@ public partial class SettingsWindow : Window
     {
         var result = _updates.Result;
         UpdateButton.IsEnabled = result.State != UpdateCheckState.Checking && _downloadCancellation is null;
-        UpdateCurrentStatus.IsVisible = result.State == UpdateCheckState.Current;
-        UpdateAvailableStatus.IsVisible = result.State == UpdateCheckState.Available;
-        UpdateCheckingStatus.IsVisible = result.State == UpdateCheckState.Checking;
-        UpdateErrorStatus.IsVisible = result.State == UpdateCheckState.Failed;
-        DownloadUpdateButton.IsVisible = result.State == UpdateCheckState.Available;
+        UpdateCurrentStatus.IsVisible = _manualUpdateCheckRequested && result.State == UpdateCheckState.Current;
+        UpdateAvailableStatus.IsVisible = _manualUpdateCheckRequested && result.State == UpdateCheckState.Available;
+        UpdateCheckingStatus.IsVisible = _manualUpdateCheckRequested && result.State == UpdateCheckState.Checking;
+        UpdateErrorStatus.IsVisible = _manualUpdateCheckRequested && result.State == UpdateCheckState.Failed;
+        DownloadUpdateButton.IsVisible = _manualUpdateCheckRequested && result.State == UpdateCheckState.Available;
         DownloadUpdateButton.IsEnabled = _downloadCancellation is null;
         if (result.Manifest is { } manifest && result.State == UpdateCheckState.Available)
             UpdateAvailableStatus.Text = _localization.Format("UpdateAvailableVersion", manifest.Version.ToString(3));
     }
 
-    private async void UpdateButton_Click(object? sender, RoutedEventArgs e)
+    private async void UpdateButton_Click(object? sender, RoutedEventArgs e) =>
+        await CheckForUpdatesAsync();
+
+    internal async Task CheckForUpdatesAsync(Uri? manifestUri = null)
     {
+        _manualUpdateCheckRequested = true;
         AboutActionError.IsVisible = false;
         _aboutErrorKey = null;
-        var result = await _updates.CheckAsync();
+        var result = await _updates.CheckAsync(manifestUri: manifestUri);
         if (result.State == UpdateCheckState.Failed)
             _viewModel.Diagnostics.Record(DiagnosticLevel.Warn, "Updates", "Manual update check failed.", result.Error);
     }

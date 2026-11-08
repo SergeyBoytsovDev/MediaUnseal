@@ -1636,6 +1636,7 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
   <data name="GuideLoadFailed" xml:space="preserve">
     <value>Could not load the media guide: {0}</value>
   </data>
+  <data name="GuideEnglishOriginalNotice" xml:space="preserve"><value>The media guide is not available in the selected language yet. The English version is shown.</value></data>
   <data name="GuideRussianOriginalNotice" xml:space="preserve">
     <value>The media guide has not been translated into the selected language yet. The Russian original is shown.</value>
   </data>

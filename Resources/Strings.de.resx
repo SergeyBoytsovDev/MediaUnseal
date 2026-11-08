@@ -1636,6 +1636,7 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
   <data name="GuideLoadFailed" xml:space="preserve">
     <value>Medienhandbuch konnte nicht geladen werden: {0}</value>
   </data>
+  <data name="GuideEnglishOriginalNotice" xml:space="preserve"><value>Der Medienleitfaden ist in der ausgewählten Sprache noch nicht verfügbar. Die englische Version wird angezeigt.</value></data>
   <data name="GuideRussianOriginalNotice" xml:space="preserve">
     <value>Das Medienhandbuch ist noch nicht in die ausgewählte Sprache übersetzt. Das russische Original wird angezeigt.</value>
   </data>

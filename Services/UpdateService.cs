@@ -53,7 +53,7 @@ internal sealed class UpdateService
         {
             Set(new UpdateCheckResult(UpdateCheckState.Checking));
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            deadline.CancelAfter(TimeSpan.FromSeconds(1));
+            deadline.CancelAfter(TimeSpan.FromSeconds(3));
             try
             {
                 using var request = new HttpRequestMessage(HttpMethod.Get, manifestUri ?? ManifestUri);
@@ -76,7 +76,7 @@ internal sealed class UpdateService
                 Set(new UpdateCheckResult(state, manifest));
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-            { Set(new UpdateCheckResult(UpdateCheckState.Failed, Error: "Metadata check timed out after one second.")); }
+            { Set(new UpdateCheckResult(UpdateCheckState.Failed, Error: "Metadata check timed out after three seconds.")); }
             catch (Exception ex) when (ex is HttpRequestException or IOException or JsonException or KeyNotFoundException or InvalidOperationException or ArgumentException or FormatException or OverflowException
                 or InvalidDataException or NotSupportedException)
             { Set(new UpdateCheckResult(UpdateCheckState.Failed, Error: ex.Message)); }

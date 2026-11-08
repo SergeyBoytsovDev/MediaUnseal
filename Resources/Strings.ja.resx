@@ -1636,6 +1636,7 @@
   <data name="GuideLoadFailed" xml:space="preserve">
     <value>メディア形式ガイドを読み込めませんでした：{0}</value>
   </data>
+  <data name="GuideEnglishOriginalNotice" xml:space="preserve"><value>メディアガイドは選択した言語ではまだ利用できません。英語版を表示しています。</value></data>
   <data name="GuideRussianOriginalNotice" xml:space="preserve">
     <value>メディア形式ガイドは選択した言語にまだ翻訳されていません。ロシア語の原文を表示しています。</value>
   </data>

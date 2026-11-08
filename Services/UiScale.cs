@@ -59,32 +59,49 @@ internal static class UiScale
             window.Width = Math.Min(window.Width, availableWidth - 16);
             if (window.SizeToContent == SizeToContent.Manual)
                 window.Height = Math.Min(window.Height, availableHeight - 16);
-            if (constrainPosition)
+        }
+
+        void EnsureAccessible()
+        {
+            if (!constrainPosition || window.WindowState != WindowState.Normal) return;
+            var position = window.Position;
+            foreach (var screen in window.Screens.All)
             {
+                var width = (int)Math.Ceiling(window.Bounds.Width * screen.Scaling);
+                var height = (int)Math.Ceiling(window.Bounds.Height * screen.Scaling);
                 var area = screen.WorkingArea;
-                var widthPixels = (int)Math.Ceiling(window.Width * dpi);
-                var effectiveHeight = double.IsFinite(window.Height) ? window.Height : window.Bounds.Height;
-                var heightPixels = (int)Math.Ceiling(effectiveHeight * dpi);
-                var position = window.Position;
-                var x = Math.Clamp(position.X, area.X, Math.Max(area.X, area.Right - widthPixels));
-                var y = Math.Clamp(position.Y, area.Y, Math.Max(area.Y, area.Bottom - heightPixels));
-                if (x != position.X || y != position.Y)
-                    window.Position = new PixelPoint(x, y);
+                if ((long)position.X < area.Right && (long)position.X + width > area.X &&
+                    (long)position.Y < area.Bottom && (long)position.Y + height > area.Y)
+                    return;
             }
+            var primary = window.Screens.Primary;
+            if (primary is null) return;
+            var target = primary.WorkingArea;
+            var targetWidth = (int)Math.Ceiling(window.Bounds.Width * primary.Scaling);
+            var targetHeight = (int)Math.Ceiling(window.Bounds.Height * primary.Scaling);
+            window.Position = new PixelPoint(target.X + Math.Max(0, (target.Width - targetWidth) / 2),
+                target.Y + Math.Max(0, (target.Height - targetHeight) / 2));
+        }
+
+        void ScreensChanged(object? sender, EventArgs args)
+        {
+            Apply(sender, args);
+            EnsureAccessible();
         }
 
         var opened = false;
         window.Opened += (_, _) =>
         {
             opened = true;
-            window.Screens.Changed += Apply;
+            window.Screens.Changed += ScreensChanged;
             Apply(null, EventArgs.Empty);
+            EnsureAccessible();
         };
         window.PositionChanged += Apply;
         appearance.ScaleChanged += Apply;
         window.Closed += (_, _) =>
         {
-            if (opened) window.Screens.Changed -= Apply;
+            if (opened) window.Screens.Changed -= ScreensChanged;
             window.PositionChanged -= Apply;
             appearance.ScaleChanged -= Apply;
             Active.Remove(window);

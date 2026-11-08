@@ -13,7 +13,7 @@ internal sealed class UiPreferences
 {
     public string Theme { get; set; } = UiAppearance.DefaultTheme;
     public string Language { get; set; } = UiAppearance.DefaultInterfaceLanguage;
-    public int InterfaceScale { get; set; } = 0;
+    public int InterfaceScale { get; set; } = 95;
     public double Width { get; set; } = 1355;
     public double Height { get; set; } = 1026;
     public int? X { get; set; }
@@ -62,7 +62,7 @@ internal sealed class UiAppearance
         if (Array.IndexOf(LocalizationManager.AvailableLanguages, Preferences.Language) < 0)
             Preferences.Language = DefaultInterfaceLanguage;
         if (Preferences.InterfaceScale != 0 && Preferences.InterfaceScale is < 75 or > 125)
-            Preferences.InterfaceScale = 0;
+            Preferences.InterfaceScale = new UiPreferences().InterfaceScale;
         if (!double.IsFinite(Preferences.Width) || Preferences.Width is < 960 or > 6000) Preferences.Width = 1280;
         if (!double.IsFinite(Preferences.Height) || Preferences.Height is < 680 or > 4000) Preferences.Height = 900;
         if (Preferences.ColumnWidths is not { Length: 8 }

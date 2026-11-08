@@ -577,6 +577,7 @@
   <data name="GuideArticleCount" xml:space="preserve"><value>{0} статей</value></data>
   <data name="GuideNavigationUnavailable" xml:space="preserve"><value>Переход недоступен</value></data>
   <data name="GuideLoadFailed" xml:space="preserve"><value>Не удалось загрузить медиасправочник: {0}</value></data>
+  <data name="GuideEnglishOriginalNotice" xml:space="preserve"><value>Перевод медиасправочника для выбранного языка пока недоступен. Показана английская версия.</value></data>
   <data name="GuideRussianOriginalNotice" xml:space="preserve"><value>Перевод медиасправочника для выбранного языка пока недоступен. Показан русский оригинал.</value></data>
   <data name="ViewNotFound" xml:space="preserve"><value>Представление не найдено: {0}</value></data>
   <data name="MainImageFormat" xml:space="preserve"><value>Формат изображения</value></data>
