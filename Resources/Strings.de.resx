@@ -1711,6 +1711,7 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
   <data name="UpdateChecking" xml:space="preserve"><value>Updates werden gesucht…</value></data>
   <data name="UpdateCheckFailed" xml:space="preserve"><value>Updates konnten nicht geprüft werden</value></data>
   <data name="UpdateAvailableVersion" xml:space="preserve"><value>Version {0} ist verfügbar</value></data>
+  <data name="UpdateDownload" xml:space="preserve"><value>Update herunterladen</value></data>
   <data name="UpdateDownloadInstall" xml:space="preserve"><value>Herunterladen und aktualisieren</value></data>
   <data name="UpdateCancelDownload" xml:space="preserve"><value>Download abbrechen</value></data>
   <data name="UpdateDownloadProgress" xml:space="preserve"><value>Download: {0:0}%</value></data>

@@ -202,8 +202,6 @@
                     Foreground="{DynamicResource WarningBrush}" VerticalAlignment="Center" FontSize="12" IsVisible="False"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="8">
-         <Button x:Name="DownloadUpdateButton" Content="{DynamicResource Loc_UpdateDownloadInstall}"
-                 Click="DownloadUpdate_Click" IsVisible="False" HorizontalContentAlignment="Center"/>
          <Button x:Name="CancelUpdateButton" Content="{DynamicResource Loc_UpdateCancelDownload}"
                  Click="CancelUpdate_Click" IsVisible="False" HorizontalContentAlignment="Center"/>
          <TextBlock x:Name="UpdateProgress" VerticalAlignment="Center" IsVisible="False"/>

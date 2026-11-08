@@ -172,13 +172,31 @@ public partial class SettingsWindow : Window
         TechnologyText.Text = _localization.Format("SettingsTechnology",
             Environment.Version.Major, typeof(Application).Assembly.GetName().Version?.ToString(3) ?? "—");
         AboutFooterText.Text = _localization.Get("SettingsAboutFooter");
-        UpdateButton.Content = _localization.Get("SettingsCheckUpdates");
+        SizeUpdateButton();
         RefreshUpdateResult();
         if (AboutActionError.IsVisible && _aboutErrorKey is { } key)
             AboutActionError.Text = _localization.Get(key);
         FfmpegLicenseText.Text = _detectedLicense ?? _localization.Get("SettingsFfmpegLicense");
     }
 
+    private void SizeUpdateButton()
+    {
+        var label = new TextBlock
+        {
+            FontFamily = UpdateButton.FontFamily,
+            FontSize = UpdateButton.FontSize,
+            FontWeight = UpdateButton.FontWeight
+        };
+        double WidthFor(string key)
+        {
+            label.Text = _localization.Get(key);
+            label.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+            return label.DesiredSize.Width;
+        }
+        UpdateButton.Width = Math.Ceiling(Math.Max(WidthFor("SettingsCheckUpdates"),
+            WidthFor("UpdateDownload")) + UpdateButton.Padding.Left + UpdateButton.Padding.Right
+            + UpdateButton.BorderThickness.Left + UpdateButton.BorderThickness.Right + 8);
+    }
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is nameof(MainViewModel.FFmpegExecutablePath)
@@ -222,19 +240,24 @@ public partial class SettingsWindow : Window
     private void RefreshUpdateResult()
     {
         var result = _updates.Result;
+        UpdateButton.Content = _localization.Get(_manualUpdateCheckRequested && result.State == UpdateCheckState.Available
+            ? "UpdateDownload" : "SettingsCheckUpdates");
         UpdateButton.IsEnabled = result.State != UpdateCheckState.Checking && _downloadCancellation is null;
         UpdateCurrentStatus.IsVisible = _manualUpdateCheckRequested && result.State == UpdateCheckState.Current;
         UpdateAvailableStatus.IsVisible = _manualUpdateCheckRequested && result.State == UpdateCheckState.Available;
         UpdateCheckingStatus.IsVisible = _manualUpdateCheckRequested && result.State == UpdateCheckState.Checking;
         UpdateErrorStatus.IsVisible = _manualUpdateCheckRequested && result.State == UpdateCheckState.Failed;
-        DownloadUpdateButton.IsVisible = _manualUpdateCheckRequested && result.State == UpdateCheckState.Available;
-        DownloadUpdateButton.IsEnabled = _downloadCancellation is null;
         if (result.Manifest is { } manifest && result.State == UpdateCheckState.Available)
             UpdateAvailableStatus.Text = _localization.Format("UpdateAvailableVersion", manifest.Version.ToString(3));
     }
 
-    private async void UpdateButton_Click(object? sender, RoutedEventArgs e) =>
-        await CheckForUpdatesAsync();
+    private async void UpdateButton_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_manualUpdateCheckRequested && _updates.Result.State == UpdateCheckState.Available)
+            DownloadUpdate_Click(sender, e);
+        else
+            await CheckForUpdatesAsync();
+    }
 
     internal async Task CheckForUpdatesAsync(Uri? manifestUri = null)
     {
@@ -262,7 +285,6 @@ public partial class SettingsWindow : Window
         var cancellation = new CancellationTokenSource();
         _downloadCancellation = cancellation;
         UpdateButton.IsEnabled = false;
-        DownloadUpdateButton.IsEnabled = false;
         CancelUpdateButton.IsVisible = true;
         UpdateProgress.IsVisible = true;
         AboutActionError.IsVisible = false;

@@ -648,6 +648,7 @@
   <data name="UpdateChecking" xml:space="preserve"><value>Проверка обновлений…</value></data>
   <data name="UpdateCheckFailed" xml:space="preserve"><value>Не удалось проверить обновления</value></data>
   <data name="UpdateAvailableVersion" xml:space="preserve"><value>Доступна версия {0}</value></data>
+  <data name="UpdateDownload" xml:space="preserve"><value>Скачать обновление</value></data>
   <data name="UpdateDownloadInstall" xml:space="preserve"><value>Скачать и обновить</value></data>
   <data name="UpdateCancelDownload" xml:space="preserve"><value>Отменить загрузку</value></data>
   <data name="UpdateDownloadProgress" xml:space="preserve"><value>Загрузка: {0:0}%</value></data>

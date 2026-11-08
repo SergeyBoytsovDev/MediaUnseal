@@ -1,7 +1,7 @@
 # Media Unseal — Software License
 
 **License edition:** November 2026  
-**Applies to Media Unseal version 1.2.0**  
+**Applies to Media Unseal version 1.2.1**  
 **Copyright © 2026 Sergey Boytsov. All rights reserved.**
 
 This license applies only to the original Media Unseal application, its original source code, documentation, artwork, and other materials to which Sergey Boytsov owns or controls the necessary rights (collectively, the **Application**). It does **not** replace or restrict the separate licenses of third-party components. See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) and [DEPENDENCIES.md](DEPENDENCIES.md).

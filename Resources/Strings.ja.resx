@@ -1711,6 +1711,7 @@
   <data name="UpdateChecking" xml:space="preserve"><value>更新を確認中…</value></data>
   <data name="UpdateCheckFailed" xml:space="preserve"><value>更新を確認できませんでした</value></data>
   <data name="UpdateAvailableVersion" xml:space="preserve"><value>バージョン {0} を利用できます</value></data>
+  <data name="UpdateDownload" xml:space="preserve"><value>更新をダウンロード</value></data>
   <data name="UpdateDownloadInstall" xml:space="preserve"><value>ダウンロードして更新</value></data>
   <data name="UpdateCancelDownload" xml:space="preserve"><value>ダウンロードをキャンセル</value></data>
   <data name="UpdateDownloadProgress" xml:space="preserve"><value>ダウンロード中: {0:0}%</value></data>

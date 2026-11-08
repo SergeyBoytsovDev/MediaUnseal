@@ -1,7 +1,7 @@
 # Media Unseal
 
 **Media Extraction & Conversion**  
-**Version 1.2.0**
+**Version 1.2.1**
 
 Media Unseal is a desktop application for inspecting media files, extracting individual streams, and converting selected content. It provides a straightforward interface for working with audio, video, subtitles, and embedded attachments.
 

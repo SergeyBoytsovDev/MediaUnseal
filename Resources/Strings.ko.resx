@@ -1711,6 +1711,7 @@
   <data name="UpdateChecking" xml:space="preserve"><value>업데이트 확인 중…</value></data>
   <data name="UpdateCheckFailed" xml:space="preserve"><value>업데이트를 확인할 수 없습니다</value></data>
   <data name="UpdateAvailableVersion" xml:space="preserve"><value>버전 {0} 사용 가능</value></data>
+  <data name="UpdateDownload" xml:space="preserve"><value>업데이트 다운로드</value></data>
   <data name="UpdateDownloadInstall" xml:space="preserve"><value>다운로드 및 업데이트</value></data>
   <data name="UpdateCancelDownload" xml:space="preserve"><value>다운로드 취소</value></data>
   <data name="UpdateDownloadProgress" xml:space="preserve"><value>다운로드 중: {0:0}%</value></data>
