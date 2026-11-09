@@ -243,10 +243,11 @@ public partial class SettingsWindow : Window
         UpdateButton.Content = _localization.Get(_manualUpdateCheckRequested && result.State == UpdateCheckState.Available
             ? "UpdateDownload" : "SettingsCheckUpdates");
         UpdateButton.IsEnabled = result.State != UpdateCheckState.Checking && _downloadCancellation is null;
-        UpdateCurrentStatus.IsVisible = _manualUpdateCheckRequested && result.State == UpdateCheckState.Current;
-        UpdateAvailableStatus.IsVisible = _manualUpdateCheckRequested && result.State == UpdateCheckState.Available;
-        UpdateCheckingStatus.IsVisible = _manualUpdateCheckRequested && result.State == UpdateCheckState.Checking;
-        UpdateErrorStatus.IsVisible = _manualUpdateCheckRequested && result.State == UpdateCheckState.Failed;
+        var showResult = _manualUpdateCheckRequested && _downloadCancellation is null;
+        UpdateCurrentStatus.IsVisible = showResult && result.State == UpdateCheckState.Current;
+        UpdateAvailableStatus.IsVisible = showResult && result.State == UpdateCheckState.Available;
+        UpdateCheckingStatus.IsVisible = showResult && result.State == UpdateCheckState.Checking;
+        UpdateErrorStatus.IsVisible = showResult && result.State == UpdateCheckState.Failed;
         if (result.Manifest is { } manifest && result.State == UpdateCheckState.Available)
             UpdateAvailableStatus.Text = _localization.Format("UpdateAvailableVersion", manifest.Version.ToString(3));
     }
@@ -269,8 +270,6 @@ public partial class SettingsWindow : Window
             _viewModel.Diagnostics.Record(DiagnosticLevel.Warn, "Updates", "Manual update check failed.", result.Error);
     }
 
-    private void CancelUpdate_Click(object? sender, RoutedEventArgs e) => _downloadCancellation?.Cancel();
-
     private async void DownloadUpdate_Click(object? sender, RoutedEventArgs e)
     {
         if (_downloadCancellation is not null || _updates.Result.Manifest is not { } manifest ||
@@ -285,8 +284,9 @@ public partial class SettingsWindow : Window
         var cancellation = new CancellationTokenSource();
         _downloadCancellation = cancellation;
         UpdateButton.IsEnabled = false;
-        CancelUpdateButton.IsVisible = true;
+        UpdateProgress.Text = _localization.Format("UpdateDownloadProgress", 0);
         UpdateProgress.IsVisible = true;
+        RefreshUpdateResult();
         AboutActionError.IsVisible = false;
         try
         {
@@ -329,7 +329,6 @@ public partial class SettingsWindow : Window
         {
             cancellation.Dispose();
             _downloadCancellation = null;
-            CancelUpdateButton.IsVisible = false;
             UpdateProgress.IsVisible = false;
             RefreshUpdateResult();
         }
