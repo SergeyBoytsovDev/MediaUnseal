@@ -1,8 +1,8 @@
-# Media Unseal — Software License
+﻿# Media Unseal вЂ” Software License
 
 **License edition:** November 2026  
-**Applies to Media Unseal version 1.2.2**  
-**Copyright © 2026 Sergey Boytsov. All rights reserved.**
+**Applies to Media Unseal version 1.3.0**  
+**Copyright В© 2026 Sergey Boytsov. All rights reserved.**
 
 This license applies only to the original Media Unseal application, its original source code, documentation, artwork, and other materials to which Sergey Boytsov owns or controls the necessary rights (collectively, the **Application**). It does **not** replace or restrict the separate licenses of third-party components. See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) and [DEPENDENCIES.md](DEPENDENCIES.md).
 
@@ -47,7 +47,7 @@ The name **Media Unseal** and the author's name may be used to identify the unmo
 
 ## 6. No warranty; limitation of liability
 
-THE APPLICATION IS PROVIDED **“AS IS”** AND **“AS AVAILABLE”**, WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT, TO THE EXTENT PERMITTED BY APPLICABLE LAW.
+THE APPLICATION IS PROVIDED **вЂњAS ISвЂќ** AND **вЂњAS AVAILABLEвЂќ**, WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT, TO THE EXTENT PERMITTED BY APPLICABLE LAW.
 
 TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, SERGEY BOYTSOV SHALL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR OTHER DAMAGES ARISING FROM THE USE OF, INABILITY TO USE, OR DISTRIBUTION OF THE APPLICATION, INCLUDING LOSS OF DATA OR BUSINESS INTERRUPTION. NOTHING HERE EXCLUDES LIABILITY THAT CANNOT LAWFULLY BE EXCLUDED.
 

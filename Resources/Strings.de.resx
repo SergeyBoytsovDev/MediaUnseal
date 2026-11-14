@@ -1712,12 +1712,40 @@ Video: {6}; Bilder: {7}; Animationen: {8}; Audio: {9}; Untertitel: {10}; unbekan
   <data name="UpdateCheckFailed" xml:space="preserve"><value>Updates konnten nicht geprüft werden</value></data>
   <data name="UpdateAvailableVersion" xml:space="preserve"><value>Version {0} ist verfügbar</value></data>
   <data name="UpdateDownload" xml:space="preserve"><value>Update herunterladen</value></data>
+  <data name="UpdateInstallRestart" xml:space="preserve"><value>Installieren und neu starten</value></data>
+  <data name="UpdateReadyRestart" xml:space="preserve"><value>Update heruntergeladen. Die App wird nach der Installation neu gestartet.</value></data>
   <data name="UpdateDownloadInstall" xml:space="preserve"><value>Herunterladen und aktualisieren</value></data>
   <data name="UpdateCancelDownload" xml:space="preserve"><value>Download abbrechen</value></data>
   <data name="UpdateDownloadProgress" xml:space="preserve"><value>Download: {0:0}%</value></data>
   <data name="UpdateManualInstall" xml:space="preserve"><value>Diese Installation erfordert ein manuelles Update über GitHub Releases.</value></data>
   <data name="UpdateInstallFailed" xml:space="preserve"><value>Das Update konnte nicht installiert werden. Details im Diagnosebericht.</value></data>
   <data name="UpdateBusy" xml:space="preserve"><value>Warten Sie vor dem Update, bis der aktuelle Vorgang abgeschlossen ist.</value></data>
+  <data name="MainChapters" xml:space="preserve"><value>Kapitel</value></data>
+  <data name="MainChapterCount" xml:space="preserve"><value>Gefunden: {0}</value></data>
+  <data name="MainChapterCountOne" xml:space="preserve"><value>Gefunden: {0}</value></data>
+  <data name="MainChapterOne" xml:space="preserve"><value>Kapitel</value></data>
+  <data name="MainChapterFew" xml:space="preserve"><value>Kapitel</value></data>
+  <data name="MainChapterMany" xml:space="preserve"><value>Kapitel</value></data>
+  <data name="ChapterEditionLabel" xml:space="preserve"><value>Edition {0}</value></data>
+  <data name="ChapterItemLabel" xml:space="preserve"><value>Kapitel {0}</value></data>
+  <data name="LogChapterStringUidOmitted" xml:space="preserve"><value>Zeichenfolgenkennungen einiger Kapitel (ChapterStringUID) wurden nicht in die XML-Datei übernommen. Alle übrigen Daten wurden gespeichert.</value></data>
+  <data name="MainSubtitleCsvFailed" xml:space="preserve"><value>CSV kann nicht erstellt werden: Die Untertitel enthalten keine lesbaren Textzeilen oder sind beschädigt.</value></data>
+  <data name="ConversionCsvDelimiter" xml:space="preserve"><value>Trennzeichen</value></data>
+  <data name="ConversionCsvComma" xml:space="preserve"><value>Komma (,)</value></data>
+  <data name="ConversionCsvSemicolon" xml:space="preserve"><value>Semikolon (;)</value></data>
+  <data name="ConversionCsvTab" xml:space="preserve"><value>Tabulator (TAB)</value></data>
+  <data name="ConversionCsvPipe" xml:space="preserve"><value>Senkrechter Strich (|)</value></data>
+  <data name="ConversionCsvDestination" xml:space="preserve"><value>Ziel</value></data>
+  <data name="ConversionCsvUniversal" xml:space="preserve"><value>Universelle Tabelle</value></data>
+  <data name="ConversionCsvAdr" xml:space="preserve"><value>DaVinci Resolve ADR</value></data>
+  <data name="ConversionAdrFps" xml:space="preserve"><value>Bildrate</value></data>
+  <data name="ConversionAdrStart" xml:space="preserve"><value>Start-Timecode</value></data>
+  <data name="MainValidationAdrTimecode" xml:space="preserve"><value>Geben Sie einen gültigen ADR-Start-Timecode für die gewählte Bildrate ein.</value></data>
+  <data name="MainValidationCsvInputTiming" xml:space="preserve"><value>Wählen Sie die Bildrate der ADR-Quelle und geben Sie den Start-Timecode der Timeline ein.</value></data>
+  <data name="StreamCsvCueCount" xml:space="preserve"><value>Repliken</value></data>
+  <data name="MainCsvInvalid" xml:space="preserve"><value>Die CSV-Untertiteldatei enthält eine ungültige Struktur oder einen ungültigen Timecode.</value></data>
+  <data name="ConversionCsvInputTiming" xml:space="preserve"><value>Timecodes der ADR-Quelle</value></data>
+  <data name="ConversionCsvOutputTiming" xml:space="preserve"><value>Timecodes der ADR-Ausgabe</value></data>
 </root>
 
 

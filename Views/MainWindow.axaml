@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:vm="using:MediaUnseal.ViewModels"
+ xmlns:views="using:MediaUnseal.Views"
  x:Class="MediaUnseal.Views.MainWindow" x:DataType="vm:MainViewModel"
  Title="{DynamicResource Loc_SettingsProductName}" Icon="/Assets/Icons/MediaUnseal-256.png" Width="1280" Height="900" MinWidth="1000" MinHeight="700"
  WindowStartupLocation="CenterScreen" WindowDecorations="None" CanResize="True"
@@ -52,7 +53,7 @@
   <Style Selector="TableViewCell"><Setter Property="Padding" Value="0,2"/><Setter Property="VerticalContentAlignment" Value="Center"/></Style>
  </Window.Styles>
  <Window.Resources>
-  <DataTemplate x:Key="OutputFormatTemplate" x:CompileBindings="False">
+  <DataTemplate x:Key="OutputFormatTemplate" x:DataType="views:FormatChoice">
    <StackPanel>
     <Border Height="1" Margin="0,4,0,5" Background="{DynamicResource LineBrush}"
             IsVisible="False" Loaded="OutputFormatDivider_Loaded"/>
@@ -94,18 +95,24 @@
         <TextBlock Text="▤" FontSize="20" VerticalAlignment="Center"/>
         <TextBlock Text="{DynamicResource Loc_MainSourceFile}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
        </StackPanel>
-       <Button Grid.Column="1" Classes="chrome chrome-surface chrome-clear" Margin="5" Width="28" Height="28" Padding="0" Content="×" FontSize="18"
+       <Button Grid.Column="1" Classes="chrome chrome-surface chrome-clear" Margin="5" Width="28" Height="28" Padding="0"
                ToolTip.Tip="{DynamicResource Loc_MainClearSelectedFile}"
                HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-               IsVisible="{Binding HasSourceOrAnalysis}" IsEnabled="{Binding CanClearFile}" Click="ClearFile_Click"/>
+               IsVisible="{Binding HasSourceOrAnalysis}" IsEnabled="{Binding CanClearFile}" Click="ClearFile_Click">
+        <Path Data="M 2,2 L 12,12 M 12,2 L 2,12" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+              StrokeThickness="1.7" Width="14" Height="14" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+       </Button>
       </Grid></Border>
       <Border x:Name="DropZone" Grid.Row="1" Classes="dropzone" Background="Transparent" Margin="9"
               BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1" CornerRadius="{DynamicResource ControlCorner}">
        <Grid>
         <StackPanel IsVisible="{Binding HasNoMedia}" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="3">
-         <Path Data="M 4,2 L 19,2 L 26,9 L 26,30 L 4,30 Z M 19,2 L 19,9 L 26,9 M 8,23 L 22,23 M 10,13 L 20,13"
-               Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.8" Width="44" Height="47" Stretch="Uniform"
-               HorizontalAlignment="Center" Margin="0,0,0,1"/>
+         <Viewbox Width="44" Height="47" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,1">
+          <Canvas Width="30" Height="32">
+           <Path Data="M 4,2 L 19,2 L 26,9 L 26,30 L 4,30 Z M 19,2 L 19,9 L 26,9 M 8,23 L 22,23 M 10,13 L 20,13"
+                 Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.8"/>
+          </Canvas>
+         </Viewbox>
          <TextBlock Text="{DynamicResource Loc_MainDropFile}" FontSize="18" FontWeight="SemiBold"
                     HorizontalAlignment="Center" Margin="8,0,8,1"/>
          <Button Classes="primary" Click="SelectFile_Click" IsEnabled="{Binding CanChooseFile}"
@@ -122,9 +129,12 @@
                     Classes="error" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="8,0"/>
         </StackPanel>
         <StackPanel IsVisible="{Binding HasMedia}" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
-         <Path Data="M 4,2 L 19,2 L 26,9 L 26,30 L 4,30 Z M 19,2 L 19,9 L 26,9 M 8,23 L 22,23 M 10,13 L 20,13"
-               Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.8" Width="44" Height="44" Stretch="Uniform"
-               HorizontalAlignment="Center"/>
+         <Viewbox Width="44" Height="44" Stretch="Uniform" HorizontalAlignment="Center">
+          <Canvas Width="30" Height="32">
+           <Path Data="M 4,2 L 19,2 L 26,9 L 26,30 L 4,30 Z M 19,2 L 19,9 L 26,9 M 8,23 L 22,23 M 10,13 L 20,13"
+                 Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.8"/>
+          </Canvas>
+         </Viewbox>
          <TextBlock Text="{DynamicResource Loc_MainFileLoaded}" Classes="success" FontWeight="SemiBold"
                     HorizontalAlignment="Center" Margin="4,0"/>
          <TextBlock Text="{Binding MediaFileName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
@@ -206,17 +216,31 @@
          </TableView.Resources>
          <TableView.ContextMenu>
           <ContextMenu Padding="0" Background="{DynamicResource PanelAltBackground}">
+           <ContextMenu.Template>
+            <ControlTemplate>
+             <Border Background="{TemplateBinding Background}" BorderBrush="{DynamicResource LineBrush}"
+                     BorderThickness="1" CornerRadius="{DynamicResource ControlCorner}" ClipToBounds="True">
+              <ItemsPresenter/>
+             </Border>
+            </ControlTemplate>
+           </ContextMenu.Template>
            <ContextMenu.Styles>
             <Style Selector="MenuItem">
-             <Setter Property="Background" Value="{DynamicResource PanelAltBackground}"/>
+             <Setter Property="Background" Value="Transparent"/>
              <Setter Property="Foreground" Value="{DynamicResource MainTextBrush}"/>
-             <Setter Property="Padding" Value="12,8"/>
+             <Setter Property="Margin" Value="0"/>
+             <Setter Property="HorizontalAlignment" Value="Stretch"/>
+             <Setter Property="Height" Value="30"/>
+             <Setter Property="MinHeight" Value="0"/>
+             <Setter Property="Padding" Value="9,3"/>
              <Setter Property="Template">
               <ControlTemplate>
                <Border Background="{TemplateBinding Background}">
                 <ContentPresenter Content="{TemplateBinding Header}"
                                   ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                  Padding="{TemplateBinding Padding}"/>
+                                  Padding="{TemplateBinding Padding}"
+                                  HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                  HorizontalContentAlignment="Left" VerticalContentAlignment="Center"/>
                </Border>
               </ControlTemplate>
              </Setter>

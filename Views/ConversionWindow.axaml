@@ -29,6 +29,26 @@
       </StackPanel>
      </DataTemplate></ComboBox.ItemTemplate>
     </ComboBox>
+    <Grid x:Name="InputAdrOptions" RowDefinitions="Auto,Auto" IsVisible="False">
+     <TextBlock Text="{DynamicResource Loc_ConversionCsvInputTiming}" FontWeight="SemiBold" Margin="0,0,0,4"/>
+     <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
+      <StackPanel Spacing="4"><TextBlock Text="{DynamicResource Loc_ConversionAdrFps}" FontWeight="SemiBold"/><ComboBox x:Name="CsvInputFpsBox" HorizontalAlignment="Stretch"/></StackPanel>
+      <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="{DynamicResource Loc_ConversionAdrStart}" FontWeight="SemiBold"/><TextBox x:Name="CsvInputStartBox" PlaceholderText="00:00:00:00"/></StackPanel>
+     </Grid>
+    </Grid>
+    <StackPanel x:Name="CsvDelimiterOptions" IsVisible="False" Spacing="4">
+     <TextBlock Text="{DynamicResource Loc_ConversionCsvDestination}" FontWeight="SemiBold"/>
+     <ComboBox x:Name="CsvDestinationBox" SelectionChanged="CsvDestination_SelectionChanged" HorizontalAlignment="Stretch"/>
+     <TextBlock Text="{DynamicResource Loc_ConversionCsvDelimiter}" FontWeight="SemiBold"/>
+     <ComboBox x:Name="CsvDelimiterBox" HorizontalAlignment="Stretch"/>
+     <Grid x:Name="AdrOptions" RowDefinitions="Auto,Auto" IsVisible="False">
+      <TextBlock Text="{DynamicResource Loc_ConversionCsvOutputTiming}" FontWeight="SemiBold" Margin="0,0,0,4"/>
+      <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="8">
+       <StackPanel Spacing="4"><TextBlock Text="{DynamicResource Loc_ConversionAdrFps}"/><ComboBox x:Name="AdrFpsBox" HorizontalAlignment="Stretch"/></StackPanel>
+       <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="{DynamicResource Loc_ConversionAdrStart}"/><TextBox x:Name="AdrStartBox" PlaceholderText="00:00:00:00"/></StackPanel>
+      </Grid>
+     </Grid>
+    </StackPanel>
     <TextBlock Text="{DynamicResource Loc_ConversionEncoder}" FontWeight="SemiBold" Margin="0,3,0,0"/>
     <ComboBox x:Name="EncoderBox" SelectionChanged="Encoder_SelectionChanged" HorizontalAlignment="Stretch">
      <ComboBox.ItemTemplate>

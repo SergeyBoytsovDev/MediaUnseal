@@ -649,12 +649,38 @@
   <data name="UpdateCheckFailed" xml:space="preserve"><value>Не удалось проверить обновления</value></data>
   <data name="UpdateAvailableVersion" xml:space="preserve"><value>Доступна версия {0}</value></data>
   <data name="UpdateDownload" xml:space="preserve"><value>Скачать обновление</value></data>
+  <data name="UpdateInstallRestart" xml:space="preserve"><value>Установить и перезапустить</value></data>
+  <data name="UpdateReadyRestart" xml:space="preserve"><value>Обновление загружено. Программа перезапустится после установки.</value></data>
   <data name="UpdateDownloadInstall" xml:space="preserve"><value>Скачать и обновить</value></data>
   <data name="UpdateCancelDownload" xml:space="preserve"><value>Отменить загрузку</value></data>
   <data name="UpdateDownloadProgress" xml:space="preserve"><value>Загрузка: {0:0}%</value></data>
   <data name="UpdateManualInstall" xml:space="preserve"><value>Для этой установки доступна только ручная установка с GitHub Releases.</value></data>
   <data name="UpdateInstallFailed" xml:space="preserve"><value>Не удалось установить обновление. Подробности в диагностическом отчёте.</value></data>
   <data name="UpdateBusy" xml:space="preserve"><value>Дождитесь завершения текущей операции перед обновлением.</value></data>
+  <data name="MainChapters" xml:space="preserve"><value>Главы</value></data>
+  <data name="MainChapterCount" xml:space="preserve"><value>Найдено: {0}</value></data>
+  <data name="MainChapterCountOne" xml:space="preserve"><value>Найдено: {0}</value></data>
+  <data name="MainChapterOne" xml:space="preserve"><value>глава</value></data>
+  <data name="MainChapterFew" xml:space="preserve"><value>главы</value></data>
+  <data name="MainChapterMany" xml:space="preserve"><value>глав</value></data>
+  <data name="ChapterEditionLabel" xml:space="preserve"><value>Редакция {0}</value></data>
+  <data name="ChapterItemLabel" xml:space="preserve"><value>Глава {0}</value></data>
+  <data name="LogChapterStringUidOmitted" xml:space="preserve"><value>Строковые идентификаторы некоторых глав (ChapterStringUID) не включены в XML. Остальные данные сохранены.</value></data>
+  <data name="MainSubtitleCsvFailed" xml:space="preserve"><value>Не удалось создать CSV: в субтитрах нет читаемых текстовых реплик или данные повреждены.</value></data>
+  <data name="ConversionCsvDelimiter" xml:space="preserve"><value>Разделитель</value></data>
+  <data name="ConversionCsvComma" xml:space="preserve"><value>Запятая (,)</value></data>
+  <data name="ConversionCsvSemicolon" xml:space="preserve"><value>Точка с запятой (;)</value></data>
+  <data name="ConversionCsvTab" xml:space="preserve"><value>Табуляция (TAB)</value></data>
+  <data name="ConversionCsvPipe" xml:space="preserve"><value>Вертикальная черта (|)</value></data>
+  <data name="ConversionCsvDestination" xml:space="preserve"><value>Назначение</value></data>
+  <data name="ConversionCsvUniversal" xml:space="preserve"><value>Универсальная таблица</value></data>
+  <data name="ConversionCsvAdr" xml:space="preserve"><value>DaVinci Resolve ADR</value></data>
+  <data name="ConversionAdrFps" xml:space="preserve"><value>Частота кадров</value></data>
+  <data name="ConversionAdrStart" xml:space="preserve"><value>Начальный таймкод</value></data>
+  <data name="MainValidationAdrTimecode" xml:space="preserve"><value>Введите корректный начальный таймкод ADR для выбранной частоты кадров.</value></data>
+  <data name="MainValidationCsvInputTiming" xml:space="preserve"><value>Выберите частоту кадров исходного ADR и укажите начальный таймкод таймлайна.</value></data>
+  <data name="StreamCsvCueCount" xml:space="preserve"><value>Реплики</value></data>
+  <data name="MainCsvInvalid" xml:space="preserve"><value>Неверная структура CSV-файла субтитров или временных меток.</value></data>
+  <data name="ConversionCsvInputTiming" xml:space="preserve"><value>Таймкоды исходного ADR</value></data>
+  <data name="ConversionCsvOutputTiming" xml:space="preserve"><value>Таймкоды выходного ADR</value></data>
 </root>
-
-

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaUnseal.Models;
@@ -31,8 +32,8 @@ internal static class MediaPreview
         }
         var search = Stopwatch.StartNew();
         var covers = media.Streams.Where(s => s.ImageFormat is "JPEG" or "PNG"
-                && (s.IsCoverArt || MatroskaAttachments.IsCandidate(media, s)))
-            .OrderByDescending(s => s.IsCoverArt).ThenBy(s => s.Index).ToArray();
+                && CoverPriority(media, s) < int.MaxValue)
+            .OrderBy(s => CoverPriority(media, s)).ThenBy(s => s.Index).ToArray();
         report?.Invoke($"Cover search: {search.Elapsed.TotalMilliseconds:0} ms; candidates: {covers.Length}.");
         IReadOnlyList<MatroskaAttachments.Attachment>? matroskaEntries = null;
         var matroskaReadAttempted = false;
@@ -46,7 +47,7 @@ internal static class MediaPreview
             MatroskaAttachments.NavigationStats? navigation = null;
             try
             {
-                if (MatroskaAttachments.IsCandidate(media, cover))
+                if (cover.AttachmentUid is not null || MatroskaAttachments.IsCandidate(media, cover))
                 {
                     if (matroskaReadAttempted && matroskaEntries is null) continue;
                     await using var input = new FileStream(media.FullPath, FileMode.Open, FileAccess.Read,
@@ -112,9 +113,13 @@ internal static class MediaPreview
         var video = media.Streams.FirstOrDefault(s => s.VisualKind == VisualKind.Video && s.Index is >= 0);
         if (video?.Index is { } videoIndex)
         {
-            var image = await GrabFrameAsync(media.FullPath, ffmpegPath, videoIndex, true,
-                cancellationToken, report);
-            if (image.Image is not null || image.TimedOut) return image.Image;
+            var position = MiddleFramePosition(video.Duration) ?? MiddleFramePosition(media.Duration);
+            if (position is { } middle)
+            {
+                var image = await GrabFrameAsync(media.FullPath, ffmpegPath, videoIndex, true,
+                    cancellationToken, report, seekPosition: middle);
+                if (image.Image is not null || image.TimedOut) return image.Image;
+            }
             return (await GrabFrameAsync(media.FullPath, ffmpegPath, videoIndex, false,
                 cancellationToken, report)).Image;
         }
@@ -124,11 +129,48 @@ internal static class MediaPreview
 
     private sealed record FrameResult(byte[]? Image, bool TimedOut = false);
 
+    internal static int CoverPriority(MediaInfo media, MediaStreamInfo stream)
+    {
+        var attachment = stream.AttachmentUid is not null || MatroskaAttachments.IsCandidate(media, stream);
+        if (!attachment && stream.Disposition.GetValueOrDefault("attached_pic") == 1) return 0;
+        var name = stream.Tags.GetValueOrDefault("filename");
+        var named = CoverNamePriority(name is null ? null : Path.GetFileNameWithoutExtension(name));
+        if (named < int.MaxValue) return named + 1;
+        var titled = CoverNamePriority(stream.Tags.GetValueOrDefault("title"));
+        if (titled < int.MaxValue) return titled + 10;
+        return attachment ? 100 : int.MaxValue;
+    }
+
+    private static int CoverNamePriority(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return int.MaxValue;
+        var normalized = value.Trim().ToLowerInvariant();
+        var standard = normalized.Replace('-', '_');
+        if (standard is "cover") return 0;
+        if (standard is "cover_land") return 1;
+        if (standard is "small_cover") return 2;
+        if (standard is "small_cover_land") return 3;
+        var words = normalized.Split([' ', '.', '_', '-'], StringSplitOptions.RemoveEmptyEntries);
+        if (words.Contains("back") || words.Contains("rear")) return int.MaxValue;
+        if (words.Contains("cover")) return 4;
+        if (words.Contains("front")) return 5;
+        if (words.Contains("poster")) return 6;
+        return words.Contains("folder") ? 7 : int.MaxValue;
+    }
+
+    internal static TimeSpan? MiddleFramePosition(TimeSpan? duration)
+    {
+        if (duration is not { Ticks: > 0 } valid || !double.IsFinite(valid.TotalSeconds)) return null;
+        var seconds = Math.Min(valid.TotalSeconds / 2, Math.Max(0, valid.TotalSeconds - 0.05));
+        return seconds > 0 ? TimeSpan.FromSeconds(seconds) : null;
+    }
+
     internal static string[] FrameArguments(string source, string output, int index, bool seek,
-        string? groupMap = null)
+        string? groupMap = null, TimeSpan? seekPosition = null)
     {
         var args = new List<string> { "-nostdin", "-hide_banner", "-loglevel", "error" };
-        if (seek) args.AddRange(["-ss", "00:00:01"]);
+        if (seek) args.AddRange(["-ss", seekPosition is { } position
+            ? position.TotalSeconds.ToString("0.###", CultureInfo.InvariantCulture) : "00:00:01"]);
         args.AddRange(["-i", source]);
         if (groupMap is not null)
             args.AddRange(["-filter_complex", $"{groupMap}scale=w='min(360,iw)':h=-2[preview]",
@@ -140,7 +182,8 @@ internal static class MediaPreview
     }
 
     private static async Task<FrameResult> GrabFrameAsync(string source, string ffmpegPath, int index,
-        bool seek, CancellationToken cancellationToken, Action<string>? report, string? mapOverride = null)
+        bool seek, CancellationToken cancellationToken, Action<string>? report, string? mapOverride = null,
+        TimeSpan? seekPosition = null)
     {
         var watch = Stopwatch.StartNew();
         using var temporary = TemporaryDirectory.Create(Path.GetTempPath(), "MediaUnseal-preview-");
@@ -158,11 +201,11 @@ internal static class MediaPreview
                     RedirectStandardError = true, RedirectStandardInput = true
                 }
             };
-            foreach (var arg in FrameArguments(source, output, index, seek, mapOverride))
+            foreach (var arg in FrameArguments(source, output, index, seek, mapOverride, seekPosition))
                 process.StartInfo.ArgumentList.Add(arg);
             if (!process.Start()) { report?.Invoke("FFmpeg startup: failed."); return new(null); }
             report?.Invoke($"FFmpeg startup: {watch.Elapsed.TotalMilliseconds:0} ms; " +
-                $"stream #{index}, {(seek ? "with seek" : "from start")}.");
+                $"stream #{index}, {(seek ? $"seek {seekPosition?.TotalSeconds.ToString("0.###", CultureInfo.InvariantCulture) ?? "default"} s" : "from start")}.");
             watch.Restart();
             try
             {

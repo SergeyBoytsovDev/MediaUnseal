@@ -21,6 +21,10 @@ internal sealed class UiPreferences
     public double[] ColumnWidths { get; set; } = [36,103,54,150,115,104,171,188];
     public string? OutputDirectory { get; set; }
     public string? LastSourceDirectory { get; set; }
+    public string CsvDelimiter { get; set; } = ",";
+    public string CsvDestination { get; set; } = "universal";
+    public string AdrFps { get; set; } = "24";
+    public string AdrStartTimecode { get; set; } = "00:00:00:00";
 }
 
 internal sealed class UiAppearance
@@ -51,7 +55,7 @@ internal sealed class UiAppearance
         try
         {
             Preferences = File.Exists(_path)
-                ? JsonSerializer.Deserialize<UiPreferences>(File.ReadAllText(_path)) ?? new UiPreferences()
+                ? JsonSerializer.Deserialize(File.ReadAllText(_path), AppJsonContext.Default.UiPreferences) ?? new UiPreferences()
                 : new UiPreferences();
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
@@ -61,6 +65,10 @@ internal sealed class UiAppearance
         if (Array.IndexOf(ThemeNames, Preferences.Theme) < 0) Preferences.Theme = DefaultTheme;
         if (Array.IndexOf(LocalizationManager.AvailableLanguages, Preferences.Language) < 0)
             Preferences.Language = DefaultInterfaceLanguage;
+        if (Preferences.CsvDelimiter is not ("," or ";" or "\t" or "|")) Preferences.CsvDelimiter = ",";
+        if (Preferences.CsvDestination is not ("universal" or "adr")) Preferences.CsvDestination = "universal";
+        if (!SubtitleCsvExporter.IsValidAdrTiming(Preferences.AdrFps, Preferences.AdrStartTimecode))
+        { Preferences.AdrFps = "24"; Preferences.AdrStartTimecode = "00:00:00:00"; }
         if (Preferences.InterfaceScale != 0 && Preferences.InterfaceScale is < 75 or > 125)
             Preferences.InterfaceScale = new UiPreferences().InterfaceScale;
         if (!double.IsFinite(Preferences.Width) || Preferences.Width is < 960 or > 6000) Preferences.Width = 1280;
@@ -97,6 +105,25 @@ internal sealed class UiAppearance
         ScaleChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    internal void SetCsvDelimiter(char delimiter)
+    {
+        if (delimiter is not (',' or ';' or '\t' or '|')) return;
+        if (Preferences.CsvDelimiter == delimiter.ToString()) return;
+        Preferences.CsvDelimiter = delimiter.ToString();
+        Save();
+    }
+
+    internal void SetCsvOptions(char delimiter, string destination, string fps, string start)
+    {
+        if (delimiter is not (',' or ';' or '\t' or '|') || destination is not ("universal" or "adr")
+            || destination == "adr" && !SubtitleCsvExporter.IsValidAdrTiming(fps, start)) return;
+        Preferences.CsvDelimiter = delimiter.ToString();
+        Preferences.CsvDestination = destination;
+        Preferences.AdrFps = fps;
+        Preferences.AdrStartTimecode = start;
+        Save();
+    }
+
     internal void Apply() => Apply(Preferences.Theme);
 
     internal string? SourcePickerDirectory() => IsExistingAbsoluteDirectory(Preferences.LastSourceDirectory)
@@ -119,7 +146,7 @@ internal sealed class UiAppearance
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
             temporary = _path + "." + Guid.NewGuid().ToString("N") + ".tmp";
-            var data = JsonSerializer.SerializeToUtf8Bytes(Preferences);
+            var data = JsonSerializer.SerializeToUtf8Bytes(Preferences, AppJsonContext.Default.UiPreferences);
             using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write,
                        FileShare.None))
             {

@@ -87,7 +87,7 @@ public sealed partial class FfmpegTools
         try
         {
             if (File.Exists(_settingsPath))
-                _savedPaths = JsonSerializer.Deserialize<ToolPaths>(File.ReadAllText(_settingsPath)) ?? new();
+                _savedPaths = JsonSerializer.Deserialize(File.ReadAllText(_settingsPath), AppJsonContext.Default.ToolPaths) ?? new();
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
         {
@@ -542,7 +542,7 @@ public sealed partial class FfmpegTools
         var temporary = Path.Combine(directory, ".settings-" + Guid.NewGuid().ToString("N") + ".tmp");
         try
         {
-            await File.WriteAllTextAsync(temporary, JsonSerializer.Serialize(paths), cancellationToken);
+            await File.WriteAllTextAsync(temporary, JsonSerializer.Serialize(paths, AppJsonContext.Default.ToolPaths), cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             File.Move(temporary, _settingsPath, overwrite: true);
             _savedPaths = paths;
@@ -766,6 +766,6 @@ public sealed partial class FfmpegTools
         catch (InvalidOperationException) { }
     }
 
-    private sealed record ToolPaths(string? FFmpeg = null, string? FFprobe = null);
+    internal sealed record ToolPaths(string? FFmpeg = null, string? FFprobe = null);
     internal sealed record ProcessResult(int ExitCode, string Stdout, string Stderr);
 }

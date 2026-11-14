@@ -43,7 +43,9 @@ public sealed record ConversionEncoder(string Name, string Codec, string Kind, s
 public sealed record ConversionSettings(ConversionFormat Format, ConversionEncoder Encoder,
     int? Crf = null, int? BitRateKbps = null, int? Width = null, int? Height = null,
     double? FrameRate = null, int? SampleRate = null, int? Channels = null, int? Quality = null,
-    bool ForceReencode = false)
+    bool ForceReencode = false, char CsvDelimiter = ',', string CsvDestination = "universal",
+    string AdrFps = "24", string AdrStartTimecode = "00:00:00:00",
+    string? CsvInputFps = null, string CsvInputStartTimecode = "00:00:00:00")
 {
     private static LocalizationManager L => LocalizationManager.Active;
     public string? Validate(MediaStreamInfo stream) => ValidationKey(stream) is { } key ? L.Get(key) : null;
@@ -70,6 +72,19 @@ public sealed record ConversionSettings(ConversionFormat Format, ConversionEncod
         if (kind == "subtitle" && (Encoder.Name is "dvbsub" or "dvdsub" or "xsub"
             || BitRateKbps is not null))
             return "MainValidationSubtitleEncoder";
+        if (Format.Muxer == "csv" && CsvDelimiter is not (',' or ';' or '\t' or '|'))
+            return "MainValidationUnsupportedOutputFormat";
+        if (Format.Muxer == "csv" && CsvDestination is not ("universal" or "adr"))
+            return "MainValidationUnsupportedOutputFormat";
+        if (Format.Muxer == "csv" && CsvDestination == "adr"
+            && !SubtitleCsvExporter.IsValidAdrTiming(AdrFps, AdrStartTimecode))
+            return "MainValidationAdrTimecode";
+        if (stream.Codec == "csv_adr" && !SubtitleCsvExporter.IsValidAdrTiming(
+                CsvInputFps ?? "", CsvInputStartTimecode))
+            return "MainValidationCsvInputTiming";
+        if (stream.Codec is "csv_adr" or "csv_universal"
+            && Format.Muxer is not ("srt" or "webvtt" or "ass" or "ssa" or "csv"))
+            return "MainValidationUnsupportedOutputFormat";
         if (Crf is < 0 or > 63 || BitRateKbps is < 8 or > 1_000_000
             || Width is < 16 or > 16384 || Height is < 16 or > 16384
             || FrameRate is { } fps && (!double.IsFinite(fps) || fps <= 0 || fps > 240)
@@ -106,7 +121,7 @@ public sealed class FfmpegConversionCatalog
     private static readonly HashSet<string> AudioMuxers = new(StringComparer.Ordinal)
     { "mp3", "wav", "flac", "adts", "ac3", "eac3", "dts", "ogg", "opus", "ipod", "aiff", "au", "caf" };
     private static readonly HashSet<string> SubtitleMuxers = new(StringComparer.Ordinal)
-    { "srt", "ass", "webvtt", "microdvd", "subviewer", "sami", "lrc" };
+    { "srt", "ass", "ssa", "webvtt", "microdvd", "subviewer", "sami", "lrc", "csv" };
     private static readonly HashSet<string> StillImageCodecs = new(StringComparer.Ordinal)
     { "png", "bmp", "tiff", "sgi", "qoi", "webp", "gif", "apng", "pam", "pbm", "pgm", "ppm", "exr", "jpegxl" };
     private static readonly HashSet<string> SingleCodecAudioMuxers = new(StringComparer.Ordinal)
@@ -151,7 +166,7 @@ public sealed class FfmpegConversionCatalog
             "animation" => ["gif", "apng", "webp"],
             "image" => ["jpg", "png", "webp", "bmp", "tiff", "qoi", "gif"],
             "audio" => ["mp3", "wav", "flac", "adts", "ogg", "opus", "ipod"],
-            "subtitle" => ["srt", "ass", "webvtt"],
+            "subtitle" => ["srt", "ass", "ssa", "webvtt", "csv"],
             _ => []
         };
         var value = kind == "image" ? format.Extension : format.Muxer;
@@ -297,6 +312,14 @@ public sealed class FfmpegConversionCatalog
                 if (catalog._encoders.Any(e => e.Kind == "video" && e.Codec == codec))
                     catalog._formats.Add(new("image2", extension, codec.ToUpperInvariant(), codec, null, null));
         }
+        if (catalog._encoders.Any(e => e.Kind == "subtitle" && e.Codec == "subrip"))
+        {
+            catalog._encoders.Add(new("csv", "csv", "subtitle", "CSV"));
+            catalog._formats.Add(new("csv", "csv", "Universal subtitle CSV", null, null, "csv"));
+        }
+        if (catalog._encoders.Any(e => e.Kind == "subtitle" && e.Codec == "ass")
+            && !catalog._formats.Any(f => f.Muxer == "ssa"))
+            catalog._formats.Add(new("ssa", "ssa", "SubStation Alpha", null, null, "ass"));
         return catalog;
     }
 
@@ -309,6 +332,8 @@ public sealed class FfmpegConversionCatalog
             || !IsEncoderSuitable(format, encoder)
             || settings is not null && (settings.Format != format || settings.Encoder != encoder))
             return (false, L.Get("MainValidationUnsupportedOutputFormat"), false);
+        if (format.Muxer is "csv" or "ssa")
+            return (true, "", false);
         using var temporary = TemporaryDirectory.Create(Path.GetTempPath(), "mediaunseal-probe-");
         var directory = temporary.Path;
         var output = Path.Combine(directory, "output." + format.Extension);

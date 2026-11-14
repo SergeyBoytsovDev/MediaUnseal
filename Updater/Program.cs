@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO.Compression;
 using System.Reflection;
+using System.Reflection.PortableExecutable;
 using System.Security.Cryptography;
 
 if (args.Length != 8 || args[0] != "--apply" ||
@@ -115,12 +116,32 @@ try
             UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
     }
 
-    var assembly = AssemblyName.GetAssemblyName(Path.Combine(work, "MediaUnseal.dll"));
-    if (assembly.Name != "MediaUnseal" || assembly.Version?.ToString(3) != version.ToString(3))
-        throw new InvalidDataException("Package platform or version does not match metadata.");
     var apphostName = kind == PackageKind.WindowsPortable ? "MediaUnseal.exe" : "MediaUnseal";
-    if (!File.Exists(Path.Combine(work, apphostName)))
+    var packageExecutable = Path.Combine(work, apphostName);
+    if (!File.Exists(packageExecutable))
         throw new InvalidDataException("Application executable is missing.");
+    if (kind == PackageKind.WindowsPortable)
+    {
+        if (File.Exists(Path.Combine(work, "MediaUnseal.dll")) ||
+            File.Exists(Path.Combine(work, "MediaUnseal.deps.json")) ||
+            File.Exists(Path.Combine(work, "MediaUnseal.runtimeconfig.json")) ||
+            File.Exists(Path.Combine(work, "hostfxr.dll")))
+            throw new InvalidDataException("Windows package contains an obsolete managed application payload.");
+        using (var executable = new PEReader(File.OpenRead(packageExecutable)))
+            if (executable.PEHeaders.CoffHeader.Machine != Machine.Amd64 ||
+                executable.PEHeaders.CorHeader is not null)
+                throw new InvalidDataException("Windows package is not a native x64 application.");
+        var native = FileVersionInfo.GetVersionInfo(packageExecutable);
+        if (native.FileMajorPart != version.Major || native.FileMinorPart != version.Minor ||
+            native.FileBuildPart != version.Build)
+            throw new InvalidDataException("Native application version does not match metadata.");
+    }
+    else
+    {
+        var assembly = AssemblyName.GetAssemblyName(Path.Combine(work, "MediaUnseal.dll"));
+        if (assembly.Name != "MediaUnseal" || assembly.Version?.ToString(3) != version.ToString(3))
+            throw new InvalidDataException("Package platform or version does not match metadata.");
+    }
 
     var files = Directory.EnumerateFiles(work, "*", SearchOption.AllDirectories).ToArray();
     var replaced = new List<(string Destination, string? Backup)>();

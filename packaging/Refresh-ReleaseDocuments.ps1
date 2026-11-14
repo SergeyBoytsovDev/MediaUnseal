@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 $project = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-if (-not $Version) { $Version = ([xml](Get-Content (Join-Path $project 'MediaUnseal.csproj') -Raw)).Project.PropertyGroup.Version }
+if (-not $Version) { $Version = ([xml](Get-Content (Join-Path $project 'MediaUnseal.csproj') -Raw)).SelectSingleNode('/Project/PropertyGroup/Version').InnerText }
 if ($Version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+$') { throw 'Invalid version.' }
 $packages = Join-Path $project 'bin\release-packages'
 if ([System.IO.Path]::IsPathRooted($RelativePath) -or

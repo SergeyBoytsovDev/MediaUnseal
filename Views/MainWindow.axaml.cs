@@ -23,6 +23,12 @@ using MediaUnseal.ViewModels;
 
 namespace MediaUnseal.Views;
 
+internal sealed record FormatChoice(string Display, ConversionFormat? Format = null,
+    ConversionSettings? Settings = null, bool SeparatorBefore = false, bool CopyRequested = false)
+{
+    public override string ToString() => Display;
+}
+
 public partial class MainWindow : Window
 {
     private readonly CancellationTokenSource _shutdown = new();
@@ -37,11 +43,6 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _formatChange;
     private readonly Dictionary<string, FormatChoice> _formatChoices = new();
     private readonly HashSet<ExportTrackViewModel> _previouslySelected = new();
-    private sealed record FormatChoice(string Display, ConversionFormat? Format = null,
-        ConversionSettings? Settings = null, bool SeparatorBefore = false, bool CopyRequested = false)
-    {
-        public override string ToString() => Display;
-    }
     private MainViewModel? _logViewModel;
     private static readonly double[] MinimumColumnWidths = [36, 65, 54, 65, 65, 72, 95, 75];
     private UiAppearance? Appearance => (Avalonia.Application.Current as App)?.Appearance;
@@ -423,7 +424,8 @@ public partial class MainWindow : Window
                 if (_conversionCatalog is { } catalog)
                 {
                     var secondaryAdded = false;
-                    foreach (var format in catalog.FormatsFor(kind))
+                    foreach (var format in catalog.FormatsFor(kind).Where(format => format.Muxer != "ssa"
+                        || tracks.All(track => track.Stream.Codec is "csv_universal" or "csv_adr")))
                     {
                         if (IsDuplicateOriginal(tracks, format))
                             continue;
@@ -469,7 +471,9 @@ public partial class MainWindow : Window
     };
 
     internal static bool IsDuplicateOriginal(IReadOnlyList<ExportTrackViewModel> tracks,
-        ConversionFormat format) => tracks.Count > 0 && tracks.All(t => t.Decision.Plan is { } original
+        ConversionFormat format) => !(format.Muxer == "csv" && tracks.Count > 0
+            && tracks.All(t => t.Stream.Codec is "csv_universal" or "csv_adr"))
+        && tracks.Count > 0 && tracks.All(t => t.Decision.Plan is { } original
             && original.Muxer == format.Muxer && original.Extension == format.Extension);
 
     private async Task LoadFormatsAsync()
@@ -550,7 +554,8 @@ public partial class MainWindow : Window
                     continue;
                 }
                 var format = choice.Format;
-                if (track.Decision.Plan is { } original && original.Muxer == format.Muxer
+                if (track.Stream.Codec is not ("csv_universal" or "csv_adr")
+                    && track.Decision.Plan is { } original && original.Muxer == format.Muxer
                     && original.Extension == format.Extension)
                 { track.SetConversion(null); continue; }
                 if (choice.CopyRequested)
@@ -579,10 +584,16 @@ public partial class MainWindow : Window
                 }
                 if (encoder is null)
                 { track.SetConfigurationErrorKey("MainNoSuitableEncoder"); valid = false; continue; }
+                if (track.Stream.Codec == "csv_adr")
+                { track.SetConfigurationErrorKey("MainValidationCsvInputTiming"); valid = false; continue; }
                 var check = await _conversionCatalog.CheckCombinationAsync(format, encoder, cancellation.Token);
                 if (!check.Compatible)
                 { track.SetConfigurationError(check.Reason); valid = false; continue; }
-                track.SetConversion(new(format, encoder));
+                track.SetConversion(new(format, encoder,
+                    CsvDelimiter: format.Muxer == "csv" ? Appearance?.Preferences.CsvDelimiter[0] ?? ',' : ',',
+                    CsvDestination: format.Muxer == "csv" ? Appearance?.Preferences.CsvDestination ?? "universal" : "universal",
+                    AdrFps: Appearance?.Preferences.AdrFps ?? "24",
+                    AdrStartTimecode: Appearance?.Preferences.AdrStartTimecode ?? "00:00:00:00"));
             }
         }
         catch (OperationCanceledException) { valid = false; }
@@ -604,7 +615,8 @@ public partial class MainWindow : Window
     }
 
     internal static bool ShouldTryCopy(string kind, ConversionFormat format, string? sourceCodec = null) =>
-        kind != "image" && format.Muxer != "caf"
+        sourceCodec is not ("csv_universal" or "csv_adr")
+            && kind != "image" && format.Muxer != "caf"
             && (kind != "audio"
                 || string.Equals(sourceCodec, format.AudioCodec, StringComparison.OrdinalIgnoreCase))
             && !(kind == "animation" && FfmpegConversionCatalog.Category(format) == "video");
@@ -674,7 +686,7 @@ public partial class MainWindow : Window
     private void Properties_Click(object? sender, RoutedEventArgs e)
     {
         if (StreamsTable.SelectedItem is ExportTrackViewModel { IsAttachmentGroup: false } track)
-            StreamPropertiesWindow.Show(this, track.Stream);
+            StreamPropertiesWindow.Show(this, track.Stream, track.ChapterData);
     }
 
     private void ShowSettings(int section, bool showContinue = false)

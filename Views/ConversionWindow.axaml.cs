@@ -32,6 +32,10 @@ public partial class ConversionWindow : Window
     private string? _encoderNoteKey;
     private object?[] _encoderNoteArguments = [];
     private static LocalizationManager L => LocalizationManager.Active;
+    private static readonly char[] CsvDelimiters = [',', ';', '\t', '|'];
+    private static readonly string[] AdrFrameRates = ["23.976", "24", "25", "29.97 DF", "29.97 NDF",
+        "30", "50", "59.94 DF", "59.94 NDF", "60"];
+    private static UiAppearance? Appearance => (Avalonia.Application.Current as App)?.Appearance;
     private const string CompatibleSearch = "Compatible encoders";
     private const string HardwareSearch = "Hardware encoders";
     private static readonly System.Collections.Generic.Dictionary<string, string[]> StandardVideoEncoders = new(StringComparer.Ordinal)
@@ -84,6 +88,17 @@ public partial class ConversionWindow : Window
         _diagnostics = diagnostics;
         _stream = stream;
         _existing = existing;
+        RefreshCsvDelimiters();
+        var preferredDelimiter = existing?.CsvDelimiter ?? Appearance?.Preferences.CsvDelimiter[0] ?? ',';
+        CsvDelimiterBox.SelectedIndex = Array.IndexOf(CsvDelimiters, preferredDelimiter) is var delimiterIndex and >= 0
+            ? delimiterIndex : 0;
+        CsvDestinationBox.SelectedIndex = (existing?.CsvDestination ?? Appearance?.Preferences.CsvDestination) == "adr" ? 1 : 0;
+        AdrFpsBox.ItemsSource = AdrFrameRates;
+        AdrFpsBox.SelectedItem = existing?.AdrFps ?? Appearance?.Preferences.AdrFps ?? "24";
+        AdrStartBox.Text = existing?.AdrStartTimecode ?? Appearance?.Preferences.AdrStartTimecode ?? "00:00:00:00";
+        CsvInputFpsBox.ItemsSource = AdrFrameRates;
+        CsvInputFpsBox.SelectedItem = existing?.CsvInputFps;
+        CsvInputStartBox.Text = existing?.CsvInputStartTimecode ?? "00:00:00:00";
         _shutdown = shutdown;
         _kind = stream.VisualKind switch
         {
@@ -110,9 +125,12 @@ public partial class ConversionWindow : Window
                 .OrderBy(e => e.Name == stream.Codec ? 0 : 1)
                 .ThenBy(e => e.IsHardware).ThenBy(e => e.Name.StartsWith("lib", StringComparison.Ordinal) ? 0 : 1)
                 .ThenBy(e => e.Name, StringComparer.Ordinal).FirstOrDefault();
-        FormatBox.ItemsSource = _copyFormat is null ? catalog.FormatsFor(_kind) :
-            new[] { _copyFormat }.Concat(catalog.FormatsFor(_kind).Where(f =>
-                f.Muxer != copyPlan!.Muxer || f.Extension != copyPlan.Extension)).ToArray();
+        var formats = catalog.FormatsFor(_kind).Where(format => format.Muxer != "ssa"
+            || stream.Codec is "csv_universal" or "csv_adr").ToArray();
+        FormatBox.ItemsSource = _copyFormat is null ? formats :
+            new[] { _copyFormat }.Concat(formats.Where(f =>
+                f.Muxer != copyPlan!.Muxer || f.Extension != copyPlan.Extension
+                || stream.Codec is "csv_universal" or "csv_adr")).ToArray();
         if (existing is not null)
         {
             CrfBox.Text = existing.Crf?.ToString(CultureInfo.InvariantCulture);
@@ -175,6 +193,7 @@ public partial class ConversionWindow : Window
     {
         if (e.PropertyName != "Item[]") return;
         RefreshHeading();
+        RefreshCsvDelimiters();
         if (_encoderNoteKey is not null) EncoderNote.Text = L.Format(_encoderNoteKey, _encoderNoteArguments);
         if (_copyFormat is null || FormatBox.ItemsSource is not System.Collections.IEnumerable source) return;
         var format = FormatBox.SelectedItem;
@@ -191,6 +210,20 @@ public partial class ConversionWindow : Window
             && items.Cast<ConversionEncoder>().Contains(encoder)) EncoderBox.SelectedItem = encoder;
         ForceReencodeBox.IsChecked = forceReencode;
     }
+
+    private void RefreshCsvDelimiters()
+    {
+        var selected = CsvDelimiterBox.SelectedIndex;
+        CsvDelimiterBox.ItemsSource = new[] { "ConversionCsvComma", "ConversionCsvSemicolon",
+            "ConversionCsvTab", "ConversionCsvPipe" }.Select(L.Get).ToArray();
+        CsvDelimiterBox.SelectedIndex = selected is >= 0 and < 4 ? selected : 0;
+        var destination = CsvDestinationBox.SelectedIndex;
+        CsvDestinationBox.ItemsSource = new[] { L.Get("ConversionCsvUniversal"), L.Get("ConversionCsvAdr") };
+        CsvDestinationBox.SelectedIndex = destination is 0 or 1 ? destination : 0;
+    }
+
+    private void CsvDestination_SelectionChanged(object? sender, SelectionChangedEventArgs e) =>
+        AdrOptions.IsVisible = CsvDelimiterOptions.IsVisible && CsvDestinationBox.SelectedIndex == 1;
 
     private ConversionFormat? EffectiveFormat(ConversionFormat format) =>
         ReferenceEquals(format, _copyFormat)
@@ -224,6 +257,7 @@ public partial class ConversionWindow : Window
     private bool IsDefaultNonSourceSelection(ConversionFormat selected, ConversionFormat format,
         ConversionEncoder encoder, ConversionSettings options)
     {
+        if (_stream?.Codec is "csv_universal" or "csv_adr") return false;
         if (ReferenceEquals(selected, _copyFormat) || options.ForceReencode || HasRequestedParameters()
             || _catalog is null) return false;
         var available = AvailableEncoders(selected, format);
@@ -254,6 +288,9 @@ public partial class ConversionWindow : Window
         _activeFormat = format;
         var source = ReferenceEquals(format, _copyFormat);
         var target = EffectiveFormat(format);
+        InputAdrOptions.IsVisible = _stream?.Codec == "csv_adr" && !source;
+        CsvDelimiterOptions.IsVisible = target?.Muxer == "csv";
+        AdrOptions.IsVisible = CsvDelimiterOptions.IsVisible && CsvDestinationBox.SelectedIndex == 1;
         EncoderBox.IsEnabled = true;
         MoreEncodersButton.IsEnabled = target is not null && !(source && _kind == "subtitle");
         HardwareButton.IsEnabled = target is not null;
@@ -581,11 +618,17 @@ public partial class ConversionWindow : Window
                 _kind == "audio" ? Number(SampleRateBox) : null,
                 _kind == "audio" ? Number(ChannelsBox) : null,
                 _kind == "audio" ? Number(QualityBox) : null,
-                ForceReencodeBox.IsChecked == true);
+                ForceReencodeBox.IsChecked == true,
+                format.Muxer == "csv" ? CsvDelimiters[Math.Clamp(CsvDelimiterBox.SelectedIndex, 0, 3)] : ',',
+                format.Muxer == "csv" && CsvDestinationBox.SelectedIndex == 1 ? "adr" : "universal",
+                AdrFpsBox.SelectedItem as string ?? "24", AdrStartBox.Text ?? "00:00:00:00",
+                CsvInputFpsBox.SelectedItem as string, CsvInputStartBox.Text ?? "00:00:00:00");
             if (options.Validate(_stream) is { } error)
             { SetValidationText(error); return; }
             if (IsDefaultNonSourceSelection(selected, format, encoder, options))
             {
+                if (format.Muxer == "csv") Appearance?.SetCsvOptions(options.CsvDelimiter,
+                    options.CsvDestination, options.AdrFps, options.AdrStartTimecode);
                 AppliedDefaultFormat = format;
                 Close(null);
                 return;
@@ -595,6 +638,8 @@ public partial class ConversionWindow : Window
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(_shutdown, _closed.Token);
             var check = await _catalog.CheckCombinationAsync(format, encoder, linked.Token, options);
             if (!check.Compatible) { SetValidationText(check.Reason); return; }
+            if (format.Muxer == "csv") Appearance?.SetCsvOptions(options.CsvDelimiter,
+                options.CsvDestination, options.AdrFps, options.AdrStartTimecode);
             Close(options);
         }
         catch (FormatException) { SetValidationMessage("ConversionNumbersOrEmpty"); }

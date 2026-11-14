@@ -1712,12 +1712,40 @@ Vídeo: {6}; imagens: {7}; animações: {8}; áudio: {9}; legendas: {10}; fluxos
   <data name="UpdateCheckFailed" xml:space="preserve"><value>Não foi possível verificar atualizações</value></data>
   <data name="UpdateAvailableVersion" xml:space="preserve"><value>Versão {0} disponível</value></data>
   <data name="UpdateDownload" xml:space="preserve"><value>Baixar atualização</value></data>
+  <data name="UpdateInstallRestart" xml:space="preserve"><value>Instalar e reiniciar</value></data>
+  <data name="UpdateReadyRestart" xml:space="preserve"><value>Atualização baixada. O aplicativo será reiniciado após a instalação.</value></data>
   <data name="UpdateDownloadInstall" xml:space="preserve"><value>Baixar e atualizar</value></data>
   <data name="UpdateCancelDownload" xml:space="preserve"><value>Cancelar download</value></data>
   <data name="UpdateDownloadProgress" xml:space="preserve"><value>Baixando: {0:0}%</value></data>
   <data name="UpdateManualInstall" xml:space="preserve"><value>Esta instalação requer atualização manual pelo GitHub Releases.</value></data>
   <data name="UpdateInstallFailed" xml:space="preserve"><value>Não foi possível instalar a atualização. Consulte o relatório de diagnóstico.</value></data>
   <data name="UpdateBusy" xml:space="preserve"><value>Aguarde a conclusão da operação atual antes de atualizar.</value></data>
+  <data name="MainChapters" xml:space="preserve"><value>Capítulos</value></data>
+  <data name="MainChapterCount" xml:space="preserve"><value>Encontrados: {0}</value></data>
+  <data name="MainChapterCountOne" xml:space="preserve"><value>Encontrado: {0}</value></data>
+  <data name="MainChapterOne" xml:space="preserve"><value>capítulo</value></data>
+  <data name="MainChapterFew" xml:space="preserve"><value>capítulos</value></data>
+  <data name="MainChapterMany" xml:space="preserve"><value>capítulos</value></data>
+  <data name="ChapterEditionLabel" xml:space="preserve"><value>Edição {0}</value></data>
+  <data name="ChapterItemLabel" xml:space="preserve"><value>Capítulo {0}</value></data>
+  <data name="LogChapterStringUidOmitted" xml:space="preserve"><value>Os identificadores de texto de alguns capítulos (ChapterStringUID) não foram incluídos no XML. Todos os outros dados foram preservados.</value></data>
+  <data name="MainSubtitleCsvFailed" xml:space="preserve"><value>Não é possível criar o CSV: as legendas não contêm falas de texto legíveis ou estão danificadas.</value></data>
+  <data name="ConversionCsvDelimiter" xml:space="preserve"><value>Separador</value></data>
+  <data name="ConversionCsvComma" xml:space="preserve"><value>Vírgula (,)</value></data>
+  <data name="ConversionCsvSemicolon" xml:space="preserve"><value>Ponto e vírgula (;)</value></data>
+  <data name="ConversionCsvTab" xml:space="preserve"><value>Tabulação (TAB)</value></data>
+  <data name="ConversionCsvPipe" xml:space="preserve"><value>Barra vertical (|)</value></data>
+  <data name="ConversionCsvDestination" xml:space="preserve"><value>Destino</value></data>
+  <data name="ConversionCsvUniversal" xml:space="preserve"><value>Tabela universal</value></data>
+  <data name="ConversionCsvAdr" xml:space="preserve"><value>DaVinci Resolve ADR</value></data>
+  <data name="ConversionAdrFps" xml:space="preserve"><value>Taxa de quadros</value></data>
+  <data name="ConversionAdrStart" xml:space="preserve"><value>Timecode inicial</value></data>
+  <data name="MainValidationAdrTimecode" xml:space="preserve"><value>Insira um timecode inicial ADR válido para a taxa de quadros selecionada.</value></data>
+  <data name="MainValidationCsvInputTiming" xml:space="preserve"><value>Selecione a taxa de quadros do ADR de origem e insira o timecode inicial da linha do tempo.</value></data>
+  <data name="StreamCsvCueCount" xml:space="preserve"><value>Falas</value></data>
+  <data name="MainCsvInvalid" xml:space="preserve"><value>A estrutura ou os timecodes do arquivo CSV de legendas são inválidos.</value></data>
+  <data name="ConversionCsvInputTiming" xml:space="preserve"><value>Timecodes ADR de origem</value></data>
+  <data name="ConversionCsvOutputTiming" xml:space="preserve"><value>Timecodes ADR de saída</value></data>
 </root>
 
 

@@ -2,5 +2,6 @@
 
 - Unified update actions in About: the existing check button becomes a download button when a newer release is found.
 - Kept the update button in place when its label changes, across all supported interface languages.
+- Moved download progress beside that button and removed the separate cancel control.
 
 This hotfix does not change the update download or installation mechanism.

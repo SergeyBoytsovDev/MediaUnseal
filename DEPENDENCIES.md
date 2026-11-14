@@ -1,20 +1,20 @@
 # Media Unseal — Dependencies
 
-**Application version:** 1.2.2  
+**Application version:** 1.3.0
 **Application copyright:** © 2026 Sergey Boytsov
 
 
 This document identifies the third-party software used by Media Unseal. It distinguishes application-level NuGet dependencies, native assets, build/test tools, and independently installed tools. Licenses and notices are described in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). The license for Media Unseal's own code is in [LICENSE.md](LICENSE.md).
 
-> **Scope:** The package versions below are based on the application's audited .NET 10 dependency graph. NuGet's resolved graph is not identical to the contents of every Windows or Linux release: build-only, test-only, and platform-specific assets may be excluded. The contents of a distributed release package determine which notices must accompany that package. The Media Unseal 1.2.2 Windows and Linux archives are **self-contained** and include the .NET 10.0.14 runtime.
+> **Scope:** The package versions below are based on the application's audited .NET 10 dependency graph. NuGet's resolved graph is not identical to the contents of every Windows or Linux release: build-only, test-only, and platform-specific assets may be excluded. The contents of a distributed release package determine which notices must accompany that package. The standard Windows x64 and Linux x64 GUI publications use Native AOT and embed required .NET code in their executables. Previously built archives do not change until rebuilt.
 
 ## Application platform
 
 | Component | Version / role | License / distribution notes |
 | --- | --- | --- |
-| .NET | Target framework `net10.0`; self-contained Windows/Linux release packages include runtime 10.0.14 | Microsoft/.NET Foundation and contributors; licenses vary by file and distribution. The packages include the applicable runtime license and third-party notices under `licenses/dotnet-10.0.14/`; the Windows package also includes the .NET Library License. |
+| .NET | Target framework `net10.0`; Windows x64 and Linux x64 Native AOT embed required .NET runtime/library code | Microsoft/.NET Foundation and contributors; licenses vary by file and distribution. The packaging scripts include the applicable runtime license, third-party notices, and .NET Library License under `licenses/dotnet-<runtime-version>/`. |
 | Avalonia UI | 12.1.4 | MIT; cross-platform desktop interface. |
-| FFmpeg / FFprobe | External programs; version depends on installation | LGPL or GPL depending on the actual build. **Not included** in the 1.2.2 release packages. See below. |
+| FFmpeg / FFprobe | External programs; version depends on installation | LGPL or GPL depending on the actual build. **Not included** in the 1.3.0 release packages. See below. |
 
 ## Direct NuGet dependencies
 
@@ -62,22 +62,22 @@ This document identifies the third-party software used by Media Unseal. It disti
 
 All package names above correspond to entries on [NuGet](https://www.nuget.org/). Declared package licenses do not necessarily describe separately packaged native binaries or fonts. The application graph lists **7 direct and 27 transitive packages**; it should not be interpreted as 34 independently redistributed binary components.
 
-## Confirmed components of the 1.2.2 release archives
+## Components expected from the current 1.3.0 packaging configuration
 
 | Component family | Windows (`win-x64`) | Linux (`linux-x64`) |
 | --- | --- | --- |
-| Avalonia 12.1.4 and associated managed assemblies | Included | Included |
-| CommunityToolkit.Mvvm 8.4.2, Markdown.Avalonia family 12.0.2 | Included | Included |
-| SkiaSharp 3.119.4, HarfBuzzSharp 8.3.1.3 and associated managed components | Included | Included |
+| Avalonia 12.1.4 and associated managed code | Compiled into the Native AOT executable | Compiled into the Native AOT executable |
+| CommunityToolkit.Mvvm 8.4.2, Markdown.Avalonia family 12.0.2 | Compiled into the Native AOT executable | Compiled into the Native AOT executable |
+| SkiaSharp 3.119.4, HarfBuzzSharp 8.3.1.3 and associated managed code | Compiled into the Native AOT executable | Compiled into the Native AOT executable |
 | Native `libSkiaSharp` / `libHarfBuzzSharp` | `.dll` | `.so` |
 | ANGLE native `av_libglesv2.dll` | Included | Not included |
 | Inter font resources | Included via package | Included via package |
-| .NET application host | Included | Included |
-| Full .NET 10.0.14 runtime | Included | Included |
+| .NET application host | Replaced by the Native AOT executable | Replaced by the Native AOT executable |
+| Full .NET 10 runtime | Not present as separate runtime files; required code is embedded in the executable | Not present as separate runtime files; required code is embedded in the executable |
 | FFmpeg / FFprobe | Not included | Not included |
 | AvaloniaUI.DiagnosticsSupport (Debug tooling) | Not included | Not included |
 
-The Windows Installer uses the self-contained Windows Portable ZIP as its input and includes the same application payload.
+The Windows Installer uses the Native AOT Windows Portable ZIP as its input and includes the same application payload. The separately published CLI and update helper remain self-contained .NET executables.
 
 ## Fonts and native components
 
@@ -90,7 +90,7 @@ The Windows Installer uses the self-contained Windows Portable ZIP as its input 
 
 ## External FFmpeg / FFprobe
 
-Media Unseal starts FFmpeg and FFprobe **as separate processes**, without linking FFmpeg libraries into its application code. The 1.2.2 Windows and Linux release packages do not bundle their executables.
+Media Unseal starts FFmpeg and FFprobe **as separate processes**, without linking FFmpeg libraries into its application code. The 1.3.0 Windows and Linux release packages do not bundle their executables.
 
 - An existing user-installed FFmpeg/FFprobe may be used.
 - On Windows the application can use WinGet (`Gyan.FFmpeg`) or download a third-party Gyan FFmpeg release archive as a separate installation path.

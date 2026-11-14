@@ -39,6 +39,30 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
         {
             if (!File.Exists(fullPath)) throw new FileNotFoundException("File not found. Select another file.", fullPath);
             var size = new FileInfo(fullPath).Length;
+            var extension = Path.GetExtension(fullPath);
+            if (extension.Equals(".csv", StringComparison.OrdinalIgnoreCase)
+                || extension.Equals(".txt", StringComparison.OrdinalIgnoreCase))
+            {
+                var csv = await SubtitleCsvImporter.ReadAsync(fullPath, deadline.Token).ConfigureAwait(false);
+                if (csv is not null)
+                {
+                    var stream = new MediaStreamInfo(0, "subtitle", csv.Adr ? "csv_adr" : "csv_universal",
+                        null, null, null, null, null, null, null, null, null, null, null, null,
+                        null, null, SubtitleKind.Text, new Dictionary<string, string>(),
+                        new Dictionary<string, int?>(), csv.Cues.Count, VisualKind.Unknown, null, false,
+                        new Dictionary<string, string> { ["csv_delimiter"] = csv.Delimiter.ToString(),
+                            ["csv_structure"] = csv.Adr ? "adr" : "universal" });
+                    var mediaCsv = new MediaInfo(Path.GetFileName(fullPath), fullPath, size, "csv",
+                        null, null, new Dictionary<string, string>(), [stream]);
+                    diagnostics.Record(DiagnosticLevel.Info, "Analysis",
+                        $"Subtitle CSV recognized: {(csv.Adr ? "ADR" : "universal")}; cues={csv.Cues.Count}; " +
+                        $"delimiter={(int)csv.Delimiter}.", fileDetails,
+                        userMessageKey: "LogAnalysisCompleteCount", userMessageArgs: [1], userSuccess: true);
+                    return mediaCsv;
+                }
+                if (extension.Equals(".csv", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("CSV structure or subtitle timing is invalid.");
+            }
             var heifFile = IsHeifPath(fullPath);
             var arguments = heifFile
                 ? new[] { "-v", "error", "-show_format", "-show_streams", "-show_stream_groups", "-of", "json", "-i", fullPath }

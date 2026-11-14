@@ -1712,12 +1712,40 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
   <data name="UpdateCheckFailed" xml:space="preserve"><value>Could not check for updates</value></data>
   <data name="UpdateAvailableVersion" xml:space="preserve"><value>Version {0} is available</value></data>
   <data name="UpdateDownload" xml:space="preserve"><value>Download update</value></data>
+  <data name="UpdateInstallRestart" xml:space="preserve"><value>Install and restart</value></data>
+  <data name="UpdateReadyRestart" xml:space="preserve"><value>Update downloaded. The app will restart after installation.</value></data>
   <data name="UpdateDownloadInstall" xml:space="preserve"><value>Download and update</value></data>
   <data name="UpdateCancelDownload" xml:space="preserve"><value>Cancel download</value></data>
   <data name="UpdateDownloadProgress" xml:space="preserve"><value>Downloading: {0:0}%</value></data>
   <data name="UpdateManualInstall" xml:space="preserve"><value>This installation requires a manual update from GitHub Releases.</value></data>
   <data name="UpdateInstallFailed" xml:space="preserve"><value>Could not install the update. See the Diagnostic Report.</value></data>
   <data name="UpdateBusy" xml:space="preserve"><value>Wait for the current operation to finish before updating.</value></data>
+  <data name="MainChapters" xml:space="preserve"><value>Chapters</value></data>
+  <data name="MainChapterCount" xml:space="preserve"><value>Found: {0}</value></data>
+  <data name="MainChapterCountOne" xml:space="preserve"><value>Found: {0}</value></data>
+  <data name="MainChapterOne" xml:space="preserve"><value>chapter</value></data>
+  <data name="MainChapterFew" xml:space="preserve"><value>chapters</value></data>
+  <data name="MainChapterMany" xml:space="preserve"><value>chapters</value></data>
+  <data name="ChapterEditionLabel" xml:space="preserve"><value>Edition {0}</value></data>
+  <data name="ChapterItemLabel" xml:space="preserve"><value>Chapter {0}</value></data>
+  <data name="LogChapterStringUidOmitted" xml:space="preserve"><value>String identifiers of some chapters (ChapterStringUID) were not included in the XML. All other data was preserved.</value></data>
+  <data name="MainSubtitleCsvFailed" xml:space="preserve"><value>Cannot create CSV: the subtitles contain no readable text cues or are damaged.</value></data>
+  <data name="ConversionCsvDelimiter" xml:space="preserve"><value>Delimiter</value></data>
+  <data name="ConversionCsvComma" xml:space="preserve"><value>Comma (,)</value></data>
+  <data name="ConversionCsvSemicolon" xml:space="preserve"><value>Semicolon (;)</value></data>
+  <data name="ConversionCsvTab" xml:space="preserve"><value>Tab (TAB)</value></data>
+  <data name="ConversionCsvPipe" xml:space="preserve"><value>Vertical bar (|)</value></data>
+  <data name="ConversionCsvDestination" xml:space="preserve"><value>Destination</value></data>
+  <data name="ConversionCsvUniversal" xml:space="preserve"><value>Universal table</value></data>
+  <data name="ConversionCsvAdr" xml:space="preserve"><value>DaVinci Resolve ADR</value></data>
+  <data name="ConversionAdrFps" xml:space="preserve"><value>Timeline FPS</value></data>
+  <data name="ConversionAdrStart" xml:space="preserve"><value>Start timecode</value></data>
+  <data name="MainValidationAdrTimecode" xml:space="preserve"><value>Enter a valid ADR start timecode for the selected frame rate.</value></data>
+  <data name="MainValidationCsvInputTiming" xml:space="preserve"><value>Choose the ADR source frame rate and enter its timeline start timecode.</value></data>
+  <data name="StreamCsvCueCount" xml:space="preserve"><value>Cues</value></data>
+  <data name="MainCsvInvalid" xml:space="preserve"><value>The CSV subtitle file has an invalid structure or timecode.</value></data>
+  <data name="ConversionCsvInputTiming" xml:space="preserve"><value>Source ADR timecodes</value></data>
+  <data name="ConversionCsvOutputTiming" xml:space="preserve"><value>Output ADR timecodes</value></data>
 </root>
 
 

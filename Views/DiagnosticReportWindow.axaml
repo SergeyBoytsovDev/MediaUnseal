@@ -1,7 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:services="using:MediaUnseal.Services"
         x:Class="MediaUnseal.Views.DiagnosticReportWindow"
-        x:CompileBindings="False"
         Title="{DynamicResource Loc_DiagnosticPreviewTitle}"
         Width="760" Height="540" WindowStartupLocation="CenterOwner"
         Background="{DynamicResource PanelBackground}" Foreground="{DynamicResource MainTextBrush}"
@@ -20,7 +20,7 @@
     <ItemsPanelTemplate><VirtualizingStackPanel/></ItemsPanelTemplate>
    </ListBox.ItemsPanel>
    <ListBox.ItemTemplate>
-    <DataTemplate>
+    <DataTemplate x:DataType="services:DiagnosticReportRow">
      <Grid Margin="10,2">
       <Grid IsVisible="{Binding IsDate}" ColumnDefinitions="*,Auto,*" ColumnSpacing="10" Margin="0,8,0,6">
        <Border Grid.Column="0" Background="{DynamicResource LineBrush}" Height="1" VerticalAlignment="Center"/>

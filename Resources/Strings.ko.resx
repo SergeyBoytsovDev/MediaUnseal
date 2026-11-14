@@ -1712,12 +1712,40 @@
   <data name="UpdateCheckFailed" xml:space="preserve"><value>업데이트를 확인할 수 없습니다</value></data>
   <data name="UpdateAvailableVersion" xml:space="preserve"><value>버전 {0} 사용 가능</value></data>
   <data name="UpdateDownload" xml:space="preserve"><value>업데이트 다운로드</value></data>
+  <data name="UpdateInstallRestart" xml:space="preserve"><value>설치 후 다시 시작</value></data>
+  <data name="UpdateReadyRestart" xml:space="preserve"><value>업데이트를 다운로드했습니다. 설치 후 앱이 다시 시작됩니다.</value></data>
   <data name="UpdateDownloadInstall" xml:space="preserve"><value>다운로드 및 업데이트</value></data>
   <data name="UpdateCancelDownload" xml:space="preserve"><value>다운로드 취소</value></data>
   <data name="UpdateDownloadProgress" xml:space="preserve"><value>다운로드 중: {0:0}%</value></data>
   <data name="UpdateManualInstall" xml:space="preserve"><value>이 설치는 GitHub Releases에서 수동으로 업데이트해야 합니다.</value></data>
   <data name="UpdateInstallFailed" xml:space="preserve"><value>업데이트를 설치하지 못했습니다. 진단 보고서를 확인하세요.</value></data>
   <data name="UpdateBusy" xml:space="preserve"><value>현재 작업이 완료된 후 업데이트하세요.</value></data>
+  <data name="MainChapters" xml:space="preserve"><value>챕터</value></data>
+  <data name="MainChapterCount" xml:space="preserve"><value>발견: {0}</value></data>
+  <data name="MainChapterCountOne" xml:space="preserve"><value>발견: {0}</value></data>
+  <data name="MainChapterOne" xml:space="preserve"><value>개 챕터</value></data>
+  <data name="MainChapterFew" xml:space="preserve"><value>개 챕터</value></data>
+  <data name="MainChapterMany" xml:space="preserve"><value>개 챕터</value></data>
+  <data name="ChapterEditionLabel" xml:space="preserve"><value>에디션 {0}</value></data>
+  <data name="ChapterItemLabel" xml:space="preserve"><value>챕터 {0}</value></data>
+  <data name="LogChapterStringUidOmitted" xml:space="preserve"><value>일부 챕터의 문자열 식별자(ChapterStringUID)는 XML에 포함되지 않았습니다. 나머지 데이터는 모두 보존되었습니다.</value></data>
+  <data name="MainSubtitleCsvFailed" xml:space="preserve"><value>CSV를 만들 수 없습니다. 자막에 읽을 수 있는 텍스트가 없거나 데이터가 손상되었습니다.</value></data>
+  <data name="ConversionCsvDelimiter" xml:space="preserve"><value>구분 기호</value></data>
+  <data name="ConversionCsvComma" xml:space="preserve"><value>쉼표 (,)</value></data>
+  <data name="ConversionCsvSemicolon" xml:space="preserve"><value>세미콜론 (;)</value></data>
+  <data name="ConversionCsvTab" xml:space="preserve"><value>탭 (TAB)</value></data>
+  <data name="ConversionCsvPipe" xml:space="preserve"><value>세로줄 (|)</value></data>
+  <data name="ConversionCsvDestination" xml:space="preserve"><value>용도</value></data>
+  <data name="ConversionCsvUniversal" xml:space="preserve"><value>범용 표</value></data>
+  <data name="ConversionCsvAdr" xml:space="preserve"><value>DaVinci Resolve ADR</value></data>
+  <data name="ConversionAdrFps" xml:space="preserve"><value>프레임 레이트</value></data>
+  <data name="ConversionAdrStart" xml:space="preserve"><value>시작 타임코드</value></data>
+  <data name="MainValidationAdrTimecode" xml:space="preserve"><value>선택한 프레임 레이트에 맞는 올바른 ADR 시작 타임코드를 입력하세요.</value></data>
+  <data name="MainValidationCsvInputTiming" xml:space="preserve"><value>ADR 원본의 프레임 레이트를 선택하고 타임라인 시작 타임코드를 입력하세요.</value></data>
+  <data name="StreamCsvCueCount" xml:space="preserve"><value>대사 수</value></data>
+  <data name="MainCsvInvalid" xml:space="preserve"><value>CSV 자막 파일의 구조 또는 타임코드가 올바르지 않습니다.</value></data>
+  <data name="ConversionCsvInputTiming" xml:space="preserve"><value>원본 ADR 타임코드</value></data>
+  <data name="ConversionCsvOutputTiming" xml:space="preserve"><value>출력 ADR 타임코드</value></data>
 </root>
 
 

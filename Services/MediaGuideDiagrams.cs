@@ -34,8 +34,7 @@ internal sealed class MediaGuideDiagramCatalog
         if (LanguagePackCatalog.ValidateGuideFiles(language).Count != 0)
             throw new InvalidDataException($"Media guide diagram language is unavailable: {language}.");
         using var stream = AssetLoader.Open(new Uri($"avares://MediaUnseal/docs/media-guide-diagrams.{language}.json"));
-        var data = JsonSerializer.Deserialize<MediaGuideDiagramFile>(stream,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var data = JsonSerializer.Deserialize(stream, AppJsonContext.Default.MediaGuideDiagramFile);
         if (data?.Diagrams is null) throw new InvalidDataException("Could not load the media guide diagrams.");
         return new MediaGuideDiagramCatalog(data.Diagrams);
     }

@@ -23,6 +23,10 @@ public partial class SettingsWindow : Window
     private readonly LocalizationManager _localization;
     private readonly UpdateService _updates;
     private CancellationTokenSource? _downloadCancellation;
+    private string? _downloadedPackagePath;
+    private UpdateManifest? _downloadedManifest;
+    private UpdatePackageKind _downloadedKind;
+    private bool _updateInstallerLaunched;
     private string? _licensePaths;
     private string? _detectedLicense;
     private CancellationTokenSource? _licenseCancellation;
@@ -58,6 +62,9 @@ public partial class SettingsWindow : Window
             _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
             _licenseCancellation?.Cancel();
             _downloadCancellation?.Cancel();
+            if (!_updateInstallerLaunched && _downloadedPackagePath is { } package)
+                _ = TemporaryDirectory.DeleteAsync(Path.GetDirectoryName(package)!, details =>
+                    _viewModel.Diagnostics.Record(DiagnosticLevel.Warn, "Updates", details));
             _updates.Changed -= UpdateResultChanged;
         };
         AddAdditionalLanguageCards();
@@ -174,6 +181,7 @@ public partial class SettingsWindow : Window
         AboutFooterText.Text = _localization.Get("SettingsAboutFooter");
         SizeUpdateButton();
         RefreshUpdateResult();
+        if (_downloadedPackagePath is not null) UpdateProgress.Text = _localization.Get("UpdateReadyRestart");
         if (AboutActionError.IsVisible && _aboutErrorKey is { } key)
             AboutActionError.Text = _localization.Get(key);
         FfmpegLicenseText.Text = _detectedLicense ?? _localization.Get("SettingsFfmpegLicense");
@@ -193,8 +201,8 @@ public partial class SettingsWindow : Window
             label.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
             return label.DesiredSize.Width;
         }
-        UpdateButton.Width = Math.Ceiling(Math.Max(WidthFor("SettingsCheckUpdates"),
-            WidthFor("UpdateDownload")) + UpdateButton.Padding.Left + UpdateButton.Padding.Right
+        UpdateButton.Width = Math.Ceiling(new[] { "SettingsCheckUpdates", "UpdateDownload", "UpdateInstallRestart" }
+            .Max(WidthFor) + UpdateButton.Padding.Left + UpdateButton.Padding.Right
             + UpdateButton.BorderThickness.Left + UpdateButton.BorderThickness.Right + 8);
     }
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -202,6 +210,9 @@ public partial class SettingsWindow : Window
         if (e.PropertyName is nameof(MainViewModel.FFmpegExecutablePath)
             or nameof(MainViewModel.FFprobeExecutablePath))
             Dispatcher.UIThread.Post(() => { if (AboutSection.IsVisible) RefreshFfmpegLicense(); });
+        if (e.PropertyName is nameof(MainViewModel.IsBusy) or nameof(MainViewModel.IsAnalyzing)
+            or nameof(MainViewModel.IsExporting))
+            Dispatcher.UIThread.Post(RefreshUpdateResult);
     }
 
     private async void RefreshFfmpegLicense()
@@ -240,10 +251,13 @@ public partial class SettingsWindow : Window
     private void RefreshUpdateResult()
     {
         var result = _updates.Result;
-        UpdateButton.Content = _localization.Get(_manualUpdateCheckRequested && result.State == UpdateCheckState.Available
-            ? "UpdateDownload" : "SettingsCheckUpdates");
-        UpdateButton.IsEnabled = result.State != UpdateCheckState.Checking && _downloadCancellation is null;
-        var showResult = _manualUpdateCheckRequested && _downloadCancellation is null;
+        UpdateButton.Content = _localization.Get(_downloadedPackagePath is not null ? "UpdateInstallRestart"
+            : _manualUpdateCheckRequested && result.State == UpdateCheckState.Available
+                ? "UpdateDownload" : "SettingsCheckUpdates");
+        UpdateButton.IsEnabled = result.State != UpdateCheckState.Checking && _downloadCancellation is null
+            && (_downloadedPackagePath is null || !UpdateBlockedByWork);
+        var showResult = _manualUpdateCheckRequested && _downloadCancellation is null
+            && _downloadedPackagePath is null;
         UpdateCurrentStatus.IsVisible = showResult && result.State == UpdateCheckState.Current;
         UpdateAvailableStatus.IsVisible = showResult && result.State == UpdateCheckState.Available;
         UpdateCheckingStatus.IsVisible = showResult && result.State == UpdateCheckState.Checking;
@@ -254,7 +268,9 @@ public partial class SettingsWindow : Window
 
     private async void UpdateButton_Click(object? sender, RoutedEventArgs e)
     {
-        if (_manualUpdateCheckRequested && _updates.Result.State == UpdateCheckState.Available)
+        if (_downloadedPackagePath is not null)
+            await InstallDownloadedUpdateAsync();
+        else if (_manualUpdateCheckRequested && _updates.Result.State == UpdateCheckState.Available)
             DownloadUpdate_Click(sender, e);
         else
             await CheckForUpdatesAsync();
@@ -274,7 +290,7 @@ public partial class SettingsWindow : Window
     {
         if (_downloadCancellation is not null || _updates.Result.Manifest is not { } manifest ||
             _updates.Result.State != UpdateCheckState.Available) return;
-        if (_viewModel.IsBusy || _viewModel.IsAnalyzing || _viewModel.IsExporting)
+        if (UpdateBlockedByWork)
         {
             _aboutErrorKey = "UpdateBusy";
             AboutActionError.Text = _localization.Get(_aboutErrorKey);
@@ -301,12 +317,17 @@ public partial class SettingsWindow : Window
                 return;
             }
             var progress = new Progress<double>(value =>
-                UpdateProgress.Text = _localization.Format("UpdateDownloadProgress", value * 100));
+            {
+                if (_downloadedPackagePath is null)
+                    UpdateProgress.Text = _localization.Format("UpdateDownloadProgress", value * 100);
+            });
             var path = await _updates.DownloadAsync(manifest, kind, progress, cancellation.Token);
             _viewModel.Diagnostics.Record(DiagnosticLevel.Info, "Updates",
                 "Update package downloaded and verified.", $"Release={manifest.Tag}; package={kind}.");
-            await UpdateInstaller.LaunchAsync(path, manifest, kind, cancellation.Token);
-            (Application.Current?.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.Shutdown();
+            _downloadedPackagePath = path;
+            _downloadedManifest = manifest;
+            _downloadedKind = kind;
+            UpdateProgress.Text = _localization.Get("UpdateReadyRestart");
         }
         catch (OperationCanceledException)
         {
@@ -329,7 +350,31 @@ public partial class SettingsWindow : Window
         {
             cancellation.Dispose();
             _downloadCancellation = null;
-            UpdateProgress.IsVisible = false;
+            UpdateProgress.IsVisible = _downloadedPackagePath is not null;
+            RefreshUpdateResult();
+        }
+    }
+
+    private bool UpdateBlockedByWork => _viewModel.IsBusy || _viewModel.IsAnalyzing || _viewModel.IsExporting;
+
+    private async Task InstallDownloadedUpdateAsync()
+    {
+        if (_downloadedPackagePath is not { } path || _downloadedManifest is not { } manifest
+            || _downloadCancellation is not null || UpdateBlockedByWork) return;
+        UpdateButton.IsEnabled = false;
+        try
+        {
+            await UpdateInstaller.LaunchAsync(path, manifest, _downloadedKind, CancellationToken.None);
+            _updateInstallerLaunched = true;
+            (Application.Current?.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.Shutdown();
+        }
+        catch (Exception ex)
+        {
+            _viewModel.Diagnostics.Record(DiagnosticLevel.Error, "Updates", "Update installation could not start.",
+                ex.GetType().Name + "; HResult 0x" + ex.HResult.ToString("X8"));
+            _aboutErrorKey = "UpdateInstallFailed";
+            AboutActionError.Text = _localization.Get(_aboutErrorKey);
+            AboutActionError.IsVisible = true;
             RefreshUpdateResult();
         }
     }

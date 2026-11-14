@@ -1,7 +1,7 @@
 # Media Unseal
 
 **Media Extraction & Conversion**  
-**Version 1.2.2**
+**Version 1.3.0**
 
 Media Unseal is a desktop application for inspecting media files, extracting individual streams, and converting selected content. It provides a straightforward interface for working with audio, video, subtitles, and embedded attachments.
 
@@ -10,13 +10,16 @@ Media Unseal is a desktop application for inspecting media files, extracting ind
 - Inspect a media file and view its available streams.
 - Extract audio tracks, video streams, and subtitles.
 - Export embedded attachments when present.
+- Inspect and export Matroska chapters as XML.
 - Convert selected streams to supported output formats, including WAV, FLAC, MP3, MP4 (H.264), and SRT.
+- Export text subtitles to universal or DaVinci Resolve ADR CSV, and convert supported CSV subtitle files to SRT, WebVTT, or ASS/SSA.
 - Add files using drag and drop or the file picker.
 - Select streams and export options through a multilingual desktop interface.
 
 ## Requirements
 
 - **Windows 10/11 (64-bit)** or **Linux (64-bit)**.
+- The Windows x64 and Linux x64 GUIs are published as Native AOT. Neither package requires a separately installed .NET runtime. Linux Native AOT publication requires a Linux x64 build host.
 - **FFmpeg and FFprobe** for media inspection and processing. On Linux, install them using your distribution's package manager.
 - On Linux, install ICU, Fontconfig, X11, ICE and SM system libraries. Debian: `sudo apt install libicu76 libfontconfig1 libx11-6 libice6 libsm6`. Fedora: `sudo dnf install libicu fontconfig libX11 libICE libSM`. An X11 session or XWayland is required for the current Avalonia backend.
 - For Chinese, Japanese and Korean text, Noto CJK fonts are recommended but optional (`fonts-noto-cjk` on Debian, `google-noto-sans-cjk-fonts` on Fedora).

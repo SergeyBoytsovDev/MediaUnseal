@@ -1712,12 +1712,40 @@
   <data name="UpdateCheckFailed" xml:space="preserve"><value>无法检查更新</value></data>
   <data name="UpdateAvailableVersion" xml:space="preserve"><value>版本 {0} 已发布</value></data>
   <data name="UpdateDownload" xml:space="preserve"><value>下载更新</value></data>
+  <data name="UpdateInstallRestart" xml:space="preserve"><value>安装并重启</value></data>
+  <data name="UpdateReadyRestart" xml:space="preserve"><value>更新已下载。安装后应用将重新启动。</value></data>
   <data name="UpdateDownloadInstall" xml:space="preserve"><value>下载并更新</value></data>
   <data name="UpdateCancelDownload" xml:space="preserve"><value>取消下载</value></data>
   <data name="UpdateDownloadProgress" xml:space="preserve"><value>下载中：{0:0}%</value></data>
   <data name="UpdateManualInstall" xml:space="preserve"><value>此安装需要从 GitHub Releases 手动更新。</value></data>
   <data name="UpdateInstallFailed" xml:space="preserve"><value>无法安装更新。详情请参阅诊断报告。</value></data>
   <data name="UpdateBusy" xml:space="preserve"><value>请等待当前操作完成后再更新。</value></data>
+  <data name="MainChapters" xml:space="preserve"><value>章节</value></data>
+  <data name="MainChapterCount" xml:space="preserve"><value>已找到：{0}</value></data>
+  <data name="MainChapterCountOne" xml:space="preserve"><value>已找到：{0}</value></data>
+  <data name="MainChapterOne" xml:space="preserve"><value>个章节</value></data>
+  <data name="MainChapterFew" xml:space="preserve"><value>个章节</value></data>
+  <data name="MainChapterMany" xml:space="preserve"><value>个章节</value></data>
+  <data name="ChapterEditionLabel" xml:space="preserve"><value>版本 {0}</value></data>
+  <data name="ChapterItemLabel" xml:space="preserve"><value>章节 {0}</value></data>
+  <data name="LogChapterStringUidOmitted" xml:space="preserve"><value>部分章节的字符串标识符（ChapterStringUID）未写入 XML。其他数据均已保留。</value></data>
+  <data name="MainSubtitleCsvFailed" xml:space="preserve"><value>无法创建 CSV：字幕没有可读取的文本条目，或数据已损坏。</value></data>
+  <data name="ConversionCsvDelimiter" xml:space="preserve"><value>分隔符</value></data>
+  <data name="ConversionCsvComma" xml:space="preserve"><value>逗号 (,)</value></data>
+  <data name="ConversionCsvSemicolon" xml:space="preserve"><value>分号 (;)</value></data>
+  <data name="ConversionCsvTab" xml:space="preserve"><value>制表符 (TAB)</value></data>
+  <data name="ConversionCsvPipe" xml:space="preserve"><value>竖线 (|)</value></data>
+  <data name="ConversionCsvDestination" xml:space="preserve"><value>用途</value></data>
+  <data name="ConversionCsvUniversal" xml:space="preserve"><value>通用表格</value></data>
+  <data name="ConversionCsvAdr" xml:space="preserve"><value>DaVinci Resolve ADR</value></data>
+  <data name="ConversionAdrFps" xml:space="preserve"><value>帧率</value></data>
+  <data name="ConversionAdrStart" xml:space="preserve"><value>起始时间码</value></data>
+  <data name="MainValidationAdrTimecode" xml:space="preserve"><value>请输入与所选帧率匹配的有效 ADR 起始时间码。</value></data>
+  <data name="MainValidationCsvInputTiming" xml:space="preserve"><value>请选择 ADR 源帧率并输入时间线起始时间码。</value></data>
+  <data name="StreamCsvCueCount" xml:space="preserve"><value>台词数</value></data>
+  <data name="MainCsvInvalid" xml:space="preserve"><value>CSV 字幕文件的结构或时间码无效。</value></data>
+  <data name="ConversionCsvInputTiming" xml:space="preserve"><value>源 ADR 时间码</value></data>
+  <data name="ConversionCsvOutputTiming" xml:space="preserve"><value>输出 ADR 时间码</value></data>
 </root>
 
 

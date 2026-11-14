@@ -16,7 +16,7 @@ public enum ExportState { Pending, Running, Completed, Failed, Cancelled }
 
 public sealed record TrackExportPlan(MediaStreamInfo Stream, string Extension, string Muxer,
     bool StillImage, bool Attachment = false, ConversionSettings? Conversion = null, bool VerifiedCopy = false,
-    AttachmentFile? AttachmentFile = null);
+    AttachmentFile? AttachmentFile = null, MatroskaAttachments.ChapterDocument? ChapterData = null);
 public sealed record ExportDecision(TrackExportPlan? Plan, string? Reason)
 {
     internal LocalizedMessage? LocalizedReason { get; init; }
@@ -163,6 +163,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             bool HasContainer(string name) => containers.Contains(name, StringComparer.OrdinalIgnoreCase);
             output = extension switch
             {
+                ".csv" when HasContainer("csv") && codec is "csv_universal" or "csv_adr" => ("csv", "csv", false),
                 ".srt" when HasContainer("srt") => ("srt", "srt", false),
                 ".ass" when HasContainer("ass") => ("ass", "ass", false),
                 ".ssa" when HasContainer("ass") => ("ssa", "ass", false),
@@ -172,6 +173,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             };
             output ??= codec switch
             {
+                "csv_universal" or "csv_adr" => ("csv", "csv", false),
                 "subrip" or "srt" => ("srt", "srt", false),
                 "ass" or "ssa" => ("ass", "ass", false),
                 "webvtt" => ("vtt", "webvtt", false),
@@ -201,7 +203,11 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
         if (TimeoutPerTrack <= TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(TimeoutPerTrack));
         if (!Directory.Exists(outputDirectory)) throw new DirectoryNotFoundException("The selected output directory was not found.");
         if (!File.Exists(media.FullPath)) throw new FileNotFoundException("The source file was not found.", media.FullPath);
-        if (selected.Any(p => p.AttachmentFile is null
+        if (selected.Any(p => p.ChapterData is not null
+                ? !MatroskaAttachments.IsMatroska(media) || p.Stream.Index != -1000000
+                    || p.Muxer != "chapters" || p.Extension != "xml" || p.Conversion is not null
+                    || p.ChapterData.Count == 0
+                : p.AttachmentFile is null
                 ? p.Stream.Index is not >= 0 || !media.Streams.Contains(p.Stream)
                 : !MatroskaAttachments.IsMatroska(media) || p.Stream.Index is not < 0
                     || p.Conversion is not null || !p.Attachment || p.Muxer != "attachment"
@@ -215,7 +221,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             .Select(p => p.AttachmentFile!.Uid).Distinct().Count()
             != selected.Count(p => p.AttachmentFile is not null))
             throw new ArgumentException("The attachment selection contains duplicates.", nameof(selected));
-        if (selected.Any(p => p.AttachmentFile is not null ? false : p.Conversion is { } conversion
+        if (selected.Any(p => p.AttachmentFile is not null || p.ChapterData is not null ? false : p.Conversion is { } conversion
             ? conversion.Validate(p.Stream) is not null || p.Extension != conversion.Format.Extension
                 || p.Muxer != conversion.Format.Muxer || p.Attachment || p.StillImage
             : p.VerifiedCopy ? p.StillImage || p.Attachment ||
@@ -252,6 +258,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
             {
                 if (cancellationToken.IsCancellationRequested) { cancelled = true; break; }
                 var group = selected.Skip(i).TakeWhile(p => p.Conversion is null && !p.StillImage && !p.Attachment
+                    && p.ChapterData is null
                     && p.Stream.VisualKind != VisualKind.Video).ToArray();
                 if (i > groupFallbackUntil && group.Length > 1)
                 {
@@ -278,23 +285,24 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                 var attachmentLabel = plan.AttachmentFile is { } namedAttachment
                     ? SafeAttachmentName(namedAttachment.Name) : null;
                 progress?.Report(new(index, ExportState.Running,
-                    attachmentLabel is null
+                    plan.ChapterData is not null ? L.Get("MainChapters") : attachmentLabel is null
                         ? L.Format(plan.Conversion is null ? "MainProgressExtractingTo" : "MainProgressConvertingTo",
                             index, Path.GetFileName(target))
                         : L.Format("MainProgressListedAttachment", attachmentLabel), null, i, selected.Count)
-                { LocalizedMessage = attachmentLabel is null
+                { LocalizedMessage = plan.ChapterData is not null ? new("MainChapters") : attachmentLabel is null
                     ? new(plan.Conversion is null ? "MainProgressExtractingTo" : "MainProgressConvertingTo",
                         index, Path.GetFileName(target))
                     : new("MainProgressListedAttachment", attachmentLabel) });
                 diagnostics.Record(DiagnosticLevel.Info, "Export",
+                    plan.ChapterData is not null ? "Matroska Chapters XML export started." :
                     $"{(plan.Conversion is null ? "Extraction started" : "Conversion started")}: type " +
                     $"{(plan.Stream.VisualKind is VisualKind.Image or VisualKind.Animation ? plan.Stream.VisualKind.ToString().ToLowerInvariant() : plan.Stream.CodecType)}, stream #{index}, " +
                     $"codec {plan.Stream.Codec}, format {plan.Muxer}; " +
                     (plan.Conversion is null ? "stream copy without re-encoding." : $"encoder {plan.Conversion.Encoder.Name}."),
-                    userMessageKey: attachmentLabel is not null ? "LogAttachmentStarted" : visualOutput
+                    userMessageKey: plan.ChapterData is not null ? null : attachmentLabel is not null ? "LogAttachmentStarted" : visualOutput
                         ? plan.Conversion is null ? "LogVisualExtractionStarted" : "LogVisualConversionStarted"
                         : plan.Conversion is null ? "LogExtractingStreamFormat" : "LogConvertingStreamFormat",
-                    userMessageArgs: attachmentLabel is not null ? [attachmentLabel] : [index, plan.Muxer]);
+                    userMessageArgs: plan.ChapterData is not null ? null : attachmentLabel is not null ? [attachmentLabel] : [index, plan.Muxer]);
                 if (plan.Stream.HeifGroupIndex is { } heifGroup)
                     diagnostics.Record(DiagnosticLevel.Info, "Export",
                         $"HEIF tile grid group #{heifGroup} selected for FFmpeg image conversion; " +
@@ -316,7 +324,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                     deadline.CancelAfter(TimeoutPerTrack);
                     var duration = plan.Stream.Duration ?? media.Duration;
-                    if (!nativeAttachment && !nativeWebp && duration is null or { Ticks: <= 0 })
+                    if (!nativeAttachment && !nativeWebp && plan.ChapterData is null && duration is null or { Ticks: <= 0 })
                         diagnostics.Record(DiagnosticLevel.Info, "Export",
                             $"Stream #{index}: duration unknown; percentage unavailable.");
                     var lastLoggedBucket = -1;
@@ -344,6 +352,101 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                             L.Format("MainProgressStream", index), overall, ordinal, selected.Count, time, part * 100)
                         { LocalizedMessage = new("MainProgressStream", index) });
                     });
+                    if (media.Container == "csv" && plan.Stream.Codec is "csv_universal" or "csv_adr")
+                    {
+                        if (new FileInfo(media.FullPath).Length != media.Size)
+                            throw new InvalidDataException("Subtitle CSV changed after analysis.");
+                        if (plan.Conversion is null)
+                        {
+                            await using var source = new FileStream(media.FullPath, FileMode.Open, FileAccess.Read,
+                                FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
+                            await using var destination = new FileStream(temp, FileMode.CreateNew, FileAccess.Write,
+                                FileShare.None, 81920, FileOptions.Asynchronous);
+                            await source.CopyToAsync(destination, deadline.Token).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            var count = await SubtitleCsvImporter.ConvertAsync(media.FullPath, temp,
+                                plan.Conversion.Format.Muxer, plan.Conversion.CsvInputFps,
+                                plan.Conversion.CsvInputStartTimecode, deadline.Token,
+                                plan.Stream.Codec, plan.Conversion.CsvDelimiter,
+                                plan.Conversion.CsvDestination, plan.Conversion.AdrFps,
+                                plan.Conversion.AdrStartTimecode).ConfigureAwait(false);
+                            diagnostics.Record(DiagnosticLevel.Info, "Export",
+                                $"Subtitle CSV import: {count} cues converted to {plan.Muxer}; " +
+                                $"source structure {plan.Stream.Codec}.");
+                        }
+                        nativeCompleted = true;
+                    }
+                    else if (plan.Conversion?.Format.Muxer == "csv")
+                    {
+                        if (SubtitleCsvExporter.HasNegativeStreamStart(plan.Stream))
+                            throw new InvalidDataException("Subtitle stream begins at a negative timestamp; " +
+                                "text muxing could silently change its timing.");
+                        var textFormat = SubtitleCsvExporter.IntermediateFormat(plan.Stream);
+                        if (SubtitleCsvExporter.CanReadDirectly(media, textFormat))
+                        {
+                            diagnostics.Record(DiagnosticLevel.Info, "Export",
+                                $"Subtitle CSV export: direct UTF-8 {textFormat} parsing; source codec {plan.Stream.Codec}; " +
+                                "original cue timings retained.");
+                            var cueCount = await SubtitleCsvExporter.ConvertAsync(media.FullPath, textFormat,
+                                temp, deadline.Token, plan.Conversion.CsvDelimiter,
+                                plan.Conversion.CsvDestination, plan.Conversion.AdrFps,
+                                plan.Conversion.AdrStartTimecode).ConfigureAwait(false);
+                            nativeCompleted = true;
+                            diagnostics.Record(DiagnosticLevel.Info, "Export",
+                                $"Subtitle CSV export: {cueCount} cues written; UTF-8 BOM; output validation pending.");
+                        }
+                        else
+                        {
+                            var intermediate = temp + "." + (textFormat == "webvtt" ? "vtt" : textFormat);
+                            try
+                            {
+                                var args = SubtitleCsvExporter.BuildArguments(media.FullPath, index, intermediate,
+                                    textFormat, plan.Stream.Codec);
+                                diagnostics.Record(DiagnosticLevel.Info, "Export",
+                                    $"Subtitle CSV export: source codec {plan.Stream.Codec}; intermediate {textFormat}; " +
+                                    "nine-column UTF-8 CSV; timestamps preserved in milliseconds.",
+                                    "Command: " + Path.GetFileName(ffmpegPath) + " " + string.Join(' ',
+                                        args.Select(arg => arg == media.FullPath ? "[source]" : arg == intermediate ? "[intermediate]" : arg)));
+                                exitCode = ProcessRunner is null
+                                    ? await RunFfmpegAsync(ffmpegPath, args, position,
+                                        line => lastError = line.Length > 300 ? line[..300] : line, deadline.Token)
+                                        .ConfigureAwait(false)
+                                    : await ProcessRunner(ffmpegPath, args, position, deadline.Token)
+                                        .WaitAsync(deadline.Token).ConfigureAwait(false);
+                                if (exitCode != 0) throw new InvalidDataException(L.Get("MainSubtitleCsvFailed") +
+                                    (lastError is null ? "" : " " + lastError));
+                                if (!File.Exists(intermediate) || new FileInfo(intermediate).Length == 0)
+                                    throw new InvalidDataException(L.Get("MainSubtitleCsvFailed"));
+                                var cueCount = await SubtitleCsvExporter.ConvertAsync(intermediate, textFormat, temp,
+                                    deadline.Token, plan.Conversion.CsvDelimiter,
+                                    plan.Conversion.CsvDestination, plan.Conversion.AdrFps,
+                                    plan.Conversion.AdrStartTimecode).ConfigureAwait(false);
+                                nativeCompleted = true;
+                                diagnostics.Record(DiagnosticLevel.Info, "Export",
+                                    $"Subtitle CSV export: {cueCount} cues written; UTF-8 BOM; output validation pending.");
+                            }
+                            finally
+                            {
+                                await DeleteOwnTempAsync(intermediate,
+                                    message => diagnostics.Record(DiagnosticLevel.Warn, "Export", message)).ConfigureAwait(false);
+                            }
+                        }
+                    }
+                    if (plan.ChapterData is { } chapterData)
+                    {
+                        await using var source = new FileStream(media.FullPath, FileMode.Open, FileAccess.Read,
+                            FileShare.Read, 4096, FileOptions.Asynchronous | FileOptions.RandomAccess);
+                        var current = await MatroskaAttachments.ReadChaptersAsync(source, deadline.Token);
+                        var xml = current.ToXml();
+                        if (!current.Matches(chapterData))
+                            throw new InvalidDataException("Chapters changed after analysis.");
+                        await File.WriteAllTextAsync(temp, xml, new UTF8Encoding(false), deadline.Token);
+                        nativeCompleted = true;
+                        diagnostics.Record(DiagnosticLevel.Info, "Export",
+                            $"Matroska chapters: {current.Count} atoms in {current.Editions.Count} editions; XML written without FFmpeg.");
+                    }
                     if (nativeWebp)
                     {
                         await using var source = new FileStream(media.FullPath, FileMode.Open, FileAccess.Read,
@@ -501,6 +604,11 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         userMessageArgs: attachmentLabel is not null ? [attachmentLabel, FormatByteSize(bytes)] : visualOutput
                             ? [index, plan.Muxer, FormatByteSize(bytes)]
                             : [index, $" ({plan.Muxer})", $", {FormatByteSize(bytes)}"], userSuccess: true);
+                    if (plan.ChapterData?.HasChapterStringUid == true)
+                        diagnostics.Record(DiagnosticLevel.Warn, "Export",
+                            "Matroska Chapters XML export omitted ChapterStringUID elements; " +
+                            "all other supported chapter metadata was retained.",
+                            userMessageKey: "LogChapterStringUidOmitted");
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
@@ -533,6 +641,9 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         _ when videoCopy is { Outcome: VideoCopyOutcome.Error } =>
                             new(videoCopy.ErrorMessageKey, plan.Muxer.ToUpperInvariant()),
                         InvalidDataException when nativeAttachment => new("MainResultAttachmentFailed"),
+                        InvalidDataException when media.Container == "csv" => new("MainCsvInvalid"),
+                        InvalidDataException when plan.Conversion?.Format.Muxer == "csv" =>
+                            new("MainSubtitleCsvFailed"),
                         InvalidDataException when exitCode is { } code and not 0 =>
                             lastError is null ? new("MainResultFfmpegExitCode", code)
                                 : new("MainResultTechnicalDetail", new LocalizedMessage("MainResultFfmpegExitCode", code), lastError),
@@ -546,6 +657,8 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                         _ when videoCopy is { Outcome: VideoCopyOutcome.Error } =>
                             L.Format(videoCopy.ErrorMessageKey, plan.Muxer.ToUpperInvariant()),
                         InvalidDataException when nativeAttachment => L.Get("MainResultAttachmentFailed"),
+                        InvalidDataException when media.Container == "csv" => L.Get("MainCsvInvalid"),
+                        InvalidDataException when plan.Conversion?.Format.Muxer == "csv" => L.Get("MainSubtitleCsvFailed"),
                         InvalidDataException => ex.Message,
                         UnauthorizedAccessException => L.Get("MainResultOutputAccessDenied"),
                         IOException => L.Get("MainResultWriteFailed"),
@@ -559,8 +672,12 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                     diagnostics.Record(DiagnosticLevel.Error, "Export",
                         $"Stream #{index} failed: " +
                         (nativeAttachment && plan.AttachmentFile is null && ex is InvalidDataException
+                            || plan.Conversion?.Format.Muxer == "csv" && ex is InvalidDataException
+                            || media.Container == "csv" && ex is InvalidDataException
                             ? ex.Message : ex.GetType().Name) + "; " +
-                        (nativeAttachment ? "Matroska reading; " : $"FFmpeg exit code {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "unknown")}; ") +
+                        (nativeAttachment ? "Matroska reading; " : plan.Conversion?.Format.Muxer == "csv"
+                            ? $"subtitle CSV; FFmpeg exit code {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "not used")}; "
+                            : $"FFmpeg exit code {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "unknown")}; ") +
                         $"elapsed {FormatElapsed(trackWatch.Elapsed)}.",
                         userMessageKey: videoCopy is { Outcome: VideoCopyOutcome.Error }
                             ? videoCopy.ErrorMessageKey : attachmentLabel is not null ? "LogAttachmentFailed"
@@ -592,6 +709,10 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
                             : nativeWebp
                             ? $"Animated WebP original copy #{index}: elapsed {FormatElapsed(trackWatch.Elapsed)}; " +
                                 $"result {(nativeCompleted ? "bytes copied" : "incomplete")}."
+                            : plan.Conversion?.Format.Muxer == "csv"
+                            ? $"Subtitle CSV export #{index}: elapsed {FormatElapsed(trackWatch.Elapsed)}; " +
+                                $"FFmpeg exit code {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "not used")}; " +
+                                $"result {(nativeCompleted ? "text converted" : "incomplete")}."
                             : $"FFmpeg for stream #{index}: elapsed {FormatElapsed(trackWatch.Elapsed)}, " +
                                 $"exit code {(exitCode?.ToString(CultureInfo.InvariantCulture) ?? "unknown")}, " +
                                 $"progress {(lastPosition is null ? "unavailable" : "received")}.");
@@ -955,6 +1076,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
 
     internal static string BuildFileName(MediaInfo media, TrackExportPlan plan)
     {
+        if (plan.ChapterData is not null) return Sanitize(Path.GetFileNameWithoutExtension(media.Name)) + "_chapters.xml";
         if (plan.AttachmentFile is { } attachment)
             return SafeAttachmentName(attachment.Name);
         var stream = plan.Stream;
@@ -991,14 +1113,7 @@ public sealed class TrackExporter(DiagnosticLog diagnostics)
     }
 
     private static string SafeAttachmentName(string name)
-    {
-        var leaf = name.Replace('\\', '/').Split('/').LastOrDefault() ?? "";
-        var safe = Sanitize(leaf);
-        if (safe.Length > 120) safe = safe[..120].TrimEnd(' ', '.');
-        if (IsWindowsDeviceName(safe))
-            safe = "_" + safe;
-        return safe.Length == 0 ? "attachment" : safe;
-    }
+        => AttachmentFileNames.Safe(name);
 
     private static bool IsWindowsDeviceName(string name) =>
         System.Text.RegularExpressions.Regex.IsMatch(name.Split('.')[0],

@@ -28,6 +28,7 @@ public class MainViewModel : ViewModelBase
     public ObservableCollection<string> StreamSummaries { get; } = new();
     public ObservableCollection<ExportTrackViewModel> ExportTracks { get; } = new();
     public IReadOnlyList<AttachmentFile> AttachmentFiles { get; private set; } = [];
+    internal MatroskaAttachments.ChapterDocument? ChapterData { get; private set; }
     private IReadOnlyDictionary<int, ulong> _attachmentStreamUids = new Dictionary<int, ulong>();
     private bool _syncingAttachmentSelection;
 
@@ -507,6 +508,7 @@ public class MainViewModel : ViewModelBase
         StreamSummaries.Clear();
         ExportTracks.Clear();
         AttachmentFiles = [];
+        ChapterData = null;
         _attachmentStreamUids = new Dictionary<int, ulong>();
         MediaSummary = "";
         _analysisFailed = false;
@@ -575,6 +577,7 @@ public class MainViewModel : ViewModelBase
         StreamSummaries.Clear();
         ExportTracks.Clear();
         AttachmentFiles = [];
+        ChapterData = null;
         _attachmentStreamUids = new Dictionary<int, ulong>();
         OnPropertyChanged(nameof(CanExtract));
         OnPropertyChanged(nameof(TrackHeading));
@@ -593,11 +596,10 @@ public class MainViewModel : ViewModelBase
                 var attachmentWatch = Stopwatch.StartNew();
                 try
                 {
-                    var probeReportsAttachments = MatroskaAttachments.ProbeReportsAttachments(media);
                     var navigation = new MatroskaAttachments.NavigationStats();
-                    var entries = probeReportsAttachments
-                        ? await Task.Run(() => MatroskaAttachments.ReadFileAsync(media, operation.Token, navigation), operation.Token)
-                        : [];
+                    var discovery = await Task.Run(() => MatroskaAttachments.DiscoverStandardFileAsync(
+                        media, operation.Token, navigation), operation.Token);
+                    var entries = discovery.Attachments;
                     if (generation != _analysisGeneration) return;
                     AttachmentFiles = entries.Select(a => new AttachmentFile(a.Uid, a.Name, a.Mime, a.Size,
                         a.Description)).ToArray();
@@ -608,7 +610,7 @@ public class MainViewModel : ViewModelBase
                                 ? stream with { AttachmentUid = uid } : stream).ToArray() };
                     _tools.Diagnostics.Record(DiagnosticLevel.Info, "Analysis",
                         $"Matroska attachment search: {attachmentWatch.Elapsed.TotalMilliseconds:0.0} ms; " +
-                        $"FFprobe candidates={probeReportsAttachments}; SeekHead={navigation.UsedSeekHead}; " +
+                        $"status={discovery.Status}; SeekHead={navigation.UsedSeekHead}; " +
                         $"elements={navigation.Elements}; read={navigation.SearchBytesRead} bytes; " +
                         $"found={entries.Count}; matched streams={_attachmentStreamUids.Count}.",
                         userMessageKey: entries.Count > 0 ? "LogAttachmentsFound" : null,
@@ -623,10 +625,36 @@ public class MainViewModel : ViewModelBase
                         userMessageKey: "LogAttachmentsReadFailed");
                 }
             }
+            if (MatroskaAttachments.IsMatroska(media))
+            {
+                var chaptersWatch = Stopwatch.StartNew();
+                try
+                {
+                    var navigation = new MatroskaAttachments.NavigationStats();
+                    await using var source = new FileStream(media.FullPath, FileMode.Open, FileAccess.Read,
+                        FileShare.Read, 4096, FileOptions.Asynchronous | FileOptions.RandomAccess);
+                    if (source.Length != media.Size) throw new InvalidDataException("Source size changed after analysis.");
+                    var chapters = await MatroskaAttachments.ReadChaptersAsync(source, operation.Token, navigation);
+                    if (generation != _analysisGeneration) return;
+                    ChapterData = chapters.Count > 0 ? chapters : null;
+                    _tools.Diagnostics.Record(DiagnosticLevel.Info, "Analysis",
+                        $"Matroska Chapters search: {chaptersWatch.Elapsed.TotalMilliseconds:0.0} ms; " +
+                        $"SeekHead={navigation.UsedSeekHead}; elements={navigation.Elements}; " +
+                        $"read={navigation.SearchBytesRead} bytes; editions={chapters.Editions.Count}; chapters={chapters.Count}.");
+                }
+                catch (OperationCanceledException) { throw; }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
+                {
+                    _tools.Diagnostics.Record(DiagnosticLevel.Warn, "Analysis",
+                        $"Matroska Chapters search failed: {ex.GetType().Name}; HResult={ex.HResult}.");
+                }
+            }
             SelectedMedia = media;
             MediaSummary = FormatMediaSummary(media);
             foreach (var stream in media.Streams)
             {
+                if (media.VideoCount > 0 && (stream.CodecType == "attachment" || stream.AttachmentUid is not null
+                    || MatroskaAttachments.IsCandidate(media, stream))) continue;
                 if (stream.CodecType == "attachment" && !stream.IsCoverArt) continue;
                 var description = Describe(stream);
                 StreamSummaries.Add(description);
@@ -677,6 +705,18 @@ public class MainViewModel : ViewModelBase
                 };
                 ExportTracks.Add(group);
             }
+            if (ChapterData is { Count: > 0 } chapterData)
+            {
+                var group = ExportTrackViewModel.ForChapters(chapterData);
+                group.PropertyChanged += (_, args) =>
+                {
+                    if (args.PropertyName != nameof(ExportTrackViewModel.IsSelected)) return;
+                    OnPropertyChanged(nameof(CanExtract));
+                    OnPropertyChanged(nameof(SelectedCountDisplay));
+                    OnPropertyChanged(nameof(AllTracksSelected));
+                };
+                ExportTracks.Add(group);
+            }
             OnPropertyChanged(nameof(CanExtract));
             OnPropertyChanged(nameof(TrackHeading));
             OnPropertyChanged(nameof(SelectedCountDisplay));
@@ -698,12 +738,14 @@ public class MainViewModel : ViewModelBase
                 SetAnalysisStatus("InstallerError");
                 _tools.Diagnostics.Record(DiagnosticLevel.Error, "Analysis",
                     "File may be damaged or unsupported.",
-                    $"FFprobe: {ex.GetType().Name}; {ex.Message}",
+                    $"{(Path.GetExtension(path).Equals(".csv", StringComparison.OrdinalIgnoreCase) ? "CSV" : "FFprobe")}: {ex.GetType().Name}; {ex.Message}",
                     userMessageKey: "LogAnalysisFailed");
                 _fileSelectionMessageKey = ex switch
                 {
                     FileNotFoundException => "MainFileNotFound",
                     UnauthorizedAccessException => "MainFileAccessDenied",
+                    InvalidDataException when Path.GetExtension(path).Equals(".csv", StringComparison.OrdinalIgnoreCase)
+                        => "MainCsvInvalid",
                     Win32Exception => "MainProbeLaunchFailed",
                     IOException => "MainFileReadFailed",
                     _ => "MainFileDamaged"
@@ -863,6 +905,7 @@ public class MainViewModel : ViewModelBase
     }
 
     public ExportTrackViewModel? AttachmentRow => ExportTracks.FirstOrDefault(t => t.IsAttachmentGroup);
+    public ExportTrackViewModel? ChapterRow => ExportTracks.FirstOrDefault(t => t.IsChapterGroup);
 
     public void SetAttachmentSelection(IEnumerable<ulong> uids) => AttachmentRow?.SetAttachmentSelection(uids);
 
@@ -1055,7 +1098,8 @@ public class MainViewModel : ViewModelBase
                 null => L.Get("MainDescriptionUnknownType"), _ => stream.CodecType
             }
         };
-        var codec = stream.ImageFormat is { } imageFormat && stream.VisualKind is VisualKind.Image or VisualKind.Animation
+        var codec = stream.Codec is "csv_adr" ? "CSV (ADR)" : stream.Codec is "csv_universal" ? "CSV" :
+            stream.ImageFormat is { } imageFormat && stream.VisualKind is VisualKind.Image or VisualKind.Animation
             ? $"{imageFormat} ({stream.Codec ?? "—"})" : stream.Codec ?? "—";
         return $"#{stream.Index?.ToString() ?? "—"} {type} · {codec}" +
             (details.Count == 0 ? "" : " · " + string.Join(" · ", details));
@@ -1349,6 +1393,10 @@ public sealed class ExportTrackViewModel : ViewModelBase
     }
 
     private IReadOnlyList<AttachmentFile> _attachmentFiles = [];
+    private MatroskaAttachments.ChapterDocument? _chapterData;
+    internal MatroskaAttachments.ChapterDocument? ChapterData => _chapterData;
+    private int _chapterCount;
+    public bool IsChapterGroup => _chapterData is not null;
     private readonly HashSet<ulong> _selectedAttachmentUids = new();
     public bool IsAttachmentGroup => _attachmentFiles.Count > 0;
     public IReadOnlyCollection<ulong> SelectedAttachmentUids => _selectedAttachmentUids;
@@ -1365,6 +1413,31 @@ public sealed class ExportTrackViewModel : ViewModelBase
             null, VisualKind.Unknown, null, false), "", new ExportDecision(null, null));
         row._attachmentFiles = files;
         row.SetLocalizedStatus(() => L.Format("MainAttachmentCount", files.Count));
+        return row;
+    }
+    internal static ExportTrackViewModel ForChapters(MatroskaAttachments.ChapterDocument chapters)
+    {
+        var properties = new Dictionary<string, string>();
+        void AddProperties(MatroskaAttachments.ChapterNode node, string path)
+        {
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                var child = node.Children[i];
+                var label = path + " / " + child.Name + " " + (i + 1).ToString(CultureInfo.InvariantCulture);
+                if (child.Value is not null) properties[label] = child.Value;
+                AddProperties(child, label);
+            }
+        }
+        for (var i = 0; i < chapters.Editions.Count; i++)
+            AddProperties(chapters.Editions[i], $"Edition {i + 1}");
+        properties["Editions"] = chapters.Editions.Count.ToString(CultureInfo.InvariantCulture);
+        properties["Chapters"] = chapters.Count.ToString(CultureInfo.InvariantCulture);
+        var row = new ExportTrackViewModel(new MediaStreamInfo(-1000000, "chapters", "xml", null,
+            null, null, null, null, null, null, null, null, null, null, null, null, null,
+            SubtitleKind.Unknown, new Dictionary<string, string>(), new Dictionary<string, int?>(),
+            null, VisualKind.Unknown, null, false, properties), "", new ExportDecision(null, null));
+        row._chapterData = chapters;
+        row._chapterCount = chapters.Count;
         return row;
     }
 
@@ -1428,7 +1501,9 @@ public sealed class ExportTrackViewModel : ViewModelBase
             OnPropertyChanged(nameof(StatusLabel));
         }
     }
-    public TrackExportPlan? Plan => IsAttachmentGroup ? null : Conversion is { } options
+    public TrackExportPlan? Plan => IsChapterGroup
+        ? new TrackExportPlan(Stream, "xml", "chapters", false, ChapterData: _chapterData)
+        : IsAttachmentGroup ? null : Conversion is { } options
         ? new(Stream, options.Format.Extension, options.Format.Muxer, false, false, options)
         : _copyOverride ?? Decision.Plan;
     public string ModeDisplay => L.Get(Conversion is null ? "MainModeExtract" : "MainModeConvert");
@@ -1483,19 +1558,24 @@ public sealed class ExportTrackViewModel : ViewModelBase
         SetConfigurationError(L.Get(key));
         _statusFactory = () => L.Get(key);
     }
-    public bool CanSelect => (IsAttachmentGroup || IsSupported || CanConvert) && !_locked;
+    public bool CanSelect => (IsAttachmentGroup || IsChapterGroup || IsSupported || CanConvert) && !_locked;
     public string IndexDisplay => Stream.Index?.ToString(CultureInfo.InvariantCulture) ?? "—";
-    public string TypeDisplay => IsAttachmentGroup ? L.Get("MainAttachments") : Stream.VisualKind switch
+    public string TypeDisplay => IsChapterGroup ? L.Get("MainChapters")
+        : IsAttachmentGroup ? L.Get("MainAttachments") : Stream.VisualKind switch
     {
         VisualKind.Image => L.Get(Stream.IsCoverArt ? "MainDescriptionCover" : "MainTypeImage"),
         VisualKind.Animation => L.Get("MainTypeAnimation"),
         VisualKind.Video => L.Get("MainTypeVideo"),
         _ => Stream.CodecType switch
         {
-            "audio" => L.Get("MainTypeAudio"), "subtitle" => L.Get("MainTypeSubtitle"), "attachment" => L.Get("MainTypeAttachment"),
+            "audio" => L.Get("MainTypeAudio"), "subtitle" => L.Get("MainTypeSubtitle") + (IsForcedSubtitle(Stream) ? " (forced)" : ""), "attachment" => L.Get("MainTypeAttachment"),
             _ => L.Get("MainTypeOther")
         }
     };
+    internal static bool IsForcedSubtitle(MediaStreamInfo stream) => stream.Forced == 1
+        || stream.CodecType == "subtitle" && stream.Title is { } title
+        && System.Text.RegularExpressions.Regex.IsMatch(title, @"(?<![\p{L}\p{N}])forced(?![\p{L}\p{N}])",
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
     public string TypeGlyph => Stream.CodecType switch
     {
         "audio" => "♫", "subtitle" => "▤", "attachment" => "▧", _ => "▣"
@@ -1510,7 +1590,8 @@ public sealed class ExportTrackViewModel : ViewModelBase
             catch (CultureNotFoundException) { return language; }
         }
     }
-    public string CodecDisplay => Stream.Codec is null ? "—" : Stream.Profile is null
+    public string CodecDisplay => IsChapterGroup ? "XML" : Stream.Codec is "csv_adr" ? "CSV (ADR)"
+        : Stream.Codec is "csv_universal" ? "CSV" : Stream.Codec is null ? "—" : Stream.Profile is null
         ? Stream.Codec.ToUpperInvariant() : $"{Stream.Codec.ToUpperInvariant()} ({Stream.Profile})";
     public string BitRateDisplay => MainViewModel.FormatBitRate(Stream.BitRate);
     public string DetailsDisplay => Stream.CodecType switch
@@ -1546,7 +1627,10 @@ public sealed class ExportTrackViewModel : ViewModelBase
         _statusFactory = factory;
         Status = factory();
     }
-    public string StatusLabel => IsAttachmentGroup
+    public string StatusLabel => IsChapterGroup ? L.Format(_chapterCount == 1 ? "MainChapterCountOne" : "MainChapterCount",
+        L.Language == "ru"
+            ? MainViewModel.FormatCount(_chapterCount, L.Get("MainChapterOne"), L.Get("MainChapterFew"), L.Get("MainChapterMany"))
+            : $"{_chapterCount} {L.Get(_chapterCount == 1 ? "MainChapterOne" : "MainChapterMany")}") : IsAttachmentGroup
         ? L.Format("MainAttachmentCount", _attachmentFiles.Count) : !IsSupported && !CanConvert && !IsAttachmentGroup
         ? L.Get("MainStatusUnavailable") : State switch
     {
@@ -1571,13 +1655,13 @@ public sealed class ExportTrackViewModel : ViewModelBase
         OnPropertyChanged(nameof(ModeDisplay));
         OnPropertyChanged(nameof(OutputPreview));
     }
-    public IBrush StatusBadgeBackground => !IsSupported && !CanConvert && !IsAttachmentGroup ? MutedBackground : State switch
+    public IBrush StatusBadgeBackground => !IsSupported && !CanConvert && !IsAttachmentGroup && !IsChapterGroup ? MutedBackground : State switch
     {
         ExportState.Running => RunningBackground,
         ExportState.Failed or ExportState.Cancelled => ErrorBackground,
         _ => ReadyBackground
     };
-    public IBrush StatusForeground => !IsSupported && !CanConvert && !IsAttachmentGroup
+    public IBrush StatusForeground => !IsSupported && !CanConvert && !IsAttachmentGroup && !IsChapterGroup
         ? new SolidColorBrush(Color.Parse("#F0989D")) : State switch
     {
         ExportState.Failed or ExportState.Cancelled => new SolidColorBrush(Color.Parse("#F0989D")),

@@ -8,6 +8,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using MediaUnseal.Services;
 using MediaUnseal.Models;
+using MediaUnseal.ViewModels;
 
 namespace MediaUnseal.Views;
 
@@ -15,7 +16,8 @@ internal static class StreamPropertiesWindow
 {
     private static LocalizationManager L => LocalizationManager.Active;
 
-    internal static Window Show(Window owner, MediaStreamInfo stream)
+    internal static Window Show(Window owner, MediaStreamInfo stream,
+        MatroskaAttachments.ChapterDocument? chapters = null)
     {
         var window = new Window
         {
@@ -70,7 +72,7 @@ internal static class StreamPropertiesWindow
         {
             window.Title = L.Get("StreamPropertiesTitle");
             heading.Child = BuildHeading(stream);
-            sectionCards = BuildCards(stream).ToList();
+            sectionCards = (chapters is null ? BuildCards(stream) : BuildChapterCards(chapters)).ToList();
             cards.Children.Clear();
             twoColumns = null;
             ArrangeCards();
@@ -104,6 +106,7 @@ internal static class StreamPropertiesWindow
                 "audio" => ("♫", L.Get("StreamHeaderAudio")),
                 "subtitle" => ("≡", L.Get("StreamHeaderSubtitle")),
                 "attachment" => ("▤", L.Get("StreamHeaderAttachment")),
+                "chapters" => ("▤", L.Get("MainChapters")),
                 _ => ("•", L.Get("StreamHeaderOther"))
             }
         };
@@ -141,7 +144,8 @@ internal static class StreamPropertiesWindow
                 Margin = new Thickness(8, 0, 0, 0), BorderBrush = Resource("LineBrush"),
                 BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(4),
                 VerticalAlignment = VerticalAlignment.Center,
-                Child = new TextBlock { Text = stream.Codec, MaxWidth = 100,
+                Child = new TextBlock { Text = stream.Codec is "csv_adr" ? "CSV (ADR)"
+                    : stream.Codec == "csv_universal" ? "CSV" : stream.Codec, MaxWidth = 100,
                     TextWrapping = TextWrapping.WrapWithOverflow, Foreground = Resource("AccentBrush") } };
             Grid.SetColumn(badge, 2);
             heading.Children.Add(badge);
@@ -189,6 +193,104 @@ internal static class StreamPropertiesWindow
         }
     }
 
+    private static IEnumerable<Border> BuildChapterCards(MatroskaAttachments.ChapterDocument chapters)
+    {
+        var overview = ChapterCard("▣  " + L.Get("StreamSectionBasic"));
+        var overviewBody = (StackPanel)overview.Child!;
+        overviewBody.Children.Add(ChapterValue(L.Get("MainChapters"),
+            L.Format(chapters.Count == 1 ? "MainChapterCountOne" : "MainChapterCount", ChapterCountText(chapters.Count))));
+        overviewBody.Children.Add(ChapterValue(L.Get("MainColumnCodec"), "XML"));
+        yield return overview;
+
+        for (var editionIndex = 0; editionIndex < chapters.Editions.Count; editionIndex++)
+        {
+            var edition = chapters.Editions[editionIndex];
+            var card = ChapterCard("▤  " + L.Format("ChapterEditionLabel", editionIndex + 1));
+            var body = (StackPanel)card.Child!;
+            foreach (var field in edition.Children.Where(c => c.Name != "ChapterAtom"))
+                AddChapterMetadata(body, field, 0);
+            var chapterNumber = 0;
+            body.Children.Add(new TextBlock { Text = L.Get("MainChapters"),
+                FontWeight = FontWeight.SemiBold, Foreground = Resource("MutedTextBrush"),
+                Margin = new Thickness(0, 6, 0, 1) });
+            foreach (var chapter in edition.Children.Where(c => c.Name == "ChapterAtom"))
+                body.Children.Add(ChapterEntry(chapter, ++chapterNumber, 0));
+            yield return card;
+        }
+    }
+
+    private static string ChapterCountText(int count) => L.Language == "ru"
+        ? MainViewModel.FormatCount(count, L.Get("MainChapterOne"), L.Get("MainChapterFew"), L.Get("MainChapterMany"))
+        : $"{count} {L.Get(count == 1 ? "MainChapterOne" : "MainChapterMany")}";
+
+    private static Border ChapterCard(string title)
+    {
+        var body = new StackPanel { Spacing = 6 };
+        body.Children.Add(new TextBlock { Text = title, FontSize = 14,
+            FontWeight = FontWeight.SemiBold, Foreground = Resource("AccentBrush"),
+            Margin = new Thickness(0, 0, 0, 4) });
+        return new Border { Child = body, Background = Resource("PanelAltBackground"),
+            BorderBrush = Resource("LineBrush"), BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(5), Padding = new Thickness(11),
+            Margin = new Thickness(4, 4, 4, 7) };
+    }
+
+    private static Control ChapterValue(string label, string value)
+    {
+        var pair = new Grid { ColumnDefinitions = new ColumnDefinitions("118,*"), ColumnSpacing = 7,
+            MinHeight = 20 };
+        pair.Children.Add(new TextBlock { Text = label + ":", Foreground = Resource("MutedTextBrush"),
+            TextWrapping = TextWrapping.WrapWithOverflow });
+        var content = new TextBlock { Text = value, TextWrapping = TextWrapping.WrapWithOverflow };
+        Grid.SetColumn(content, 1);
+        pair.Children.Add(content);
+        return pair;
+    }
+
+    private static void AddChapterMetadata(StackPanel body, MatroskaAttachments.ChapterNode node, int depth)
+    {
+        if (node.Value is { } value)
+        {
+            var row = ChapterValue(node.Name, value);
+            row.Margin = new Thickness(depth * 12, 0, 0, 0);
+            body.Children.Add(row);
+            return;
+        }
+        var heading = new TextBlock { Text = node.Name, Foreground = Resource("AccentBrush"),
+            Margin = new Thickness(depth * 12, 5, 0, 0) };
+        body.Children.Add(heading);
+        foreach (var child in node.Children) AddChapterMetadata(body, child, depth + 1);
+    }
+
+    private static Control ChapterEntry(MatroskaAttachments.ChapterNode chapter, int number, int depth)
+    {
+        var displays = chapter.Children.Where(c => c.Name == "ChapterDisplay")
+            .Select(d =>
+            {
+                var name = d.Children.FirstOrDefault(c => c.Name == "ChapString")?.Value;
+                var language = d.Children.FirstOrDefault(c => c.Name is "ChapLanguageIETF" or "ChapLanguage")?.Value;
+                return string.IsNullOrWhiteSpace(name) ? null
+                    : name + (string.IsNullOrWhiteSpace(language) ? "" : $" ({language})");
+            }).Where(text => text is not null).ToArray();
+        var start = chapter.Children.FirstOrDefault(c => c.Name == "ChapterTimeStart")?.Value;
+        var end = chapter.Children.FirstOrDefault(c => c.Name == "ChapterTimeEnd")?.Value;
+        var label = L.Format("ChapterItemLabel", number);
+        if (displays.Length > 0) label += " · " + string.Join(" / ", displays);
+        if (start is not null) label += " · " + start + (end is null ? "" : " – " + end);
+        var body = new StackPanel { Spacing = 5, Margin = new Thickness(8, 6, 0, 8) };
+        foreach (var field in chapter.Children.Where(c => c.Name != "ChapterAtom"))
+            AddChapterMetadata(body, field, 0);
+        var childNumber = 0;
+        foreach (var child in chapter.Children.Where(c => c.Name == "ChapterAtom"))
+            body.Children.Add(ChapterEntry(child, ++childNumber, depth + 1));
+        return new Expander
+        {
+            Header = new TextBlock { Text = label, TextWrapping = TextWrapping.WrapWithOverflow },
+            Content = body, IsExpanded = false,
+            Margin = new Thickness(depth * 10, 3, 0, 0)
+        };
+    }
+
     private static string SectionFor(string label, MediaStreamInfo stream, bool isVisual)
     {
         if (label == L.Get("MainColumnType") || label == L.Get("StreamSourceIndex")
@@ -222,11 +324,13 @@ internal static class StreamPropertiesWindow
             {
                 "audio" => L.Get("MainTypeAudio"), "subtitle" => L.Get("MainTypeSubtitle"),
                 "attachment" => L.Get("MainTypeAttachment"), null => L.Get("StreamNotSpecified"),
+                "chapters" => L.Get("MainChapters"),
                 _ => stream.CodecType
             }
         });
-        if (stream.Index is { } index) yield return (L.Get("StreamSourceIndex"), index.ToString(CultureInfo.InvariantCulture));
-        if (stream.Codec is { } codec) yield return (L.Get("MainColumnCodec"), codec);
+        if (stream.Index is { } index && stream.CodecType != "chapters") yield return (L.Get("StreamSourceIndex"), index.ToString(CultureInfo.InvariantCulture));
+        if (stream.Codec is { } codec) yield return (L.Get("MainColumnCodec"),
+            codec == "csv_adr" ? "CSV (ADR)" : codec == "csv_universal" ? "CSV" : codec);
         if (stream.Language is { } language) yield return (L.Get("MainColumnLanguage"), language == "und" ? L.Get("StreamUnknownLanguage") : language);
         if (stream.Title is { } title) yield return (L.Get("StreamTitle"), title);
         if (stream.Duration is { } duration) yield return (L.Get("StreamDuration"), duration.ToString());
@@ -239,10 +343,18 @@ internal static class StreamPropertiesWindow
         if (stream.SampleRate is { } sampleRate) yield return (L.Get("StreamSampleRate"), L.Format("StreamSampleRateValue", sampleRate));
         if (stream.Channels is { } channels) yield return (L.Get("ConversionChannels"), channels.ToString(CultureInfo.InvariantCulture));
         if (stream.ChannelLayout is { } layout) yield return (L.Get("StreamChannelLayout"), layout);
-        if (stream.FrameCount is { } count) yield return (L.Get("StreamFrameCount"), L.Format("StreamFrameCountValue", count));
+        if (stream.FrameCount is { } count) yield return stream.Codec is "csv_adr" or "csv_universal"
+            ? (L.Get("StreamCsvCueCount"), count.ToString(CultureInfo.CurrentCulture))
+            : (L.Get("StreamFrameCount"), L.Format("StreamFrameCountValue", count));
         if (stream.ImageFormat is { } format) yield return (L.Get("StreamImageFormat"), format);
         foreach (var (key, value) in stream.ExtraProperties ?? new Dictionary<string, string>())
-            yield return (ExtraLabel(key), value);
+            yield return key switch
+            {
+                "csv_delimiter" => (L.Get("ConversionCsvDelimiter"), value == "\t" ? "TAB" : value),
+                "csv_structure" => (L.Get("ConversionCsvDestination"),
+                    L.Get(value == "adr" ? "ConversionCsvAdr" : "ConversionCsvUniversal")),
+                _ => (ExtraLabel(key), value)
+            };
         foreach (var (key, value) in stream.Tags.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
             if (key is not "language" and not "title") yield return (L.Format("StreamTag", key), value);
         foreach (var (key, value) in stream.Disposition.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
