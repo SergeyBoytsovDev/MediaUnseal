@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "version": "5.5.4",
+  "releaseTag": "tesseract-v5.5.4",
+  "models": ["rus", "eng", "deu", "fra", "spa", "ita", "por", "chi_sim", "jpn", "kor"],
+  "profiles": ["tessdata_fast", "tessdata_best"],
+  "packages": {
+    "windows-x64": {
+      "name": "tesseract-5.5.4-windows-x64.zip",
+      "url": "https://github.com/SergeyBoytsovDev/MediaUnseal/releases/download/tesseract-v5.5.4/tesseract-5.5.4-windows-x64.zip",
+      "size": 114612645,
+      "sha256": "6a90916777175d3ddb678af4fd38535712d3341f79adcaa2e558bfffe028ad48"
+    },
+    "linux-x64": {
+      "name": "tesseract-5.5.4-linux-x64.tar.gz",
+      "url": "https://github.com/SergeyBoytsovDev/MediaUnseal/releases/download/tesseract-v5.5.4/tesseract-5.5.4-linux-x64.tar.gz",
+      "size": 117107064,
+      "sha256": "9c91920b9802cc6e657223df09a08cad2e6c20be5fed9d7ac88f1f0b5b341ddd"
+    }
+  }
+}
