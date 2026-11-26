@@ -11,11 +11,21 @@
    <Setter Property="Padding" Value="0"/>
    <Setter Property="MinHeight" Value="0"/>
   </Style>
+  <Style Selector="Button#ClearButton /template/ ContentPresenter, Button#SaveButton /template/ ContentPresenter">
+   <Setter Property="RenderTransform" Value="translate(0px, -1px)"/>
+  </Style>
  </Window.Styles>
  <Grid RowDefinitions="*,Auto" Margin="12" RowSpacing="10">
   <ListBox x:Name="Entries" Grid.Row="0" Background="{DynamicResource PanelAltBackground}"
+           SelectionMode="Multiple" SelectionChanged="Entries_SelectionChanged"
            BorderBrush="{DynamicResource LineBrush}" BorderThickness="1"
            ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+   <ListBox.ContextMenu>
+    <ContextMenu>
+     <MenuItem x:Name="CopyEntriesMenuItem" Header="{DynamicResource Loc_DiagnosticPreviewCopy}"
+               Click="CopyEntries_Click" IsEnabled="False"/>
+    </ContextMenu>
+   </ListBox.ContextMenu>
    <ListBox.ItemsPanel>
     <ItemsPanelTemplate><VirtualizingStackPanel/></ItemsPanelTemplate>
    </ListBox.ItemsPanel>

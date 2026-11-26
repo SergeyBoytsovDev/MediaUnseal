@@ -13,12 +13,19 @@ using MediaUnseal.Services;
 
 namespace MediaUnseal.Views;
 
+internal sealed record OcrLanguageChoice(string Code, string Name)
+{
+    public override string ToString() => $"{Name} ({Code})";
+}
+
 public partial class ConversionWindow : Window
 {
     private FfmpegConversionCatalog? _catalog;
     private DiagnosticLog? _diagnostics;
     private MediaStreamInfo? _stream;
     private ConversionSettings? _existing;
+    private OcrEngine? _ocrEngine;
+    private bool _graphicOcr;
     private CancellationToken _shutdown;
     private readonly CancellationTokenSource _closed = new();
     private int _encoderRevision;
@@ -56,6 +63,8 @@ public partial class ConversionWindow : Window
         ["nut"] = ["libx264", "libx265", "mpeg4", "ffv1", "rawvideo"]
     };
     internal bool AppliedCopy { get; private set; }
+    internal OcrExportSettings? AppliedOcr { get; private set; }
+    internal ConversionFormat? AppliedOcrFormat { get; private set; }
     internal ConversionFormat? AppliedCopyFormat { get; private set; }
     internal ConversionFormat? AppliedDefaultFormat { get; private set; }
 
@@ -82,20 +91,40 @@ public partial class ConversionWindow : Window
 
     internal ConversionWindow(FfmpegConversionCatalog catalog, DiagnosticLog diagnostics, MediaStreamInfo stream,
         ConversionSettings? existing, CancellationToken shutdown, ConversionFormat? initialFormat = null,
-        TrackExportPlan? copyPlan = null, string? sourcePath = null, bool copyRequested = false) : this()
+        TrackExportPlan? copyPlan = null, string? sourcePath = null, bool copyRequested = false,
+        OcrEngine? ocrEngine = null, OcrExportSettings? existingOcr = null) : this()
     {
         _catalog = catalog;
         _diagnostics = diagnostics;
         _stream = stream;
         _existing = existing;
+        _graphicOcr = stream.SubtitleKind == SubtitleKind.Graphic && ocrEngine is not null;
+        _ocrEngine = ocrEngine;
+        if (_graphicOcr)
+        {
+            OcrOptions.IsVisible = true;
+            EncoderLabel.IsVisible = false;
+            EncoderBox.IsVisible = false;
+            EncoderActions.IsVisible = false;
+            OcrLanguageBox.ItemsSource = new[] {
+                new OcrLanguageChoice("rus", "Русский"), new("eng", "English"),
+                new("deu", "Deutsch"), new("fra", "Français"), new("spa", "Español"),
+                new("ita", "Italiano"), new("por", "Português"), new("chi_sim", "中文（简体）"),
+                new("jpn", "日本語"), new("kor", "한국어") };
+            var proposed = existingOcr?.Language ?? SubtitleOcrExport.SuggestedLanguage(stream.Language);
+            OcrLanguageBox.SelectedItem = ((OcrLanguageChoice[])OcrLanguageBox.ItemsSource)
+                .FirstOrDefault(option => option.Code == proposed);
+            OcrLanguageHint.IsVisible = OcrLanguageBox.SelectedItem is null;
+            OcrModelBox.SelectedIndex = existingOcr?.Model == OcrModelSet.Best ? 1 : 0;
+        }
         RefreshCsvDelimiters();
-        var preferredDelimiter = existing?.CsvDelimiter ?? Appearance?.Preferences.CsvDelimiter[0] ?? ',';
+        var preferredDelimiter = existingOcr?.CsvDelimiter ?? existing?.CsvDelimiter ?? Appearance?.Preferences.CsvDelimiter[0] ?? ',';
         CsvDelimiterBox.SelectedIndex = Array.IndexOf(CsvDelimiters, preferredDelimiter) is var delimiterIndex and >= 0
             ? delimiterIndex : 0;
-        CsvDestinationBox.SelectedIndex = (existing?.CsvDestination ?? Appearance?.Preferences.CsvDestination) == "adr" ? 1 : 0;
+        CsvDestinationBox.SelectedIndex = (existingOcr?.CsvDestination ?? existing?.CsvDestination ?? Appearance?.Preferences.CsvDestination) == "adr" ? 1 : 0;
         AdrFpsBox.ItemsSource = AdrFrameRates;
-        AdrFpsBox.SelectedItem = existing?.AdrFps ?? Appearance?.Preferences.AdrFps ?? "24";
-        AdrStartBox.Text = existing?.AdrStartTimecode ?? Appearance?.Preferences.AdrStartTimecode ?? "00:00:00:00";
+        AdrFpsBox.SelectedItem = existingOcr?.AdrFps ?? existing?.AdrFps ?? Appearance?.Preferences.AdrFps ?? "24";
+        AdrStartBox.Text = existingOcr?.AdrStartTimecode ?? existing?.AdrStartTimecode ?? Appearance?.Preferences.AdrStartTimecode ?? "00:00:00:00";
         CsvInputFpsBox.ItemsSource = AdrFrameRates;
         CsvInputFpsBox.SelectedItem = existing?.CsvInputFps;
         CsvInputStartBox.Text = existing?.CsvInputStartTimecode ?? "00:00:00:00";
@@ -125,8 +154,9 @@ public partial class ConversionWindow : Window
                 .OrderBy(e => e.Name == stream.Codec ? 0 : 1)
                 .ThenBy(e => e.IsHardware).ThenBy(e => e.Name.StartsWith("lib", StringComparison.Ordinal) ? 0 : 1)
                 .ThenBy(e => e.Name, StringComparer.Ordinal).FirstOrDefault();
-        var formats = catalog.FormatsFor(_kind).Where(format => format.Muxer != "ssa"
-            || stream.Codec is "csv_universal" or "csv_adr").ToArray();
+        var formats = catalog.FormatsFor(_kind).Where(format => _graphicOcr
+            ? format.Muxer is "srt" or "webvtt" or "ass" or "ssa" or "csv"
+            : format.Muxer != "ssa" || stream.Codec is "csv_universal" or "csv_adr").ToArray();
         FormatBox.ItemsSource = _copyFormat is null ? formats :
             new[] { _copyFormat }.Concat(formats.Where(f =>
                 f.Muxer != copyPlan!.Muxer || f.Extension != copyPlan.Extension
@@ -225,6 +255,10 @@ public partial class ConversionWindow : Window
     private void CsvDestination_SelectionChanged(object? sender, SelectionChangedEventArgs e) =>
         AdrOptions.IsVisible = CsvDelimiterOptions.IsVisible && CsvDestinationBox.SelectedIndex == 1;
 
+    private void OcrLanguage_SelectionChanged(object? sender, SelectionChangedEventArgs e) =>
+        OcrLanguageHint.IsVisible = _graphicOcr && OcrOptions.IsVisible
+            && OcrLanguageBox.SelectedItem is null;
+
     private ConversionFormat? EffectiveFormat(ConversionFormat format) =>
         ReferenceEquals(format, _copyFormat)
             ? _catalog?.FindFormat(format.Muxer, format.Extension, _kind) : format;
@@ -283,6 +317,16 @@ public partial class ConversionWindow : Window
     private void Format_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (_catalog is null || FormatBox.SelectedItem is not ConversionFormat format) return;
+        if (_graphicOcr)
+        {
+            var textOutput = !ReferenceEquals(format, _copyFormat);
+            OcrOptions.IsVisible = textOutput;
+            OcrLanguageHint.IsVisible = textOutput && OcrLanguageBox.SelectedItem is null;
+            CsvDelimiterOptions.IsVisible = textOutput && format.Muxer == "csv";
+            AdrOptions.IsVisible = CsvDelimiterOptions.IsVisible && CsvDestinationBox.SelectedIndex == 1;
+            SetEncoderNote(textOutput ? "OcrNoStyling" : "ConversionCopyNote");
+            return;
+        }
         if (_activeFormat is { } previous && EncoderBox.SelectedItem is ConversionEncoder chosen
             && chosen.Name != "copy") _encoderSelections[previous] = chosen;
         _activeFormat = format;
@@ -572,6 +616,33 @@ public partial class ConversionWindow : Window
 
     private async void Save_Click(object? sender, RoutedEventArgs e)
     {
+        if (_graphicOcr)
+        {
+            if (ReferenceEquals(FormatBox.SelectedItem, _copyFormat))
+            { AppliedCopy = true; Close(null); return; }
+            if (FormatBox.SelectedItem is not ConversionFormat selectedOcrFormat
+                || OcrLanguageBox.SelectedItem is not OcrLanguageChoice selectedLanguage
+                || _ocrEngine is null)
+            { SetValidationMessage("OcrLanguageRequired"); return; }
+            var model = OcrModelBox.SelectedIndex == 1 ? OcrModelSet.Best : OcrModelSet.Fast;
+            var available = model == OcrModelSet.Best ? _ocrEngine.BestLanguages : _ocrEngine.FastLanguages;
+            if (!available.Contains(selectedLanguage.Code, StringComparer.Ordinal))
+            { SetValidationMessage("OcrModelMissing"); return; }
+            var settings = new OcrExportSettings(selectedLanguage.Code, model, _ocrEngine.Executable,
+                Path.GetDirectoryName(_ocrEngine.FastData),
+                CsvDelimiters[Math.Clamp(CsvDelimiterBox.SelectedIndex, 0, 3)],
+                CsvDestinationBox.SelectedIndex == 1 ? "adr" : "universal",
+                AdrFpsBox.SelectedItem as string ?? "24", AdrStartBox.Text ?? "00:00:00:00");
+            if (selectedOcrFormat.Muxer == "csv" && settings.CsvDestination == "adr"
+                && !SubtitleCsvExporter.IsValidAdrTiming(settings.AdrFps, settings.AdrStartTimecode))
+            { SetValidationMessage("MainValidationAdrTimecode"); return; }
+            if (selectedOcrFormat.Muxer == "csv") Appearance?.SetCsvOptions(settings.CsvDelimiter,
+                settings.CsvDestination, settings.AdrFps, settings.AdrStartTimecode);
+            AppliedOcr = settings;
+            AppliedOcrFormat = selectedOcrFormat;
+            Close(null);
+            return;
+        }
         var source = ReferenceEquals(FormatBox.SelectedItem, _copyFormat);
         var selectedEncoder = EncoderBox.SelectedItem as ConversionEncoder;
         if (source && _copyPlan is not null && selectedEncoder is not null

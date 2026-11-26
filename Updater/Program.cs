@@ -176,6 +176,7 @@ try
     }
     catch
     {
+        var rollbackFailures = new HashSet<string>(StringComparer.Ordinal);
         for (var i = replaced.Count - 1; i >= 0; i--)
         {
             var (destination, original) = replaced[i];
@@ -186,9 +187,14 @@ try
             }
             catch (Exception ex)
             {
-                try { File.AppendAllText(Path.Combine(backup, "rollback-errors.txt"),
-                    ex.GetType().Name + ": HResult 0x" + ex.HResult.ToString("X8") + Environment.NewLine); }
-                catch (Exception) { }
+                var failure = "Rollback failed: " + SafeFailure(ex);
+                if (rollbackFailures.Add(failure))
+                {
+                    try { File.AppendAllText(Path.Combine(backup, "rollback-errors.txt"),
+                        failure + Environment.NewLine); }
+                    catch (Exception) { }
+                    WriteFailure(failure, append: true);
+                }
             }
         }
         throw;
@@ -197,12 +203,27 @@ try
 }
 catch (Exception ex)
 {
+    var failure = "Update replacement failed: " + SafeFailure(ex);
     try { File.WriteAllText(Path.Combine(Path.GetDirectoryName(packagePath)!, "update-error.txt"),
-        ex.ToString()); } catch (IOException) { }
+        failure); } catch (Exception) { }
+    WriteFailure(failure, append: true);
     return 7;
 }
 
-static void WriteFailure(string reason)
+static string SafeFailure(Exception ex) => ex.GetType().Name + "; HResult 0x" + ex.HResult.ToString("X8") +
+    (ex.Message is "Package metadata verification failed." or "Archive contains a symbolic link."
+        or "Archive contains a non-regular entry." or "Application executable is missing."
+        or "Windows package contains an obsolete managed application payload."
+        or "Windows package is not a native x64 application."
+        or "Native application version does not match metadata."
+        or "Package platform or version does not match metadata."
+        or "Unsafe archive path." or "Archive path escapes staging."
+        or "Archive path escapes the installation directory."
+        or "Installation contains a link or reparse point."
+        or "Installation contains a linked file."
+        ? "; " + ex.Message : "");
+
+static void WriteFailure(string reason, bool append = false)
 {
     try
     {
@@ -216,9 +237,14 @@ static void WriteFailure(string reason)
         var directory = File.Exists(Path.Combine(current, "ui.json")) ? current
             : File.Exists(Path.Combine(previous, "ui.json")) ? previous : current;
         Directory.CreateDirectory(directory);
-        File.WriteAllText(Path.Combine(directory, "update-result.txt"), reason);
+        var result = Path.Combine(directory, "update-result.txt");
+        if (append && File.Exists(result) && new FileInfo(result).Length < 8192)
+            File.AppendAllText(result, Environment.NewLine + reason);
+        else File.WriteAllText(result, reason);
+        if (OperatingSystem.IsLinux())
+            File.SetUnixFileMode(result, UnixFileMode.UserRead | UnixFileMode.UserWrite);
     }
-    catch (IOException) { }
+    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
 }
 
 static void RestartOriginal(string target)

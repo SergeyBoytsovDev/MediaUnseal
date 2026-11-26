@@ -38,7 +38,10 @@ public class MainViewModel : ViewModelBase
     {
         _tools = tools;
         PreviewLoader = (media, ffmpeg, token) => MediaPreview.LoadAsync(media, ffmpeg, token,
-            message => _tools.Diagnostics.Record(DiagnosticLevel.Info, "Preview", message));
+            message => _tools.Diagnostics.Record(message.StartsWith("FFmpeg preview stderr:", StringComparison.Ordinal)
+                || message.Contains("failed", StringComparison.OrdinalIgnoreCase)
+                || message.Contains("timed out", StringComparison.OrdinalIgnoreCase)
+                    ? DiagnosticLevel.Warn : DiagnosticLevel.Info, "Preview", message));
         _analyzer = analyzer ?? new MediaAnalyzer(tools.Diagnostics);
         _exporter = exporter ?? new TrackExporter(tools.Diagnostics);
         _tools.Diagnostics.EventRecorded += entry => Dispatcher.UIThread.Post(() =>
@@ -92,16 +95,15 @@ public class MainViewModel : ViewModelBase
     private string? _outputDirectory;
     private bool _outputDirectoryInputValid = true;
     private bool _isExporting;
-    private string _exportStatus = L.Get("MainSelectFolderAndTracks");
-    private Func<string>? _exportStatusFactory = () => L.Get("MainSelectFolderAndTracks");
+    private string _exportStatus = L.Get("MainSelectFile");
+    private Func<string>? _exportStatusFactory = () => L.Get("MainSelectFile");
+    private string _exportElapsedOverall = "";
     private double _exportProgress;
     private bool _exportProgressIndeterminate;
     private CancellationTokenSource? _exportOperation;
     private TaskCompletionSource? _exportIdle;
     private Stopwatch? _exportWatch;
     private DispatcherTimer? _exportTimer;
-    private string _exportActiveMessage = "";
-    private LocalizedMessage? _exportActiveToken;
     private CancellationTokenSource? _operation;
     private TaskCompletionSource? _idle;
     private double _progress;
@@ -120,6 +122,7 @@ public class MainViewModel : ViewModelBase
                 OnPropertyChanged(nameof(CanAutoInstall));
                 OnPropertyChanged(nameof(CanExtract));
                 OnPropertyChanged(nameof(CanChooseFile));
+                OnPropertyChanged(nameof(CanEnableMux));
                 OnPropertyChanged(nameof(FooterStatus));
                 OnPropertyChanged(nameof(ProgressPercentDisplay));
                 OnPropertyChanged(nameof(ProgressKnown));
@@ -144,6 +147,7 @@ public class MainViewModel : ViewModelBase
                 OnPropertyChanged(nameof(HasGyanLicenseNotice));
                 OnPropertyChanged(nameof(CanExtract));
                 OnPropertyChanged(nameof(CanChooseFile));
+                OnPropertyChanged(nameof(CanEnableMux));
                 OnPropertyChanged(nameof(FooterStatus));
                 OnPropertyChanged(nameof(InstallerNotice));
                 OnPropertyChanged(nameof(HasInstallerNotice));
@@ -260,6 +264,9 @@ public class MainViewModel : ViewModelBase
         private set
         {
             if (!SetProperty(ref _selectedMedia, value)) return;
+            OnPropertyChanged(nameof(HasNoPreview));
+            OnPropertyChanged(nameof(ShowAudioPlaceholder));
+            OnPropertyChanged(nameof(ShowSubtitlePlaceholder));
             OnPropertyChanged(nameof(CanExtract));
             OnPropertyChanged(nameof(HasMedia));
             OnPropertyChanged(nameof(HasNoMedia));
@@ -276,6 +283,7 @@ public class MainViewModel : ViewModelBase
             OnPropertyChanged(nameof(AudioSummaryDisplay));
             OnPropertyChanged(nameof(SubtitleSummaryDisplay));
             OnPropertyChanged(nameof(CanBulkSelect));
+            OnPropertyChanged(nameof(CanEnableMux));
             OnPropertyChanged(nameof(FooterStatus));
         }
     }
@@ -291,7 +299,7 @@ public class MainViewModel : ViewModelBase
     public bool IsAnalyzing
     {
         get => _isAnalyzing;
-        private set { if (SetProperty(ref _isAnalyzing, value)) { OnPropertyChanged(nameof(CanExtract)); OnPropertyChanged(nameof(CanClearFile)); OnPropertyChanged(nameof(HasSourceOrAnalysis)); OnPropertyChanged(nameof(FooterStatus)); } }
+        private set { if (SetProperty(ref _isAnalyzing, value)) { OnPropertyChanged(nameof(CanExtract)); OnPropertyChanged(nameof(CanClearFile)); OnPropertyChanged(nameof(HasSourceOrAnalysis)); OnPropertyChanged(nameof(CanEnableMux)); OnPropertyChanged(nameof(FooterStatus)); } }
     }
     public bool HasActiveAnalyses => _activeAnalyses > 0;
     public bool ShowDependencyOffer { get => _showDependencyOffer; private set => SetProperty(ref _showDependencyOffer, value); }
@@ -310,6 +318,7 @@ public class MainViewModel : ViewModelBase
             OnPropertyChanged(nameof(CanChooseFile));
             OnPropertyChanged(nameof(CanChooseFolder));
             OnPropertyChanged(nameof(CanBulkSelect));
+            OnPropertyChanged(nameof(CanEnableMux));
             OnPropertyChanged(nameof(CanClearFile));
             OnPropertyChanged(nameof(FooterStatus));
         }
@@ -317,15 +326,77 @@ public class MainViewModel : ViewModelBase
     public bool CanExtract => IsReady && !IsBusy && !IsAnalyzing && !IsExporting
         && _formatsValid && _outputDirectoryInputValid
         && SelectedMedia is not null && OutputDirectory is not null
-        && ExportTracks.Any(t => t.IsSelected) && ExportTracks.Where(t => t.IsSelected)
-            .All(t => t.IsAttachmentGroup || t.Plan is not null);
+        && ExportTracks.Any(t => t.IsSelected) && (MuxEnabled
+            ? _muxPlan is { IsValid: true }
+            : ExportTracks.Where(t => t.IsSelected)
+                .All(t => t.IsAttachmentGroup || t.Plan is not null));
     internal string? FfmpegExecutable => _ffmpegPath;
     internal DiagnosticLog Diagnostics => _tools.Diagnostics;
     private bool _preserveMetadata = true;
     private bool _groupByLanguage;
+    private bool _muxEnabled;
+    private bool _muxSelectionCompatible;
+    private MuxPlan? _muxPlan;
+    private bool _muxChecking;
     private bool _createSourceFolder;
     public bool PreserveMetadata { get => _preserveMetadata; set => SetProperty(ref _preserveMetadata, value); }
-    public bool GroupByLanguage { get => _groupByLanguage; set => SetProperty(ref _groupByLanguage, value); }
+    public bool GroupByLanguage
+    {
+        get => _groupByLanguage;
+        set { if (SetProperty(ref _groupByLanguage, value) && value) MuxEnabled = false; }
+    }
+    public bool MuxEnabled
+    {
+        get => _muxEnabled;
+        set
+        {
+            if (!SetProperty(ref _muxEnabled, value)) return;
+            if (value) GroupByLanguage = false;
+            OnPropertyChanged(nameof(CanExtract));
+            OnPropertyChanged(nameof(ExportActionLabel));
+            OnPropertyChanged(nameof(MuxPlanText));
+        }
+    }
+    public bool CanEnableMux => _muxSelectionCompatible && SelectedMedia is not null
+        && IsReady && !IsBusy && !IsAnalyzing && !IsExporting;
+    internal void SetMuxSelectionCompatible(bool compatible)
+    {
+        if (_muxSelectionCompatible != compatible)
+        {
+            _muxSelectionCompatible = compatible;
+            OnPropertyChanged(nameof(CanEnableMux));
+        }
+        if (!compatible) MuxEnabled = false;
+    }
+    internal MuxPlan? SelectedMuxPlan => _muxPlan;
+    internal void SetMuxChecking(bool checking)
+    {
+        _muxChecking = checking;
+        OnPropertyChanged(nameof(MuxPlanText));
+    }
+    internal void SetMuxPlan(MuxPlan? plan)
+    {
+        _muxPlan = plan;
+        OnPropertyChanged(nameof(MuxPlanText));
+        OnPropertyChanged(nameof(CanExtract));
+    }
+    public string MuxPlanText
+    {
+        get
+        {
+            if (!MuxEnabled) return "";
+            if (_muxChecking) return L.Get("MainMuxChecking");
+            var plan = _muxPlan;
+            if (plan is null) return L.Get("MainMuxNoContainer");
+            if (!plan.IsValid) return L.Get(plan.ErrorKey ?? "MainMuxUnavailable");
+            var copy = plan.Streams.Where(p => p.Copy).Select(p => $"#{p.Stream.Index}");
+            var encode = plan.Streams.Where(p => !p.Copy)
+                .Select(p => $"#{p.Stream.Index} → {p.OutputCodec ?? p.Encoder}");
+            return L.Format("MainMuxPlanContainer", plan.Format.Extension.ToUpperInvariant()) + " · " +
+                L.Format("MainMuxPlanCopy", string.Join(", ", copy.DefaultIfEmpty("—"))) + " · " +
+                L.Format("MainMuxPlanEncode", string.Join(", ", encode.DefaultIfEmpty("—")));
+        }
+    }
     public bool CreateSourceFolder { get => _createSourceFolder; set => SetProperty(ref _createSourceFolder, value); }
     private bool _formatsValid = true;
     internal void SetFormatsValid(bool value)
@@ -353,7 +424,7 @@ public class MainViewModel : ViewModelBase
     public string TrackHeading => L.Format("MainTracksHeading", ExportTracks.Count);
     public string SelectedCountDisplay => L.Format("MainSelectedCount",
         ExportTracks.Count(t => t.IsSelected && (t.IsAttachmentGroup || t.Plan is not null)));
-    public string ExportActionLabel => ExportTracks.Any(t => t.IsSelected && t.Conversion is not null)
+    public string ExportActionLabel => MuxEnabled || ExportTracks.Any(t => t.IsSelected && t.Conversion is not null)
         ? L.Get("MainProcess") : L.Get("MainExtract");
     public string FooterStatus => L.Get(IsBusy ? "MainCheckingDependencies" : !IsReady
         ? "MainNeedTools" : IsAnalyzing ? "MainAnalyzingFile"
@@ -395,11 +466,17 @@ public class MainViewModel : ViewModelBase
             OnPropertyChanged();
             OnPropertyChanged(nameof(HasPreview));
             OnPropertyChanged(nameof(HasNoPreview));
+            OnPropertyChanged(nameof(ShowAudioPlaceholder));
+            OnPropertyChanged(nameof(ShowSubtitlePlaceholder));
             old?.Dispose();
         }
     }
     public bool HasPreview => PreviewImage is not null;
-    public bool HasNoPreview => PreviewImage is null;
+    public bool ShowAudioPlaceholder => PreviewImage is null
+        && SelectedMedia is { } media && MediaPreview.PlaceholderFor(media) == "audio";
+    public bool ShowSubtitlePlaceholder => PreviewImage is null
+        && SelectedMedia is { } media && MediaPreview.PlaceholderFor(media) == "subtitles";
+    public bool HasNoPreview => PreviewImage is null && !ShowAudioPlaceholder && !ShowSubtitlePlaceholder;
     internal Func<MediaInfo, string, CancellationToken, Task<byte[]?>> PreviewLoader { get; set; }
     public string AudioSummaryDisplay => SelectedMedia is { } media
         ? FormatStreamSummary(media.Streams.Where(s => s.CodecType == "audio").ToArray()) : "—";
@@ -418,7 +495,9 @@ public class MainViewModel : ViewModelBase
         OnPropertyChanged(nameof(AnalysisStatus));
         OnPropertyChanged(nameof(TrackHeading));
         OnPropertyChanged(nameof(SelectedCountDisplay));
+        OnPropertyChanged(nameof(CanEnableMux));
         OnPropertyChanged(nameof(ExportActionLabel));
+        OnPropertyChanged(nameof(MuxPlanText));
         OnPropertyChanged(nameof(FooterStatus));
         OnPropertyChanged(nameof(MediaFileName));
         OnPropertyChanged(nameof(MediaFilePath));
@@ -438,6 +517,25 @@ public class MainViewModel : ViewModelBase
         set => SetGroupSelected("subtitle", value);
     }
     public string ExportStatus { get => _exportStatus; private set => SetProperty(ref _exportStatus, value); }
+    public string ExportElapsedOverall { get => _exportElapsedOverall; private set => SetProperty(ref _exportElapsedOverall, value); }
+    internal static string FormatQueueStatus(ExportUpdate update)
+    {
+        var label = update.GroupCount > 1
+            ? L.Format("MainQueueGroup", update.GroupCount)
+            : L.Format("MainQueueStream", Math.Clamp(update.Processed + 1, 1, Math.Max(1, update.Total)), update.Total);
+        return update.GroupCount == 1 && update.CurrentPercent is { } percent && double.IsFinite(percent)
+            && percent is >= 0 and <= 100
+            ? L.Format("MainQueueCurrentPercent", label, percent) : label;
+    }
+
+    private void RefreshExportElapsedOverall()
+    {
+        if (!IsExporting || _exportWatch is null) return;
+        var elapsed = TrackExporter.FormatElapsed(_exportWatch.Elapsed);
+        ExportElapsedOverall = ExportProgressIndeterminate
+            ? L.Format("MainQueueElapsed", elapsed)
+            : L.Format("MainQueueElapsedOverall", elapsed, ExportProgress);
+    }
     private void SetLocalizedExportStatus(Func<string> factory)
     {
         _exportStatusFactory = factory;
@@ -505,6 +603,7 @@ public class MainViewModel : ViewModelBase
         PreviewImage = null;
         IsAnalyzing = false;
         SelectedMedia = null;
+        SetMuxSelectionCompatible(false);
         StreamSummaries.Clear();
         ExportTracks.Clear();
         AttachmentFiles = [];
@@ -515,7 +614,7 @@ public class MainViewModel : ViewModelBase
         SetAnalysisStatus("MainNoFile");
         _fileSelectionMessageKey = null;
         FileSelectionMessage = "";
-        SetLocalizedExportStatus(() => L.Get("MainSelectFileAndTracks"));
+        SetLocalizedExportStatus(() => L.Get("MainSelectFile"));
         ExportProgress = 0;
         ExportProgressIndeterminate = false;
         OnPropertyChanged(nameof(TrackHeading));
@@ -568,12 +667,15 @@ public class MainViewModel : ViewModelBase
         _analysisOperation?.Cancel();
         _previewOperation?.Cancel();
         PreviewImage = null;
+        ExportProgress = 0;
+        ExportProgressIndeterminate = false;
         var generation = ++_analysisGeneration;
         using var operation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _analysisOperation = operation;
         if (_activeAnalyses++ == 0) _analysesIdle = new(TaskCreationOptions.RunContinuationsAsynchronously);
         IsAnalyzing = true;
         SelectedMedia = null;
+        SetMuxSelectionCompatible(false);
         StreamSummaries.Clear();
         ExportTracks.Clear();
         AttachmentFiles = [];
@@ -587,9 +689,11 @@ public class MainViewModel : ViewModelBase
         MediaSummary = "";
         _analysisFailed = false;
         SetAnalysisStatus("MainAnalyzing");
+        var analyzerCompleted = false;
         try
         {
             var media = await Task.Run(() => _analyzer.AnalyzeAsync(path, _ffprobePath, operation.Token), operation.Token);
+            analyzerCompleted = true;
             if (generation != _analysisGeneration) return;
             if (MatroskaAttachments.IsMatroska(media))
             {
@@ -621,7 +725,7 @@ public class MainViewModel : ViewModelBase
                 {
                     _tools.Diagnostics.Record(DiagnosticLevel.Warn, "Analysis",
                         $"Matroska attachment search failed after {attachmentWatch.Elapsed.TotalMilliseconds:0.0} ms: " +
-                        $"{ex.GetType().Name}; HResult={ex.HResult}.",
+                        $"{ex.GetType().Name}; HResult={ex.HResult}.", DiagnosticLog.SafeError(ex),
                         userMessageKey: "LogAttachmentsReadFailed");
                 }
             }
@@ -646,10 +750,13 @@ public class MainViewModel : ViewModelBase
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
                 {
                     _tools.Diagnostics.Record(DiagnosticLevel.Warn, "Analysis",
-                        $"Matroska Chapters search failed: {ex.GetType().Name}; HResult={ex.HResult}.");
+                        $"Matroska Chapters search failed: {ex.GetType().Name}; HResult={ex.HResult}.",
+                        DiagnosticLog.SafeError(ex));
                 }
             }
             SelectedMedia = media;
+            if (_outputDirectoryInputValid)
+                SetLocalizedExportStatus(() => L.Get(OutputDirectory is null ? "MainSelectFolderAndTracks" : "MainSelectTracks"));
             MediaSummary = FormatMediaSummary(media);
             foreach (var stream in media.Streams)
             {
@@ -673,6 +780,7 @@ public class MainViewModel : ViewModelBase
                         }
                         OnPropertyChanged(nameof(CanExtract));
                         OnPropertyChanged(nameof(SelectedCountDisplay));
+                        OnPropertyChanged(nameof(CanEnableMux));
                         OnPropertyChanged(nameof(AllTracksSelected));
                         OnPropertyChanged(nameof(ExportActionLabel));
                         OnPropertyChanged(nameof(SelectAllAudio));
@@ -701,6 +809,7 @@ public class MainViewModel : ViewModelBase
                     }
                     OnPropertyChanged(nameof(CanExtract));
                     OnPropertyChanged(nameof(SelectedCountDisplay));
+                    OnPropertyChanged(nameof(CanEnableMux));
                     OnPropertyChanged(nameof(AllTracksSelected));
                 };
                 ExportTracks.Add(group);
@@ -713,6 +822,7 @@ public class MainViewModel : ViewModelBase
                     if (args.PropertyName != nameof(ExportTrackViewModel.IsSelected)) return;
                     OnPropertyChanged(nameof(CanExtract));
                     OnPropertyChanged(nameof(SelectedCountDisplay));
+                    OnPropertyChanged(nameof(CanEnableMux));
                     OnPropertyChanged(nameof(AllTracksSelected));
                 };
                 ExportTracks.Add(group);
@@ -724,7 +834,8 @@ public class MainViewModel : ViewModelBase
             OnPropertyChanged(nameof(SelectAllAudio));
             OnPropertyChanged(nameof(SelectAllSubtitles));
             SetAnalysisStatus("MainDone");
-            if (_ffmpegPath is { } ffmpeg) _ = LoadPreviewAsync(media, ffmpeg, generation, cancellationToken);
+            if (MediaPreview.ShouldLoad(media) && _ffmpegPath is { } ffmpeg)
+                _ = LoadPreviewAsync(media, ffmpeg, generation, cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -736,14 +847,15 @@ public class MainViewModel : ViewModelBase
             {
                 _analysisFailed = true;
                 SetAnalysisStatus("InstallerError");
-                _tools.Diagnostics.Record(DiagnosticLevel.Error, "Analysis",
-                    "File may be damaged or unsupported.",
-                    $"{(Path.GetExtension(path).Equals(".csv", StringComparison.OrdinalIgnoreCase) ? "CSV" : "FFprobe")}: {ex.GetType().Name}; {ex.Message}",
-                    userMessageKey: "LogAnalysisFailed");
+                if (analyzerCompleted)
+                    _tools.Diagnostics.Record(DiagnosticLevel.Error, "Analysis",
+                        "Failed to display analyzed media.", DiagnosticLog.SafeError(ex),
+                        userMessageKey: "LogAnalysisFailed");
                 _fileSelectionMessageKey = ex switch
                 {
                     FileNotFoundException => "MainFileNotFound",
                     UnauthorizedAccessException => "MainFileAccessDenied",
+                    VobSubPairException => "MainVobSubPairInvalid",
                     InvalidDataException when Path.GetExtension(path).Equals(".csv", StringComparison.OrdinalIgnoreCase)
                         => "MainCsvInvalid",
                     Win32Exception => "MainProbeLaunchFailed",
@@ -840,7 +952,7 @@ public class MainViewModel : ViewModelBase
         // Keep the trailing separator for drive and filesystem roots.
         OutputDirectory = normalized;
         SetOutputDirectoryInputValid(true);
-        SetLocalizedExportStatus(() => L.Get("MainOutputFolderSelected"));
+        SetLocalizedExportStatus(() => L.Get(SelectedMedia is null ? "MainSelectFile" : "MainSelectTracks"));
     }
 
     public void SetOutputDirectoryInputValid(bool valid)
@@ -897,7 +1009,7 @@ public class MainViewModel : ViewModelBase
             ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
         OutputDirectory = normalized;
         SetOutputDirectoryInputValid(true);
-        SetLocalizedExportStatus(() => L.Get("MainOutputFolderSelected"));
+        SetLocalizedExportStatus(() => L.Get(SelectedMedia is null ? "MainSelectFile" : "MainSelectTracks"));
         if (changed)
             _tools.Diagnostics.Record(DiagnosticLevel.Info, "Output folder", "Output folder changed after write probe.",
                 userMessageKey: "LogOutputFolderChanged", userSuccess: true);
@@ -922,7 +1034,8 @@ public class MainViewModel : ViewModelBase
         }
         var media = SelectedMedia;
         var selected = onlyAttachments is null
-            ? ExportTracks.Where(t => t.IsSelected && !t.IsAttachmentGroup && t.Plan is not null).ToArray()
+            ? ExportTracks.Where(t => t.IsSelected && !t.IsAttachmentGroup
+                && (MuxEnabled || t.Plan is not null)).ToArray()
             : [];
         var chosenUids = onlyAttachments ?? AttachmentRow?.SelectedAttachmentUids ?? [];
         if (onlyAttachments is not null)
@@ -932,7 +1045,7 @@ public class MainViewModel : ViewModelBase
         var alreadySelected = selected.Where(t => t.Conversion is null && t.Stream.Index is { } index
                 && _attachmentStreamUids.ContainsKey(index))
             .Select(t => _attachmentStreamUids[t.Stream.Index!.Value]).ToHashSet();
-        var plans = selected.Select(t => t.Plan!).Concat(AttachmentFiles.Where(file => chosenUids.Contains(file.Uid)
+        var plans = selected.Where(t => t.Plan is not null).Select(t => t.Plan!).Concat(AttachmentFiles.Where(file => chosenUids.Contains(file.Uid)
                 && !alreadySelected.Contains(file.Uid)).Select((file, ordinal) =>
             new TrackExportPlan(new MediaStreamInfo(-1 - ordinal, "attachment_group", null, null,
                 null, null, null, null, null, null, null, null, null, null, null, null, null,
@@ -944,21 +1057,15 @@ public class MainViewModel : ViewModelBase
         _exportIdle = new(TaskCreationOptions.RunContinuationsAsynchronously);
         IsExporting = true;
         _exportWatch = Stopwatch.StartNew();
-        _exportActiveToken = new("MainPreparingExport");
-        _exportActiveMessage = _exportActiveToken.Resolve();
         _exportTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-        _exportTimer.Tick += (_, _) =>
-        {
-            if (IsExporting && _exportWatch is not null)
-                SetLocalizedExportStatus(() => L.Format("MainStatusWithTime",
-                    _exportActiveToken?.Resolve() ?? _exportActiveMessage, TrackExporter.FormatElapsed(_exportWatch.Elapsed)));
-        };
+        _exportTimer.Tick += (_, _) => RefreshExportElapsedOverall();
         _exportTimer.Start();
         foreach (var track in ExportTracks) track.SetLocked(true);
         foreach (var track in selected) track.SetResult(ExportState.Pending, L.Get("MainAwaitingExtraction"), null,
             new("MainAwaitingExtraction"));
         ExportProgress = 0;
         ExportProgressIndeterminate = true;
+        RefreshExportElapsedOverall();
         SetLocalizedExportStatus(() => L.Get("MainPreparingExport"));
         try
         {
@@ -968,38 +1075,34 @@ public class MainViewModel : ViewModelBase
                 var track = selected.FirstOrDefault(t => t.Stream.Index == update.StreamIndex)
                     ?? (update.StreamIndex < 0 ? AttachmentRow : null);
                 track?.SetResult(update.State, update.Message, null, update.LocalizedMessage);
-                ExportProgressIndeterminate = update.OverallPercent is null && ExportProgress == 0;
-                if (update.OverallPercent is { } value) ExportProgress = Math.Max(ExportProgress, value);
-                var ordinal = Math.Clamp(update.Processed + (update.State == ExportState.Completed ? 0 : 1), 1, update.Total);
-                _exportActiveMessage = update.State == ExportState.Running
-                    ? (update.StreamIndex < 0 ? update.Message : update.GroupCount > 1
-                        ? L.Format("MainGroupedProgress", update.Message, ordinal, Math.Min(update.Total, ordinal + update.GroupCount - 1), update.Total)
-                        : L.Format("MainStreamProgress", update.StreamIndex, ordinal, update.Total)) +
-                        (update.CurrentPercent is { } percent ? $" · {percent:0.#}%" : "")
-                    : update.Message;
-                _exportActiveToken = update.State == ExportState.Running
-                    ? update.StreamIndex < 0 ? update.LocalizedMessage
-                        : update.GroupCount > 1
-                        ? new LocalizedMessage("MainGroupedProgress", (object?)update.LocalizedMessage ?? update.Message,
-                            ordinal, Math.Min(update.Total, ordinal + update.GroupCount - 1), update.Total)
-                        : new LocalizedMessage("MainStreamProgress", update.StreamIndex, ordinal, update.Total)
-                    : update.LocalizedMessage;
-                if (update.State == ExportState.Running && update.CurrentPercent is { } currentPercent)
-                    _exportActiveToken = new("MainProgressWithPercent", _exportActiveToken!, currentPercent);
-                SetLocalizedExportStatus(() => L.Format("MainStatusWithTime",
-                    _exportActiveToken?.Resolve() ?? _exportActiveMessage, TrackExporter.FormatElapsed(_exportWatch!.Elapsed)));
+                var overall = update.OverallPercent ?? (update.Processed > 0 && update.Total > 0
+                    ? update.Processed * 100.0 / update.Total : (double?)null);
+                if (overall is { } value && double.IsFinite(value))
+                {
+                    ExportProgress = Math.Max(ExportProgress, Math.Clamp(value, 0, 99));
+                    ExportProgressIndeterminate = false;
+                }
+                if (update.State == ExportState.Running)
+                    SetLocalizedExportStatus(() => FormatQueueStatus(update));
+                RefreshExportElapsedOverall();
             });
-            var options = new ExportOptions(PreserveMetadata, GroupByLanguage, CreateSourceFolder);
-            var result = await Task.Run(() => _exporter.ExportAsync(media, plans, OutputDirectory,
-                _ffmpegPath, updates, operation.Token, options), operation.Token);
+            var options = new ExportOptions(PreserveMetadata, GroupByLanguage, CreateSourceFolder,
+                IndividualProgress: true);
+            var muxPlan = MuxEnabled && onlyAttachments is null ? _muxPlan : null;
+            var result = await Task.Run(() => muxPlan is { IsValid: true }
+                ? _exporter.ExportMuxAsync(media, muxPlan, OutputDirectory,
+                    _ffmpegPath, updates, operation.Token, options, FFprobeExecutablePath)
+                : _exporter.ExportAsync(media, plans, OutputDirectory,
+                    _ffmpegPath, updates, operation.Token, options, FFprobeExecutablePath), operation.Token);
             _exportOperation = null;
             foreach (var trackResult in result.Tracks)
                 (selected.FirstOrDefault(t => t.Stream.Index == trackResult.StreamIndex)
                     ?? (trackResult.StreamIndex < 0 ? AttachmentRow : null))
                     ?.SetResult(trackResult.State, trackResult.Message, trackResult.OutputPath, trackResult.LocalizedMessage);
             ExportProgressIndeterminate = false;
-            ExportProgress = result.Success ? 100 : Math.Max(ExportProgress, Math.Min(99,
-                result.Tracks.Count(t => t.State is ExportState.Completed or ExportState.Failed) * 100.0 / plans.Length));
+            ExportProgress = result.Success ? 100 : result.WasCancelled ? 0 : Math.Min(99, Math.Max(ExportProgress,
+                result.Tracks.Count(t => t.State is ExportState.Completed or ExportState.Failed) * 100.0 /
+                Math.Max(1, muxPlan is null ? plans.Length : selected.Length)));
             var completionKey = result.Success ? "MainExportComplete"
                 : result.WasCancelled ? "MainExportCancelled" : "MainExportPartial";
             var elapsed = TrackExporter.FormatElapsed(result.Elapsed);
@@ -1008,6 +1111,7 @@ public class MainViewModel : ViewModelBase
         catch (OperationCanceledException)
         {
             ExportProgressIndeterminate = false;
+            ExportProgress = 0;
             foreach (var track in selected) track.SetResult(ExportState.Cancelled, L.Get("MainExtractionCancelled"), null,
                 new("MainExtractionCancelled"));
             var elapsed = TrackExporter.FormatElapsed(_exportWatch!.Elapsed);
@@ -1016,6 +1120,7 @@ public class MainViewModel : ViewModelBase
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
         {
             ExportProgressIndeterminate = false;
+            ExportProgress = Math.Min(99, ExportProgress);
             foreach (var track in selected) track.SetResult(ExportState.Failed, L.Get("MainExportStartFailed"), null,
                 new("MainExportStartFailed"));
             var reasonKey = ex switch
@@ -1036,6 +1141,7 @@ public class MainViewModel : ViewModelBase
         catch (Exception ex)
         {
             ExportProgressIndeterminate = false;
+            ExportProgress = Math.Min(99, ExportProgress);
             foreach (var track in selected) track.SetResult(ExportState.Failed, L.Get("MainExtractionError"), null,
                 new("MainExtractionError"));
             var elapsed = TrackExporter.FormatElapsed(_exportWatch!.Elapsed);
@@ -1236,6 +1342,13 @@ public class MainViewModel : ViewModelBase
         }
         catch (OperationCanceledException)
         {
+            try { await RefreshAsync(CancellationToken.None); }
+            catch (Exception ex)
+            {
+                Diagnostics.Record(DiagnosticLevel.Warn, "FFmpeg installation",
+                    "Dependency status could not be refreshed after cancellation.",
+                    DiagnosticLog.SafeError(ex));
+            }
             SetLocalizedMessage("InstallerInstallCancelled");
             throw;
         }
@@ -1244,7 +1357,8 @@ public class MainViewModel : ViewModelBase
             InstallFailed = true;
             throw;
         }
-        finally { acceptProgress = false; _operation = null; IsBusy = false; }
+        finally { acceptProgress = false; _operation = null; Progress = 0;
+            ProgressIndeterminate = false; IsBusy = false; }
     }
 
     public async Task SetManualPathAsync(string name, string path, CancellationToken cancellationToken)
@@ -1481,11 +1595,13 @@ public sealed class ExportTrackViewModel : ViewModelBase
     private string? _resultPath;
     private ConversionSettings? _conversion;
     private TrackExportPlan? _copyOverride;
+    private TrackExportPlan? _ocrOverride;
     private string? _configurationError;
     public MediaStreamInfo Stream { get; }
     public string Caption { get; }
     public ExportDecision Decision { get; }
     public bool CanConvert => Stream.Index is >= 0 &&
+        !Stream.SubtitleTimingUnknown &&
         (Stream.VisualKind is VisualKind.Video or VisualKind.Image or VisualKind.Animation || Stream.CodecType == "audio"
             || Stream.CodecType == "subtitle" && Stream.SubtitleKind == SubtitleKind.Text);
     public bool IsSupported => Decision.Plan is not null;
@@ -1505,18 +1621,20 @@ public sealed class ExportTrackViewModel : ViewModelBase
         ? new TrackExportPlan(Stream, "xml", "chapters", false, ChapterData: _chapterData)
         : IsAttachmentGroup ? null : Conversion is { } options
         ? new(Stream, options.Format.Extension, options.Format.Muxer, false, false, options)
-        : _copyOverride ?? Decision.Plan;
-    public string ModeDisplay => L.Get(Conversion is null ? "MainModeExtract" : "MainModeConvert");
-    public string OutputPreview => Conversion is null
+        : _ocrOverride ?? _copyOverride ?? Decision.Plan;
+    public string ModeDisplay => L.Get(Conversion is null && _ocrOverride is null ? "MainModeExtract" : "MainModeConvert");
+    public string OutputPreview => Conversion is null && _ocrOverride is null
         ? Plan is { } copy ? L.Format("MainCopyPreview", copy.Extension) : L.Get("MainCopyFormatUnknown")
-        : $".{Conversion.Format.Extension} · {Conversion.Encoder.Name}";
+        : _ocrOverride is { } ocr ? $".{ocr.Extension} · OCR"
+            : $".{Conversion!.Format.Extension} · {Conversion.Encoder.Name}";
     public void SetConversion(ConversionSettings? options)
     {
         if (_locked || options is not null && (!CanConvert || options.Validate(Stream) is not null)) return;
-        var hadCopyOverride = _copyOverride is not null;
+        var hadCopyOverride = _copyOverride is not null || _ocrOverride is not null;
         var changed = hadCopyOverride || !Equals(_conversion, options);
         Conversion = options;
         _copyOverride = null;
+        _ocrOverride = null;
         _configurationError = null;
         if (changed) { State = ExportState.Pending; ResultPath = null; }
         if (hadCopyOverride)
@@ -1532,14 +1650,31 @@ public sealed class ExportTrackViewModel : ViewModelBase
     public void SetCopyOverride(TrackExportPlan? plan)
     {
         if (_locked || plan is not null && (plan.Stream != Stream || !plan.VerifiedCopy)) return;
-        var changed = _conversion is not null || _copyOverride != plan;
+        var changed = _conversion is not null || _copyOverride != plan || _ocrOverride is not null;
         Conversion = null;
         _copyOverride = plan;
+        _ocrOverride = null;
         _configurationError = null;
         if (changed) { State = ExportState.Pending; ResultPath = null; }
         SetLocalizedStatus(() => plan is null ? L.Get("MainNotSelected")
             : L.Format("MainCopyingTo", plan.Extension.ToUpperInvariant()));
         OnPropertyChanged(nameof(Plan));
+        OnPropertyChanged(nameof(OutputPreview));
+        OnPropertyChanged(nameof(StatusLabel));
+    }
+    internal void SetOcrPlan(TrackExportPlan? plan)
+    {
+        if (_locked || plan is not null && (plan.Stream != Stream || plan.Ocr is null)) return;
+        var changed = _ocrOverride != plan || _copyOverride is not null || _conversion is not null;
+        Conversion = null;
+        _copyOverride = null;
+        _ocrOverride = plan;
+        _configurationError = null;
+        if (changed) { State = ExportState.Pending; ResultPath = null; }
+        SetLocalizedStatus(() => plan is null ? L.Get("MainNotSelected")
+            : L.Format("MainConvertingTo", plan.Extension.ToUpperInvariant(), "OCR"));
+        OnPropertyChanged(nameof(Plan));
+        OnPropertyChanged(nameof(ModeDisplay));
         OnPropertyChanged(nameof(OutputPreview));
         OnPropertyChanged(nameof(StatusLabel));
     }
@@ -1568,7 +1703,8 @@ public sealed class ExportTrackViewModel : ViewModelBase
         VisualKind.Video => L.Get("MainTypeVideo"),
         _ => Stream.CodecType switch
         {
-            "audio" => L.Get("MainTypeAudio"), "subtitle" => L.Get("MainTypeSubtitle") + (IsForcedSubtitle(Stream) ? " (forced)" : ""), "attachment" => L.Get("MainTypeAttachment"),
+            "audio" => L.Get("MainTypeAudio"), "subtitle" => L.Get("MainTypeSubtitle")
+                + (IsForcedSubtitle(Stream) ? " (forced)" : ""), "attachment" => L.Get("MainTypeAttachment"),
             _ => L.Get("MainTypeOther")
         }
     };
@@ -1590,7 +1726,8 @@ public sealed class ExportTrackViewModel : ViewModelBase
             catch (CultureNotFoundException) { return language; }
         }
     }
-    public string CodecDisplay => IsChapterGroup ? "XML" : Stream.Codec is "csv_adr" ? "CSV (ADR)"
+    public string CodecDisplay => IsChapterGroup ? "XML" : Stream.Codec is "hdmv_pgs_subtitle" ? "PGS"
+        : Stream.Codec is "dvd_subtitle" ? "VobSub" : Stream.Codec is "csv_adr" ? "CSV (ADR)"
         : Stream.Codec is "csv_universal" ? "CSV" : Stream.Codec is null ? "—" : Stream.Profile is null
         ? Stream.Codec.ToUpperInvariant() : $"{Stream.Codec.ToUpperInvariant()} ({Stream.Profile})";
     public string BitRateDisplay => MainViewModel.FormatBitRate(Stream.BitRate);

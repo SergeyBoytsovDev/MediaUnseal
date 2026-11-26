@@ -105,8 +105,8 @@ public static class MatroskaAttachments
         if (!input.CanRead || !input.CanSeek) throw new InvalidDataException("Matroska requires a seekable local file.");
         var reader = new Reader(input, token, stats ?? new NavigationStats(), false, true, chapterMode: true);
         try { await reader.ReadAsync().ConfigureAwait(false); return new(reader.Chapters); }
-        catch (EndOfStreamException ex) { throw new InvalidDataException("Truncated EBML/Matroska structure.", ex); }
-        catch (DecoderFallbackException ex) { throw new InvalidDataException("Corrupt Matroska chapter text.", ex); }
+        catch (EndOfStreamException ex) { throw new InvalidDataException($"Truncated EBML/Matroska structure at offset 0x{input.Position:X}.", ex); }
+        catch (DecoderFallbackException ex) { throw new InvalidDataException($"Corrupt Matroska chapter text at offset 0x{input.Position:X}.", ex); }
     }
 
     internal static bool IsMatroska(MediaInfo media) =>
@@ -342,8 +342,8 @@ public static class MatroskaAttachments
     {
         if (!input.CanRead || !input.CanSeek) throw new InvalidDataException("Matroska requires a seekable local file.");
         try { return await new Reader(input, cancellationToken, stats ?? new NavigationStats(), false, false).ReadAsync().ConfigureAwait(false); }
-        catch (EndOfStreamException ex) { throw new InvalidDataException("Truncated EBML/Matroska structure.", ex); }
-        catch (DecoderFallbackException ex) { throw new InvalidDataException("Corrupt Matroska metadata string.", ex); }
+        catch (EndOfStreamException ex) { throw new InvalidDataException($"Truncated EBML/Matroska structure at offset 0x{input.Position:X}.", ex); }
+        catch (DecoderFallbackException ex) { throw new InvalidDataException($"Corrupt Matroska metadata string at offset 0x{input.Position:X}.", ex); }
     }
 
     // The export path checks the indexed attachment against FFprobe's stream list.
@@ -353,8 +353,8 @@ public static class MatroskaAttachments
         CancellationToken cancellationToken, NavigationStats stats)
     {
         try { return await new Reader(input, cancellationToken, stats, false, true).ReadAsync().ConfigureAwait(false); }
-        catch (EndOfStreamException ex) { throw new InvalidDataException("Truncated EBML/Matroska structure.", ex); }
-        catch (DecoderFallbackException ex) { throw new InvalidDataException("Corrupt Matroska metadata string.", ex); }
+        catch (EndOfStreamException ex) { throw new InvalidDataException($"Truncated EBML/Matroska structure at offset 0x{input.Position:X}.", ex); }
+        catch (DecoderFallbackException ex) { throw new InvalidDataException($"Corrupt Matroska metadata string at offset 0x{input.Position:X}.", ex); }
     }
 
     internal static async Task<DiscoveryResult> DiscoverStandardAsync(Stream input,
@@ -368,8 +368,8 @@ public static class MatroskaAttachments
                 .ReadAsync().ConfigureAwait(false);
             return new(entries, navigation.DiscoveryStatus);
         }
-        catch (EndOfStreamException ex) { throw new InvalidDataException("Truncated EBML/Matroska structure.", ex); }
-        catch (DecoderFallbackException ex) { throw new InvalidDataException("Corrupt Matroska metadata string.", ex); }
+        catch (EndOfStreamException ex) { throw new InvalidDataException($"Truncated EBML/Matroska structure at offset 0x{input.Position:X}.", ex); }
+        catch (DecoderFallbackException ex) { throw new InvalidDataException($"Corrupt Matroska metadata string at offset 0x{input.Position:X}.", ex); }
     }
 
     // Preview only needs a confirmed image attachment. It never creates an exported file;
@@ -380,8 +380,8 @@ public static class MatroskaAttachments
         if (!input.CanRead || !input.CanSeek)
             throw new InvalidDataException("Matroska requires a seekable local file.");
         try { return await new Reader(input, cancellationToken, stats ?? new NavigationStats(), true, false).ReadAsync().ConfigureAwait(false); }
-        catch (EndOfStreamException ex) { throw new InvalidDataException("Truncated EBML/Matroska structure.", ex); }
-        catch (DecoderFallbackException ex) { throw new InvalidDataException("Corrupt Matroska metadata string.", ex); }
+        catch (EndOfStreamException ex) { throw new InvalidDataException($"Truncated EBML/Matroska structure at offset 0x{input.Position:X}.", ex); }
+        catch (DecoderFallbackException ex) { throw new InvalidDataException($"Corrupt Matroska metadata string at offset 0x{input.Position:X}.", ex); }
     }
 
     private sealed class Reader(Stream input, CancellationToken cancellationToken, NavigationStats stats,
@@ -851,7 +851,7 @@ public static class MatroskaAttachments
             }
         }
 
-        private static int VintWidth(byte first)
+        private int VintWidth(byte first)
         {
             var width = 1;
             var marker = 0x80;
@@ -910,11 +910,12 @@ public static class MatroskaAttachments
         }
         private static bool IsLevelOne(uint id) => id is 0x114D9B74 or 0x1549A966 or 0x1654AE6B
             or Cluster or 0x1C53BB6B or Attachments or 0x1043A770 or 0x1254C367;
-        private static void RequireSize(Element element)
+        private void RequireSize(Element element)
         {
             if (element.End is null) throw Bad("Indeterminate size is allowed only for Segment and Cluster");
             if (element.Id == 0xBF && element.End - element.Data != 4) throw Bad("Invalid CRC-32 size");
         }
-        private static InvalidDataException Bad(string message) => new(message + ". Fast Matroska extraction was stopped.");
+        private InvalidDataException Bad(string message) =>
+            new(message + $" at EBML offset 0x{input.Position:X}. Fast Matroska extraction was stopped.");
     }
 }

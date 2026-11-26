@@ -9,6 +9,10 @@ public enum VisualKind { Unknown, Video, Image, Animation }
 
 public sealed record AttachmentFile(ulong Uid, string Name, string Mime, long Size, string? Description);
 
+public sealed record DvdIfoDependency(string? Path, string? PrivateData, string? UnavailableKey,
+    int TitleSet, int Part, IReadOnlyList<int> RelatedParts, int SubtitleStreamCount,
+    string? Detail = null);
+
 public sealed record MediaStreamInfo(
     int? Index, string? CodecType, string? Codec, string? Profile,
     int? Width, int? Height, double? FrameRate, long? BitRate, string? PixelFormat,
@@ -17,13 +21,18 @@ public sealed record MediaStreamInfo(
     IReadOnlyDictionary<string, string> Tags, IReadOnlyDictionary<string, int?> Disposition,
     long? FrameCount, VisualKind VisualKind, string? ImageFormat, bool IsCoverArt,
     IReadOnlyDictionary<string, string>? ExtraProperties = null, int? HeifGroupIndex = null,
-    ulong? AttachmentUid = null);
+    ulong? AttachmentUid = null)
+{
+    // Standalone MicroDVD stores frame numbers without an FPS value; copying remains safe.
+    public bool SubtitleTimingUnknown { get; init; }
+}
 
 public sealed record MediaInfo(
     string Name, string FullPath, long Size, string? Container,
     TimeSpan? Duration, long? BitRate, IReadOnlyDictionary<string, string> Tags,
     IReadOnlyList<MediaStreamInfo> Streams)
 {
+    public DvdIfoDependency? DvdIfo { get; init; }
     public int VideoCount => Streams.Count(s => s.VisualKind == VisualKind.Video);
     public int ImageCount => Streams.Count(s => s.VisualKind == VisualKind.Image);
     public int AnimationCount => Streams.Count(s => s.VisualKind == VisualKind.Animation);

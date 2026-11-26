@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -21,6 +22,7 @@ public sealed class DiagnosticLog
     private readonly string _directory;
     private readonly object _gate = new();
     private string? _lastCleanupFailure;
+    private string? _lastWriteFailure;
     public event Action<DiagnosticEvent>? EventRecorded;
 
     public DiagnosticLog(string directory) => _directory = directory;
@@ -29,7 +31,7 @@ public sealed class DiagnosticLog
         string? userMessageKey = null, object?[]? userMessageArgs = null, bool userSuccess = false)
     {
         var entry = new DiagnosticEvent(DateTimeOffset.Now, level, RedactSensitive(Clean(operation)),
-            RedactSensitive(Clean(message)), details is null ? null : RedactSensitive(Clean(details)),
+            RedactSensitive(Clean(message)), details is null ? null : RedactSensitive(Clean(details, 16384)),
             userMessageKey, userMessageArgs, userSuccess);
         try { EventRecorded?.Invoke(entry); }
         catch (Exception ex) when (ex is not OutOfMemoryException) { }
@@ -39,6 +41,8 @@ public sealed class DiagnosticLog
             lock (_gate)
             {
                 Directory.CreateDirectory(_directory);
+                if (OperatingSystem.IsLinux())
+                    File.SetUnixFileMode(_directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
                 Prune();
                 var current = Path.Combine(_directory, CurrentFile);
                 if (File.Exists(current) && new FileInfo(current).Length + Encoding.UTF8.GetByteCount(line) > MaxFileBytes)
@@ -48,10 +52,23 @@ public sealed class DiagnosticLog
                     File.Move(current, previous);
                 }
                 File.AppendAllText(current, line, Encoding.UTF8);
+                if (OperatingSystem.IsLinux())
+                    File.SetUnixFileMode(current, UnixFileMode.UserRead | UnixFileMode.UserWrite);
                 Prune();
+                _lastWriteFailure = null;
             }
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            var signature = ex.GetType().Name + ex.HResult;
+            if (_lastWriteFailure == signature) return;
+            _lastWriteFailure = signature;
+            var messageForFallback = $"Diagnostic log write failed: {ex.GetType().Name}; HResult 0x{ex.HResult:X8}.";
+            Trace.WriteLine(messageForFallback);
+            try { Console.Error.WriteLine(messageForFallback); } catch (IOException) { }
+            try { EventRecorded?.Invoke(new DiagnosticEvent(DateTimeOffset.Now, DiagnosticLevel.Warn,
+                "Diagnostic storage", messageForFallback)); } catch (Exception) { }
+        }
     }
 
     public string ExportReport()
@@ -154,13 +171,16 @@ public sealed class DiagnosticLog
         $"{entry.Time:yyyy-MM-dd HH:mm:ss zzz} [{entry.Level.ToString().ToUpperInvariant()}] [{entry.Operation}] {entry.Message}" +
         (entry.Details is null ? "" : $" | {entry.Details}");
 
-    private static string Clean(string value)
+    private static string Clean(string value, int limit = 1000)
     {
         value = value.Replace('\r', ' ').Replace('\n', ' ');
-        return value.Length > 1000
-            ? value[..700] + $"…[{value.Length - 950} characters omitted]…" + value[^250..]
+        return value.Length > limit
+            ? value[..(limit / 4)] + $"…[{value.Length - limit} characters omitted]…" + value[^(limit * 3 / 4)..]
             : value;
     }
+
+    internal static string SafeError(Exception ex) =>
+        $"{ex.GetType().Name}; HResult 0x{ex.HResult:X8}; {RedactSensitive(Clean(ex.Message))}";
 
     internal static string RedactSensitive(string text)
     {
@@ -194,4 +214,26 @@ public sealed class DiagnosticLog
             match => Mask(match.Value.TrimEnd()), RegexOptions.Multiline);
         return text;
     }
+}
+
+internal sealed class ProcessErrorCapture
+{
+    private const int Limit = 12000;
+    private readonly StringBuilder _text = new();
+    private int _omitted;
+
+    public void Add(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line)) return;
+        var normalized = line.Replace('\r', ' ').Replace('\n', ' ');
+        if (normalized.Length > Limit) normalized = normalized[^Limit..];
+        _text.AppendLine(normalized);
+        if (_text.Length <= Limit) return;
+        var remove = _text.Length - Limit;
+        _text.Remove(0, remove);
+        _omitted += remove;
+    }
+
+    public string? Text => _text.Length == 0 ? null :
+        (_omitted == 0 ? "" : $"[{_omitted} earlier characters omitted] ") + _text.ToString();
 }

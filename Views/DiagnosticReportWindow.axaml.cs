@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
@@ -23,6 +25,8 @@ public partial class DiagnosticReportWindow : Window
     public DiagnosticReportWindow()
     {
         AvaloniaXamlLoader.Load(this);
+        this.FindControl<ListBox>("Entries")!.AddHandler(InputElement.PointerPressedEvent,
+            Entries_PointerPressed, RoutingStrategies.Tunnel, handledEventsToo: true);
         UiScale.Attach(this);
         LocalizationManager.Active.PropertyChanged += Localization_PropertyChanged;
         Opened += (_, _) => Dispatcher.UIThread.Post(ScrollToLatest, DispatcherPriority.Loaded);
@@ -60,6 +64,49 @@ public partial class DiagnosticReportWindow : Window
             _rows.Count(row => row.IsError));
     }
 
+    private void Entries_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed) return;
+        var item = (e.Source as Avalonia.Visual)?.GetVisualAncestors()
+            .OfType<ListBoxItem>().FirstOrDefault();
+        if (item?.DataContext is not DiagnosticReportRow { IsEntry: true } row) return;
+        var entries = this.FindControl<ListBox>("Entries")!;
+        if (entries.SelectedItems?.Contains(row) == true) return;
+        entries.SelectedItems?.Clear();
+        entries.SelectedItems?.Add(row);
+    }
+
+    private void Entries_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        var entries = this.FindControl<ListBox>("Entries")!;
+        var copy = entries.ContextMenu?.Items.OfType<MenuItem>().FirstOrDefault();
+        if (copy is not null)
+            copy.IsEnabled = entries.SelectedItems?.OfType<DiagnosticReportRow>().Any(row => row.IsEntry) == true;
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (e.Key == Key.C && e.KeyModifiers.HasFlag(KeyModifiers.Control)
+            && e.Source is not TextBox
+            && (e.Source as Avalonia.Visual)?.GetVisualAncestors().OfType<TextBox>().Any() != true)
+        {
+            var entries = this.FindControl<ListBox>("Entries")!;
+            if (entries.SelectedItems?.OfType<DiagnosticReportRow>().Any(row => row.IsEntry) == true)
+            { e.Handled = true; _ = CopyEntriesAsync(); return; }
+        }
+        base.OnKeyDown(e);
+    }
+
+    private async void CopyEntries_Click(object? sender, RoutedEventArgs e) => await CopyEntriesAsync();
+
+    private async Task CopyEntriesAsync()
+    {
+        var entries = this.FindControl<ListBox>("Entries")!;
+        var selected = entries.SelectedItems?.OfType<DiagnosticReportRow>() ?? [];
+        var text = DiagnosticReportPresentation.CopySelected(_rows, selected);
+        if (text.Length > 0 && Clipboard is not null) await Clipboard.SetTextAsync(text);
+    }
+
     private async void Clear_Click(object? sender, RoutedEventArgs e)
     {
         if (_log is null) return;
@@ -89,11 +136,19 @@ public partial class DiagnosticReportWindow : Window
             await using var stream = await file.OpenWriteAsync();
             stream.SetLength(0);
             await using var writer = new StreamWriter(stream);
-            foreach (var line in DiagnosticReportPresentation.TextLines(_rows))
+            var currentRows = _log is null ? _rows : await Task.Run(() => RowsForExport(_log));
+            foreach (var line in DiagnosticReportPresentation.TextLines(currentRows))
                 await writer.WriteLineAsync(line);
             Close();
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException)
-        { _reportError(LocalizationManager.Active.Get("DiagnosticPreviewSaveFailed")); }
+        {
+            _log?.Record(DiagnosticLevel.Error, "Diagnostic report",
+                "Report save failed.", DiagnosticLog.SafeError(ex));
+            _reportError(LocalizationManager.Active.Get("DiagnosticPreviewSaveFailed"));
+        }
     }
+
+    internal static IReadOnlyList<DiagnosticReportRow> RowsForExport(DiagnosticLog log) =>
+        DiagnosticReportPresentation.Parse(log.ReadReportLines());
 }

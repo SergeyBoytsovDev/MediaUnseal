@@ -34,7 +34,7 @@
     <value>セクション</value>
   </data>
   <data name="SettingsInstaller" xml:space="preserve">
-    <value>FFmpeg インストーラー</value>
+    <value>インストーラー</value>
   </data>
   <data name="SettingsAppearance" xml:space="preserve">
     <value>外観</value>
@@ -581,7 +581,7 @@
     <value>フォルダーを開く</value>
   </data>
   <data name="MainChooseFile" xml:space="preserve">
-    <value>ファイルを選択</value>
+    <value>ファイルを挿入</value>
   </data>
   <data name="MainSubtitles" xml:space="preserve">
     <value>字幕：</value>
@@ -656,7 +656,7 @@
     <value>抽出</value>
   </data>
   <data name="MainCheckingDependencies" xml:space="preserve">
-    <value>依存関係を確認しています…</value>
+    <value>インストーラーを確認しています…</value>
   </data>
   <data name="MainNeedTools" xml:space="preserve">
     <value>FFmpeg と FFprobe が必要です</value>
@@ -704,7 +704,7 @@
     <value>ファイルまたは FFprobe へのアクセスが拒否されました。</value>
   </data>
   <data name="MainProbeLaunchFailed" xml:space="preserve">
-    <value>FFprobe を起動できませんでした。依存関係を再確認してください。</value>
+    <value>FFprobe を起動できませんでした。インストーラーを再確認してください。</value>
   </data>
   <data name="MainFileReadFailed" xml:space="preserve">
     <value>ファイルを読み取れませんでした。アクセス権を確認して再試行してください。</value>
@@ -1131,7 +1131,7 @@
     <value>ファイルを書き込めませんでした。空き容量とアクセス権を確認してください。</value>
   </data>
   <data name="MainResultFfmpegLaunchFailed" xml:space="preserve">
-    <value>FFmpeg を起動できませんでした。依存関係を再確認してください。</value>
+    <value>FFmpeg を起動できませんでした。インストーラーを再確認してください。</value>
   </data>
   <data name="MainResultUnexpectedFailure" xml:space="preserve">
     <value>ストリームを抽出できませんでした。経過時間：{0}。ログを確認して再試行してください。</value>
@@ -1746,6 +1746,89 @@
   <data name="MainCsvInvalid" xml:space="preserve"><value>CSV 字幕ファイルの構造またはタイムコードが無効です。</value></data>
   <data name="ConversionCsvInputTiming" xml:space="preserve"><value>入力 ADR タイムコード</value></data>
   <data name="ConversionCsvOutputTiming" xml:space="preserve"><value>出力 ADR タイムコード</value></data>
+  <data name="MainMuxStreams" xml:space="preserve"><value>ストリームを1つのファイルに結合</value></data>
+  <data name="MainMuxContainer" xml:space="preserve"><value>出力コンテナー</value></data>
+  <data name="MainMuxAutoCodec" xml:space="preserve"><value>自動（可能ならコピー）</value></data>
+  <data name="MainMuxNoContainer" xml:space="preserve"><value>FFmpeg形式を利用できません。</value></data>
+  <data name="MainMuxUnavailable" xml:space="preserve"><value>選択したストリームではこのコンテナーを利用できません。</value></data>
+  <data name="MainMuxSelectStreams" xml:space="preserve"><value>動画、音声、字幕のストリームを1つ以上選択してください。</value></data>
+  <data name="MainMuxUnsupportedStream" xml:space="preserve"><value>通常の動画、音声、字幕ストリームのみ結合できます。</value></data>
+  <data name="MainMuxGraphicSubtitle" xml:space="preserve"><value>画像字幕はこのコンテナーにコピーまたは変換できません。</value></data>
+  <data name="MainMuxNoEncoder" xml:space="preserve"><value>インストール済みのFFmpegに適切なエンコーダーがありません。</value></data>
+  <data name="MainMuxPlanContainer" xml:space="preserve"><value>コンテナー: {0}</value></data>
+  <data name="MainMuxPlanCopy" xml:space="preserve"><value>コピー: {0}</value></data>
+  <data name="MainMuxPlanEncode" xml:space="preserve"><value>変換: {0}</value></data>
+  <data name="MainMuxChecking" xml:space="preserve"><value>FFmpegの互換性を確認中…</value></data>
+  <data name="MainMuxRejected" xml:space="preserve"><value>FFmpegは選択したコンテナーでこれらのストリームを結合できません。</value></data>
+  <data name="MainMuxProbeFailed" xml:space="preserve"><value>FFmpegでこのコンテナーを確認できませんでした。</value></data>
+  <data name="LogAmfH264TenBitUnsupported" xml:space="preserve"><value>AMD H.264 エンコーダーは 10 ビット入力に対応していません。対応するエンコーダーを選択してください。</value></data>
+  <data name="LogAudioChannelLayoutUnsupported" xml:space="preserve"><value>エンコーダーはこの音声チャンネル配置に対応していません。対応する音声エンコーダーを選ぶか、チャンネルを調整してください。</value></data>
+  <data name="LogPixelFormatUnsupported" xml:space="preserve"><value>エンコーダーはこのピクセル形式に対応していません。対応するエンコーダーを選択してください。</value></data>
+  <data name="LogCodecUnsupported" xml:space="preserve"><value>選択したコーデックまたはエンコーダーは利用できません。別の形式またはエンコーダーを選択してください。</value></data>
+  <data name="LogMediaSourceInvalid" xml:space="preserve"><value>元のファイルが破損しているか、対応していません。ファイルを確認して再試行してください。</value></data>
+  <data name="LogMediaProcessingUnknown" xml:space="preserve"><value>ファイルを処理できませんでした。原因は診断レポートを確認してください。</value></data>
+  <data name="LogMuxValidationFailed" xml:space="preserve"><value>出力ファイルを検証できませんでした。原因は診断レポートを確認してください。</value></data>
+  <data name="LogProbeAnalysisFailed" xml:space="preserve"><value>FFprobe でファイルを解析できませんでした。ファイルと診断レポートを確認してください。</value></data>
+  <data name="LogMuxTimeout" xml:space="preserve"><value>ストリームの結合がタイムアウトしました。再試行するか、別のエンコーダーを選択してください。</value></data>
+  <data name="MainVobSubPairInvalid" xml:space="preserve"><value>VobSub の .idx + .sub ペアが見つからないか破損しています。両方のファイルを同じフォルダーに置いて再試行してください。</value></data>
+  <data name="MainVobSubExportFailed" xml:space="preserve"><value>完全な VobSub .idx + .sub ペアを作成できませんでした。詳細は診断レポートをご確認ください。</value></data>
+  <data name="MainVobSubMetadataMissing" xml:space="preserve"><value>VobSub を IDX + SUB のペアとして書き出せません。元ファイルにパレットまたは画面サイズの情報がありません。</value></data>
+  <data name="MainDvdIfoMissing" xml:space="preserve"><value>VobSub の書き出しには、同じフォルダーに対応する VTS IFO ファイルが必要です。</value></data>
+  <data name="MainDvdIfoInvalid" xml:space="preserve"><value>VobSub を書き出せません。対応する DVD IFO が破損しているか読み取れません。</value></data>
+  <data name="MainDvdIfoMismatch" xml:space="preserve"><value>VobSub を書き出せません。DVD IFO が VOB の映像または字幕トラックと一致しません。</value></data>
+  <data name="MainDvdIfoAmbiguousPalette" xml:space="preserve"><value>VobSub を書き出せません。DVD のプログラムチェーンで異なるパレットが使われており、この VOB 部分に対して正しい IDX パレットを一意に決定できません。</value></data>
+  <data name="LogOcrDependencyUnavailable" xml:space="preserve"><value>Tesseract OCR または言語モデルを利用できません。「設定 → インストーラー」を開いてください。</value></data>
+  <data name="MainOcrUnavailable" xml:space="preserve"><value>OCR テキストの書き出しは利用できません。「設定 → インストーラー」で Tesseract と言語モデルを確認してください。</value></data>
+  <data name="MainOcrLanguageRequired" xml:space="preserve"><value>字幕設定で OCR の言語を選択してください。</value></data>
+  <data name="MainOcrLanguageUnsupported" xml:space="preserve"><value>トラックの言語は OCR に対応していません。対応言語を選択してください。</value></data>
+  <data name="MainOcrModelMissing" xml:space="preserve"><value>選択した Fast/Best OCR モデルはこの言語で利用できません。</value></data>
+  <data name="OcrLanguage" xml:space="preserve"><value>OCR の言語</value></data>
+  <data name="OcrProfile" xml:space="preserve"><value>OCR プロファイル</value></data>
+  <data name="OcrFast" xml:space="preserve"><value>高速</value></data>
+  <data name="OcrBest" xml:space="preserve"><value>高精度</value></data>
+  <data name="OcrLanguageRequired" xml:space="preserve"><value>テキストを書き出す前に OCR の言語を選択してください。</value></data>
+  <data name="OcrModelMissing" xml:space="preserve"><value>選択した OCR モデルはこの言語にインストールされていません。</value></data>
+  <data name="OcrNoStyling" xml:space="preserve"><value>OCR はテキストと時刻を保持しますが、装飾や位置は保持しません。</value></data>
+  <data name="LogOcrCompleted" xml:space="preserve"><value>OCR テキストの書き出しが完了しました：{0} 件。</value></data>
+  <data name="LogOcrFailed" xml:space="preserve"><value>OCR テキストの書き出しに失敗しました。診断レポートを確認してください。</value></data>
+  <data name="SettingsComponentsTitle" xml:space="preserve"><value>コンポーネントのインストール</value></data>
+  <data name="InstallerTesseractRole" xml:space="preserve"><value>画像字幕の認識</value></data>
+  <data name="InstallerOcrModelsMissing" xml:space="preserve"><value>言語モデルがありません</value></data>
+  <data name="InstallerSelectTesseract" xml:space="preserve"><value>Tesseract のパスを指定</value></data>
+  <data name="InstallerOcrInvalidPath" xml:space="preserve"><value>選択したファイルは Tesseract 5.x ではありません。</value></data>
+  <data name="InstallerOcrPathSaveFailed" xml:space="preserve"><value>Tesseract のパスを保存できませんでした。</value></data>
+  <data name="InstallerOcrAvailable" xml:space="preserve"><value>利用可能: Tesseract {0}、ダウンロード {1} MB</value></data>
+  <data name="InstallerOcrOffline" xml:space="preserve"><value>オフライン: 内蔵情報 Tesseract {0}、{1} MB</value></data>
+  <data name="InstallerOcrInstall" xml:space="preserve"><value>Tesseract をインストール</value></data>
+  <data name="InstallerOcrUpdate" xml:space="preserve"><value>更新</value></data>
+  <data name="InstallerOcrRepair" xml:space="preserve"><value>Tesseract を修復</value></data>
+  <data name="InstallerOcrDownloading" xml:space="preserve"><value>Tesseract をダウンロード中…</value></data>
+  <data name="InstallerOcrInstalled" xml:space="preserve"><value>Tesseract OCR をインストールしました。</value></data>
+  <data name="InstallerOcrInstallFailed" xml:space="preserve"><value>Tesseract OCR をインストールできません。以前の版は保持されました。</value></data>
+  <data name="InstallerRequirementWithOcr" xml:space="preserve"><value>FFmpeg と FFprobe が必要です。画像字幕用の Tesseract OCR は任意です。</value></data>
+  <data name="InstallerMediaReady" xml:space="preserve"><value>FFmpeg と FFprobe は使用できます。</value></data>
+  <data name="InstallerOcrAvailableStatus" xml:space="preserve"><value>利用可能: Tesseract {0}</value></data>
+  <data name="InstallerOcrOfflineStatus" xml:space="preserve"><value>未インストール・オフライン（既知の版: {0}）</value></data>
+  <data name="InstallerOcrOfflineUnknown" xml:space="preserve"><value>Tesseract は未インストールです。更新を確認できません。</value></data>
+  <data name="InstallerOcrActionSize" xml:space="preserve"><value>{0}（{1} MB）</value></data>
+  <data name="InstallerOcrUpdateStatus" xml:space="preserve"><value>インストール済み: {0}、利用可能: {1}</value></data>
+  <data name="InstallerOcrNetworkError" xml:space="preserve"><value>Tesseract のダウンロード中に接続エラーが発生しました。ネットワークを確認して再試行してください。</value></data>
+  <data name="InstallerOcrInterrupted" xml:space="preserve"><value>Tesseract のダウンロードが中断されました。再試行してください。</value></data>
+  <data name="InstallerOcrRetry" xml:space="preserve"><value>接続が中断されました。ダウンロードを再試行します…</value></data>
+  <data name="InstallerOcrCancelled" xml:space="preserve"><value>Tesseract のインストールを中止しました。</value></data>
+  <data name="MainOcrTimingUnavailable" xml:space="preserve"><value>画像字幕の終了時刻を確認できません。認識前にテキストの書き出しを停止しました。</value></data>
+  <data name="LogOcrTimingUnavailable" xml:space="preserve"><value>画像字幕の時刻情報が不完全です。詳細は診断レポートを確認してください。</value></data>
+  <data name="LogOcrTimingFallback" xml:space="preserve"><value>一部の終了時刻は近くのイベントから計算されました。詳細は診断レポートを確認してください。</value></data>
+  <data name="LogOcrPartialCompleted" xml:space="preserve"><value>OCR 書き出しは一部を除いて完了しました。元の字幕 {0} 件、保存 {1} 件、スキップ {2} 件。詳細は診断レポートを参照してください。</value></data>
+  <data name="DiagnosticPreviewCopy" xml:space="preserve"><value>コピー</value></data>
+  <data name="InstallerOcrDownloadSize" xml:space="preserve"><value>（{0} MB）</value></data>
+  <data name="MainSelectTracks" xml:space="preserve"><value>トラックを選択してください。</value></data>
+  <data name="MainQueueStream" xml:space="preserve"><value>トラック {0}/{1}</value></data>
+  <data name="MainQueueGroup" xml:space="preserve"><value>{0} トラックを処理中</value></data>
+  <data name="MainQueueCurrentPercent" xml:space="preserve"><value>{0} — {1:0}%</value></data>
+  <data name="MainQueueElapsed" xml:space="preserve"><value>時間: {0}</value></data>
+  <data name="MainQueueElapsedOverall" xml:space="preserve"><value>時間: {0}  全体の進行状況: {1:0}%</value></data>
+  <data name="MainSelectFile" xml:space="preserve"><value>ファイルを選択してください。</value></data>
 </root>
 
 

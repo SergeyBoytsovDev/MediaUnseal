@@ -24,8 +24,12 @@ using MediaUnseal.ViewModels;
 namespace MediaUnseal.Views;
 
 internal sealed record FormatChoice(string Display, ConversionFormat? Format = null,
-    ConversionSettings? Settings = null, bool SeparatorBefore = false, bool CopyRequested = false)
+    ConversionSettings? Settings = null, bool SeparatorBefore = false, bool CopyRequested = false,
+    bool Available = true, string? ReasonKey = null)
 {
+    internal OcrExportSettings? Ocr { get; init; }
+    public double Opacity => Available ? 1 : 0.4;
+    public string Reason => ReasonKey is null ? "" : LocalizationManager.Active.Get(ReasonKey);
     public override string ToString() => Display;
 }
 
@@ -35,6 +39,10 @@ public partial class MainWindow : Window
     private int _folderFeedbackVersion;
     private SettingsWindow? _settingsWindow;
     private FfmpegConversionCatalog? _conversionCatalog;
+    private OcrEngine? _ocrEngine;
+    private bool _ocrChecked;
+    private bool _ocrChecking;
+    private readonly HashSet<string> _ocrNotices = new(StringComparer.Ordinal);
     private string? _conversionCatalogPath;
     private bool _conversionLoading;
     private bool _refreshingFormats;
@@ -42,6 +50,11 @@ public partial class MainWindow : Window
     private bool _reapplyFormats;
     private CancellationTokenSource? _formatChange;
     private readonly Dictionary<string, FormatChoice> _formatChoices = new();
+    private ConversionFormat? _muxFormat;
+    private string? _muxAudioCodec;
+    private string? _muxSubtitleCodec;
+    private ConversionFormat? _muxAudioChoice;
+    private ConversionFormat? _muxSubtitleChoice;
     private readonly HashSet<ExportTrackViewModel> _previouslySelected = new();
     private MainViewModel? _logViewModel;
     private static readonly double[] MinimumColumnWidths = [36, 65, 54, 65, 65, 72, 95, 75];
@@ -83,11 +96,13 @@ public partial class MainWindow : Window
         StreamsTable.AddHandler(InputElement.PointerPressedEvent, StreamsTable_PointerPressed,
             RoutingStrategies.Tunnel, handledEventsToo: true);
         Opened += MainWindow_Opened;
+        OcrPathSelection.Changed += OcrPathChanged;
         LocalizationManager.Active.PropertyChanged += Localization_PropertyChanged;
         Closing += MainWindow_Closing;
         Closed += (_, _) =>
         {
             _shutdown.Cancel();
+            OcrPathSelection.Changed -= OcrPathChanged;
             LocalizationManager.Active.PropertyChanged -= Localization_PropertyChanged;
             if (_logViewModel is not null)
             {
@@ -109,11 +124,22 @@ public partial class MainWindow : Window
                 _logViewModel.PropertyChanged += ViewModel_PropertyChanged;
             }
             RefreshFormatControls();
+            RefreshMuxControls();
         };
         DragDrop.SetAllowDrop(this, true);
         this.AddHandler(DragDrop.DragOverEvent, DragOver, RoutingStrategies.Bubble, handledEventsToo: true);
         this.AddHandler(DragDrop.DropEvent, Drop, RoutingStrategies.Bubble, handledEventsToo: true);
         DragDrop.AddDragLeaveHandler(this, (_, _) => DropZone.Classes.Remove("dragging"));
+    }
+
+    private void OcrPathChanged()
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            _ocrChecked = false;
+            _ocrEngine = null;
+            RefreshFormatControls();
+        });
     }
 
     private void Localization_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -122,6 +148,7 @@ public partial class MainWindow : Window
         _logViewModel?.RefreshMainLocalization();
         RefreshColumnHeaders();
         RefreshFormatControls();
+        RefreshMuxControls();
     }
 
     private void RefreshColumnHeaders()
@@ -335,26 +362,55 @@ public partial class MainWindow : Window
     {
         if (e.PropertyName is nameof(MainViewModel.IsExporting) or nameof(MainViewModel.SelectedMedia)
             or nameof(MainViewModel.IsReady) or nameof(MainViewModel.IsAnalyzing)
-            or nameof(MainViewModel.SelectedCountDisplay) or nameof(MainViewModel.TrackHeading))
+            or nameof(MainViewModel.SelectedCountDisplay) or nameof(MainViewModel.TrackHeading)
+            or nameof(MainViewModel.MuxEnabled) or nameof(MainViewModel.PreserveMetadata))
         {
             if (e.PropertyName == nameof(MainViewModel.SelectedMedia))
             {
+                _ocrChecked = false;
+                _ocrEngine = null;
+                _ocrNotices.Clear();
                 _formatChange?.Cancel();
                 _formatChoices.Clear();
                 _previouslySelected.Clear();
+                _muxFormat = null;
+                _muxAudioCodec = null;
+                _muxSubtitleCodec = null;
+                _muxAudioChoice = null;
+                _muxSubtitleChoice = null;
             }
             if (e.PropertyName == nameof(MainViewModel.SelectedCountDisplay) &&
                 DataContext is MainViewModel selectionModel)
             {
                 var current = selectionModel.ExportTracks.Where(t => t.IsSelected).ToHashSet();
+                if (current.Any(t => t.Stream.SubtitleKind == SubtitleKind.Graphic))
+                {
+                    _ocrChecked = false;
+                    _ocrEngine = null;
+                    _ocrNotices.Clear();
+                }
                 foreach (var kind in new[] { "video", "audio", "image", "animation" })
                     if (ShouldResetFormat(kind, _previouslySelected, current)) _formatChoices.Remove(kind);
                 _previouslySelected.Clear();
                 _previouslySelected.UnionWith(current);
             }
+            if (e.PropertyName == nameof(MainViewModel.MuxEnabled)
+                && DataContext is MainViewModel { MuxEnabled: true })
+            {
+                _muxFormat = null;
+                _muxAudioCodec = null;
+                _muxSubtitleCodec = null;
+                _muxAudioChoice = null;
+                _muxSubtitleChoice = null;
+            }
+            if (e.PropertyName == nameof(MainViewModel.PreserveMetadata))
+            {
+            }
             if (!_applyingFormats) RefreshFormatControls();
+            RefreshMuxControls();
             if (e.PropertyName == nameof(MainViewModel.TrackHeading)) _ = LoadFormatsAsync();
-            if (e.PropertyName == nameof(MainViewModel.SelectedCountDisplay) && !_applyingFormats)
+            if ((e.PropertyName is nameof(MainViewModel.SelectedCountDisplay)
+                or nameof(MainViewModel.MuxEnabled)) && !_applyingFormats)
                 _ = ApplyAllFormatsAsync();
         }
     }
@@ -388,6 +444,129 @@ public partial class MainWindow : Window
       "subtitle" => SubtitleConfigureButton, "image" => ImageConfigureButton,
       "animation" => AnimationConfigureButton, _ => null };
 
+    private void RefreshMuxControls()
+    {
+        if (DataContext is not MainViewModel viewModel) return;
+        var media = viewModel.SelectedMedia;
+        var catalog = _conversionCatalog;
+        var selected = viewModel.ExportTracks.Where(t => t.IsSelected).Select(t => t.Stream).ToArray();
+        viewModel.SetMuxSelectionCompatible(media is not null && catalog is not null
+            && MuxPlanner.CanCombine(media, selected, catalog));
+        if (!viewModel.MuxEnabled)
+        {
+            viewModel.SetMuxPlan(null);
+            viewModel.SetMuxChecking(false);
+            return;
+        }
+        if (catalog is null || media is null)
+        {
+            viewModel.SetMuxPlan(null);
+            viewModel.SetMuxChecking(false);
+            viewModel.SetFormatsValid(false);
+            return;
+        }
+        var formats = MuxPlanner.Formats(catalog);
+        _muxFormat ??= MuxPlanner.SourceFormat(media, catalog);
+        MuxPlan Candidate(ConversionFormat format) =>
+            MuxPlanner.Create(media, selected, format, catalog, _muxAudioCodec, _muxSubtitleCodec);
+        if (_muxFormat is { } current && !Candidate(current).IsValid
+            && (_muxAudioCodec is not null || _muxSubtitleCodec is not null))
+        {
+            if (_muxAudioCodec is not null) { _muxAudioCodec = null; _muxAudioChoice = null; }
+            else { _muxSubtitleCodec = null; _muxSubtitleChoice = null; }
+        }
+        var choice = formats.FirstOrDefault(f => f == _muxFormat && Candidate(f).IsValid)
+            ?? formats.FirstOrDefault(f => Candidate(f).IsValid);
+        _muxFormat = choice;
+        viewModel.SetMuxPlan(choice is null ? formats.FirstOrDefault() is { } first
+            ? Candidate(first) : null : Candidate(choice));
+        RefreshMuxFormatBoxes(viewModel, media, catalog);
+        viewModel.SetFormatsValid(choice is not null);
+        viewModel.SetMuxChecking(false);
+    }
+
+    private void RefreshMuxFormatBoxes(MainViewModel viewModel, MediaInfo media,
+        FfmpegConversionCatalog catalog)
+    {
+        if (VideoFormatBox is null || AudioFormatBox is null || SubtitleFormatBox is null) return;
+        var selected = viewModel.ExportTracks.Where(t => t.IsSelected).Select(t => t.Stream).ToArray();
+        var choices = MuxPlanner.Formats(catalog).Select(format =>
+        {
+            var plan = MuxPlanner.Create(media, selected, format, catalog,
+                _muxAudioCodec, _muxSubtitleCodec);
+            return new FormatChoice(format.Display, format, Available: plan.IsValid,
+                ReasonKey: plan.ErrorKey);
+        }).ToArray();
+        _refreshingFormats = true;
+        try
+        {
+            VideoFormatBox.ItemsSource = choices;
+            VideoFormatBox.SelectedItem = choices.FirstOrDefault(c => c.Format == _muxFormat);
+            VideoFormatBox.IsEnabled = selected.Length > 0 && viewModel.IsReady
+                && !viewModel.IsExporting && !viewModel.IsAnalyzing;
+            foreach (var kind in new[] { "audio", "subtitle" })
+            {
+                var box = FormatBox(kind)!;
+                var current = kind == "audio" ? _muxAudioChoice : _muxSubtitleChoice;
+                var tracks = viewModel.ExportTracks.Where(t => t.IsSelected && Kind(t) == kind).ToArray();
+                var sourceFormats = tracks.Select(t => t.Decision.Plan?.Extension)
+                    .Where(extension => extension is not null)
+                    .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                var source = sourceFormats.Length == 1
+                    ? LocalizationManager.Active.Format("MainSourceFormatOriginal", SourceFormatName(sourceFormats[0]!))
+                    : tracks.Length > 0 ? LocalizationManager.Active.Get("MainMixedFormatsOriginal")
+                        : LocalizationManager.Active.Get("MainOriginalNoTranscode");
+                var resolvedStreams = viewModel.SelectedMuxPlan is { IsValid: true } resolvedPlan
+                    && resolvedPlan.Format == _muxFormat
+                    && resolvedPlan.Streams.Select(p => p.Stream).SequenceEqual(selected)
+                    ? resolvedPlan.Streams.Where(p => p.Stream.CodecType == kind).ToArray() : [];
+                var sourceAvailable = current is not null || resolvedStreams.Length == 0
+                    || resolvedStreams.All(p => p.Copy)
+                    || resolvedStreams.Select(p => p.OutputCodec).Distinct(StringComparer.Ordinal).Count() > 1
+                    || resolvedStreams.Any(p => !catalog.FormatsFor(kind)
+                        .Any(f => f.DefaultCodec(kind) == p.OutputCodec));
+                var options = new List<FormatChoice> { new(source, Available: sourceAvailable,
+                    ReasonKey: sourceAvailable ? null : "MainMuxRejected") };
+                foreach (var format in catalog.FormatsFor(kind))
+                {
+                    var codec = format.DefaultCodec(kind);
+                    if (codec is null || _muxFormat is null) continue;
+                    if (IsDuplicateOriginal(tracks, format)
+                        || tracks.Length > 0 && tracks.All(t => t.Stream.Codec == codec)) continue;
+                    var plan = MuxPlanner.Create(media, selected, _muxFormat, catalog,
+                        kind == "audio" ? codec : _muxAudioCodec,
+                        kind == "subtitle" ? codec : _muxSubtitleCodec);
+                    var labelKey = PopularFormats.GetValueOrDefault(kind)?
+                        .FirstOrDefault(item => item.Muxer == format.Muxer).LabelKey;
+                    options.Add(new(labelKey is null ? format.Display : LocalizationManager.Active.Get(labelKey),
+                        format, Available: plan.IsValid, ReasonKey: plan.ErrorKey));
+                }
+                box.ItemsSource = options;
+                if (current is null && resolvedStreams.Length > 0)
+                {
+                    if (resolvedStreams.Any(p => !p.Copy))
+                    {
+                        var codecs = resolvedStreams.Select(p => p.OutputCodec)
+                            .Distinct(StringComparer.Ordinal).ToArray();
+                        if (codecs is [{ } codec])
+                            current = options.FirstOrDefault(o => o.Format?.DefaultCodec(kind) == codec
+                                && o.Available)?.Format;
+                    }
+                }
+                box.SelectedItem = options.FirstOrDefault(o => o.Format == current && o.Available)
+                    ?? options.FirstOrDefault(o => o.Available);
+                box.IsEnabled = selected.Any(s => s.CodecType == kind) && viewModel.IsReady
+                    && !viewModel.IsExporting && !viewModel.IsAnalyzing
+                    && options.Any(o => o.Available);
+            }
+            ImageFormatBox.IsEnabled = false;
+            AnimationFormatBox.IsEnabled = false;
+            foreach (var kind in new[] { "video", "audio", "subtitle", "image", "animation" })
+                FormatButton(kind)!.IsEnabled = false;
+        }
+        finally { _refreshingFormats = false; }
+    }
+
     private void RefreshFormatControls()
     {
         if (VideoFormatBox is null || AudioFormatBox is null || SubtitleFormatBox is null ||
@@ -395,6 +574,12 @@ public partial class MainWindow : Window
             AudioConfigureButton is null || SubtitleConfigureButton is null ||
             ImageConfigureButton is null || AnimationConfigureButton is null)
             return;
+        if (DataContext is MainViewModel { MuxEnabled: true, SelectedMedia: { } muxMedia } muxModel
+            && _conversionCatalog is { } muxCatalog)
+        {
+            RefreshMuxFormatBoxes(muxModel, muxMedia, muxCatalog);
+            return;
+        }
         _refreshingFormats = true;
         try
         {
@@ -402,6 +587,7 @@ public partial class MainWindow : Window
             {
                 var tracks = (DataContext as MainViewModel)?.ExportTracks
                     .Where(t => t.IsSelected && Kind(t) == kind).ToArray() ?? [];
+                var graphicSelected = kind == "subtitle" && tracks.Any(t => t.Stream.SubtitleKind == SubtitleKind.Graphic);
                 var loc = LocalizationManager.Active;
                 var sourceFormats = tracks.Select(t => t.Decision.Plan?.Extension)
                     .Where(extension => extension is not null)
@@ -425,7 +611,7 @@ public partial class MainWindow : Window
                 {
                     var secondaryAdded = false;
                     foreach (var format in catalog.FormatsFor(kind).Where(format => format.Muxer != "ssa"
-                        || tracks.All(track => track.Stream.Codec is "csv_universal" or "csv_adr")))
+                        || graphicSelected || tracks.All(track => track.Stream.Codec is "csv_universal" or "csv_adr")))
                     {
                         if (IsDuplicateOriginal(tracks, format))
                             continue;
@@ -434,9 +620,11 @@ public partial class MainWindow : Window
                         var secondary = kind is "video" or "animation" &&
                             FfmpegConversionCatalog.Category(format) != kind;
                         choices.Add(selected is { Settings: not null } && selected.Format == format
-                            ? selected with { SeparatorBefore = secondary && !secondaryAdded }
+                            ? selected with { SeparatorBefore = secondary && !secondaryAdded,
+                                Available = !graphicSelected || OcrFormatAvailable(format, tracks, selected.Ocr) }
                             : new(labelKey is null ? format.Display : loc.Get(labelKey), format,
-                                SeparatorBefore: secondary && !secondaryAdded));
+                                SeparatorBefore: secondary && !secondaryAdded,
+                                Available: !graphicSelected || OcrFormatAvailable(format, tracks, selected?.Ocr)));
                         if (secondary) secondaryAdded = true;
                     }
                 }
@@ -455,13 +643,71 @@ public partial class MainWindow : Window
                     choices.FirstOrDefault(c => c.Format == selected.Format && c.Settings == selected.Settings) ?? choices[0];
                 var enabled = tracks.Length > 0 && DataContext is MainViewModel
                     { IsReady: true, IsExporting: false, IsAnalyzing: false } && !_conversionLoading;
-                box.IsEnabled = enabled && tracks.All(t => t.CanConvert)
+                box.IsEnabled = enabled && DataContext is not MainViewModel { MuxEnabled: true }
+                    && (graphicSelected || tracks.All(t => t.CanConvert))
                     && (choices.Count > 1 || selected?.Format is not null);
-                FormatButton(kind)!.IsEnabled = enabled && _conversionCatalog is not null
-                    && tracks.All(t => t.CanConvert);
+                FormatButton(kind)!.IsEnabled = enabled && DataContext is not MainViewModel { MuxEnabled: true }
+                    && _conversionCatalog is not null
+                    && (tracks.All(t => t.CanConvert) || graphicSelected && selected?.Format is not null
+                        && IsOcrFormat(selected.Format) && _ocrEngine is not null);
             }
         }
         finally { _refreshingFormats = false; }
+        if (!_shutdown.IsCancellationRequested && !_ocrChecked && !_ocrChecking && DataContext is MainViewModel active
+            && active.ExportTracks.Any(t => t.IsSelected && t.Stream.SubtitleKind == SubtitleKind.Graphic))
+            _ = RefreshOcrAvailabilityAsync();
+    }
+
+    private static bool IsOcrFormat(ConversionFormat format) => format.Muxer is
+        "srt" or "webvtt" or "ass" or "ssa" or "csv";
+
+    private bool OcrFormatAvailable(ConversionFormat format,
+        IReadOnlyList<ExportTrackViewModel> tracks, OcrExportSettings? settings)
+    {
+        if (!IsOcrFormat(format) || _ocrEngine is not { } engine) return false;
+        var models = settings?.Model == OcrModelSet.Best ? engine.BestLanguages : engine.FastLanguages;
+        if (engine.FastLanguages.Count + engine.BestLanguages.Count == 0) return false;
+        return tracks.Where(t => t.Stream.SubtitleKind == SubtitleKind.Graphic).All(track =>
+            (settings?.Language ?? SubtitleOcrExport.SuggestedLanguage(track.Stream.Language)) is not { } language
+            || models.Contains(language, StringComparer.Ordinal)
+            || settings is null && engine.BestLanguages.Contains(language, StringComparer.Ordinal));
+    }
+
+    private async Task RefreshOcrAvailabilityAsync()
+    {
+        if (_ocrChecking) return;
+        _ocrChecking = true;
+        try
+        {
+            var engine = await SubtitleOcr.DiscoverAsync(null, null, _shutdown.Token);
+            if (_shutdown.IsCancellationRequested) return;
+            _ocrEngine = engine;
+            _ocrChecked = true;
+            var vm = DataContext as MainViewModel;
+            if (vm?.ExportTracks.Any(t => t.IsSelected && t.Stream.SubtitleKind == SubtitleKind.Graphic) == true
+                && (engine is null || engine.FastLanguages.Count + engine.BestLanguages.Count == 0))
+                vm.Diagnostics.Record(DiagnosticLevel.Warn, "OCR availability",
+                    engine is null ? "Tesseract 5.x was not found." : "No supported Fast or Best OCR models were found.",
+                    userMessageKey: "LogOcrDependencyUnavailable");
+            else if (vm is not null && engine is not null)
+                foreach (var track in vm.ExportTracks.Where(t => t.IsSelected
+                    && t.Stream.SubtitleKind == SubtitleKind.Graphic))
+                    if (SubtitleOcrExport.SuggestedLanguage(track.Stream.Language) is { } language
+                        && !engine.FastLanguages.Contains(language, StringComparer.Ordinal)
+                        && !engine.BestLanguages.Contains(language, StringComparer.Ordinal))
+                        ReportOcrIssue(vm, track.Stream, "LogOcrDependencyUnavailable",
+                            $"No Fast or Best model for {language} was found.");
+        }
+        catch (OperationCanceledException) { }
+        finally { _ocrChecking = false; RefreshFormatControls(); _ = ApplyAllFormatsAsync(); }
+    }
+
+    private void ReportOcrIssue(MainViewModel viewModel, MediaStreamInfo stream,
+        string key, string detail)
+    {
+        if (_ocrNotices.Add($"{stream.Index}:{key}"))
+            viewModel.Diagnostics.Record(DiagnosticLevel.Warn, "OCR availability",
+                $"Stream #{stream.Index}: {detail}", userMessageKey: key);
     }
 
     private static string SourceFormatName(string extension) => extension.ToLowerInvariant() switch
@@ -479,12 +725,17 @@ public partial class MainWindow : Window
     private async Task LoadFormatsAsync()
     {
         if (_conversionLoading || DataContext is not MainViewModel { FfmpegExecutable: { } ffmpeg }) return;
-        if (_conversionCatalog is not null && _conversionCatalogPath == ffmpeg) { RefreshFormatControls(); return; }
+        if (_conversionCatalog is not null && _conversionCatalogPath == ffmpeg)
+        {
+            _conversionCatalog.FFprobeExecutable = (DataContext as MainViewModel)?.FFprobeExecutablePath;
+            RefreshFormatControls(); RefreshMuxControls(); return;
+        }
         _conversionLoading = true;
         try
         {
             _conversionCatalog = await FfmpegConversionCatalog.DiscoverAsync(ffmpeg, _shutdown.Token);
             _conversionCatalog.CleanupLog = (DataContext as MainViewModel)?.Diagnostics;
+            _conversionCatalog.FFprobeExecutable = (DataContext as MainViewModel)?.FFprobeExecutablePath;
             _conversionCatalogPath = ffmpeg;
         }
         catch (OperationCanceledException) { }
@@ -495,6 +746,7 @@ public partial class MainWindow : Window
         {
             _conversionLoading = false;
             RefreshFormatControls();
+            RefreshMuxControls();
             if (DataContext is MainViewModel { SelectedMedia: not null }) _ = ApplyAllFormatsAsync();
         }
     }
@@ -504,12 +756,42 @@ public partial class MainWindow : Window
         if (_refreshingFormats || sender is not ComboBox box || box.SelectedItem is not FormatChoice choice) return;
         var kind = box == VideoFormatBox ? "video" : box == AudioFormatBox ? "audio"
             : box == SubtitleFormatBox ? "subtitle" : box == ImageFormatBox ? "image" : "animation";
-        _formatChoices[kind] = choice;
+        if (DataContext is MainViewModel { MuxEnabled: true } muxModel)
+        {
+            if (!choice.Available || kind is "image" or "animation")
+            {
+                if (muxModel.SelectedMedia is { } currentMedia && _conversionCatalog is { } currentCatalog)
+                    RefreshMuxFormatBoxes(muxModel, currentMedia, currentCatalog);
+                return;
+            }
+            if (kind == "video") _muxFormat = choice.Format;
+            else if (kind == "audio")
+            {
+                _muxAudioChoice = choice.Format;
+                _muxAudioCodec = choice.Format?.AudioCodec;
+            }
+            else
+            {
+                _muxSubtitleChoice = choice.Format;
+                _muxSubtitleCodec = choice.Format?.SubtitleCodec;
+            }
+            RefreshMuxControls();
+            return;
+        }
+        if (!choice.Available) { RefreshFormatControls(); return; }
+        _formatChoices[kind] = kind == "subtitle" && choice.Format is not null
+            ? choice with { Ocr = _formatChoices.GetValueOrDefault(kind)?.Ocr } : choice;
         _ = ApplyAllFormatsAsync();
     }
 
     private async Task ApplyAllFormatsAsync()
     {
+        if (DataContext is MainViewModel { MuxEnabled: true })
+        {
+            _formatChange?.Cancel();
+            RefreshMuxControls();
+            return;
+        }
         if (_applyingFormats)
         {
             _reapplyFormats = true;
@@ -530,6 +812,40 @@ public partial class MainWindow : Window
             {
                 cancellation.Token.ThrowIfCancellationRequested();
                 var kind = Kind(track);
+                if (kind == "subtitle" && track.Stream.SubtitleKind == SubtitleKind.Graphic)
+                {
+                    if (!_formatChoices.TryGetValue(kind, out var selectedOcr) || selectedOcr.Format is null)
+                    { track.SetOcrPlan(null); continue; }
+                    if (!OcrFormatAvailable(selectedOcr.Format,
+                        viewModel.ExportTracks.Where(t => t.IsSelected && Kind(t) == kind).ToArray(), selectedOcr.Ocr))
+                    { track.SetConfigurationErrorKey("MainOcrUnavailable"); valid = false; continue; }
+                    var ocr = selectedOcr.Ocr ?? new OcrExportSettings(null,
+                        CsvDelimiter: Appearance?.Preferences.CsvDelimiter[0] ?? ',',
+                        CsvDestination: Appearance?.Preferences.CsvDestination ?? "universal",
+                        AdrFps: Appearance?.Preferences.AdrFps ?? "24",
+                        AdrStartTimecode: Appearance?.Preferences.AdrStartTimecode ?? "00:00:00:00");
+                    var language = ocr.Language ?? SubtitleOcrExport.SuggestedLanguage(track.Stream.Language);
+                    if (string.IsNullOrWhiteSpace(language))
+                    {
+                        var key = string.IsNullOrWhiteSpace(track.Stream.Language)
+                            ? "MainOcrLanguageRequired" : "MainOcrLanguageUnsupported";
+                        track.SetConfigurationErrorKey(key);
+                        ReportOcrIssue(viewModel, track.Stream, key,
+                            key == "MainOcrLanguageRequired" ? "OCR language is unknown." : "OCR track language is unsupported.");
+                        valid = false; continue;
+                    }
+                    var models = ocr.Model == OcrModelSet.Best ? _ocrEngine!.BestLanguages : _ocrEngine!.FastLanguages;
+                    if (!models.Contains(language, StringComparer.Ordinal))
+                    {
+                        track.SetConfigurationErrorKey("MainOcrModelMissing");
+                        ReportOcrIssue(viewModel, track.Stream, "LogOcrDependencyUnavailable",
+                            $"{ocr.Model} model for {language} is unavailable.");
+                        valid = false; continue;
+                    }
+                    track.SetOcrPlan(SubtitleOcrExport.CreatePlan(media, track.Stream,
+                        selectedOcr.Format.Muxer, ocr));
+                    continue;
+                }
                 if (!_formatChoices.TryGetValue(kind, out var choice) || choice.Format is null)
                 { track.SetConversion(null); continue; }
                 if (!track.CanConvert || _conversionCatalog is null)
@@ -602,7 +918,8 @@ public partial class MainWindow : Window
             _applyingFormats = false;
             if (_formatChange == cancellation)
             {
-                viewModel.SetFormatsValid(valid && viewModel.SelectedMedia == media);
+                if (!viewModel.MuxEnabled)
+                    viewModel.SetFormatsValid(valid && viewModel.SelectedMedia == media);
                 _formatChange = null;
             }
             RefreshFormatControls();
@@ -632,11 +949,16 @@ public partial class MainWindow : Window
     {
         if (sender is not Button { Tag: string kind } || _conversionLoading ||
             DataContext is not MainViewModel { SelectedMedia: { } media } viewModel) return;
-        var track = viewModel.ExportTracks.FirstOrDefault(t => t.IsSelected && Kind(t) == kind && t.CanConvert);
+        var choice = _formatChoices.GetValueOrDefault(kind);
+        var candidates = viewModel.ExportTracks.Where(t => t.IsSelected && Kind(t) == kind
+            && (t.CanConvert || kind == "subtitle" && t.Stream.SubtitleKind == SubtitleKind.Graphic));
+        var track = kind == "subtitle" && choice?.Format is not null
+            ? candidates.FirstOrDefault(t => t.Stream.SubtitleKind == SubtitleKind.Graphic)
+                ?? candidates.FirstOrDefault()
+            : candidates.FirstOrDefault();
         if (track is null) return;
         if (_conversionCatalog is null) await LoadFormatsAsync();
         if (_conversionCatalog is null) return;
-        var choice = _formatChoices.GetValueOrDefault(kind);
         var initialFormat = choice?.Format;
         if (initialFormat is null && track.Decision.Plan is null)
         {
@@ -645,8 +967,17 @@ public partial class MainWindow : Window
                 format.Extension.Equals(sourceExtension, StringComparison.OrdinalIgnoreCase));
         }
         var dialog = new ConversionWindow(_conversionCatalog, viewModel.Diagnostics, track.Stream, choice?.Settings,
-            _shutdown.Token, initialFormat, track.Decision.Plan, media.FullPath, choice?.CopyRequested == true);
+            _shutdown.Token, initialFormat, track.Decision.Plan, media.FullPath, choice?.CopyRequested == true,
+            _ocrEngine, choice?.Ocr);
         var settings = await dialog.ShowDialog<ConversionSettings?>(this);
+        if (dialog.AppliedOcr is { } ocrSettings && viewModel.SelectedMedia == media
+            && dialog.AppliedOcrFormat is { } ocrFormat)
+        {
+            _formatChoices[kind] = new FormatChoice(ocrFormat.Display, ocrFormat) { Ocr = ocrSettings };
+            RefreshFormatControls();
+            await ApplyAllFormatsAsync();
+            return;
+        }
         if (dialog.AppliedCopy && viewModel.SelectedMedia == media)
         {
             _formatChoices[kind] = new FormatChoice(LocalizationManager.Active.Get("MainOriginalNoTranscode"));

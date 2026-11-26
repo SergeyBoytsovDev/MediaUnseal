@@ -1,4 +1,6 @@
-# Media Unseal 1.3.0 — Third-Party Notices
+# Media Unseal 1.4.0 — Third-Party Notices
+
+Tesseract OCR 5.5.4 is an optional, separately installed component licensed under Apache License 2.0. The official [Tesseract source and license](https://github.com/tesseract-ocr/tesseract) and the official [Fast](https://github.com/tesseract-ocr/tessdata_fast) and [Best](https://github.com/tesseract-ocr/tessdata_best) model repositories provide their own license and notice files. The separately published Media Unseal OCR archives contain `licenses/` for Tesseract, both model sets, and their bundled native libraries. No OCR binary or language model is included in the main Media Unseal application packages.
 
 Copyright © 2026 Sergey Boytsov applies to the original portions of Media Unseal. The third-party software components listed in this document retain their respective copyrights, license permissions, and disclaimers. Nothing in the Media Unseal license or this document limits rights granted by the licensors of those components.
 
@@ -3109,7 +3111,7 @@ mozzconf.h is distributed under the MPL 1.1/GPL 2.0/LGPL 2.1 tri-license.
 
 Media Unseal targets .NET 10. The .NET application host and any .NET runtime components distributed with the application retain their respective licenses and notices. The applicable terms depend on the components included in a particular distribution.
 
-The current 1.3.0 packaging configuration includes the original .NET runtime `LICENSE.TXT` and `THIRD-PARTY-NOTICES.TXT` in `licenses/dotnet-<runtime-version>/`, using the version restored for the packaged CLI. The Windows and Linux Native AOT GUIs embed required .NET code in their executables instead of shipping separate full runtimes; their packages also contain self-contained CLI and update-helper executables. The packaging configuration includes the .NET Library License.
+The current 1.4.0 packaging configuration includes the original .NET runtime `LICENSE.TXT` and `THIRD-PARTY-NOTICES.TXT` in `licenses/dotnet-<runtime-version>/`, using the version restored for the packaged CLI. The Windows and Linux Native AOT desktop app and CLI embed the required .NET code in their executables. The update helper is a self-contained single-file .NET executable. The packaging configuration includes the .NET Library License.
 
 Official license information: [.NET license information](https://github.com/dotnet/core/blob/main/license-information.md), [.NET runtime license](https://github.com/dotnet/runtime/blob/main/LICENSE.TXT), and [.NET runtime third-party notices](https://github.com/dotnet/runtime/blob/main/THIRD-PARTY-NOTICES.TXT).
 

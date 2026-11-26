@@ -1,6 +1,6 @@
 # Media Unseal — Dependencies
 
-**Application version:** 1.3.0
+**Application version:** 1.4.0
 **Application copyright:** © 2026 Sergey Boytsov
 
 
@@ -14,7 +14,8 @@ This document identifies the third-party software used by Media Unseal. It disti
 | --- | --- | --- |
 | .NET | Target framework `net10.0`; Windows x64 and Linux x64 Native AOT embed required .NET runtime/library code | Microsoft/.NET Foundation and contributors; licenses vary by file and distribution. The packaging scripts include the applicable runtime license, third-party notices, and .NET Library License under `licenses/dotnet-<runtime-version>/`. |
 | Avalonia UI | 12.1.4 | MIT; cross-platform desktop interface. |
-| FFmpeg / FFprobe | External programs; version depends on installation | LGPL or GPL depending on the actual build. **Not included** in the 1.3.0 release packages. See below. |
+| FFmpeg / FFprobe | External programs; version depends on installation | LGPL or GPL depending on the actual build. **Not included** in the 1.4.0 release packages. See below. |
+| Tesseract OCR 5.5.4 | Optional external program for graphical subtitles | Apache License 2.0. Not included in the Media Unseal application packages; installed separately from the Media Unseal GitHub Release. The OCR package carries 10 models each in `tessdata_fast` and `tessdata_best`, plus component license files. Linux requires a compatible glibc and system libraries not bundled in the OCR package. |
 
 ## Direct NuGet dependencies
 
@@ -62,7 +63,7 @@ This document identifies the third-party software used by Media Unseal. It disti
 
 All package names above correspond to entries on [NuGet](https://www.nuget.org/). Declared package licenses do not necessarily describe separately packaged native binaries or fonts. The application graph lists **7 direct and 27 transitive packages**; it should not be interpreted as 34 independently redistributed binary components.
 
-## Components expected from the current 1.3.0 packaging configuration
+## Components expected from the current 1.4.0 packaging configuration
 
 | Component family | Windows (`win-x64`) | Linux (`linux-x64`) |
 | --- | --- | --- |
@@ -77,7 +78,7 @@ All package names above correspond to entries on [NuGet](https://www.nuget.org/)
 | FFmpeg / FFprobe | Not included | Not included |
 | AvaloniaUI.DiagnosticsSupport (Debug tooling) | Not included | Not included |
 
-The Windows Installer uses the Native AOT Windows Portable ZIP as its input and includes the same application payload. The separately published CLI and update helper remain self-contained .NET executables.
+The Windows Installer uses the Native AOT Windows Portable ZIP as its input and includes the same application payload. The CLI is also published as Native AOT. The update helper remains a self-contained single-file .NET executable.
 
 ## Fonts and native components
 
@@ -90,7 +91,7 @@ The Windows Installer uses the Native AOT Windows Portable ZIP as its input and 
 
 ## External FFmpeg / FFprobe
 
-Media Unseal starts FFmpeg and FFprobe **as separate processes**, without linking FFmpeg libraries into its application code. The 1.3.0 Windows and Linux release packages do not bundle their executables.
+Media Unseal starts FFmpeg and FFprobe **as separate processes**, without linking FFmpeg libraries into its application code. The 1.4.0 Windows and Linux release packages do not bundle their executables.
 
 - An existing user-installed FFmpeg/FFprobe may be used.
 - On Windows the application can use WinGet (`Gyan.FFmpeg`) or download a third-party Gyan FFmpeg release archive as a separate installation path.

@@ -39,7 +39,9 @@ internal static class DiagnosticReportPresentation
             if (!match.Success || !DateTimeOffset.TryParseExact(match.Groups["stamp"].Value,
                 "yyyy-MM-dd HH:mm:ss zzz", CultureInfo.InvariantCulture, DateTimeStyles.None, out var timestamp))
             {
-                rows.Add(new("entry", "", "", "", source, ""));
+                if (rows.Count > 0 && rows[^1].IsEntry)
+                    rows[^1] = rows[^1] with { Message = rows[^1].Message + "\n" + source };
+                else rows.Add(new("entry", "", "", "", source, ""));
                 continue;
             }
             var currentDay = DateOnly.FromDateTime(timestamp.Date);
@@ -67,6 +69,15 @@ internal static class DiagnosticReportPresentation
         return result.ToString();
     }
 
+    internal static string CopySelected(IReadOnlyList<DiagnosticReportRow> rows,
+        IEnumerable<DiagnosticReportRow> selected)
+    {
+        var chosen = selected.ToHashSet(ReferenceEqualityComparer.Instance);
+        return string.Join(Environment.NewLine + Environment.NewLine,
+            rows.Where(row => row.IsEntry && chosen.Contains(row)).Select(row =>
+                $"{row.Timestamp} [{row.Level}] [{row.Category}] {row.Message}"));
+    }
+
     internal static IEnumerable<string> TextLines(IReadOnlyList<DiagnosticReportRow> rows)
     {
         var categoryWidth = Math.Max(18, rows.Where(row => row.IsEntry).Select(row => row.Category.Length)
@@ -78,7 +89,10 @@ internal static class DiagnosticReportPresentation
             else
             {
                 var prefix = $"{row.Time,-8}  {row.Level,-5}  {row.Category.PadRight(categoryWidth)}  ";
-                yield return prefix + row.Message;
+                var lines = row.Message.Split('\n');
+                yield return prefix + lines[0];
+                var continuation = $"{"",-8}  {"",-5}  {new string(' ', categoryWidth)}  ";
+                for (var i = 1; i < lines.Length; i++) yield return continuation + lines[i];
             }
         }
     }

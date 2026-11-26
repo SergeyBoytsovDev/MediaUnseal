@@ -110,6 +110,7 @@ public sealed class FfmpegConversionCatalog
     private readonly Dictionary<(ConversionFormat Format, string Kind), IReadOnlyList<ConversionEncoder>> _confirmedAdditional = new();
     internal Func<string[], CancellationToken, Task<(int ExitCode, string Output)>>? CommandRunner { get; init; }
     internal DiagnosticLog? CleanupLog { get; set; }
+    internal string? FFprobeExecutable { get; set; }
 
     private FfmpegConversionCatalog(string ffmpeg, List<ConversionFormat> formats, List<ConversionEncoder> encoders)
     { _ffmpeg = ffmpeg; _formats = formats; _encoders = encoders; }
@@ -183,6 +184,42 @@ public sealed class FfmpegConversionCatalog
             : kind == "video" ? Category(f) == "video" ? 0 : 1 : 0)
         .ThenBy(f => FormatPriority(kind, f))
         .ThenBy(f => f.Extension, StringComparer.OrdinalIgnoreCase).ToArray();
+
+    internal IReadOnlyList<ConversionFormat> MuxFormats() => _formats
+        .Where(f => Category(f) == "video").ToArray();
+
+    internal async Task<bool> CheckMuxAsync(MediaInfo media, MuxPlan plan,
+        bool preserveMetadata, CancellationToken token)
+    {
+        if (!plan.IsValid || !_formats.Contains(plan.Format)
+            || MuxPlanner.HasUnreliableStream(plan)) return false;
+        using var temporary = TemporaryDirectory.Create(Path.GetTempPath(), "mediaunseal-mux-probe-");
+        var output = Path.Combine(temporary.Path, "probe." + plan.Format.Extension);
+        try
+        {
+            var arguments = MuxPlanner.BuildArguments(media.FullPath, output, plan, preserveMetadata).ToList();
+            arguments.Insert(arguments.Count - 3, "-t");
+            arguments.Insert(arguments.Count - 3, "0.7");
+            var result = await RunAsync(arguments.ToArray(), token).ConfigureAwait(false);
+            if (result.ExitCode != 0) return false;
+            if (CommandRunner is not null) return true;
+            if (!File.Exists(output) || new FileInfo(output).Length == 0) return false;
+            var ffprobe = FFprobeExecutable;
+            if (ffprobe is null)
+            {
+                var adjacent = Path.Combine(Path.GetDirectoryName(_ffmpeg) ?? "",
+                    OperatingSystem.IsWindows() ? "ffprobe.exe" : "ffprobe");
+                ffprobe = File.Exists(adjacent) ? adjacent : "ffprobe";
+            }
+            return await MuxPlanner.VerifyOutputAsync(ffprobe, output, plan, token)
+                .ConfigureAwait(false);
+        }
+        finally
+        {
+            temporary.Dispose();
+            await TemporaryDirectory.DeleteAsync(temporary.Path, LogCleanupFailure).ConfigureAwait(false);
+        }
+    }
 
     internal ConversionFormat? FindFormat(string muxer, string extension, string kind) =>
         _formats.FirstOrDefault(format => format.Muxer == muxer && format.Extension == extension

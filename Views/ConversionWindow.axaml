@@ -49,7 +49,17 @@
       </Grid>
      </Grid>
     </StackPanel>
-    <TextBlock Text="{DynamicResource Loc_ConversionEncoder}" FontWeight="SemiBold" Margin="0,3,0,0"/>
+    <Grid x:Name="OcrOptions" ColumnDefinitions="*,*" ColumnSpacing="8" IsVisible="False">
+     <StackPanel Spacing="4"><TextBlock Text="{DynamicResource Loc_OcrLanguage}" FontWeight="SemiBold"/>
+      <ComboBox x:Name="OcrLanguageBox" SelectionChanged="OcrLanguage_SelectionChanged" HorizontalAlignment="Stretch"/></StackPanel>
+     <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="{DynamicResource Loc_OcrProfile}" FontWeight="SemiBold"/>
+      <ComboBox x:Name="OcrModelBox" HorizontalAlignment="Stretch">
+       <ComboBoxItem Content="{DynamicResource Loc_OcrFast}"/>
+       <ComboBoxItem Content="{DynamicResource Loc_OcrBest}"/>
+      </ComboBox></StackPanel>
+    </Grid>
+    <TextBlock x:Name="OcrLanguageHint" Classes="muted" Text="{DynamicResource Loc_OcrLanguageRequired}" TextWrapping="Wrap" IsVisible="False"/>
+    <TextBlock x:Name="EncoderLabel" Text="{DynamicResource Loc_ConversionEncoder}" FontWeight="SemiBold" Margin="0,3,0,0"/>
     <ComboBox x:Name="EncoderBox" SelectionChanged="Encoder_SelectionChanged" HorizontalAlignment="Stretch">
      <ComboBox.ItemTemplate>
       <DataTemplate x:DataType="services:ConversionEncoder">
@@ -63,13 +73,13 @@
     </ComboBox>
     <CheckBox x:Name="ForceReencodeBox" Content="{DynamicResource Loc_ConversionForceReencode}"
               IsVisible="False"/>
-    <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,4,0,0">
+    <Grid x:Name="EncoderActions" ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,4,0,0">
      <Button x:Name="MoreEncodersButton" Content="{DynamicResource Loc_ConversionFindCompatible}" Click="MoreEncoders_Click"
              HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="13" Padding="8,6" MinHeight="36"/>
      <Button x:Name="HardwareButton" Grid.Column="1" Content="{DynamicResource Loc_ConversionFindHardware}" Click="Hardware_Click"
              HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="13" Padding="8,6" MinHeight="36"/>
     </Grid>
-    <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}"
+    <Border x:Name="EncoderNoteBorder" Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}"
             BorderThickness="1" Padding="10,7" MinHeight="38">
      <TextBlock x:Name="EncoderNote" Classes="muted" TextWrapping="Wrap" VerticalAlignment="Center"/>
     </Border>

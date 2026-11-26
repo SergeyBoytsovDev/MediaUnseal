@@ -25,23 +25,25 @@ internal static class FfmpegLicenseDetector
         timeout.CancelAfter(TimeSpan.FromSeconds(5));
         try
         {
+            timeout.Token.ThrowIfCancellationRequested();
             if (!process.Start()) return null;
-            var output = process.StandardOutput.ReadToEndAsync(timeout.Token);
-            var errors = process.StandardError.ReadToEndAsync(timeout.Token);
-            await process.WaitForExitAsync(timeout.Token);
-            var text = await output + await errors;
-            return process.ExitCode == 0 ? Parse(text) : null;
-        }
-        catch (OperationCanceledException)
-        {
-            try { if (!process.HasExited) process.Kill(entireProcessTree: true); }
-            catch (InvalidOperationException) { }
-            catch (System.ComponentModel.Win32Exception) { }
-            return null;
+            try
+            {
+                var output = FfmpegTools.ReadOutputAsync(process.StandardOutput, timeout.Token);
+                var errors = FfmpegTools.ReadOutputAsync(process.StandardError, timeout.Token);
+                await Task.WhenAll(output, errors, process.WaitForExitAsync(timeout.Token)).ConfigureAwait(false);
+                var text = await output.ConfigureAwait(false) + await errors.ConfigureAwait(false);
+                return process.ExitCode == 0 ? Parse(text) : null;
+            }
+            catch
+            {
+                await FfmpegTools.KillAsync(process).ConfigureAwait(false);
+                throw;
+            }
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException
             or System.ComponentModel.Win32Exception or UnauthorizedAccessException
-            or NotSupportedException)
+            or NotSupportedException or OperationCanceledException)
         { return null; }
     }
 

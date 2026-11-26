@@ -16,6 +16,21 @@ internal static class MediaPreview
     internal const int MaxImageBytes = 8 * 1024 * 1024;
     private static readonly TimeSpan Deadline = TimeSpan.FromSeconds(15);
 
+    internal static string? PlaceholderFor(MediaInfo media)
+    {
+        if (media.Streams.Count > 0 && media.Streams.All(s => s.CodecType == "subtitle"))
+            return "subtitles";
+        return media.AudioCount > 0 && media.VideoCount == 0 && media.SubtitleCount == 0
+            && media.AnimationCount == 0 ? "audio" : null;
+    }
+
+    internal static bool ShouldLoad(MediaInfo media) => PlaceholderFor(media) switch
+    {
+        "subtitles" => false,
+        "audio" => media.Streams.Any(s => s.VisualKind == VisualKind.Image),
+        _ => true
+    };
+
     internal static async Task<byte[]?> LoadAsync(MediaInfo media, string ffmpegPath,
         CancellationToken cancellationToken, Action<string>? report = null)
     {
@@ -96,7 +111,7 @@ internal static class MediaPreview
             }
             catch (Exception ex) when (ex is InvalidDataException or IOException or UnauthorizedAccessException
                 or Win32Exception or TimeoutException)
-            { report?.Invoke($"{stage}: {watch.Elapsed.TotalMilliseconds:0} ms; {ex.GetType().Name}" +
+            { report?.Invoke($"{stage}: {watch.Elapsed.TotalMilliseconds:0} ms; {DiagnosticLog.SafeError(ex)}" +
                 (navigation is null ? "." : $"; SeekHead={navigation.UsedSeekHead}; " +
                     $"index jumps={navigation.IndexJumps}; elements={navigation.Elements}; " +
                     $"read {navigation.SearchBytesRead} bytes.")); }
@@ -207,11 +222,12 @@ internal static class MediaPreview
             report?.Invoke($"FFmpeg startup: {watch.Elapsed.TotalMilliseconds:0} ms; " +
                 $"stream #{index}, {(seek ? $"seek {seekPosition?.TotalSeconds.ToString("0.###", CultureInfo.InvariantCulture) ?? "default"} s" : "from start")}.");
             watch.Restart();
+            string? stderr = null;
             try
             {
-                var error = process.StandardError.ReadToEndAsync(deadline.Token);
+                var error = ReadErrorAsync(process.StandardError, deadline.Token);
                 await process.WaitForExitAsync(deadline.Token);
-                await error;
+                stderr = await error;
             }
             catch (OperationCanceledException)
             {
@@ -238,6 +254,10 @@ internal static class MediaPreview
             {
                 report?.Invoke($"FFmpeg frame extraction: {watch.Elapsed.TotalMilliseconds:0} ms; " +
                     $"exit code {process.ExitCode}, output file not created.");
+                if (!string.IsNullOrWhiteSpace(stderr))
+                    for (var offset = 0; offset < stderr.Length; offset += 800)
+                        report?.Invoke("FFmpeg preview stderr: " + stderr.Substring(offset,
+                            Math.Min(800, stderr.Length - offset)));
                 return new(null);
             }
             var length = new FileInfo(output).Length;
@@ -257,7 +277,7 @@ internal static class MediaPreview
             or InvalidOperationException)
         {
             report?.Invoke($"FFmpeg frame extraction: {watch.Elapsed.TotalMilliseconds:0} ms; " +
-                $"{ex.GetType().Name}.");
+                $"{DiagnosticLog.SafeError(ex)}.");
             return new(null);
         }
         finally
@@ -265,5 +285,15 @@ internal static class MediaPreview
             temporary.Dispose();
             await TemporaryDirectory.DeleteAsync(directory, report).ConfigureAwait(false);
         }
+    }
+
+    private static async Task<string?> ReadErrorAsync(StreamReader reader, CancellationToken token)
+    {
+        var output = new ProcessErrorCapture();
+        var buffer = new char[4096];
+        int count;
+        while ((count = await reader.ReadAsync(buffer, token)) != 0)
+            output.Add(new string(buffer, 0, count));
+        return output.Text;
     }
 }

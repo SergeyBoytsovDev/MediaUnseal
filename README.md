@@ -1,7 +1,7 @@
 # Media Unseal
 
 **Media Extraction & Conversion**  
-**Version 1.3.0**
+**Version 1.4.0**
 
 Media Unseal is a desktop application for inspecting media files, extracting individual streams, and converting selected content. It provides a straightforward interface for working with audio, video, subtitles, and embedded attachments.
 
@@ -11,6 +11,8 @@ Media Unseal is a desktop application for inspecting media files, extracting ind
 - Extract audio tracks, video streams, and subtitles.
 - Export embedded attachments when present.
 - Inspect and export Matroska chapters as XML.
+- Combine selected video, audio, and subtitle streams in one compatible container.
+- Extract and reopen PGS and VobSub subtitles. Optionally convert them to text with Tesseract.
 - Convert selected streams to supported output formats, including WAV, FLAC, MP3, MP4 (H.264), and SRT.
 - Export text subtitles to universal or DaVinci Resolve ADR CSV, and convert supported CSV subtitle files to SRT, WebVTT, or ASS/SSA.
 - Add files using drag and drop or the file picker.
@@ -19,8 +21,9 @@ Media Unseal is a desktop application for inspecting media files, extracting ind
 ## Requirements
 
 - **Windows 10/11 (64-bit)** or **Linux (64-bit)**.
-- The Windows x64 and Linux x64 GUIs are published as Native AOT. Neither package requires a separately installed .NET runtime. Linux Native AOT publication requires a Linux x64 build host.
+- The Windows x64 and Linux x64 desktop app and CLI are published as Native AOT. Neither package requires a separately installed .NET runtime. Linux Native AOT publication requires a Linux x64 build host.
 - **FFmpeg and FFprobe** for media inspection and processing. On Linux, install them using your distribution's package manager.
+- **Tesseract OCR 5.x** is optional for converting graphical subtitles to text. Install or update it separately under Settings → Installer, or select an existing Tesseract executable. It requires a matching language model in `tessdata_fast` or `tessdata_best`; media processing continues without OCR.
 - On Linux, install ICU, Fontconfig, X11, ICE and SM system libraries. Debian: `sudo apt install libicu76 libfontconfig1 libx11-6 libice6 libsm6`. Fedora: `sudo dnf install libicu fontconfig libX11 libICE libSM`. An X11 session or XWayland is required for the current Avalonia backend.
 - For Chinese, Japanese and Korean text, Noto CJK fonts are recommended but optional (`fonts-noto-cjk` on Debian, `google-noto-sans-cjk-fonts` on Fedora).
 
@@ -35,5 +38,7 @@ Media Unseal is a desktop application for inspecting media files, extracting ind
 Available output options depend on the source media and the installed FFmpeg build.
 
 ## License and Third-Party Software
+
+See the [changelog](CHANGELOG.md) and [v1.4.0 release notes](packaging/RELEASE_NOTES_1.4.0.md) for release changes.
 
 See [LICENSE.md](LICENSE.md) for the application's licensing terms and [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for third-party acknowledgments and license information. Media processing is powered by [FFmpeg](https://ffmpeg.org/).

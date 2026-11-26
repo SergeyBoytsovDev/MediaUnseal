@@ -186,6 +186,10 @@ public sealed partial class FfmpegTools
         if (!_started)
         {
             _started = true;
+            Diagnostics.Record(DiagnosticLevel.Info, "Environment",
+                $"Media Unseal {typeof(FfmpegTools).Assembly.GetName().Version?.ToString(3) ?? "unknown"}; " +
+                $"platform {RuntimeInformation.OSDescription}; architecture {RuntimeInformation.OSArchitecture}; " +
+                $"runtime {RuntimeInformation.FrameworkDescription}.");
             Log("Application dependency check started.", operation: "Startup");
         }
         Log("FFmpeg and FFprobe verification started.", operation: "Verification",
@@ -742,7 +746,7 @@ public sealed partial class FfmpegTools
         }
     }
 
-    private static async Task<string> ReadOutputAsync(StreamReader reader, CancellationToken cancellationToken)
+    internal static async Task<string> ReadOutputAsync(StreamReader reader, CancellationToken cancellationToken)
     {
         var output = new StringBuilder();
         var buffer = new char[4096];
@@ -752,7 +756,7 @@ public sealed partial class FfmpegTools
         return output.ToString();
     }
 
-    private static async Task KillAsync(Process process)
+    internal static async Task KillAsync(Process process)
     {
         try { if (!process.HasExited) process.Kill(entireProcessTree: true); }
         catch (InvalidOperationException) { }

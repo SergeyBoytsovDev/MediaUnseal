@@ -34,7 +34,7 @@
     <value>설정 항목</value>
   </data>
   <data name="SettingsInstaller" xml:space="preserve">
-    <value>FFmpeg 설치 프로그램</value>
+    <value>설치 프로그램</value>
   </data>
   <data name="SettingsAppearance" xml:space="preserve">
     <value>모양</value>
@@ -581,7 +581,7 @@
     <value>폴더 열기</value>
   </data>
   <data name="MainChooseFile" xml:space="preserve">
-    <value>파일 선택</value>
+    <value>파일 삽입</value>
   </data>
   <data name="MainSubtitles" xml:space="preserve">
     <value>자막:</value>
@@ -1746,6 +1746,89 @@
   <data name="MainCsvInvalid" xml:space="preserve"><value>CSV 자막 파일의 구조 또는 타임코드가 올바르지 않습니다.</value></data>
   <data name="ConversionCsvInputTiming" xml:space="preserve"><value>원본 ADR 타임코드</value></data>
   <data name="ConversionCsvOutputTiming" xml:space="preserve"><value>출력 ADR 타임코드</value></data>
+  <data name="MainMuxStreams" xml:space="preserve"><value>스트림을 하나의 파일로 결합</value></data>
+  <data name="MainMuxContainer" xml:space="preserve"><value>출력 컨테이너</value></data>
+  <data name="MainMuxAutoCodec" xml:space="preserve"><value>자동(가능하면 복사)</value></data>
+  <data name="MainMuxNoContainer" xml:space="preserve"><value>FFmpeg 형식을 사용할 수 없습니다.</value></data>
+  <data name="MainMuxUnavailable" xml:space="preserve"><value>선택한 스트림에 이 컨테이너를 사용할 수 없습니다.</value></data>
+  <data name="MainMuxSelectStreams" xml:space="preserve"><value>비디오, 오디오 또는 자막 스트림을 하나 이상 선택하세요.</value></data>
+  <data name="MainMuxUnsupportedStream" xml:space="preserve"><value>일반 비디오, 오디오 및 자막 스트림만 결합할 수 있습니다.</value></data>
+  <data name="MainMuxGraphicSubtitle" xml:space="preserve"><value>그래픽 자막은 이 컨테이너에 복사하거나 변환할 수 없습니다.</value></data>
+  <data name="MainMuxNoEncoder" xml:space="preserve"><value>설치된 FFmpeg에 이 스트림과 컨테이너에 맞는 인코더가 없습니다.</value></data>
+  <data name="MainMuxPlanContainer" xml:space="preserve"><value>컨테이너: {0}</value></data>
+  <data name="MainMuxPlanCopy" xml:space="preserve"><value>복사: {0}</value></data>
+  <data name="MainMuxPlanEncode" xml:space="preserve"><value>변환: {0}</value></data>
+  <data name="MainMuxChecking" xml:space="preserve"><value>FFmpeg 호환성을 확인하는 중…</value></data>
+  <data name="MainMuxRejected" xml:space="preserve"><value>FFmpeg가 선택한 컨테이너에서 이 스트림을 결합할 수 없습니다.</value></data>
+  <data name="MainMuxProbeFailed" xml:space="preserve"><value>FFmpeg가 이 컨테이너를 확인하지 못했습니다.</value></data>
+  <data name="LogAmfH264TenBitUnsupported" xml:space="preserve"><value>AMD H.264 인코더는 10비트 입력을 지원하지 않습니다. 호환되는 인코더를 선택하세요.</value></data>
+  <data name="LogAudioChannelLayoutUnsupported" xml:space="preserve"><value>인코더가 이 오디오 채널 구성을 지원하지 않습니다. 호환되는 오디오 인코더를 선택하거나 채널을 조정하세요.</value></data>
+  <data name="LogPixelFormatUnsupported" xml:space="preserve"><value>인코더가 이 픽셀 형식을 지원하지 않습니다. 호환되는 인코더를 선택하세요.</value></data>
+  <data name="LogCodecUnsupported" xml:space="preserve"><value>선택한 코덱 또는 인코더를 사용할 수 없습니다. 다른 형식이나 인코더를 선택하세요.</value></data>
+  <data name="LogMediaSourceInvalid" xml:space="preserve"><value>원본 파일이 손상되었거나 지원되지 않습니다. 파일을 확인하고 다시 시도하세요.</value></data>
+  <data name="LogMediaProcessingUnknown" xml:space="preserve"><value>파일을 처리하지 못했습니다. 원인은 진단 보고서를 확인하세요.</value></data>
+  <data name="LogMuxValidationFailed" xml:space="preserve"><value>출력 파일을 검증하지 못했습니다. 원인은 진단 보고서를 확인하세요.</value></data>
+  <data name="LogProbeAnalysisFailed" xml:space="preserve"><value>FFprobe가 파일을 분석하지 못했습니다. 파일과 진단 보고서를 확인하세요.</value></data>
+  <data name="LogMuxTimeout" xml:space="preserve"><value>스트림 결합 시간이 초과되었습니다. 다시 시도하거나 다른 인코더를 선택하세요.</value></data>
+  <data name="MainVobSubPairInvalid" xml:space="preserve"><value>VobSub .idx + .sub 쌍이 없거나 손상되었습니다. 두 파일을 같은 폴더에 놓고 다시 시도하세요.</value></data>
+  <data name="MainVobSubExportFailed" xml:space="preserve"><value>완전한 VobSub .idx + .sub 쌍을 만들지 못했습니다. 자세한 내용은 진단 보고서를 확인하세요.</value></data>
+  <data name="MainVobSubMetadataMissing" xml:space="preserve"><value>VobSub를 IDX + SUB 쌍으로 내보낼 수 없습니다. 원본에 팔레트 또는 화면 크기 정보가 없습니다.</value></data>
+  <data name="MainDvdIfoMissing" xml:space="preserve"><value>VobSub를 내보내려면 같은 폴더에 해당 VTS IFO 파일이 있어야 합니다.</value></data>
+  <data name="MainDvdIfoInvalid" xml:space="preserve"><value>VobSub를 내보낼 수 없습니다. 해당 DVD IFO 파일이 손상되었거나 읽을 수 없습니다.</value></data>
+  <data name="MainDvdIfoMismatch" xml:space="preserve"><value>VobSub를 내보낼 수 없습니다. DVD IFO가 VOB 영상 또는 자막 트랙과 일치하지 않습니다.</value></data>
+  <data name="MainDvdIfoAmbiguousPalette" xml:space="preserve"><value>VobSub를 내보낼 수 없습니다. DVD 프로그램 체인마다 팔레트가 달라 이 VOB 부분의 올바른 IDX 팔레트를 하나로 결정할 수 없습니다.</value></data>
+  <data name="LogOcrDependencyUnavailable" xml:space="preserve"><value>Tesseract OCR 또는 언어 모델을 사용할 수 없습니다. 설정 → 설치 프로그램을 여세요.</value></data>
+  <data name="MainOcrUnavailable" xml:space="preserve"><value>OCR 텍스트 내보내기를 사용할 수 없습니다. 설정 → 설치 프로그램에서 Tesseract와 언어 모델을 확인하세요.</value></data>
+  <data name="MainOcrLanguageRequired" xml:space="preserve"><value>자막 설정에서 OCR 언어를 선택하세요.</value></data>
+  <data name="MainOcrLanguageUnsupported" xml:space="preserve"><value>트랙 언어는 OCR에서 지원되지 않습니다. 지원되는 언어를 선택하세요.</value></data>
+  <data name="MainOcrModelMissing" xml:space="preserve"><value>선택한 Fast/Best OCR 모델을 이 언어에서 사용할 수 없습니다.</value></data>
+  <data name="OcrLanguage" xml:space="preserve"><value>OCR 언어</value></data>
+  <data name="OcrProfile" xml:space="preserve"><value>OCR 프로필</value></data>
+  <data name="OcrFast" xml:space="preserve"><value>빠름</value></data>
+  <data name="OcrBest" xml:space="preserve"><value>최고 품질</value></data>
+  <data name="OcrLanguageRequired" xml:space="preserve"><value>텍스트를 내보내기 전에 OCR 언어를 선택하세요.</value></data>
+  <data name="OcrModelMissing" xml:space="preserve"><value>선택한 OCR 모델이 이 언어에 설치되어 있지 않습니다.</value></data>
+  <data name="OcrNoStyling" xml:space="preserve"><value>OCR은 텍스트와 시간을 유지하지만 그래픽 스타일과 위치는 유지하지 않습니다.</value></data>
+  <data name="LogOcrCompleted" xml:space="preserve"><value>OCR 텍스트 내보내기 완료: {0}개 대사.</value></data>
+  <data name="LogOcrFailed" xml:space="preserve"><value>OCR 텍스트 내보내기에 실패했습니다. 진단 보고서를 확인하세요.</value></data>
+  <data name="SettingsComponentsTitle" xml:space="preserve"><value>구성 요소 설치</value></data>
+  <data name="InstallerTesseractRole" xml:space="preserve"><value>이미지 자막 인식</value></data>
+  <data name="InstallerOcrModelsMissing" xml:space="preserve"><value>언어 모델 없음</value></data>
+  <data name="InstallerSelectTesseract" xml:space="preserve"><value>Tesseract 경로 선택</value></data>
+  <data name="InstallerOcrInvalidPath" xml:space="preserve"><value>선택한 파일은 Tesseract 5.x가 아닙니다.</value></data>
+  <data name="InstallerOcrPathSaveFailed" xml:space="preserve"><value>Tesseract 경로를 저장하지 못했습니다.</value></data>
+  <data name="InstallerOcrAvailable" xml:space="preserve"><value>사용 가능: Tesseract {0}, 다운로드 {1} MB</value></data>
+  <data name="InstallerOcrOffline" xml:space="preserve"><value>오프라인; 내장 정보: Tesseract {0}, {1} MB</value></data>
+  <data name="InstallerOcrInstall" xml:space="preserve"><value>Tesseract 설치</value></data>
+  <data name="InstallerOcrUpdate" xml:space="preserve"><value>업데이트</value></data>
+  <data name="InstallerOcrRepair" xml:space="preserve"><value>Tesseract 복구</value></data>
+  <data name="InstallerOcrDownloading" xml:space="preserve"><value>Tesseract 다운로드 중…</value></data>
+  <data name="InstallerOcrInstalled" xml:space="preserve"><value>Tesseract OCR이 설치되었습니다.</value></data>
+  <data name="InstallerOcrInstallFailed" xml:space="preserve"><value>Tesseract OCR을 설치하지 못했습니다. 이전 버전이 유지되었습니다.</value></data>
+  <data name="InstallerRequirementWithOcr" xml:space="preserve"><value>FFmpeg와 FFprobe가 필요합니다. 이미지 자막용 Tesseract OCR은 선택 사항입니다.</value></data>
+  <data name="InstallerMediaReady" xml:space="preserve"><value>FFmpeg와 FFprobe가 준비되었습니다.</value></data>
+  <data name="InstallerOcrAvailableStatus" xml:space="preserve"><value>사용 가능: Tesseract {0}</value></data>
+  <data name="InstallerOcrOfflineStatus" xml:space="preserve"><value>설치되지 않음; 오프라인(알려진 버전: {0})</value></data>
+  <data name="InstallerOcrOfflineUnknown" xml:space="preserve"><value>Tesseract 미설치; 업데이트를 확인할 수 없음</value></data>
+  <data name="InstallerOcrActionSize" xml:space="preserve"><value>{0}({1} MB)</value></data>
+  <data name="InstallerOcrUpdateStatus" xml:space="preserve"><value>설치됨: {0}; 사용 가능: {1}</value></data>
+  <data name="InstallerOcrNetworkError" xml:space="preserve"><value>Tesseract 다운로드 중 연결 오류가 발생했습니다. 네트워크를 확인하고 다시 시도하세요.</value></data>
+  <data name="InstallerOcrInterrupted" xml:space="preserve"><value>Tesseract 다운로드가 중단되었습니다. 다시 시도하세요.</value></data>
+  <data name="InstallerOcrRetry" xml:space="preserve"><value>연결이 끊겼습니다. Tesseract 다운로드를 재시도합니다…</value></data>
+  <data name="InstallerOcrCancelled" xml:space="preserve"><value>Tesseract 설치가 취소되었습니다.</value></data>
+  <data name="MainOcrTimingUnavailable" xml:space="preserve"><value>이미지 자막의 종료 시각을 확인할 수 없습니다. 인식 전에 텍스트 내보내기를 중단했습니다.</value></data>
+  <data name="LogOcrTimingUnavailable" xml:space="preserve"><value>이미지 자막의 시간 정보가 불완전합니다. 자세한 내용은 진단 보고서를 확인하세요.</value></data>
+  <data name="LogOcrTimingFallback" xml:space="preserve"><value>일부 종료 시각은 인접한 이벤트를 바탕으로 계산되었습니다. 자세한 내용은 진단 보고서를 확인하세요.</value></data>
+  <data name="LogOcrPartialCompleted" xml:space="preserve"><value>OCR 내보내기가 일부 누락된 상태로 완료되었습니다. 원본 {0}개, 저장 {1}개, 건너뜀 {2}개. 자세한 내용은 진단 보고서를 확인하세요.</value></data>
+  <data name="DiagnosticPreviewCopy" xml:space="preserve"><value>복사</value></data>
+  <data name="InstallerOcrDownloadSize" xml:space="preserve"><value>({0} MB)</value></data>
+  <data name="MainSelectTracks" xml:space="preserve"><value>트랙을 선택하세요.</value></data>
+  <data name="MainQueueStream" xml:space="preserve"><value>트랙 {0}/{1}</value></data>
+  <data name="MainQueueGroup" xml:space="preserve"><value>트랙 {0}개 처리 중</value></data>
+  <data name="MainQueueCurrentPercent" xml:space="preserve"><value>{0} — {1:0}%</value></data>
+  <data name="MainQueueElapsed" xml:space="preserve"><value>시간: {0}</value></data>
+  <data name="MainQueueElapsedOverall" xml:space="preserve"><value>시간: {0}  전체 진행률: {1:0}%</value></data>
+  <data name="MainSelectFile" xml:space="preserve"><value>파일을 선택하세요.</value></data>
 </root>
 
 

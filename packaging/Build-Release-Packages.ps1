@@ -25,7 +25,7 @@ foreach ($releaseTarget in @(@{Rid='win-x64';Suffix='win';Apphost='MediaUnseal.e
     }
     if ($LASTEXITCODE -ne 0) { throw "Publish failed: $($releaseTarget.Rid)" }
     $cliPublish = Join-Path $packages ("publish-mucli-" + $releaseTarget.Rid + "-" + $Version)
-    & dotnet publish (Join-Path $project 'Cli/mucli.csproj') -c Release -r $releaseTarget.Rid --self-contained true -o $cliPublish
+    & dotnet publish (Join-Path $project 'Cli/mucli.csproj') -c Release -r $releaseTarget.Rid -p:PublishAot=true --self-contained true -o $cliPublish
     if ($LASTEXITCODE -ne 0) { throw "CLI publish failed: $($releaseTarget.Rid)" }
     $cliName = if ($releaseTarget.Suffix -eq 'win') { 'mucli.exe' } else { 'mucli' }
     Copy-Item -LiteralPath (Join-Path $cliPublish $cliName) -Destination $publish -Force

@@ -13,7 +13,7 @@
   <Style Selector="Button.primary"><Setter Property="Background" Value="{DynamicResource AccentBrush}"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
  </UserControl.Styles>
  <StackPanel Spacing="15">
-  <TextBlock Text="{DynamicResource Loc_InstallerRequirement}" Classes="muted" TextWrapping="Wrap"/>
+  <TextBlock Text="{DynamicResource Loc_InstallerRequirementWithOcr}" Classes="muted" TextWrapping="Wrap"/>
   <StackPanel Spacing="8">
    <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="{DynamicResource ControlCorner}" Padding="12,10">
     <Grid ColumnDefinitions="22,*,Auto" ColumnSpacing="9">
@@ -35,22 +35,36 @@
      <TextBlock Grid.Column="2" Text="{Binding FFprobeBriefStatus}" VerticalAlignment="Center" TextAlignment="Right" MaxWidth="170" TextTrimming="CharacterEllipsis" Classes="tool-status" Classes.ready="{Binding FFprobeReady}" Classes.missing="{Binding FFprobeMissing}" Classes.error="{Binding FFprobeError}"/>
     </Grid>
    </Border>
+   <Border Background="{DynamicResource PanelAltBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="{DynamicResource ControlCorner}" Padding="12,10">
+    <Grid ColumnDefinitions="22,*,Auto" ColumnSpacing="9">
+     <TextBlock x:Name="OcrIndicator" Text="●" Grid.Column="0" FontSize="16" VerticalAlignment="Center" Classes="tool-status"/>
+     <StackPanel Grid.Column="1" Spacing="2">
+      <TextBlock Text="Tesseract OCR" FontWeight="SemiBold"/>
+      <TextBlock Text="{DynamicResource Loc_InstallerTesseractRole}" Classes="muted" FontSize="12"/>
+     </StackPanel>
+     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center" HorizontalAlignment="Right">
+      <TextBlock x:Name="OcrStatus" TextTrimming="CharacterEllipsis" MaxWidth="200" Classes="tool-status"/>
+      <TextBlock x:Name="OcrDownloadSize" FontWeight="SemiBold" Classes="tool-status" IsVisible="False"/>
+     </StackPanel>
+    </Grid>
+   </Border>
   </StackPanel>
   <StackPanel Spacing="5">
-   <TextBlock Text="{DynamicResource Loc_InstallerAllReady}" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" IsVisible="{Binding IsReady}"/>
+   <TextBlock Text="{DynamicResource Loc_InstallerMediaReady}" FontWeight="SemiBold" Foreground="{DynamicResource SuccessBrush}" IsVisible="{Binding IsReady}"/>
    <TextBlock Text="{Binding FallbackNotice}" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap" IsVisible="{Binding HasFallbackNotice}"/>
    <TextBlock Text="{Binding InstallerNotice}" TextWrapping="Wrap" IsVisible="{Binding HasInstallerNotice}" Classes.error="{Binding InstallFailed}"/>
    <TextBlock x:Name="GyanLicenseNoticeText" Text="{Binding GyanLicenseNotice}" TextWrapping="Wrap"
               IsVisible="{Binding HasGyanLicenseNotice}" Classes="muted" FontSize="12"/>
    <Grid Height="30" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-    <ProgressBar Grid.Column="0" Minimum="0" Maximum="100" Value="{Binding Progress}" IsIndeterminate="{Binding ProgressBarIndeterminate}" Height="7" VerticalAlignment="Center"/>
-    <TextBlock Grid.Column="1" Text="{Binding ProgressPercentDisplay}" IsVisible="{Binding ProgressKnown}" VerticalAlignment="Center"/>
-    <Button Grid.Column="2" Content="{DynamicResource Loc_InstallerCancel}" Click="Cancel_Click" IsVisible="{Binding IsBusy}" MinWidth="88" VerticalAlignment="Center" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+    <ProgressBar x:Name="InstallerProgress" Grid.Column="0" Minimum="0" Maximum="100" Value="{Binding Progress}" IsIndeterminate="{Binding ProgressBarIndeterminate}" Height="7" VerticalAlignment="Center"/>
+    <TextBlock x:Name="InstallerProgressPercent" Grid.Column="1" Text="{Binding ProgressPercentDisplay}" IsVisible="{Binding ProgressKnown}" VerticalAlignment="Center"/>
+    <Button x:Name="InstallerCancel" Grid.Column="2" Content="{DynamicResource Loc_InstallerCancel}" Click="Cancel_Click" IsVisible="{Binding IsBusy}" MinWidth="88" VerticalAlignment="Center" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
    </Grid>
   </StackPanel>
   <StackPanel Spacing="8" Grid.IsSharedSizeScope="True">
    <Grid ColumnSpacing="8">
-    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="InstallerActions"/><ColumnDefinition Width="Auto" SharedSizeGroup="InstallerActions"/></Grid.ColumnDefinitions>
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="InstallerActions"/><ColumnDefinition Width="Auto" SharedSizeGroup="InstallerActions"/><ColumnDefinition Width="Auto" SharedSizeGroup="InstallerActions"/></Grid.ColumnDefinitions>
     <Button x:Name="InstallButton" Grid.Column="0" Classes="primary" Click="Install_Click" IsEnabled="{Binding CanAutoInstall}" IsVisible="{Binding NeedsTools}" MinWidth="160" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
      <StackPanel Orientation="Horizontal" Spacing="6">
       <Path Data="M 12,2 L 12,16 M 7,11 L 12,16 L 17,11 M 3,18 L 3,22 L 21,22 L 21,18" Stroke="White" StrokeThickness="2" Width="16" Height="16" Stretch="Uniform" VerticalAlignment="Center"/>
@@ -58,7 +72,7 @@
      </StackPanel>
     </Button>
     <StackPanel Grid.Column="0" x:Name="ContinueArea" IsVisible="False" IsHitTestVisible="{Binding IsReady}" HorizontalAlignment="Stretch">
-     <Button Classes="primary" Content="{DynamicResource Loc_InstallerContinue}" Click="Continue_Click" IsEnabled="{Binding CanAct}" IsVisible="{Binding IsReady}" MinWidth="160" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+     <Button x:Name="ContinueButton" Classes="primary" Content="{DynamicResource Loc_InstallerContinue}" Click="Continue_Click" IsEnabled="{Binding CanAct}" IsVisible="{Binding IsReady}" MinWidth="160" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
     </StackPanel>
     <Button x:Name="RetryButton" Grid.Column="1" Click="Retry_Click" IsEnabled="{Binding CanAct}" MinWidth="160" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
      <StackPanel Orientation="Horizontal" Spacing="7">
@@ -66,16 +80,20 @@
       <TextBlock Text="{DynamicResource Loc_InstallerRetry}" VerticalAlignment="Center" FontWeight="SemiBold"/>
      </StackPanel>
     </Button>
-   </Grid>
-   <Grid ColumnSpacing="8" IsVisible="{Binding NeedsTools}">
-    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" SharedSizeGroup="InstallerActions"/><ColumnDefinition Width="Auto" SharedSizeGroup="InstallerActions"/></Grid.ColumnDefinitions>
-    <Button x:Name="SelectFFmpegButton" Grid.Column="0" Click="SelectFFmpeg_Click" IsEnabled="{Binding CanAct}" MinWidth="160" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+    <Button x:Name="OcrAction" Grid.Column="2" Click="OcrAction_Click" MinWidth="160" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsVisible="False"/>
+    <Button x:Name="OcrSelect" Grid.Row="1" Grid.Column="2" Margin="0,8,0,0" Click="SelectOcr_Click" MinWidth="160" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsVisible="False">
+     <StackPanel Orientation="Horizontal" Spacing="7">
+      <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z" Stroke="{DynamicResource MainTextBrush}" StrokeThickness="2" Width="16" Height="15" Stretch="Uniform" VerticalAlignment="Center"/>
+      <TextBlock Text="{DynamicResource Loc_InstallerSelectTesseract}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+     </StackPanel>
+    </Button>
+    <Button x:Name="SelectFFmpegButton" Grid.Row="1" Grid.Column="0" Margin="0,8,0,0" Click="SelectFFmpeg_Click" IsEnabled="{Binding CanAct}" IsVisible="{Binding NeedsTools}" MinWidth="160" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
      <StackPanel Orientation="Horizontal" Spacing="7">
       <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z" Stroke="{DynamicResource MainTextBrush}" StrokeThickness="2" Width="16" Height="15" Stretch="Uniform" VerticalAlignment="Center"/>
       <TextBlock Text="{DynamicResource Loc_InstallerSelectFfmpeg}" FontWeight="SemiBold" VerticalAlignment="Center"/>
      </StackPanel>
     </Button>
-    <Button x:Name="SelectFFprobeButton" Grid.Column="1" Click="SelectFFprobe_Click" IsEnabled="{Binding CanAct}" MinWidth="160" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+    <Button x:Name="SelectFFprobeButton" Grid.Row="1" Grid.Column="1" Margin="0,8,0,0" Click="SelectFFprobe_Click" IsEnabled="{Binding CanAct}" IsVisible="{Binding NeedsTools}" MinWidth="160" MinHeight="40" Padding="8,7" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
      <StackPanel Orientation="Horizontal" Spacing="7">
       <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z" Stroke="{DynamicResource MainTextBrush}" StrokeThickness="2" Width="16" Height="15" Stretch="Uniform" VerticalAlignment="Center"/>
       <TextBlock Text="{DynamicResource Loc_InstallerSelectFfprobe}" FontWeight="SemiBold" VerticalAlignment="Center"/>

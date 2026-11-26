@@ -34,7 +34,7 @@
     <value>SECTIONS</value>
   </data>
   <data name="SettingsInstaller" xml:space="preserve">
-    <value>FFmpeg installer</value>
+    <value>Installer</value>
   </data>
   <data name="SettingsAppearance" xml:space="preserve">
     <value>Appearance</value>
@@ -581,7 +581,7 @@
     <value>Open folder</value>
   </data>
   <data name="MainChooseFile" xml:space="preserve">
-    <value>Choose file</value>
+    <value>Insert File</value>
   </data>
   <data name="MainSubtitles" xml:space="preserve">
     <value>Subtitles:</value>
@@ -1746,6 +1746,89 @@ Video: {6}; images: {7}; animations: {8}; audio: {9}; subtitles: {10}; unknown v
   <data name="MainCsvInvalid" xml:space="preserve"><value>The CSV subtitle file has an invalid structure or timecode.</value></data>
   <data name="ConversionCsvInputTiming" xml:space="preserve"><value>Source ADR timecodes</value></data>
   <data name="ConversionCsvOutputTiming" xml:space="preserve"><value>Output ADR timecodes</value></data>
+  <data name="MainMuxStreams" xml:space="preserve"><value>Combine streams into one file</value></data>
+  <data name="MainMuxContainer" xml:space="preserve"><value>Output container</value></data>
+  <data name="MainMuxAutoCodec" xml:space="preserve"><value>Automatic (copy if possible)</value></data>
+  <data name="MainMuxNoContainer" xml:space="preserve"><value>FFmpeg formats are unavailable.</value></data>
+  <data name="MainMuxUnavailable" xml:space="preserve"><value>This container is unavailable for the selected streams.</value></data>
+  <data name="MainMuxSelectStreams" xml:space="preserve"><value>Select at least one video, audio, or subtitle stream.</value></data>
+  <data name="MainMuxUnsupportedStream" xml:space="preserve"><value>Only regular video, audio, and subtitle streams can be combined.</value></data>
+  <data name="MainMuxGraphicSubtitle" xml:space="preserve"><value>A graphic subtitle cannot be copied or converted for this container.</value></data>
+  <data name="MainMuxNoEncoder" xml:space="preserve"><value>The installed FFmpeg has no suitable encoder for this stream and container.</value></data>
+  <data name="MainMuxPlanContainer" xml:space="preserve"><value>Container: {0}</value></data>
+  <data name="MainMuxPlanCopy" xml:space="preserve"><value>Copy: {0}</value></data>
+  <data name="MainMuxPlanEncode" xml:space="preserve"><value>Convert: {0}</value></data>
+  <data name="MainMuxChecking" xml:space="preserve"><value>Checking FFmpeg compatibility…</value></data>
+  <data name="MainMuxRejected" xml:space="preserve"><value>FFmpeg cannot combine these streams in the selected container.</value></data>
+  <data name="MainMuxProbeFailed" xml:space="preserve"><value>FFmpeg could not verify this container.</value></data>
+  <data name="LogAmfH264TenBitUnsupported" xml:space="preserve"><value>AMD H.264 cannot encode 10-bit input. Choose a compatible encoder.</value></data>
+  <data name="LogAudioChannelLayoutUnsupported" xml:space="preserve"><value>The encoder does not support this audio channel layout. Choose a compatible audio encoder or adjust the channels.</value></data>
+  <data name="LogPixelFormatUnsupported" xml:space="preserve"><value>The encoder does not support this pixel format. Choose a compatible encoder.</value></data>
+  <data name="LogCodecUnsupported" xml:space="preserve"><value>The selected codec or encoder is unavailable. Choose another format or encoder.</value></data>
+  <data name="LogMediaSourceInvalid" xml:space="preserve"><value>The source file is damaged or unsupported. Check the file and try again.</value></data>
+  <data name="LogMediaProcessingUnknown" xml:space="preserve"><value>Could not process the file. See the Diagnostic Report for the cause.</value></data>
+  <data name="LogMuxValidationFailed" xml:space="preserve"><value>Could not validate the output file. See the Diagnostic Report for the cause.</value></data>
+  <data name="LogProbeAnalysisFailed" xml:space="preserve"><value>FFprobe could not analyze the file. Check the file and see the Diagnostic Report.</value></data>
+  <data name="LogMuxTimeout" xml:space="preserve"><value>Muxing timed out. Try again or choose another encoder.</value></data>
+  <data name="MainVobSubPairInvalid" xml:space="preserve"><value>The VobSub .idx + .sub pair is missing or damaged. Place both files together and try again.</value></data>
+  <data name="MainVobSubExportFailed" xml:space="preserve"><value>Could not create a complete VobSub .idx + .sub pair. See the Diagnostic Report for details.</value></data>
+  <data name="MainVobSubMetadataMissing" xml:space="preserve"><value>VobSub cannot be exported as an IDX + SUB pair: the source has no palette or frame size metadata.</value></data>
+  <data name="MainDvdIfoMissing" xml:space="preserve"><value>VobSub export needs the matching VTS title-set IFO file in the same folder.</value></data>
+  <data name="MainDvdIfoInvalid" xml:space="preserve"><value>VobSub export is unavailable: the matching DVD IFO is damaged or cannot be read.</value></data>
+  <data name="MainDvdIfoMismatch" xml:space="preserve"><value>VobSub export is unavailable: the DVD IFO does not match the VOB video or subtitle tracks.</value></data>
+  <data name="MainDvdIfoAmbiguousPalette" xml:space="preserve"><value>VobSub export is unavailable: DVD chapters use different palettes, so a single correct IDX palette cannot be determined for this VOB part.</value></data>
+  <data name="LogOcrDependencyUnavailable" xml:space="preserve"><value>Tesseract OCR or its language models are unavailable. Open Settings → Installer.</value></data>
+  <data name="MainOcrUnavailable" xml:space="preserve"><value>OCR text export is unavailable. Check Tesseract and its language models in Settings → Installer.</value></data>
+  <data name="MainOcrLanguageRequired" xml:space="preserve"><value>Choose the OCR language in subtitle settings.</value></data>
+  <data name="MainOcrLanguageUnsupported" xml:space="preserve"><value>The track language is unsupported for OCR. Choose a supported language in subtitle settings.</value></data>
+  <data name="MainOcrModelMissing" xml:space="preserve"><value>The selected Fast/Best OCR model is unavailable for this language.</value></data>
+  <data name="OcrLanguage" xml:space="preserve"><value>OCR language</value></data>
+  <data name="OcrProfile" xml:space="preserve"><value>OCR profile</value></data>
+  <data name="OcrFast" xml:space="preserve"><value>Fast</value></data>
+  <data name="OcrBest" xml:space="preserve"><value>Best</value></data>
+  <data name="OcrLanguageRequired" xml:space="preserve"><value>Choose an OCR language before exporting text.</value></data>
+  <data name="OcrModelMissing" xml:space="preserve"><value>The selected OCR model is not installed for this language.</value></data>
+  <data name="OcrNoStyling" xml:space="preserve"><value>OCR recovers text and timing, but not graphical styling or positioning.</value></data>
+  <data name="LogOcrCompleted" xml:space="preserve"><value>OCR text export completed: {0} cues.</value></data>
+  <data name="LogOcrFailed" xml:space="preserve"><value>OCR text export failed. See the diagnostic report.</value></data>
+  <data name="SettingsComponentsTitle" xml:space="preserve"><value>Component installation</value></data>
+  <data name="InstallerTesseractRole" xml:space="preserve"><value>Graphic subtitle recognition</value></data>
+  <data name="InstallerOcrModelsMissing" xml:space="preserve"><value>Language models missing</value></data>
+  <data name="InstallerSelectTesseract" xml:space="preserve"><value>Select Tesseract path</value></data>
+  <data name="InstallerOcrInvalidPath" xml:space="preserve"><value>The selected file is not Tesseract 5.x.</value></data>
+  <data name="InstallerOcrPathSaveFailed" xml:space="preserve"><value>Could not save the Tesseract path.</value></data>
+  <data name="InstallerOcrAvailable" xml:space="preserve"><value>Available: Tesseract {0}, {1} MB download</value></data>
+  <data name="InstallerOcrOffline" xml:space="preserve"><value>Offline; packaged information: Tesseract {0}, {1} MB</value></data>
+  <data name="InstallerOcrInstall" xml:space="preserve"><value>Install Tesseract</value></data>
+  <data name="InstallerOcrUpdate" xml:space="preserve"><value>Update</value></data>
+  <data name="InstallerOcrRepair" xml:space="preserve"><value>Repair Tesseract</value></data>
+  <data name="InstallerOcrDownloading" xml:space="preserve"><value>Downloading Tesseract…</value></data>
+  <data name="InstallerOcrInstalled" xml:space="preserve"><value>Tesseract OCR installed.</value></data>
+  <data name="InstallerOcrInstallFailed" xml:space="preserve"><value>Could not install Tesseract OCR. The previous version was retained.</value></data>
+  <data name="InstallerRequirementWithOcr" xml:space="preserve"><value>FFmpeg and FFprobe are required. Tesseract OCR is optional for graphical subtitles.</value></data>
+  <data name="InstallerMediaReady" xml:space="preserve"><value>FFmpeg and FFprobe are ready.</value></data>
+  <data name="InstallerOcrAvailableStatus" xml:space="preserve"><value>Available: Tesseract {0}</value></data>
+  <data name="InstallerOcrOfflineStatus" xml:space="preserve"><value>Not installed; offline (cached version: {0})</value></data>
+  <data name="InstallerOcrOfflineUnknown" xml:space="preserve"><value>Tesseract not installed; update check unavailable</value></data>
+  <data name="InstallerOcrActionSize" xml:space="preserve"><value>{0} ({1} MB)</value></data>
+  <data name="InstallerOcrUpdateStatus" xml:space="preserve"><value>Installed: {0}; available: {1}</value></data>
+  <data name="InstallerOcrNetworkError" xml:space="preserve"><value>Connection failed while downloading Tesseract. Check the network and try again.</value></data>
+  <data name="InstallerOcrInterrupted" xml:space="preserve"><value>Tesseract download was interrupted. Try again.</value></data>
+  <data name="InstallerOcrRetry" xml:space="preserve"><value>Connection interrupted. Retrying Tesseract download…</value></data>
+  <data name="InstallerOcrCancelled" xml:space="preserve"><value>Tesseract installation cancelled.</value></data>
+  <data name="MainOcrTimingUnavailable" xml:space="preserve"><value>A graphical subtitle has no confirmed end time. Text export was stopped before recognition.</value></data>
+  <data name="LogOcrTimingUnavailable" xml:space="preserve"><value>Graphical subtitle timing is incomplete. Text export stopped; see the Diagnostic Report.</value></data>
+  <data name="LogOcrTimingFallback" xml:space="preserve"><value>Some subtitle end times were calculated from nearby events. See the Diagnostic Report.</value></data>
+  <data name="LogOcrPartialCompleted" xml:space="preserve"><value>OCR export completed with omissions: source {0}, saved {1}, skipped {2}. See the Diagnostic Report.</value></data>
+  <data name="DiagnosticPreviewCopy" xml:space="preserve"><value>Copy</value></data>
+  <data name="InstallerOcrDownloadSize" xml:space="preserve"><value>({0} MB)</value></data>
+  <data name="MainSelectTracks" xml:space="preserve"><value>Select tracks.</value></data>
+  <data name="MainQueueStream" xml:space="preserve"><value>Stream {0} of {1}</value></data>
+  <data name="MainQueueGroup" xml:space="preserve"><value>Processing {0} streams</value></data>
+  <data name="MainQueueCurrentPercent" xml:space="preserve"><value>{0} — {1:0}%</value></data>
+  <data name="MainQueueElapsed" xml:space="preserve"><value>Time: {0}</value></data>
+  <data name="MainQueueElapsedOverall" xml:space="preserve"><value>Time: {0}  Overall progress: {1:0}%</value></data>
+  <data name="MainSelectFile" xml:space="preserve"><value>Select a file.</value></data>
 </root>
 
 

@@ -34,7 +34,7 @@
     <value>设置分类</value>
   </data>
   <data name="SettingsInstaller" xml:space="preserve">
-    <value>FFmpeg 安装程序</value>
+    <value>安装程序</value>
   </data>
   <data name="SettingsAppearance" xml:space="preserve">
     <value>外观</value>
@@ -581,7 +581,7 @@
     <value>打开文件夹</value>
   </data>
   <data name="MainChooseFile" xml:space="preserve">
-    <value>选择文件</value>
+    <value>插入文件</value>
   </data>
   <data name="MainSubtitles" xml:space="preserve">
     <value>字幕：</value>
@@ -656,7 +656,7 @@
     <value>提取</value>
   </data>
   <data name="MainCheckingDependencies" xml:space="preserve">
-    <value>正在检查依赖项…</value>
+    <value>正在检查安装程序…</value>
   </data>
   <data name="MainNeedTools" xml:space="preserve">
     <value>需要 FFmpeg 和 FFprobe</value>
@@ -704,7 +704,7 @@
     <value>对文件或 FFprobe 的访问被拒绝。</value>
   </data>
   <data name="MainProbeLaunchFailed" xml:space="preserve">
-    <value>无法启动 FFprobe。请重新检查依赖项。</value>
+    <value>无法启动 FFprobe。请重新检查安装程序。</value>
   </data>
   <data name="MainFileReadFailed" xml:space="preserve">
     <value>无法读取文件。请检查访问权限后重试。</value>
@@ -1131,7 +1131,7 @@
     <value>无法写入文件。请检查可用空间和权限。</value>
   </data>
   <data name="MainResultFfmpegLaunchFailed" xml:space="preserve">
-    <value>无法启动 FFmpeg。请重新检查依赖项。</value>
+    <value>无法启动 FFmpeg。请重新检查安装程序。</value>
   </data>
   <data name="MainResultUnexpectedFailure" xml:space="preserve">
     <value>无法提取媒体流。已用时间：{0}。请查看日志后重试。</value>
@@ -1746,6 +1746,89 @@
   <data name="MainCsvInvalid" xml:space="preserve"><value>CSV 字幕文件的结构或时间码无效。</value></data>
   <data name="ConversionCsvInputTiming" xml:space="preserve"><value>源 ADR 时间码</value></data>
   <data name="ConversionCsvOutputTiming" xml:space="preserve"><value>输出 ADR 时间码</value></data>
+  <data name="MainMuxStreams" xml:space="preserve"><value>将流合并为一个文件</value></data>
+  <data name="MainMuxContainer" xml:space="preserve"><value>输出容器</value></data>
+  <data name="MainMuxAutoCodec" xml:space="preserve"><value>自动（尽可能复制）</value></data>
+  <data name="MainMuxNoContainer" xml:space="preserve"><value>FFmpeg 格式不可用。</value></data>
+  <data name="MainMuxUnavailable" xml:space="preserve"><value>此容器不支持所选流。</value></data>
+  <data name="MainMuxSelectStreams" xml:space="preserve"><value>至少选择一个视频、音频或字幕流。</value></data>
+  <data name="MainMuxUnsupportedStream" xml:space="preserve"><value>只能合并普通视频、音频和字幕流。</value></data>
+  <data name="MainMuxGraphicSubtitle" xml:space="preserve"><value>图形字幕无法复制或转换到此容器。</value></data>
+  <data name="MainMuxNoEncoder" xml:space="preserve"><value>已安装的 FFmpeg 没有适合此流和容器的编码器。</value></data>
+  <data name="MainMuxPlanContainer" xml:space="preserve"><value>容器：{0}</value></data>
+  <data name="MainMuxPlanCopy" xml:space="preserve"><value>直接复制：{0}</value></data>
+  <data name="MainMuxPlanEncode" xml:space="preserve"><value>转码：{0}</value></data>
+  <data name="MainMuxChecking" xml:space="preserve"><value>正在检查 FFmpeg 兼容性…</value></data>
+  <data name="MainMuxRejected" xml:space="preserve"><value>FFmpeg 无法在所选容器中合并这些流。</value></data>
+  <data name="MainMuxProbeFailed" xml:space="preserve"><value>FFmpeg 无法验证此容器。</value></data>
+  <data name="LogAmfH264TenBitUnsupported" xml:space="preserve"><value>AMD H.264 编码器不支持 10 位输入。请选择兼容的编码器。</value></data>
+  <data name="LogAudioChannelLayoutUnsupported" xml:space="preserve"><value>编码器不支持此音频声道布局。请选择兼容的音频编码器或调整声道。</value></data>
+  <data name="LogPixelFormatUnsupported" xml:space="preserve"><value>编码器不支持此像素格式。请选择兼容的编码器。</value></data>
+  <data name="LogCodecUnsupported" xml:space="preserve"><value>所选编解码器或编码器不可用。请选择其他格式或编码器。</value></data>
+  <data name="LogMediaSourceInvalid" xml:space="preserve"><value>源文件已损坏或不受支持。请检查文件后重试。</value></data>
+  <data name="LogMediaProcessingUnknown" xml:space="preserve"><value>无法处理文件。请查看诊断报告了解原因。</value></data>
+  <data name="LogMuxValidationFailed" xml:space="preserve"><value>无法验证输出文件。请查看诊断报告了解原因。</value></data>
+  <data name="LogProbeAnalysisFailed" xml:space="preserve"><value>FFprobe 无法分析文件。请检查文件并查看诊断报告。</value></data>
+  <data name="LogMuxTimeout" xml:space="preserve"><value>合并流超时。请重试或选择其他编码器。</value></data>
+  <data name="MainVobSubPairInvalid" xml:space="preserve"><value>VobSub .idx + .sub 文件对缺失或损坏。请将两个文件放在同一文件夹后重试。</value></data>
+  <data name="MainVobSubExportFailed" xml:space="preserve"><value>无法创建完整的 VobSub .idx + .sub 文件对。详情请查看诊断报告。</value></data>
+  <data name="MainVobSubMetadataMissing" xml:space="preserve"><value>无法将 VobSub 导出为 IDX + SUB 文件对：源文件缺少调色板或画面尺寸信息。</value></data>
+  <data name="MainDvdIfoMissing" xml:space="preserve"><value>导出 VobSub 需要同一文件夹中的对应 VTS IFO 文件。</value></data>
+  <data name="MainDvdIfoInvalid" xml:space="preserve"><value>无法导出 VobSub：对应的 DVD IFO 文件已损坏或无法读取。</value></data>
+  <data name="MainDvdIfoMismatch" xml:space="preserve"><value>无法导出 VobSub：DVD IFO 与 VOB 视频或字幕轨道不匹配。</value></data>
+  <data name="MainDvdIfoAmbiguousPalette" xml:space="preserve"><value>无法导出 VobSub：DVD 节目链使用不同调色板，无法为此 VOB 分段确定唯一正确的 IDX 调色板。</value></data>
+  <data name="LogOcrDependencyUnavailable" xml:space="preserve"><value>Tesseract OCR 或语言模型不可用。请打开“设置 → 安装程序”。</value></data>
+  <data name="MainOcrUnavailable" xml:space="preserve"><value>OCR 文本导出不可用。请在“设置 → 安装程序”中检查 Tesseract 和语言模型。</value></data>
+  <data name="MainOcrLanguageRequired" xml:space="preserve"><value>请在字幕设置中选择 OCR 语言。</value></data>
+  <data name="MainOcrLanguageUnsupported" xml:space="preserve"><value>轨道语言不受 OCR 支持。请在字幕设置中选择支持的语言。</value></data>
+  <data name="MainOcrModelMissing" xml:space="preserve"><value>所选 Fast/Best OCR 模型不支持此语言。</value></data>
+  <data name="OcrLanguage" xml:space="preserve"><value>OCR 语言</value></data>
+  <data name="OcrProfile" xml:space="preserve"><value>OCR 模型</value></data>
+  <data name="OcrFast" xml:space="preserve"><value>快速</value></data>
+  <data name="OcrBest" xml:space="preserve"><value>最佳</value></data>
+  <data name="OcrLanguageRequired" xml:space="preserve"><value>导出文本前请选择 OCR 语言。</value></data>
+  <data name="OcrModelMissing" xml:space="preserve"><value>此语言尚未安装所选 OCR 模型。</value></data>
+  <data name="OcrNoStyling" xml:space="preserve"><value>OCR 保留文本和时间，但不保留图形样式或位置。</value></data>
+  <data name="LogOcrCompleted" xml:space="preserve"><value>OCR 文本导出完成：{0} 条字幕。</value></data>
+  <data name="LogOcrFailed" xml:space="preserve"><value>OCR 文本导出失败。请查看诊断报告。</value></data>
+  <data name="SettingsComponentsTitle" xml:space="preserve"><value>组件安装</value></data>
+  <data name="InstallerTesseractRole" xml:space="preserve"><value>图形字幕识别</value></data>
+  <data name="InstallerOcrModelsMissing" xml:space="preserve"><value>缺少语言模型</value></data>
+  <data name="InstallerSelectTesseract" xml:space="preserve"><value>指定 Tesseract 路径</value></data>
+  <data name="InstallerOcrInvalidPath" xml:space="preserve"><value>所选文件不是 Tesseract 5.x。</value></data>
+  <data name="InstallerOcrPathSaveFailed" xml:space="preserve"><value>无法保存 Tesseract 路径。</value></data>
+  <data name="InstallerOcrAvailable" xml:space="preserve"><value>可用：Tesseract {0}，下载 {1} MB</value></data>
+  <data name="InstallerOcrOffline" xml:space="preserve"><value>离线；内置版本信息：Tesseract {0}，{1} MB</value></data>
+  <data name="InstallerOcrInstall" xml:space="preserve"><value>安装 Tesseract</value></data>
+  <data name="InstallerOcrUpdate" xml:space="preserve"><value>更新</value></data>
+  <data name="InstallerOcrRepair" xml:space="preserve"><value>修复 Tesseract</value></data>
+  <data name="InstallerOcrDownloading" xml:space="preserve"><value>正在下载 Tesseract…</value></data>
+  <data name="InstallerOcrInstalled" xml:space="preserve"><value>Tesseract OCR 已安装。</value></data>
+  <data name="InstallerOcrInstallFailed" xml:space="preserve"><value>无法安装 Tesseract OCR。已保留先前版本。</value></data>
+  <data name="InstallerRequirementWithOcr" xml:space="preserve"><value>FFmpeg 和 FFprobe 为必需组件。图形字幕识别可选用 Tesseract OCR。</value></data>
+  <data name="InstallerMediaReady" xml:space="preserve"><value>FFmpeg 和 FFprobe 已就绪。</value></data>
+  <data name="InstallerOcrAvailableStatus" xml:space="preserve"><value>可用：Tesseract {0}</value></data>
+  <data name="InstallerOcrOfflineStatus" xml:space="preserve"><value>未安装；离线（已知版本：{0}）</value></data>
+  <data name="InstallerOcrOfflineUnknown" xml:space="preserve"><value>未安装 Tesseract；无法检查更新</value></data>
+  <data name="InstallerOcrActionSize" xml:space="preserve"><value>{0}（{1} MB）</value></data>
+  <data name="InstallerOcrUpdateStatus" xml:space="preserve"><value>已安装：{0}；可用：{1}</value></data>
+  <data name="InstallerOcrNetworkError" xml:space="preserve"><value>下载 Tesseract 时连接失败。请检查网络后重试。</value></data>
+  <data name="InstallerOcrInterrupted" xml:space="preserve"><value>Tesseract 下载中断。请重试。</value></data>
+  <data name="InstallerOcrRetry" xml:space="preserve"><value>连接中断，正在重试下载 Tesseract…</value></data>
+  <data name="InstallerOcrCancelled" xml:space="preserve"><value>已取消 Tesseract 安装。</value></data>
+  <data name="MainOcrTimingUnavailable" xml:space="preserve"><value>图形字幕缺少可靠的结束时间。文本导出已在识别前停止。</value></data>
+  <data name="LogOcrTimingUnavailable" xml:space="preserve"><value>图形字幕时间信息不完整。文本导出已停止；详情请查看诊断报告。</value></data>
+  <data name="LogOcrTimingFallback" xml:space="preserve"><value>部分字幕的结束时间根据相邻事件计算。详情请查看诊断报告。</value></data>
+  <data name="LogOcrPartialCompleted" xml:space="preserve"><value>OCR 导出已完成，但有部分内容跳过：原始 {0} 条，保存 {1} 条，跳过 {2} 条。详情请查看诊断报告。</value></data>
+  <data name="DiagnosticPreviewCopy" xml:space="preserve"><value>复制</value></data>
+  <data name="InstallerOcrDownloadSize" xml:space="preserve"><value>（{0} MB）</value></data>
+  <data name="MainSelectTracks" xml:space="preserve"><value>请选择轨道。</value></data>
+  <data name="MainQueueStream" xml:space="preserve"><value>轨道 {0}/{1}</value></data>
+  <data name="MainQueueGroup" xml:space="preserve"><value>正在处理 {0} 条轨道</value></data>
+  <data name="MainQueueCurrentPercent" xml:space="preserve"><value>{0} — {1:0}%</value></data>
+  <data name="MainQueueElapsed" xml:space="preserve"><value>时间：{0}</value></data>
+  <data name="MainQueueElapsedOverall" xml:space="preserve"><value>时间：{0}  总体进度：{1:0}%</value></data>
+  <data name="MainSelectFile" xml:space="preserve"><value>请选择文件。</value></data>
 </root>
 
 

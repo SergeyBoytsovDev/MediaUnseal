@@ -11,7 +11,7 @@
   <data name="VersionFormat" xml:space="preserve"><value>Версия: {0}</value></data>
   <data name="VersionUnspecified" xml:space="preserve"><value>не указана</value></data>
   <data name="SettingsSections" xml:space="preserve"><value>РАЗДЕЛЫ</value></data>
-  <data name="SettingsInstaller" xml:space="preserve"><value>Установщик FFmpeg</value></data>
+  <data name="SettingsInstaller" xml:space="preserve"><value>Установщик</value></data>
   <data name="SettingsAppearance" xml:space="preserve"><value>Оформление</value></data>
   <data name="SettingsKnowledgeBase" xml:space="preserve"><value>База знаний</value></data>
   <data name="SettingsAbout" xml:space="preserve"><value>О программе</value></data>
@@ -212,7 +212,7 @@
   <data name="MainMinimize" xml:space="preserve"><value>Свернуть</value></data>
   <data name="MainFileInfo" xml:space="preserve"><value>Информация о файле</value></data>
   <data name="MainOpenFolder" xml:space="preserve"><value>Открыть папку</value></data>
-  <data name="MainChooseFile" xml:space="preserve"><value>Выбрать файл</value></data>
+  <data name="MainChooseFile" xml:space="preserve"><value>Вставить файл</value></data>
   <data name="MainSubtitles" xml:space="preserve"><value>Субтитры:</value></data>
   <data name="MainColumnIndex" xml:space="preserve"><value>Индекс</value></data>
   <data name="MainFormat" xml:space="preserve"><value>Формат:</value></data>
@@ -683,4 +683,87 @@
   <data name="MainCsvInvalid" xml:space="preserve"><value>Неверная структура CSV-файла субтитров или временных меток.</value></data>
   <data name="ConversionCsvInputTiming" xml:space="preserve"><value>Таймкоды исходного ADR</value></data>
   <data name="ConversionCsvOutputTiming" xml:space="preserve"><value>Таймкоды выходного ADR</value></data>
+  <data name="MainMuxStreams" xml:space="preserve"><value>Объединить потоки в один файл</value></data>
+  <data name="MainMuxContainer" xml:space="preserve"><value>Выходной контейнер</value></data>
+  <data name="MainMuxAutoCodec" xml:space="preserve"><value>Автоматически (копировать, если возможно)</value></data>
+  <data name="MainMuxNoContainer" xml:space="preserve"><value>Форматы FFmpeg недоступны.</value></data>
+  <data name="MainMuxUnavailable" xml:space="preserve"><value>Этот контейнер несовместим с выбранными потоками.</value></data>
+  <data name="MainMuxSelectStreams" xml:space="preserve"><value>Выберите хотя бы один видео-, аудио- или субтитровый поток.</value></data>
+  <data name="MainMuxUnsupportedStream" xml:space="preserve"><value>Объединять можно только обычные видео-, аудио- и субтитровые потоки.</value></data>
+  <data name="MainMuxGraphicSubtitle" xml:space="preserve"><value>Графические субтитры нельзя скопировать или преобразовать для этого контейнера.</value></data>
+  <data name="MainMuxNoEncoder" xml:space="preserve"><value>В установленном FFmpeg нет подходящего кодировщика для потока и контейнера.</value></data>
+  <data name="MainMuxPlanContainer" xml:space="preserve"><value>Контейнер: {0}</value></data>
+  <data name="MainMuxPlanCopy" xml:space="preserve"><value>Без перекодирования: {0}</value></data>
+  <data name="MainMuxPlanEncode" xml:space="preserve"><value>Перекодирование: {0}</value></data>
+  <data name="MainMuxChecking" xml:space="preserve"><value>Проверяется совместимость с FFmpeg…</value></data>
+  <data name="MainMuxRejected" xml:space="preserve"><value>FFmpeg не может объединить эти потоки в выбранном контейнере.</value></data>
+  <data name="MainMuxProbeFailed" xml:space="preserve"><value>Не удалось проверить контейнер через FFmpeg.</value></data>
+  <data name="LogAmfH264TenBitUnsupported" xml:space="preserve"><value>Кодировщик AMD H.264 не поддерживает 10-битный вход. Выберите совместимый кодировщик.</value></data>
+  <data name="LogAudioChannelLayoutUnsupported" xml:space="preserve"><value>Кодировщик не поддерживает раскладку аудиоканалов. Выберите совместимый аудиокодировщик или настройте каналы.</value></data>
+  <data name="LogPixelFormatUnsupported" xml:space="preserve"><value>Кодировщик не поддерживает пиксельный формат. Выберите совместимый кодировщик.</value></data>
+  <data name="LogCodecUnsupported" xml:space="preserve"><value>Выбранный кодек или кодировщик недоступен. Выберите другой формат или кодировщик.</value></data>
+  <data name="LogMediaSourceInvalid" xml:space="preserve"><value>Исходный файл повреждён или не поддерживается. Проверьте файл и повторите попытку.</value></data>
+  <data name="LogMediaProcessingUnknown" xml:space="preserve"><value>Не удалось обработать файл. Причина указана в диагностическом отчёте.</value></data>
+  <data name="LogMuxValidationFailed" xml:space="preserve"><value>Не удалось проверить созданный файл. Причина указана в диагностическом отчёте.</value></data>
+  <data name="LogProbeAnalysisFailed" xml:space="preserve"><value>Не удалось проанализировать файл через FFprobe. Проверьте файл и откройте диагностический отчёт.</value></data>
+  <data name="LogMuxTimeout" xml:space="preserve"><value>Время объединения потоков истекло. Повторите обработку или выберите другой кодировщик.</value></data>
+  <data name="MainVobSubPairInvalid" xml:space="preserve"><value>Пара VobSub .idx + .sub отсутствует или повреждена. Поместите оба файла рядом и повторите попытку.</value></data>
+  <data name="MainVobSubExportFailed" xml:space="preserve"><value>Не удалось создать полную пару VobSub .idx + .sub. Подробности см. в диагностическом отчёте.</value></data>
+  <data name="MainVobSubMetadataMissing" xml:space="preserve"><value>Нельзя извлечь VobSub в пару IDX + SUB: в источнике нет данных о палитре или размере кадра.</value></data>
+  <data name="MainDvdIfoMissing" xml:space="preserve"><value>Для извлечения VobSub нужен соответствующий файл IFO набора DVD в той же папке.</value></data>
+  <data name="MainDvdIfoInvalid" xml:space="preserve"><value>Извлечение VobSub недоступно: соответствующий файл DVD IFO повреждён или не читается.</value></data>
+  <data name="MainDvdIfoMismatch" xml:space="preserve"><value>Извлечение VobSub недоступно: DVD IFO не соответствует видео или дорожкам субтитров VOB.</value></data>
+  <data name="MainDvdIfoAmbiguousPalette" xml:space="preserve"><value>Извлечение VobSub недоступно: в цепочках DVD разные палитры, поэтому нельзя выбрать одну верную палитру IDX для этой части VOB.</value></data>
+  <data name="LogOcrDependencyUnavailable" xml:space="preserve"><value>Tesseract OCR или языковые модели недоступны. Откройте «Настройки → Установщик».</value></data>
+  <data name="MainOcrUnavailable" xml:space="preserve"><value>Экспорт текста через OCR недоступен. Проверьте Tesseract и языковые модели в «Настройки → Установщик».</value></data>
+  <data name="MainOcrLanguageRequired" xml:space="preserve"><value>Выберите язык OCR в настройках субтитров.</value></data>
+  <data name="MainOcrLanguageUnsupported" xml:space="preserve"><value>Язык дорожки не поддерживается OCR. Выберите поддерживаемый язык в настройках субтитров.</value></data>
+  <data name="MainOcrModelMissing" xml:space="preserve"><value>Модель OCR Fast/Best для этого языка недоступна.</value></data>
+  <data name="OcrLanguage" xml:space="preserve"><value>Язык OCR</value></data>
+  <data name="OcrProfile" xml:space="preserve"><value>Профиль OCR</value></data>
+  <data name="OcrFast" xml:space="preserve"><value>Быстрый</value></data>
+  <data name="OcrBest" xml:space="preserve"><value>Лучший</value></data>
+  <data name="OcrLanguageRequired" xml:space="preserve"><value>Выберите язык OCR перед экспортом текста.</value></data>
+  <data name="OcrModelMissing" xml:space="preserve"><value>Выбранная модель OCR для этого языка не установлена.</value></data>
+  <data name="OcrNoStyling" xml:space="preserve"><value>OCR сохраняет текст и время, но не оформление и расположение графических субтитров.</value></data>
+  <data name="LogOcrCompleted" xml:space="preserve"><value>Экспорт текста OCR завершён: реплик — {0}.</value></data>
+  <data name="LogOcrFailed" xml:space="preserve"><value>Экспорт текста OCR не удался. См. диагностический отчёт.</value></data>
+  <data name="SettingsComponentsTitle" xml:space="preserve"><value>Установка компонентов</value></data>
+  <data name="InstallerTesseractRole" xml:space="preserve"><value>Распознавание графических субтитров</value></data>
+  <data name="InstallerOcrModelsMissing" xml:space="preserve"><value>Нет языковых моделей</value></data>
+  <data name="InstallerSelectTesseract" xml:space="preserve"><value>Указать путь Tesseract</value></data>
+  <data name="InstallerOcrInvalidPath" xml:space="preserve"><value>Выбранный файл не является Tesseract 5.x.</value></data>
+  <data name="InstallerOcrPathSaveFailed" xml:space="preserve"><value>Не удалось сохранить путь к Tesseract.</value></data>
+  <data name="InstallerOcrAvailable" xml:space="preserve"><value>Доступен Tesseract {0}, загрузка {1} МБ</value></data>
+  <data name="InstallerOcrOffline" xml:space="preserve"><value>Нет сети; сведения в приложении: Tesseract {0}, {1} МБ</value></data>
+  <data name="InstallerOcrInstall" xml:space="preserve"><value>Установить Tesseract</value></data>
+  <data name="InstallerOcrUpdate" xml:space="preserve"><value>Обновить</value></data>
+  <data name="InstallerOcrRepair" xml:space="preserve"><value>Исправить Tesseract</value></data>
+  <data name="InstallerOcrDownloading" xml:space="preserve"><value>Загрузка Tesseract…</value></data>
+  <data name="InstallerOcrInstalled" xml:space="preserve"><value>Tesseract OCR установлен.</value></data>
+  <data name="InstallerOcrInstallFailed" xml:space="preserve"><value>Не удалось установить Tesseract OCR. Предыдущая версия сохранена.</value></data>
+  <data name="InstallerRequirementWithOcr" xml:space="preserve"><value>Для работы с медиафайлами нужны FFmpeg и FFprobe. Tesseract OCR для графических субтитров необязателен.</value></data>
+  <data name="InstallerMediaReady" xml:space="preserve"><value>FFmpeg и FFprobe готовы.</value></data>
+  <data name="InstallerOcrAvailableStatus" xml:space="preserve"><value>Доступен Tesseract {0}</value></data>
+  <data name="InstallerOcrOfflineStatus" xml:space="preserve"><value>Не установлен; нет сети (известная версия: {0})</value></data>
+  <data name="InstallerOcrOfflineUnknown" xml:space="preserve"><value>Tesseract не установлен; проверить обновления не удалось</value></data>
+  <data name="InstallerOcrActionSize" xml:space="preserve"><value>{0} ({1} МБ)</value></data>
+  <data name="InstallerOcrUpdateStatus" xml:space="preserve"><value>Установлен: {0}; доступен: {1}</value></data>
+  <data name="InstallerOcrNetworkError" xml:space="preserve"><value>Ошибка соединения при загрузке Tesseract. Проверьте сеть и повторите попытку.</value></data>
+  <data name="InstallerOcrInterrupted" xml:space="preserve"><value>Загрузка Tesseract прервалась. Повторите попытку.</value></data>
+  <data name="InstallerOcrRetry" xml:space="preserve"><value>Соединение прервалось. Повторяем загрузку Tesseract…</value></data>
+  <data name="InstallerOcrCancelled" xml:space="preserve"><value>Установка Tesseract отменена.</value></data>
+  <data name="MainOcrTimingUnavailable" xml:space="preserve"><value>У графической реплики нет подтверждённого времени окончания. Экспорт текста остановлен до распознавания.</value></data>
+  <data name="LogOcrTimingUnavailable" xml:space="preserve"><value>Временные метки графических субтитров неполные. Экспорт текста остановлен; подробности — в диагностическом отчёте.</value></data>
+  <data name="LogOcrTimingFallback" xml:space="preserve"><value>Время окончания некоторых реплик рассчитано по соседним событиям. Подробности — в диагностическом отчёте.</value></data>
+  <data name="LogOcrPartialCompleted" xml:space="preserve"><value>Экспорт OCR завершён с пропусками: исходных реплик — {0}, сохранено — {1}, пропущено — {2}. Причины — в диагностическом отчёте.</value></data>
+  <data name="DiagnosticPreviewCopy" xml:space="preserve"><value>Копировать</value></data>
+  <data name="InstallerOcrDownloadSize" xml:space="preserve"><value>({0} МБ)</value></data>
+  <data name="MainSelectTracks" xml:space="preserve"><value>Выберите дорожки.</value></data>
+  <data name="MainQueueStream" xml:space="preserve"><value>Поток {0} из {1}</value></data>
+  <data name="MainQueueGroup" xml:space="preserve"><value>Обработка потоков: {0}</value></data>
+  <data name="MainQueueCurrentPercent" xml:space="preserve"><value>{0} — {1:0}%</value></data>
+  <data name="MainQueueElapsed" xml:space="preserve"><value>Время: {0}</value></data>
+  <data name="MainQueueElapsedOverall" xml:space="preserve"><value>Время: {0}  Общий прогресс: {1:0}%</value></data>
+  <data name="MainSelectFile" xml:space="preserve"><value>Выберите файл.</value></data>
 </root>

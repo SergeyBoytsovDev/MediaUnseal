@@ -173,6 +173,15 @@ internal static class SubtitleCsvImporter
             ?? throw new InvalidDataException("The source is not a supported subtitle CSV file.");
         if (expectedCodec is not null && data.Adr != (expectedCodec == "csv_adr"))
             throw new InvalidDataException("Subtitle CSV structure changed after analysis.");
+        return await WriteAsync(data, output, format, fps, startTimecode, token,
+            outputDelimiter, outputDestination, outputFps, outputStartTimecode).ConfigureAwait(false);
+    }
+
+    internal static async Task<int> WriteAsync(Data data, string output, string format,
+        string? fps, string startTimecode, CancellationToken token,
+        char outputDelimiter = ',', string outputDestination = "universal",
+        string outputFps = "24", string outputStartTimecode = "00:00:00:00")
+    {
         if (format is not ("srt" or "webvtt" or "ass" or "ssa" or "csv")
             || format == "csv" && (outputDelimiter is not (',' or ';' or '\t' or '|')
                 || outputDestination is not ("universal" or "adr")

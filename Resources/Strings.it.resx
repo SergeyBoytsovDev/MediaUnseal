@@ -34,7 +34,7 @@
     <value>SEZIONI</value>
   </data>
   <data name="SettingsInstaller" xml:space="preserve">
-    <value>Installazione di FFmpeg</value>
+    <value>Programma di installazione</value>
   </data>
   <data name="SettingsAppearance" xml:space="preserve">
     <value>Aspetto</value>
@@ -581,7 +581,7 @@
     <value>Apri cartella</value>
   </data>
   <data name="MainChooseFile" xml:space="preserve">
-    <value>Scegli file</value>
+    <value>Inserisci file</value>
   </data>
   <data name="MainSubtitles" xml:space="preserve">
     <value>Sottotitoli:</value>
@@ -1746,6 +1746,89 @@ Video: {6}; immagini: {7}; animazioni: {8}; audio: {9}; sottotitoli: {10}; fluss
   <data name="MainCsvInvalid" xml:space="preserve"><value>La struttura o i timecode del file CSV dei sottotitoli non sono validi.</value></data>
   <data name="ConversionCsvInputTiming" xml:space="preserve"><value>Timecode ADR di origine</value></data>
   <data name="ConversionCsvOutputTiming" xml:space="preserve"><value>Timecode ADR di uscita</value></data>
+  <data name="MainMuxStreams" xml:space="preserve"><value>Unisci i flussi in un solo file</value></data>
+  <data name="MainMuxContainer" xml:space="preserve"><value>Contenitore di output</value></data>
+  <data name="MainMuxAutoCodec" xml:space="preserve"><value>Automatico (copia se possibile)</value></data>
+  <data name="MainMuxNoContainer" xml:space="preserve"><value>I formati FFmpeg non sono disponibili.</value></data>
+  <data name="MainMuxUnavailable" xml:space="preserve"><value>Questo contenitore non è disponibile per i flussi selezionati.</value></data>
+  <data name="MainMuxSelectStreams" xml:space="preserve"><value>Seleziona almeno un flusso video, audio o sottotitoli.</value></data>
+  <data name="MainMuxUnsupportedStream" xml:space="preserve"><value>È possibile unire solo normali flussi video, audio e sottotitoli.</value></data>
+  <data name="MainMuxGraphicSubtitle" xml:space="preserve"><value>Un sottotitolo grafico non può essere copiato o convertito per questo contenitore.</value></data>
+  <data name="MainMuxNoEncoder" xml:space="preserve"><value>FFmpeg non dispone di un codificatore adatto per questo flusso e contenitore.</value></data>
+  <data name="MainMuxPlanContainer" xml:space="preserve"><value>Contenitore: {0}</value></data>
+  <data name="MainMuxPlanCopy" xml:space="preserve"><value>Copia: {0}</value></data>
+  <data name="MainMuxPlanEncode" xml:space="preserve"><value>Converti: {0}</value></data>
+  <data name="MainMuxChecking" xml:space="preserve"><value>Verifica della compatibilità FFmpeg…</value></data>
+  <data name="MainMuxRejected" xml:space="preserve"><value>FFmpeg non può unire questi flussi nel contenitore selezionato.</value></data>
+  <data name="MainMuxProbeFailed" xml:space="preserve"><value>FFmpeg non ha potuto verificare questo contenitore.</value></data>
+  <data name="LogAmfH264TenBitUnsupported" xml:space="preserve"><value>AMD H.264 non supporta input a 10 bit. Scegli un codificatore compatibile.</value></data>
+  <data name="LogAudioChannelLayoutUnsupported" xml:space="preserve"><value>Il codificatore non supporta questa disposizione dei canali audio. Scegli un codificatore audio compatibile o modifica i canali.</value></data>
+  <data name="LogPixelFormatUnsupported" xml:space="preserve"><value>Il codificatore non supporta questo formato pixel. Scegli un codificatore compatibile.</value></data>
+  <data name="LogCodecUnsupported" xml:space="preserve"><value>Il codec o il codificatore selezionato non è disponibile. Scegli un altro formato o codificatore.</value></data>
+  <data name="LogMediaSourceInvalid" xml:space="preserve"><value>Il file sorgente è danneggiato o non supportato. Controlla il file e riprova.</value></data>
+  <data name="LogMediaProcessingUnknown" xml:space="preserve"><value>Impossibile elaborare il file. Consulta il rapporto diagnostico per la causa.</value></data>
+  <data name="LogMuxValidationFailed" xml:space="preserve"><value>Impossibile verificare il file di output. Consulta il rapporto diagnostico per la causa.</value></data>
+  <data name="LogProbeAnalysisFailed" xml:space="preserve"><value>FFprobe non è riuscito ad analizzare il file. Controllalo e consulta il rapporto diagnostico.</value></data>
+  <data name="LogMuxTimeout" xml:space="preserve"><value>Il multiplexing ha superato il tempo previsto. Riprova o scegli un altro codificatore.</value></data>
+  <data name="MainVobSubPairInvalid" xml:space="preserve"><value>La coppia VobSub .idx + .sub manca o è danneggiata. Metti entrambi i file nella stessa cartella e riprova.</value></data>
+  <data name="MainVobSubExportFailed" xml:space="preserve"><value>Impossibile creare una coppia VobSub .idx + .sub completa. Consulta il rapporto diagnostico.</value></data>
+  <data name="MainVobSubMetadataMissing" xml:space="preserve"><value>Impossibile esportare VobSub come coppia IDX + SUB: nella sorgente mancano la tavolozza o le dimensioni del fotogramma.</value></data>
+  <data name="MainDvdIfoMissing" xml:space="preserve"><value>L’esportazione VobSub richiede il file IFO VTS corrispondente nella stessa cartella.</value></data>
+  <data name="MainDvdIfoInvalid" xml:space="preserve"><value>Esportazione VobSub non disponibile: il file IFO DVD corrispondente è danneggiato o illeggibile.</value></data>
+  <data name="MainDvdIfoMismatch" xml:space="preserve"><value>Esportazione VobSub non disponibile: l’IFO DVD non corrisponde al video o alle tracce sottotitoli del VOB.</value></data>
+  <data name="MainDvdIfoAmbiguousPalette" xml:space="preserve"><value>Esportazione VobSub non disponibile: le catene DVD usano tavolozze diverse; non è possibile determinare una sola tavolozza IDX corretta per questa parte VOB.</value></data>
+  <data name="LogOcrDependencyUnavailable" xml:space="preserve"><value>Tesseract OCR o i modelli linguistici non sono disponibili. Apri Impostazioni → Programma di installazione.</value></data>
+  <data name="MainOcrUnavailable" xml:space="preserve"><value>L’esportazione del testo OCR non è disponibile. Controlla Tesseract e i modelli in Impostazioni → Programma di installazione.</value></data>
+  <data name="MainOcrLanguageRequired" xml:space="preserve"><value>Seleziona la lingua OCR nelle impostazioni dei sottotitoli.</value></data>
+  <data name="MainOcrLanguageUnsupported" xml:space="preserve"><value>La lingua della traccia non è supportata da OCR. Seleziona una lingua supportata.</value></data>
+  <data name="MainOcrModelMissing" xml:space="preserve"><value>Il modello OCR Fast/Best selezionato non è disponibile per questa lingua.</value></data>
+  <data name="OcrLanguage" xml:space="preserve"><value>Lingua OCR</value></data>
+  <data name="OcrProfile" xml:space="preserve"><value>Profilo OCR</value></data>
+  <data name="OcrFast" xml:space="preserve"><value>Veloce</value></data>
+  <data name="OcrBest" xml:space="preserve"><value>Migliore qualità</value></data>
+  <data name="OcrLanguageRequired" xml:space="preserve"><value>Seleziona una lingua OCR prima di esportare il testo.</value></data>
+  <data name="OcrModelMissing" xml:space="preserve"><value>Il modello OCR selezionato non è installato per questa lingua.</value></data>
+  <data name="OcrNoStyling" xml:space="preserve"><value>OCR conserva testo e tempi, ma non stile o posizione.</value></data>
+  <data name="LogOcrCompleted" xml:space="preserve"><value>Esportazione del testo OCR completata: {0} battute.</value></data>
+  <data name="LogOcrFailed" xml:space="preserve"><value>Esportazione del testo OCR non riuscita. Consulta il rapporto diagnostico.</value></data>
+  <data name="SettingsComponentsTitle" xml:space="preserve"><value>Installazione dei componenti</value></data>
+  <data name="InstallerTesseractRole" xml:space="preserve"><value>Riconoscimento dei sottotitoli grafici</value></data>
+  <data name="InstallerOcrModelsMissing" xml:space="preserve"><value>Modelli linguistici mancanti</value></data>
+  <data name="InstallerSelectTesseract" xml:space="preserve"><value>Scegli percorso Tesseract</value></data>
+  <data name="InstallerOcrInvalidPath" xml:space="preserve"><value>Il file selezionato non è Tesseract 5.x.</value></data>
+  <data name="InstallerOcrPathSaveFailed" xml:space="preserve"><value>Impossibile salvare il percorso di Tesseract.</value></data>
+  <data name="InstallerOcrAvailable" xml:space="preserve"><value>Disponibile: Tesseract {0}, download {1} MB</value></data>
+  <data name="InstallerOcrOffline" xml:space="preserve"><value>Offline; dati integrati: Tesseract {0}, {1} MB</value></data>
+  <data name="InstallerOcrInstall" xml:space="preserve"><value>Installa Tesseract</value></data>
+  <data name="InstallerOcrUpdate" xml:space="preserve"><value>Aggiorna</value></data>
+  <data name="InstallerOcrRepair" xml:space="preserve"><value>Ripara Tesseract</value></data>
+  <data name="InstallerOcrDownloading" xml:space="preserve"><value>Download di Tesseract…</value></data>
+  <data name="InstallerOcrInstalled" xml:space="preserve"><value>Tesseract OCR installato.</value></data>
+  <data name="InstallerOcrInstallFailed" xml:space="preserve"><value>Impossibile installare Tesseract OCR. La versione precedente è stata conservata.</value></data>
+  <data name="InstallerRequirementWithOcr" xml:space="preserve"><value>FFmpeg e FFprobe sono necessari. Tesseract OCR è facoltativo per i sottotitoli grafici.</value></data>
+  <data name="InstallerMediaReady" xml:space="preserve"><value>FFmpeg e FFprobe sono pronti.</value></data>
+  <data name="InstallerOcrAvailableStatus" xml:space="preserve"><value>Disponibile: Tesseract {0}</value></data>
+  <data name="InstallerOcrOfflineStatus" xml:space="preserve"><value>Non installato; offline (versione nota: {0})</value></data>
+  <data name="InstallerOcrOfflineUnknown" xml:space="preserve"><value>Tesseract assente; verifica aggiornamenti non disponibile</value></data>
+  <data name="InstallerOcrActionSize" xml:space="preserve"><value>{0} ({1} MB)</value></data>
+  <data name="InstallerOcrUpdateStatus" xml:space="preserve"><value>Installato: {0}; disponibile: {1}</value></data>
+  <data name="InstallerOcrNetworkError" xml:space="preserve"><value>Errore di connessione durante il download di Tesseract. Controlla la rete e riprova.</value></data>
+  <data name="InstallerOcrInterrupted" xml:space="preserve"><value>Download di Tesseract interrotto. Riprova.</value></data>
+  <data name="InstallerOcrRetry" xml:space="preserve"><value>Connessione interrotta. Nuovo tentativo di download…</value></data>
+  <data name="InstallerOcrCancelled" xml:space="preserve"><value>Installazione di Tesseract annullata.</value></data>
+  <data name="MainOcrTimingUnavailable" xml:space="preserve"><value>Manca un orario di fine confermato per un sottotitolo grafico. L'esportazione è stata interrotta prima del riconoscimento.</value></data>
+  <data name="LogOcrTimingUnavailable" xml:space="preserve"><value>I tempi dei sottotitoli grafici sono incompleti. Consulta il rapporto diagnostico.</value></data>
+  <data name="LogOcrTimingFallback" xml:space="preserve"><value>Alcuni tempi di fine sono stati calcolati dagli eventi vicini. Consulta il rapporto diagnostico.</value></data>
+  <data name="LogOcrPartialCompleted" xml:space="preserve"><value>Esportazione OCR completata con omissioni: {0} battute originali, {1} salvate, {2} ignorate. Dettagli nel rapporto diagnostico.</value></data>
+  <data name="DiagnosticPreviewCopy" xml:space="preserve"><value>Copia</value></data>
+  <data name="InstallerOcrDownloadSize" xml:space="preserve"><value>({0} MB)</value></data>
+  <data name="MainSelectTracks" xml:space="preserve"><value>Seleziona le tracce.</value></data>
+  <data name="MainQueueStream" xml:space="preserve"><value>Traccia {0} di {1}</value></data>
+  <data name="MainQueueGroup" xml:space="preserve"><value>Elaborazione di {0} tracce</value></data>
+  <data name="MainQueueCurrentPercent" xml:space="preserve"><value>{0} — {1:0}%</value></data>
+  <data name="MainQueueElapsed" xml:space="preserve"><value>Tempo: {0}</value></data>
+  <data name="MainQueueElapsedOverall" xml:space="preserve"><value>Tempo: {0}  Avanzamento totale: {1:0}%</value></data>
+  <data name="MainSelectFile" xml:space="preserve"><value>Seleziona un file.</value></data>
 </root>
 
 

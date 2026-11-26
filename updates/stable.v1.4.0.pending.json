@@ -1,0 +1,21 @@
+{
+  "version": "1.4.0",
+  "tag": "v1.4.0",
+  "packages": {
+    "windowsInstaller": {
+      "name": "MediaUnseal-1.4.0-win-x64-setup.exe",
+      "size": 23203368,
+      "sha256": "70B113CD944A2F80B7652652838D16C492885F1AF8190CC89B16477C3B2F9AEE"
+    },
+    "windowsPortable": {
+      "name": "MediaUnseal-1.4.0-win-x64-portable.zip",
+      "size": 31024513,
+      "sha256": "F840010163F28625059A2705287415EBC18C2CC6F300255689DEE7D32A16A941"
+    },
+    "linuxX64": {
+      "name": "MediaUnseal-1.4.0-linux-x64.tar.gz",
+      "size": 48502620,
+      "sha256": "83E873AB3DE9B2C21EAB5CC8B6E3AAAC700C09DA4025050AAAD24A90F7DA7D5A"
+    }
+  }
+}

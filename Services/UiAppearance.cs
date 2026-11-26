@@ -6,6 +6,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 
 namespace MediaUnseal.Services;
 
@@ -14,11 +16,11 @@ internal sealed class UiPreferences
     public string Theme { get; set; } = UiAppearance.DefaultTheme;
     public string Language { get; set; } = UiAppearance.DefaultInterfaceLanguage;
     public int InterfaceScale { get; set; } = 95;
-    public double Width { get; set; } = 1355;
-    public double Height { get; set; } = 1026;
+    public double Width { get; set; } = 1325;
+    public double Height { get; set; } = 1000;
     public int? X { get; set; }
     public int? Y { get; set; }
-    public double[] ColumnWidths { get; set; } = [36,103,54,150,115,104,171,188];
+    public double[] ColumnWidths { get; set; } = [36,134,54,150,115,104,171,160];
     public string? OutputDirectory { get; set; }
     public string? LastSourceDirectory { get; set; }
     public string CsvDelimiter { get; set; } = ",";
@@ -29,6 +31,7 @@ internal sealed class UiPreferences
 
 internal sealed class UiAppearance
 {
+    private static readonly Dictionary<string, Bitmap> PreviewPlaceholders = new();
     internal event EventHandler? ScaleChanged;
     internal const string DefaultTheme = "Studio Dark";
     internal const string DefaultInterfaceLanguage = "en";
@@ -247,6 +250,7 @@ internal sealed class UiAppearance
     private static void Apply(string name)
     {
         if (Application.Current is null) return;
+        var previewColor = PreviewColor(name);
         var palette = name switch
         {
             "Resolve-inspired Workspace" => new Palette("#111419", "#1B1F26", "#171B21", "#272D36", "#F0F1F3", "#A5ADB9", "#DD3338", "#AD272E", "#0C1118", 1, 2),
@@ -275,6 +279,25 @@ internal sealed class UiAppearance
         resources["PanelCorner"] = new CornerRadius(palette.Corner);
         resources["ControlCorner"] = new CornerRadius(palette.ControlCorner);
         resources["PanelGap"] = new Thickness(palette.Corner >= 5 ? 10 : 6);
+        resources["AudioPreviewPlaceholder"] = PreviewBitmap("audio", previewColor);
+        resources["SubtitlePreviewPlaceholder"] = PreviewBitmap("subtitles", previewColor);
+    }
+
+    internal static string PreviewColor(string theme) => theme switch
+    {
+        "Resolve-inspired Workspace" => "red",
+        "Adobe Clean Pro" => "purple",
+        "Industrial Utility" => "green",
+        "Hybrid Modern Panel" => "cyan",
+        _ => "orange"
+    };
+
+    private static Bitmap PreviewBitmap(string kind, string color)
+    {
+        var name = $"{kind}_{color}";
+        if (PreviewPlaceholders.TryGetValue(name, out var cached)) return cached;
+        using var stream = AssetLoader.Open(new Uri($"avares://MediaUnseal/Assets/PreviewPlaceholders/{name}.png"));
+        return PreviewPlaceholders[name] = new Bitmap(stream);
     }
 
     private static SolidColorBrush Brush(string value) => new(Color.Parse(value));

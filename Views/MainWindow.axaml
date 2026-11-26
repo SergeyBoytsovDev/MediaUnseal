@@ -51,13 +51,17 @@
   <Style Selector="TableViewRow"><Setter Property="Height" Value="34"/></Style>
   <Style Selector="TableViewColumnHeader"><Setter Property="Padding" Value="6,2"/></Style>
   <Style Selector="TableViewCell"><Setter Property="Padding" Value="0,2"/><Setter Property="VerticalContentAlignment" Value="Center"/></Style>
+  <Style Selector="ComboBox#VideoFormatBox ComboBoxItem" x:DataType="views:FormatChoice"><Setter Property="IsEnabled" Value="{Binding Available}"/></Style>
+  <Style Selector="ComboBox#AudioFormatBox ComboBoxItem" x:DataType="views:FormatChoice"><Setter Property="IsEnabled" Value="{Binding Available}"/></Style>
+  <Style Selector="ComboBox#SubtitleFormatBox ComboBoxItem" x:DataType="views:FormatChoice"><Setter Property="IsEnabled" Value="{Binding Available}"/></Style>
  </Window.Styles>
  <Window.Resources>
   <DataTemplate x:Key="OutputFormatTemplate" x:DataType="views:FormatChoice">
    <StackPanel>
     <Border Height="1" Margin="0,4,0,5" Background="{DynamicResource LineBrush}"
             IsVisible="False" Loaded="OutputFormatDivider_Loaded"/>
-    <TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis"/>
+    <TextBlock Text="{Binding Display}" IsEnabled="{Binding Available}" Opacity="{Binding Opacity}"
+               ToolTip.Tip="{Binding Reason}" TextTrimming="CharacterEllipsis"/>
    </StackPanel>
   </DataTemplate>
  </Window.Resources>
@@ -91,7 +95,7 @@
     <Border Grid.Column="0" Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelCorner}">
      <Grid RowDefinitions="38,*">
       <Border Classes="panel-header" Grid.Row="0"><Grid ColumnDefinitions="*,Auto">
-       <StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
+       <StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center" RenderTransform="translate(0px, -2px)">
         <TextBlock Text="▤" FontSize="20" VerticalAlignment="Center"/>
         <TextBlock Text="{DynamicResource Loc_MainSourceFile}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
        </StackPanel>
@@ -158,7 +162,7 @@
     </Border>
     <Border Grid.Column="1" Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelCorner}">
      <Grid RowDefinitions="38,*">
-      <Border Classes="panel-header" Grid.Row="0"><StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
+      <Border Classes="panel-header" Grid.Row="0"><StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center" RenderTransform="translate(0px, -2px)">
        <TextBlock Text="▤" FontSize="20" VerticalAlignment="Center"/>
        <TextBlock Text="{DynamicResource Loc_MainFileInfo}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
       </StackPanel></Border>
@@ -167,6 +171,8 @@
                CornerRadius="{DynamicResource ControlCorner}" ClipToBounds="True">
         <Grid>
          <Image Source="{Binding PreviewImage}" Stretch="Uniform" IsVisible="{Binding HasPreview}"/>
+         <Image Source="{DynamicResource AudioPreviewPlaceholder}" Stretch="Uniform" IsVisible="{Binding ShowAudioPlaceholder}"/>
+         <Image Source="{DynamicResource SubtitlePreviewPlaceholder}" Stretch="Uniform" IsVisible="{Binding ShowSubtitlePlaceholder}"/>
          <TextBlock Text="▣" FontSize="50" Foreground="{DynamicResource MutedTextBrush}"
                     HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="{Binding HasNoPreview}"/>
         </Grid>
@@ -200,9 +206,9 @@
     <Grid Grid.Column="0" RowDefinitions="1.545*,0.905*" RowSpacing="8">
      <Border Grid.Row="0" Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelCorner}">
       <Grid RowDefinitions="38,*">
-       <Border Classes="panel-header" Grid.Row="0"><StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
+       <Border Classes="panel-header" Grid.Row="0"><StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center" RenderTransform="translate(0px, -1px)">
         <Path Data="M 3,3 L 6,3 L 6,6 L 3,6 Z M 9,4.5 L 21,4.5 M 3,10.5 L 6,10.5 L 6,13.5 L 3,13.5 Z M 9,12 L 21,12 M 3,18 L 6,18 L 6,21 L 3,21 Z M 9,19.5 L 21,19.5"
-              Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.6" Width="19" Height="19" Stretch="Uniform"/>
+              Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.6" Width="19" Height="19" Stretch="Uniform" VerticalAlignment="Center"/>
         <TextBlock Text="{Binding TrackHeading}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
        </StackPanel></Border>
        <Grid Grid.Row="1">
@@ -352,7 +358,7 @@
     </Grid>
     <Border Grid.Column="1" Background="{DynamicResource PanelBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="{DynamicResource PanelCorner}">
      <Grid RowDefinitions="38,*">
-      <Border Classes="panel-header" Grid.Row="0"><StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center">
+      <Border Classes="panel-header" Grid.Row="0"><StackPanel Orientation="Horizontal" Spacing="9" Margin="12,0" VerticalAlignment="Center" RenderTransform="translate(0px, -2px)">
        <TextBlock Text="⚙" FontSize="18" VerticalAlignment="Center"/>
        <TextBlock Text="{DynamicResource Loc_MainExportSettings}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
       </StackPanel></Border>
@@ -407,6 +413,8 @@
         <CheckBox Content="{DynamicResource Loc_MainSaveMetadata}" IsChecked="{Binding PreserveMetadata, Mode=TwoWay}"/>
         <CheckBox Content="{DynamicResource Loc_MainGroupLanguages}" IsChecked="{Binding GroupByLanguage, Mode=TwoWay}"/>
         <CheckBox Content="{DynamicResource Loc_MainSourceFolder}" IsChecked="{Binding CreateSourceFolder, Mode=TwoWay}"/>
+        <CheckBox Content="{DynamicResource Loc_MainMuxStreams}" IsChecked="{Binding MuxEnabled, Mode=TwoWay}"
+                  IsEnabled="{Binding CanEnableMux}"/>
        </StackPanel>
       </ScrollViewer>
      </Grid>
@@ -415,34 +423,40 @@
   </Grid>
   <Border Grid.Row="2" Background="{DynamicResource HeaderBackground}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0">
    <Grid RowDefinitions="4,*">
-    <ProgressBar Grid.Row="0" Minimum="0" Maximum="100" Value="{Binding ExportProgress}"
+    <ProgressBar Grid.Row="0" Minimum="0" Maximum="100" Value="{Binding ExportProgress}" IsVisible="{Binding IsExporting}"
                  IsIndeterminate="{Binding ExportProgressIndeterminate}" Height="4" Foreground="{DynamicResource AccentBrush}"/>
-    <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="13" Margin="16,5">
+    <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="13" Margin="16,5">
      <StackPanel Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
       <TextBlock Text="●" Classes="success" FontSize="17" VerticalAlignment="Center"/>
       <TextBlock Text="{Binding FooterStatus}" FontWeight="SemiBold" VerticalAlignment="Center"/>
      </StackPanel>
-     <TextBlock Grid.Column="1" Text="{Binding ExportStatus}" Classes="muted" TextTrimming="CharacterEllipsis"
-                ToolTip.Tip="{Binding ExportStatus}" VerticalAlignment="Center"/>
-     <Grid Grid.Column="2" ColumnSpacing="8" VerticalAlignment="Center" Grid.IsSharedSizeScope="True">
+     <StackPanel Grid.Column="1" VerticalAlignment="Center">
+      <TextBlock Text="{Binding ExportStatus}" Classes="muted" TextTrimming="CharacterEllipsis"
+                 ToolTip.Tip="{Binding ExportStatus}"/>
+      <TextBlock Text="{Binding MuxPlanText}" Classes="muted" TextTrimming="CharacterEllipsis"
+                 ToolTip.Tip="{Binding MuxPlanText}" IsVisible="{Binding MuxEnabled}"/>
+     </StackPanel>
+     <TextBlock Grid.Column="2" Text="{Binding ExportElapsedOverall}" Classes="muted"
+                HorizontalAlignment="Right" VerticalAlignment="Center" IsVisible="{Binding IsExporting}"/>
+     <Grid Grid.Column="3" ColumnSpacing="8" VerticalAlignment="Center" Grid.IsSharedSizeScope="True">
       <Grid.ColumnDefinitions>
        <ColumnDefinition Width="Auto"/>
        <ColumnDefinition Width="Auto" SharedSizeGroup="ExportActions"/>
        <ColumnDefinition Width="Auto" SharedSizeGroup="ExportActions"/>
       </Grid.ColumnDefinitions>
-      <Button Height="37" MinWidth="110" Click="OpenOutputFolder_Click" IsEnabled="{Binding CanOpenOutputDirectory}" HorizontalContentAlignment="Center">
+      <Button Height="37" MinWidth="110" Click="OpenOutputFolder_Click" IsEnabled="{Binding CanOpenOutputDirectory}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z" Stroke="{DynamicResource MainTextBrush}" StrokeThickness="2" Width="17" Height="15" Stretch="Uniform"/>
-        <TextBlock Text="{DynamicResource Loc_MainOpenFolder}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        <Path Data="M 2,7 L 2,22 L 28,22 L 28,8 L 15,8 L 12,4 L 2,4 Z" Stroke="{DynamicResource MainTextBrush}" StrokeThickness="2" Width="17" Height="15" Stretch="Uniform" VerticalAlignment="Center" RenderTransform="translate(0px, 1px)"/>
+        <TextBlock Text="{DynamicResource Loc_MainOpenFolder}" FontWeight="SemiBold" VerticalAlignment="Center" RenderTransform="translate(0px, -1px)"/>
        </StackPanel>
       </Button>
-      <Button x:Name="ExtractButton" Grid.Column="1" Classes="primary" Height="37" MinWidth="100" Click="Extract_Click" IsEnabled="{Binding CanExtract}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+      <Button x:Name="ExtractButton" Grid.Column="1" Classes="primary" Height="37" MinWidth="100" Click="Extract_Click" IsEnabled="{Binding CanExtract}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Path Data="M 3,2 L 15,2 L 21,8 L 21,20 L 16,20 M 3,2 L 3,22 L 9,22 M 15,2 L 15,8 L 21,8 M 12,11 L 12,24 M 8,20 L 12,24 L 16,20" Stroke="White" StrokeThickness="1.8" Width="18" Height="20" Stretch="Uniform"/>
+        <Path Data="M 3,2 L 15,2 L 21,8 L 21,20 L 16,20 M 3,2 L 3,22 L 9,22 M 15,2 L 15,8 L 21,8 M 12,11 L 12,24 M 8,20 L 12,24 L 16,20" Stroke="White" StrokeThickness="1.8" Width="18" Height="20" Stretch="Uniform" VerticalAlignment="Center"/>
         <TextBlock Text="{Binding ExportActionLabel}" FontWeight="SemiBold" VerticalAlignment="Center"/>
        </StackPanel>
       </Button>
-      <Button x:Name="StopButton" Grid.Column="2" Height="37" MinWidth="100" Click="Stop_Click" IsEnabled="{Binding IsExporting}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center">
+      <Button x:Name="StopButton" Grid.Column="2" Height="37" MinWidth="100" Click="Stop_Click" IsEnabled="{Binding IsExporting}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
         <Ellipse Width="15" Height="15">
          <Ellipse.Fill>
@@ -453,7 +467,7 @@
           </RadialGradientBrush>
          </Ellipse.Fill>
         </Ellipse>
-        <TextBlock Text="{DynamicResource Loc_InstallerCancel}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        <TextBlock Text="{DynamicResource Loc_InstallerCancel}" FontWeight="SemiBold" VerticalAlignment="Center" RenderTransform="translate(0px, -1px)"/>
        </StackPanel>
       </Button>
      </Grid>

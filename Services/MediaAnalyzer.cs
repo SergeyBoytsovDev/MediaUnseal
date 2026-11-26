@@ -35,9 +35,18 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
             userMessageKey: "LogAnalysisStarted");
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(Timeout);
+        string? failureUserKey = null;
+        string? failureStderr = null;
         try
         {
             if (!File.Exists(fullPath)) throw new FileNotFoundException("File not found. Select another file.", fullPath);
+            if (Path.GetExtension(fullPath).Equals(".idx", StringComparison.OrdinalIgnoreCase)
+                || Path.GetExtension(fullPath).Equals(".sub", StringComparison.OrdinalIgnoreCase))
+            {
+                failureUserKey = "MainVobSubPairInvalid";
+                fullPath = VobSubPair.ResolveSource(fullPath);
+                failureUserKey = null;
+            }
             var size = new FileInfo(fullPath).Length;
             var extension = Path.GetExtension(fullPath);
             if (extension.Equals(".csv", StringComparison.OrdinalIgnoreCase)
@@ -64,15 +73,73 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
                     throw new InvalidDataException("CSV structure or subtitle timing is invalid.");
             }
             var heifFile = IsHeifPath(fullPath);
+            var microDvd = Path.GetExtension(fullPath).Equals(".sub", StringComparison.OrdinalIgnoreCase)
+                && VobSubPair.IsMicroDvd(fullPath);
             var arguments = heifFile
                 ? new[] { "-v", "error", "-show_format", "-show_streams", "-show_stream_groups", "-of", "json", "-i", fullPath }
+                : microDvd
+                ? new[] { "-v", "error", "-f", "microdvd", "-show_format", "-show_streams", "-of", "json", "-i", fullPath }
                 : new[] { "-v", "error", "-show_format", "-show_streams", "-of", "json", "-i", fullPath };
             var result = ProcessRunner is null
                 ? await RunProbeAsync(ffprobePath, arguments, deadline.Token).ConfigureAwait(false)
                 : await ProcessRunner(ffprobePath, arguments, deadline.Token).WaitAsync(deadline.Token).ConfigureAwait(false);
             if (result.ExitCode != 0)
+            {
+                var reason = FfmpegErrorPresentation.Explain(result.Stderr);
+                var brokenPair = Path.GetExtension(fullPath).Equals(".idx", StringComparison.OrdinalIgnoreCase);
+                failureUserKey = brokenPair ? "MainVobSubPairInvalid"
+                    : reason.Key == "LogMediaSourceInvalid" ? reason.Key : "LogProbeAnalysisFailed";
+                failureStderr = result.Stderr;
+                if (brokenPair) throw new VobSubPairException($"FFprobe could not read the VobSub pair (exit {result.ExitCode}).");
                 throw new InvalidDataException($"FFprobe exited with code {result.ExitCode}. The file may be damaged or unsupported.");
+            }
             var media = ParseJson(result.Stdout, fullPath, size, inspectFileSignature: true);
+            if (Path.GetExtension(fullPath).Equals(".vob", StringComparison.OrdinalIgnoreCase)
+                && media.Streams.Any(stream => stream.Codec == "dvd_subtitle"))
+            {
+                media = media with { DvdIfo = DvdIfo.Resolve(media) };
+                if (media.DvdIfo is { } dvd)
+                {
+                    diagnostics.Record(DiagnosticLevel.Info, "Analysis",
+                        $"DVD title set {dvd.TitleSet:00}, part {dvd.Part}; related parts: " +
+                        $"{string.Join(",", dvd.RelatedParts)}; IFO status: {dvd.UnavailableKey ?? "validated"}; " +
+                        $"subtitle streams: {dvd.SubtitleStreamCount}.");
+                    if (dvd.UnavailableKey is { } reason)
+                    {
+                        var expected = $"VTS_{dvd.TitleSet:00}_0.IFO";
+                        string[] present;
+                        try { present = Directory.EnumerateFiles(Path.GetDirectoryName(fullPath)!)
+                            .Where(path => Path.GetExtension(path).Equals(".ifo", StringComparison.OrdinalIgnoreCase))
+                            .Select(path => Path.GetFileName(path) ?? "").Take(16).ToArray(); }
+                        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                        { present = ["[directory unavailable]"]; }
+                        diagnostics.Record(DiagnosticLevel.Warn, "Analysis",
+                            "DVD VobSub dependency is unavailable.",
+                            $"Reason: {reason}; {dvd.Detail} expected title-set IFO: {expected}; " +
+                            $"IFO names in source folder: {string.Join(", ", present)}; " +
+                            $"VobSub stream IDs: {string.Join(", ", media.Streams.Where(s => s.Codec == "dvd_subtitle").Select(s => s.ExtraProperties?.GetValueOrDefault("id") ?? "unknown"))}.",
+                            userMessageKey: reason);
+                    }
+                    if (dvd.UnavailableKey is null)
+                        media = media with { Streams = media.Streams.Select(stream =>
+                            stream.Codec == "dvd_subtitle" && stream.Language is null
+                                && DvdIfo.Language(media, stream) is { } language
+                                ? stream with { Language = language } : stream).ToArray() };
+                }
+            }
+            if (microDvd)
+                media = media with { Streams = media.Streams.Select(stream => stream.Codec == "microdvd"
+                    ? stream with { SubtitleTimingUnknown = true } : stream).ToArray() };
+            if (Path.GetExtension(fullPath).Equals(".idx", StringComparison.OrdinalIgnoreCase)
+                && (media.Container != "vobsub" || media.Streams.Count == 0
+                    || media.Streams.Any(stream => stream.Codec != "dvd_subtitle")))
+            {
+                failureUserKey = "MainVobSubPairInvalid";
+                throw new VobSubPairException("The VobSub index or subtitle data is damaged.");
+            }
+            diagnostics.Record(DiagnosticLevel.Info, "Analysis",
+                $"Source container {media.Container ?? "unknown"}; size {size} bytes; " +
+                $"streams {string.Join(", ", media.Streams.Select(s => $"#{s.Index}:{s.CodecType}/{s.Codec}"))}.");
             if (heifFile)
                 diagnostics.Record(DiagnosticLevel.Info, "Analysis",
                     $"HEIF classification: logical images={media.ImageCount}; " +
@@ -108,8 +175,13 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
         {
             diagnostics.Record(DiagnosticLevel.Error, "Analysis",
                 $"Analysis failed after {watch.Elapsed.TotalSeconds:F1} s: {ex.GetType().Name}" +
-                (ex is InvalidDataException or TimeoutException ? $" ({ex.Message})" : ""), fileDetails,
-                userMessageKey: "LogAnalysisFailed");
+                (ex is InvalidDataException or VobSubPairException or TimeoutException ? $" ({ex.Message})" : ""),
+                fileDetails + (string.IsNullOrEmpty(failureStderr) ? "" : " | FFprobe stderr: " + failureStderr),
+                userMessageKey: failureUserKey ?? (ex is Win32Exception
+                    ? "MainProbeLaunchFailed" : ex is FileNotFoundException
+                    ? "MainFileNotFound" : ex is UnauthorizedAccessException or IOException
+                    ? "MainFileReadFailed" : Path.GetExtension(fullPath).Equals(".csv", StringComparison.OrdinalIgnoreCase)
+                    ? "MainCsvInvalid" : "LogProbeAnalysisFailed"));
             throw;
         }
     }
@@ -360,7 +432,7 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
         if (type != "subtitle" || codec is null) return SubtitleKind.Unknown;
         return codec.ToLowerInvariant() switch
         {
-            "subrip" or "ass" or "ssa" or "mov_text" or "webvtt" or "text" or "ttml" or "srt" => SubtitleKind.Text,
+            "subrip" or "ass" or "ssa" or "mov_text" or "webvtt" or "text" or "ttml" or "srt" or "microdvd" => SubtitleKind.Text,
             "dvd_subtitle" or "dvb_subtitle" or "hdmv_pgs_subtitle" or "xsub" => SubtitleKind.Graphic,
             _ => SubtitleKind.Unknown
         };
@@ -511,7 +583,7 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
             if (!process.Start()) throw new Win32Exception("FFprobe could not be started.");
             started = true;
             var stdout = ReadAndCancelOnFailure(process.StandardOutput, OutputLimit);
-            var stderr = ReadAndCancelOnFailure(process.StandardError, ErrorLimit);
+            var stderr = ReadBoundedTailAsync(process.StandardError, ErrorLimit, readers.Token);
             await Task.WhenAll(stdout, stderr, process.WaitForExitAsync(readers.Token)).ConfigureAwait(false);
             return new ProbeResult(process.ExitCode, await stdout, await stderr);
         }
@@ -543,6 +615,19 @@ public sealed class MediaAnalyzer(DiagnosticLog diagnostics)
         {
             if (text.Length + count > limit) throw new InvalidDataException("FFprobe returned an excessively large response.");
             text.Append(buffer, 0, count);
+        }
+        return text.ToString();
+    }
+
+    private static async Task<string> ReadBoundedTailAsync(StreamReader reader, int limit, CancellationToken cancellationToken)
+    {
+        var text = new StringBuilder();
+        var buffer = new char[4096];
+        int count;
+        while ((count = await reader.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) != 0)
+        {
+            text.Append(buffer, 0, count);
+            if (text.Length > limit) text.Remove(0, text.Length - limit);
         }
         return text.ToString();
     }
